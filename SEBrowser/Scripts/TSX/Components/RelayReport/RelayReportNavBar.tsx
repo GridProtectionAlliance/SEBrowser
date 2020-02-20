@@ -21,8 +21,8 @@
 //
 //******************************************************************************************************
 import * as React from 'react';
-import { clone } from 'lodash';
-import PQDashboardService from './../../../../TS/Services/PQDashboard';
+import _ from 'lodash';
+import SEBrowserService from './../../../TS/Services/SEBrowser';
 
 export interface Substation {
     LocationID: number, AssetKey: string, AssetName: string
@@ -35,12 +35,12 @@ export interface RelayReportNavBarProps {
 }
 
 export default class RelayReportNavBar extends React.Component<RelayReportNavBarProps, { LineID: number, LocationID: number, showCoilSelection: boolean }>{
-    pqDashboardService: PQDashboardService;
+    seBrowserService: SEBrowserService;
 
     constructor(props, context) {
         super(props, context);
 
-        this.pqDashboardService = new PQDashboardService();
+        this.seBrowserService = new SEBrowserService();
         this.state = {
             LocationID: -1,
             LineID: -1,
@@ -58,14 +58,14 @@ export default class RelayReportNavBar extends React.Component<RelayReportNavBar
     getLineData(LocationID: number) {
         
         this.setState({ LocationID: LocationID });
-        this.pqDashboardService.GetBreakerData(LocationID).done(results => {
+        this.seBrowserService.GetBreakerData(LocationID).done(results => {
             $(this.refs.Breaker).children().remove();
             for (var breaker of results) {
                 $(this.refs.Breaker).append(new Option(breaker.AssetKey, breaker.LineID.toString()));
             };
 
             if ($(this.refs.Breaker).children("option:selected").val()) {
-                var object = clone(this.props);
+                var object = _.clone(this.props) as RelayReportNavBarProps;
                 object.BreakerID = parseInt($(this.refs.Breaker).children("option:selected").val().toString());
                 this.props.stateSetter({ searchBarProps: object });
                 this.getCoilData(parseInt($(this.refs.Breaker).children("option:selected").val().toString()))
@@ -76,7 +76,7 @@ export default class RelayReportNavBar extends React.Component<RelayReportNavBar
     }
 
     getSubstationData() {
-        this.pqDashboardService.GetSubStationData().done(results => {
+        this.seBrowserService.GetSubStationData().done(results => {
             $(this.refs.SubStation).children().remove();
             for (var station of results) {
                 $(this.refs.SubStation).append(new Option(station.AssetName, station.LocationID.toString()));
@@ -90,10 +90,10 @@ export default class RelayReportNavBar extends React.Component<RelayReportNavBar
 
     getCoilData(LineID: number ) {
 
-        this.pqDashboardService.GetCoilData(LineID).done(results => {
+        this.seBrowserService.GetCoilData(LineID).done(results => {
             if (results.length < 2) {
                 this.setState({ showCoilSelection: false });
-                var object = clone(this.props);
+                var object = _.clone(this.props) as RelayReportNavBarProps;
                 object.ChannelID = -1;
                 object.BreakerID = parseInt($(this.refs.Breaker).children("option:selected").val().toString());
                 this.props.stateSetter({ searchBarProps: object });
@@ -109,7 +109,7 @@ export default class RelayReportNavBar extends React.Component<RelayReportNavBar
             };
 
             if ($(this.refs.Coil).children("option:selected").val()) {
-                var object = clone(this.props);
+                var object = _.clone(this.props) as RelayReportNavBarProps;
                 object.ChannelID = parseInt($(this.refs.Coil).children("option:selected").val().toString());
                 object.BreakerID = parseInt($(this.refs.Breaker).children("option:selected").val().toString());
                 this.props.stateSetter({ searchBarProps: object });
@@ -165,7 +165,7 @@ export default class RelayReportNavBar extends React.Component<RelayReportNavBar
                                     <div className="form-group" style={{ height: 30 }}>
                                         <label style={{ width: 200, position: 'relative', float: "left" }}>Breaker: </label>
                                         <select ref="Coil" style={{ width: 'calc(100% - 200px)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            var object = clone(this.props);
+                                            var object = _.clone(this.props) as RelayReportNavBarProps;
                                             object.ChannelID = (e.target as any).value;
                                             object.BreakerID = parseInt($(this.refs.Breaker).children("option:selected").val().toString());
                                             this.props.stateSetter({ searchBarProps: object });

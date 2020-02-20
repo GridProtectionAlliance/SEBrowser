@@ -37,7 +37,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head id="Head1" runat="server">
-    <title>SC Browser/title>
+    <title>SC Browser</title>
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta charset="utf-8" />
@@ -47,7 +47,7 @@
     <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
     <meta http-equiv="pragma" content="no-cache" />
 
-    <link rel="shortcut icon" type="image/ico" href="~/favicon.ico" />
+    @*<link rel="shortcut icon" type="image/ico" href="~/favicon.ico" />*@
     <link href="@Url.Content("~/@GSF/Web/Shared/Content/bootstrap4.css")" rel="stylesheet">
     <link href="@Url.Content("~/@GSF/Web/Shared/Content/font-awesome.css")" rel="stylesheet">
     <link href="~/Content/bootstrap4-datetimepicker.css" rel="stylesheet"/>
@@ -60,7 +60,7 @@
         var controllerViewPath = homePath + '@Html.Raw(this.ViewContext.RouteData.GetRequiredString("controller"))/@Html.Raw(this.ViewContext.RouteData.GetRequiredString("action"))';
     </script>
     @if (Request.Browser.Browser == "InternetExplorer" || Request.Browser.Browser == "IE") {
-        <script src="~/Scripts/default.polyfill.min.js"></script>
+        <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/default.polyfill.min.js")"></script>
     }
 
     <script src="@("~/@GSF/Web/Shared/Scripts/jquery.js")"></script>
@@ -78,7 +78,7 @@
 
     <script src="@("~/@GSF/Web/Shared/Scripts/popper.js")"></script>
     <script src="@("~/@GSF/Web/Shared/Scripts/bootstrap4.js")"></script>
-    <script src="~/Scripts/bootstrap4-datetimepicker.min.js"></script>
+    <script src="~/Scripts/Lib/bootstrap4-datetimepicker.min.js"></script>
 @if (Model.IsDebug())
 {
     <script src="@("~/@GSF/Web/Shared/Scripts/react.development.js")"></script>
@@ -90,6 +90,6 @@ else
     <script src="@("~/@GSF/Web/Shared/Scripts/react-dom.production.min.js")"></script>
 
 }
-    <script src="@Url.Content("~/Scripts/PQDashboard.js")"></script>
+    <script src="@Url.Content("~/Scripts/SEBrowser.js")"></script>
 </body>
 </html>

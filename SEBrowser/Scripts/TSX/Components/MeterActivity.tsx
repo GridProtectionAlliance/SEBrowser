@@ -21,12 +21,12 @@
 //
 //******************************************************************************************************
 
-import * as React from 'react';
+import React from 'react';
 import Table from './Table';
-import PQDashboardService from './../../../TS/Services/PQDashboard';
-import * as moment from 'moment';
+import SEBrowserService from './../../TS/Services/SEBrowser';
 
 declare var xdaInstance: string;
+declare var homePath: string;
 
 const updateInterval = 300000;
 const rowsPerPage = 7;
@@ -37,7 +37,6 @@ const rowsPerPage = 7;
 
 const momentFormat = "YYYY/MM/DD HH:mm:ss";
 const dateTimeFormat = "yyyy/MM/dd HH:mm:ss";
-
 const MeterActivity: React.FunctionComponent<{}> = (props) => {
 
     return (
@@ -60,12 +59,19 @@ const MeterActivity: React.FunctionComponent<{}> = (props) => {
 
 export default MeterActivity;
 
-class MostActiveMeters extends React.Component<{}, { meterTable: Array<any>, sortField: string, rowsPerPage: number }>{
-    pQDashboardService: PQDashboardService;
+interface MostActiveMeterActivityRow {
+    AssetKey: string,
+    '24Hours': number,
+    '7Days': number,
+    '30Days': number
+}
+
+class MostActiveMeters extends React.Component<{}, { meterTable: Array<MostActiveMeterActivityRow>, sortField: string, rowsPerPage: number }>{
+    seBrowserService: SEBrowserService;
     constructor(props) {
         super(props);
 
-        this.pQDashboardService = new PQDashboardService();
+        this.seBrowserService = new SEBrowserService();
 
         this.state = {
             meterTable: [],
@@ -86,7 +92,7 @@ class MostActiveMeters extends React.Component<{}, { meterTable: Array<any>, sor
     }
 
     createTableRows() {
-        this.pQDashboardService.getMostActiveMeterActivityData(5000, this.state.sortField).done(data => {
+        this.seBrowserService.getMostActiveMeterActivityData(5000, this.state.sortField).done(data => {
             this.setState({ meterTable: data });
         });
     }
@@ -103,7 +109,7 @@ class MostActiveMeters extends React.Component<{}, { meterTable: Array<any>, sor
         this.setState({ rowsPerPage: Math.floor(height / rowHeight) }, () => this.createTableRows());
     }
 
-    createContent(item, key) {
+    createContent(item, key: keyof (MostActiveMeterActivityRow)) {
         var context = '';
         if (key == '24Hours') {
             context = '24h';
@@ -138,7 +144,7 @@ class MostActiveMeters extends React.Component<{}, { meterTable: Array<any>, sor
                 <span style={{ float: 'right', color: 'silver' }}>{/*Click on event count to view events*/}</span>
                 <div style={{ height: '2px', width: '100%', display: 'inline-block', backgroundColor: 'black' }}></div>
                 <div style={{ backgroundColor: 'white', borderColor: 'black', height: 'calc(100% - 60px)', overflowY: 'auto'}} ref='divElement'>
-                    <Table
+                    <Table<MostActiveMeterActivityRow>
                         cols={[
                             { key: 'AssetKey', label: 'Name', headerStyle: { width: 'calc(40%)' } },
                             { key: '24Hours', label: 'Files(Evts) 24H', headerStyle: { width: '20%' }, content: (item, key, style) => this.createContent(item, key) },
@@ -160,13 +166,20 @@ class MostActiveMeters extends React.Component<{}, { meterTable: Array<any>, sor
         
 }
     
+interface LeastActiveMeterActivityRow {
+    AssetKey: string,
+    '180Days': number,
+    '90Days': number,
+    '30Days': number,
+    FirstEventID: number
+}
         
-class LeastActiveMeters extends React.Component<{}, { meterTable: Array<any>, sortField: string, rowsPerPage: number }>{
-    pQDashboardService: PQDashboardService;
+class LeastActiveMeters extends React.Component<{}, { meterTable: Array<LeastActiveMeterActivityRow>, sortField: keyof(LeastActiveMeterActivityRow), rowsPerPage: number }>{
+    seBrowserService: SEBrowserService;
     constructor(props) {
         super(props);
 
-        this.pQDashboardService = new PQDashboardService();
+        this.seBrowserService = new SEBrowserService();
 
         this.state = {
             meterTable: [],
@@ -201,12 +214,12 @@ class LeastActiveMeters extends React.Component<{}, { meterTable: Array<any>, so
 
 
     createTableRows() {
-        this.pQDashboardService.getLeastActiveMeterActivityData(5000, this.state.sortField).done(data => {
+        this.seBrowserService.getLeastActiveMeterActivityData(5000, this.state.sortField).done(data => {
             this.setState({ meterTable: data });
         });
     }
 
-    createContent(item, key) {
+    createContent(item: LeastActiveMeterActivityRow, key: keyof(LeastActiveMeterActivityRow)) {
         var context = '';
         if (key == '180Days') {
             context = '180d';
@@ -238,7 +251,7 @@ class LeastActiveMeters extends React.Component<{}, { meterTable: Array<any>, so
                 <span style={{ float: 'right', color: 'silver' }}>{/*Click on event count to view events*/}</span>
                 <div style={{ height: '2px', width: '100%', display: 'inline-block', backgroundColor: 'black' }}></div>
                 <div style={{ backgroundColor: 'white', borderColor: 'black', height: 'calc(100% - 60px)', overflowY: 'auto' }} ref='divElement'>
-                    <Table
+                    <Table<LeastActiveMeterActivityRow>
                         cols={[
                             { key: 'AssetKey', label: 'Name', headerStyle: { width: 'calc(40%)' } },
                             { key: '30Days', label: 'Files(Events) 30D', headerStyle: { width: '20%' }, content: (item, key, style) => this.createContent(item, key)  },
@@ -261,11 +274,11 @@ class LeastActiveMeters extends React.Component<{}, { meterTable: Array<any>, so
 }
 
 class FilesProcessed extends React.Component<{}, { meterTable: Array<JSX.Element>, sortField: string}>{
-    pQDashboardService: PQDashboardService;
+    seBrowserService: SEBrowserService;
     constructor(props) {
         super(props);
 
-        this.pQDashboardService = new PQDashboardService();
+        this.seBrowserService = new SEBrowserService();
 
         this.state = {
             meterTable: [],
@@ -279,7 +292,7 @@ class FilesProcessed extends React.Component<{}, { meterTable: Array<JSX.Element
 
 
     createTableRows() {
-        this.pQDashboardService.getFilesProcessedMeterActivityData(this.state.sortField).done(data => {
+        this.seBrowserService.getFilesProcessedMeterActivityData(this.state.sortField).done(data => {
             this.setState({
                 meterTable: data.map((x, i) => <ListItem key={x.FilePath} CreationTime={x.CreationTime} FilePath={x.FilePath} FileGroupID={x.FileGroupID}/>) });
         });
@@ -307,10 +320,10 @@ const ListItem = (props: { CreationTime: string, FilePath: string, FileGroupID: 
     const [isOpen, setOpen] = React.useState<boolean>(false);
     const [eventTable, setEventTable] = React.useState<Array<JSX.Element>>([]);
 
-    const pqDashboardService = new PQDashboardService();
+    const seBrowserService = new SEBrowserService();
 
     React.useEffect(() => {
-        pqDashboardService.getFileGroupEvents(props.FileGroupID).done(data => {
+        seBrowserService.getFileGroupEvents(props.FileGroupID).done(data => {
             var arr = data.map(x => <tr key={x.ID} ><td><a style={{ color: 'blue' }} href={homePath + 'Main/OpenSEE?eventid=' + x.ID} target="_blank">{x.LineName}</a></td><td>{moment.utc(x.StartTime).format('MM/DD/YY HH:mm:ss')}</td><td>{x.EventTypeName}</td></tr>);
             setEventTable(arr);
         });

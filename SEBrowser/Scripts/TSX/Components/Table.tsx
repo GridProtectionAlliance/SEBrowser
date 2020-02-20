@@ -21,33 +21,52 @@
 //
 //******************************************************************************************************
 
-import * as React from 'react';
-import { clone } from 'lodash';
+import React from 'react';
+import _ from 'lodash';
 
-export interface TableProps {
-    cols: Array<{ key: string, label: string, headerStyle?: React.CSSProperties, colStyle?: React.CSSProperties, content?(item: any, key: string, style: React.CSSProperties): void }>,
-    data: Array<any>,
-    onClick: Function,
+const AngleIcon: React.FunctionComponent<{ ascending: boolean }> = (props) => <span style={{ width: 10, height: 10, margin: 3 }} className={"fa fa-angle-" + (props.ascending ? 'up' : 'down')}></span>
+
+export interface TableProps<T> {
+    cols: Array<{ key: keyof (T) | null, label: string, headerStyle?: React.CSSProperties, rowStyle?: React.CSSProperties, content?(item: T, key: keyof (T), style: React.CSSProperties): React.ReactNode }>,
+    data: Array<T>,
+    onClick: (data: { col: keyof (T), row: T, data: T[keyof (T)] }, event: any) => void,
     sortField: string,
     ascending: boolean,
-    onSort(data: any): void,
+    onSort(data: { col: keyof (T), asending: boolean }): void,
     tableClass?: string,
     tableStyle?: React.CSSProperties,
     theadStyle?: React.CSSProperties,
     theadClass?: string,
     tbodyStyle?: React.CSSProperties,
     tbodyClass?: string,
-    selected?(data:any): boolean,
+    selected?(data: T): boolean,
     rowStyle?: React.CSSProperties,
 }
 
-const Table: React.FunctionComponent <TableProps> = (props) => {
+export default class Table<T> extends React.Component<TableProps<T>, {}> {
+    constructor(props) {
+        super(props);
+    }
 
-    function generateHeaders() {
-        if (props.cols.length == 0) return null;
+    componentDidUpdate(prevProps, prevState) {
+    }
 
-        var cells = props.cols.map(colData => {
-            var style: React.CSSProperties;
+    render() {
+        var rowComponents = this.generateRows();
+        var headerComponents = this.generateHeaders();
+        return (
+            <table className={(this.props.tableClass != undefined ? this.props.tableClass : '')} style={this.props.tableStyle}>
+                <thead style={this.props.theadStyle}>{headerComponents}</thead>
+                <tbody style={this.props.tbodyStyle}>{rowComponents}</tbody>
+            </table>
+        );
+    }
+
+    generateHeaders() {
+        if (this.props.cols.length == 0) return null;
+
+        var cells = this.props.cols.map((colData, index) => {
+            var style;
             if (colData.headerStyle != undefined) {
                 style = colData.headerStyle;
             }
@@ -57,60 +76,50 @@ const Table: React.FunctionComponent <TableProps> = (props) => {
             if (style.cursor == undefined)
                 style.cursor = 'pointer';
 
-            return <th key={colData.key} style={style} onClick={() => handleSort({ col: colData.key, ascending: props.ascending })}>{colData.label}{(props.sortField == colData.key ? <AngleIcon ascending={props.ascending} /> : null)}</th>
+            return <th key={index} style={style} onClick={(e) => this.handleSort({ col: colData.key, ascending: this.props.ascending }, e)}>{colData.label}{(this.props.sortField == colData.key ? <AngleIcon ascending={this.props.ascending} /> : null)}</th>
         });
 
         return <tr>{cells}</tr>;
     }
 
-    function generateRows() {
-        if (props.data.length == 0) return null;
+    generateRows() {
+        if (this.props.data.length == 0) return null;
 
-        return props.data.map((item, index) => {
-            var cells = props.cols.map(colData => {
-                var style = clone(colData.colStyle);
+        return this.props.data.map((item, index) => {
+            var cells = this.props.cols.map(colData => {
+                var style = _.clone(colData.rowStyle);
                 return <td
                     key={index.toString() + item[colData.key] + colData.key}
                     style={style}
-                    onClick={() => handleClick({ col: colData.key, row: item, data: item[colData.key] })}
+                    onClick={this.handleClick.bind(this, { col: colData.key, row: item, data: item[colData.key] })}
                 >
                     {colData.content != undefined ? colData.content(item, colData.key, style) : item[colData.key]}
                 </td>
             });
 
-            var style: React.CSSProperties;
-            if (item.rowStyle != undefined) {
-                style = item.rowStyle;
+            var style;
+
+            if (this.props.rowStyle != undefined) {
+                style = _.clone(this.props.rowStyle);
             }
             else
                 style = {};
 
+            if (style.cursor == undefined)
+                style.cursor = 'pointer';
 
-            style.cursor = 'pointer';
-            style.backgroundColor = (props.selected != undefined && props.selected(item) ? 'yellow' : 'inherit');
+            if (this.props.selected(item))
+                style.backgroundColor = 'yellow';
 
             return <tr style={style} key={index.toString()}>{cells}</tr>;
         });
     }
 
-    function handleClick(data) {
-        props.onClick(data);
+    handleClick(data: { col: keyof (T), row: T, data: any }, event) {
+        this.props.onClick(data, event);
     }
 
-    function handleSort(data) {
-        props.onSort(data);
+    handleSort(data, event) {
+        this.props.onSort(data);
     }
-
-    var rowComponents = generateRows();
-    var headerComponents = generateHeaders();
-    return (
-        <table className={(props.tableClass != undefined ? props.tableClass : '')} style={props.tableStyle}>
-            <thead style={props.theadStyle}>{headerComponents}</thead>
-            <tbody style={props.tbodyStyle}>{rowComponents}</tbody>
-        </table>
-    );
-
 };
-
-const AngleIcon: React.FunctionComponent<{ ascending: boolean }> = (props) => <span style={{width: 10, height: 10, margin: 3}}className={"fa fa-angle-" + (props.ascending ? 'up' : 'down')}></span>
-export default Table;

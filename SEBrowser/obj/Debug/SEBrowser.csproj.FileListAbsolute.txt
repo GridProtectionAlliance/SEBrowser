@@ -238,7 +238,7 @@ C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\System.Web.WebPages.xml
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\System.Web.WebPages.Deployment.xml
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\System.Web.WebPages.Razor.xml
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
-C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\obj\Debug\SEBrowser.csprojAssemblyReference.cache
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\obj\Debug\SEBrowser.csproj.CopyComplete
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\obj\Debug\SEBrowser.dll
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\obj\Debug\SEBrowser.pdb
+C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\obj\Debug\SEBrowser.csprojAssemblyReference.cache

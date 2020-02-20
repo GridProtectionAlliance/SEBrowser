@@ -21,12 +21,10 @@
 //
 //******************************************************************************************************
 
-import * as React from 'react';
-import * as moment from 'moment';
-import OpenSEEService from './../../../../TS/Services/OpenSEE';
-import PQDashboardService from './../../../../TS/Services/PQDashboard';
+import React from 'react';
+import SEBrowserService from './../../../TS/Services/SEBrowser';
 import { orderBy, filter, clone } from 'lodash';
-import { OpenXDAEvent } from './EventSearch';
+import { OpenXDA } from '../../global';
 
 interface IState {
     show: boolean,
@@ -34,15 +32,13 @@ interface IState {
     ids: Array<number>,
     notesMade: Array<{EventIds: Array<number>, Note: string, Timestamp: string, UserAccount: string}>
 }
-export default class EventSearchListedEventsNoteWindow extends React.Component<{ searchList: Array<OpenXDAEvent> }, IState, {}> {
-    pqDashboardService: PQDashboardService;
-    openSEEService: OpenSEEService;
+export default class EventSearchListedEventsNoteWindow extends React.Component<{ searchList: Array<OpenXDA.Event> }, IState, {}> {
+    seBrowserService: SEBrowserService;
 
     constructor(props, context) {
         super(props, context);
 
-        this.pqDashboardService = new PQDashboardService();
-        this.openSEEService = new OpenSEEService();
+        this.seBrowserService = new SEBrowserService();
 
         this.state = {
             show: false,
@@ -66,7 +62,7 @@ export default class EventSearchListedEventsNoteWindow extends React.Component<{
     }
 
     getData(props) {
-        //this.pqDashboardService.getEventSearchData().done(results => {
+        //this.seBrowserService.getEventSearchData().done(results => {
         //    var filtered = filter(results, obj => {
         //        return obj.AssetName.toLowerCase().indexOf(props.searchText) >= 0 ||
         //            obj.AssetType.toLowerCase().indexOf(props.searchText) >= 0 ||
@@ -189,7 +185,7 @@ export default class EventSearchListedEventsNoteWindow extends React.Component<{
     }
 
     handleAdd() {
-        this.openSEEService.addMultiNote(this.state.note, this.state.ids).done(notesMade => {
+        this.addMultiNote(this.state.note, this.state.ids).done(notesMade => {
             var list = clone(this.state.notesMade);
             list.push({ Note: notesMade[0].Note, Timestamp: notesMade[0].Timestamp, UserAccount: notesMade[0].UserAccount, EventIds: notesMade.map(a => a.EventID)});
             this.setState({ note: '', notesMade: list });
@@ -197,7 +193,7 @@ export default class EventSearchListedEventsNoteWindow extends React.Component<{
     }
 
     handleDelete(noteMade) {
-        this.openSEEService.deleteMultiNote(noteMade.Note, noteMade.UserAccount, noteMade.Timestamp);
+        this.deleteMultiNote(noteMade.Note, noteMade.UserAccount, noteMade.Timestamp);
         var list = clone(this.state.notesMade);
         list = list.filter(note => note != noteMade);
         this.setState({notesMade: list});
@@ -205,7 +201,52 @@ export default class EventSearchListedEventsNoteWindow extends React.Component<{
 
     handleEdit(d) {
         this.setState({ note: d.Note });
-        this.openSEEService.deleteNote(d).done(() => this.createTableRows());
+        this.deleteNote(d).done(() => this.createTableRows());
+    }
+
+    addMultiNote(note: string, eventIDs: Array<number>): JQuery.jqXHR {
+        return $.ajax({
+            type: "POST",
+            url: `${homePath}api/OpenSEE/AddMultiNote`,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({ note: note, eventIDs: eventIDs }),
+            cache: false,
+            async: true,
+            processData: false,
+            error: function (jqXhr, textStatus, errorThrown) {
+                console.log(errorThrown);
+            }
+        });
+    }
+
+    deleteNote(note): JQuery.jqXHR {
+        return $.ajax({
+            type: "DELETE",
+            url: `${homePath}api/OpenSEE/DeleteNote`,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(note),
+            cache: false,
+            async: true,
+            processData: false,
+            error: function (jqXhr, textStatus, errorThrown) {
+                console.log(errorThrown);
+            }
+        });
+    }
+
+    deleteMultiNote(Note: string, UserAccount: string, Timestamp: string): JQuery.jqXHR {
+        return $.ajax({
+            type: "DELETE",
+            url: `${homePath}api/OpenSEE/DeleteMultiNote`,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({ Note: Note, UserAccount: UserAccount, Timestamp: Timestamp }),
+            cache: false,
+            async: true,
+            processData: false,
+            error: function (jqXhr, textStatus, errorThrown) {
+                console.log(errorThrown);
+            }
+        });
     }
 
 }

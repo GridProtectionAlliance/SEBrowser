@@ -21,12 +21,9 @@
 //
 //******************************************************************************************************
 import * as React from 'react';
-import * as moment from 'moment';
-import OpenSEEService from './../../../../TS/Services/OpenSEE';
 import RelayPerformanceTrend from './RelayPerformanceTrend';
 
 export default class RelayReportPane extends React.Component<{ breakerid: number, channelid: number }, {showRelayHistory: boolean}> {
-    openSEEService: OpenSEEService;
     optionsUpper: object;
     optionsLower: object;
 
@@ -35,15 +32,13 @@ export default class RelayReportPane extends React.Component<{ breakerid: number
     optionsTripCoilCondition: object;
     optionsImax1: object;
     optionsImax2: object;
-
+    relayTrendHandle: JQuery.jqXHR;
     constructor(props, context) {
         super(props, context);
 
         this.state = {
             showRelayHistory: false
         };
-
-        this.openSEEService = new OpenSEEService();
 
         this.optionsTripTime = {
             canvas: true,
@@ -284,6 +279,22 @@ export default class RelayReportPane extends React.Component<{ breakerid: number
         }
     }
 
+    getRelayTrendData(lineID: number, channelID: number): JQuery.jqXHR {
+        if (this.relayTrendHandle !== undefined)
+            this.relayTrendHandle.abort();
+
+        this.relayTrendHandle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/PQDashboard/RelayReport/GetTrend?breakerid=${lineID}&channelid=${channelID}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+
+        return this.relayTrendHandle;
+    }
+
     getData(props) {
 
         $(this.refs.TTwindow).children().remove();
@@ -293,7 +304,7 @@ export default class RelayReportPane extends React.Component<{ breakerid: number
         $(this.refs.L2window).children().remove();
 
 
-        this.openSEEService.getRelayTrendData(props.breakerid,props.channelid).then(data => {
+        this.getRelayTrendData(props.breakerid,props.channelid).then(data => {
             
             if (data == null) {
                 this.setState((state, props) => { return { showRelayHistory: false }; })

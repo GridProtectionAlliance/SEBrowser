@@ -21,11 +21,9 @@
 //******************************************************************************************************
 
 import * as React from 'react';
-import * as moment from 'moment';
 import { clone, isEqual } from 'lodash';
 
 import createHistory from "history/createBrowserHistory"
-import * as queryString from "query-string";
 import { History } from 'history';
 import RelayReportNavBar, { RelayReportNavBarProps } from './RelayReportNavBar';
 import RelayReportPane from './RelayReportPane';
@@ -86,7 +84,7 @@ export default class RelayReport extends React.Component<IProps, IState>{
     stateSetter(obj) {
         function toQueryString(state: IState) {
             var dataTypes = ["boolean", "number", "string"]
-            var stateObject: IState = clone(state.searchBarProps);
+            var stateObject: IState = clone(state);
             $.each(Object.keys(stateObject), (index, key) => {
                 if (dataTypes.indexOf(typeof (stateObject[key])) < 0)
                     delete stateObject[key];

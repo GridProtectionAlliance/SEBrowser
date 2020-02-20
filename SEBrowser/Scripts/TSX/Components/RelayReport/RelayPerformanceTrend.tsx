@@ -23,15 +23,11 @@
 declare var homePath: string;
 
 import * as React from 'react';
-import * as moment from 'moment';
-import OpenSEEService from '../../../../TS/Services/OpenSEE';
 
 export default class RelayPerformanceTrend extends React.Component<{ breakerid: number, channelid: number }, {tableRows: Array<JSX.Element> }>{
-    openSEEService: OpenSEEService;
+    RelayTrendPerformanceHandle: JQuery.jqXHR;
     constructor(props, context) {
         super(props, context);
-
-        this.openSEEService = new OpenSEEService();
 
         this.state = {
             tableRows: []
@@ -49,9 +45,25 @@ export default class RelayPerformanceTrend extends React.Component<{ breakerid: 
             this.createTableRows(nextProps.breakerid, nextProps.channelid);
     }
 
+    getRelayTrendPerformance(breakerid, channelId): JQuery.jqXHR {
+        if (this.RelayTrendPerformanceHandle !== undefined)
+            this.RelayTrendPerformanceHandle.abort();
+
+        this.RelayTrendPerformanceHandle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/PQDashboard/RelayReport/getRelayPerformance?lineID=${breakerid}&channelID=${channelId}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+
+        return this.RelayTrendPerformanceHandle;
+    }
+
 
     createTableRows(eventID: number, channelid: number) {
-        this.openSEEService.getRelayTrendPerformance(this.props.breakerid, this.props.channelid).done(data => {
+        this.getRelayTrendPerformance(this.props.breakerid, this.props.channelid).done(data => {
             var rows = [];
             for (var index = 0; index < data.length; ++index) {
                 var row = data[index];

@@ -21,16 +21,12 @@
 //
 //******************************************************************************************************
 
-import * as React from 'react';
-import * as moment from 'moment';
-import OpenSEEService from './../../../../TS/Services/OpenSEE';
+import React from 'react';
 
-export default class EventSearchHistory extends React.Component<{ eventId: number }, {tableRows: Array<JSX.Element> }>{
-    openSEEService: OpenSEEService;
+export default class EventSearchHistory extends React.Component<{ eventId: number }, { tableRows: Array<JSX.Element> }>{
+    correlatedSagsHandle: JQuery.jqXHR;
     constructor(props, context) {
         super(props, context);
-
-        this.openSEEService = new OpenSEEService();
 
         this.state = {
             tableRows: []
@@ -48,9 +44,25 @@ export default class EventSearchHistory extends React.Component<{ eventId: numbe
             this.createTableRows(nextProps.eventId);
     }
 
+    getTimeCorrelatedSags(eventid: number): JQuery.jqXHR {
+        if (this.correlatedSagsHandle !== undefined)
+            this.correlatedSagsHandle.abort();
+
+        this.correlatedSagsHandle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenSEE/GetTimeCorrelatedSags?eventId=${eventid}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+
+        return this.correlatedSagsHandle;
+    }
+
 
     createTableRows(eventID: number) {
-        this.openSEEService.getTimeCorrelatedSags(this.props.eventId).done(data => {
+        this.getTimeCorrelatedSags(this.props.eventId).done(data => {
             var rows = [];
 
             for (var index = 0; index < data.length; ++index) {

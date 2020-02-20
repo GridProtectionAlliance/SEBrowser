@@ -57,7 +57,7 @@ export default class SEBrowserdService {
 
         this.mostActiveMeterHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/MeterActivity/GetMostActiveMeterActivityData?numresults=${numresults}` +
+            url: `${homePath}api/OpenXDA/MeterActivity/GetMostActiveMeterActivityData?numresults=${numresults}` +
                 `&column=${column}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
@@ -75,7 +75,7 @@ export default class SEBrowserdService {
 
         this.subStationRelayReportHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/RelayReport/GetSubstationData`,
+            url: `${homePath}api/OpenXDA/RelayReport/GetSubstationData`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -91,7 +91,7 @@ export default class SEBrowserdService {
 
         this.channelRelayReportHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/RelayReport/GetCoilData?lineID=${lineid}`,
+            url: `${homePath}api/OpenXDA/RelayReport/GetCoilData?lineID=${lineid}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -106,7 +106,7 @@ export default class SEBrowserdService {
 
         this.BreakerRelayReportHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/RelayReport/GetLineData?locationID=${substationID}`,
+            url: `${homePath}api/OpenXDA/RelayReport/GetLineData?locationID=${substationID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -121,7 +121,7 @@ export default class SEBrowserdService {
 
         this.leastActiveMeterHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/MeterActivity/GetLeastActiveMeterActivityData?numresults=${numresults}` +
+            url: `${homePath}api/OpenXDA/MeterActivity/GetLeastActiveMeterActivityData?numresults=${numresults}` +
                 `&column=${column}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
@@ -138,7 +138,7 @@ export default class SEBrowserdService {
 
         this.filesProcessedMeterHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/MeterActivity/GetFilesProcessedLast24Hrs?column=${column}`,
+            url: `${homePath}api/OpenXDA/MeterActivity/GetFilesProcessedLast24Hrs?column=${column}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -154,7 +154,7 @@ export default class SEBrowserdService {
 
         this.fileGroupEventsHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/MeterActivity/QueryFileGroupEvents?FileGroupID=${fileGroupID}`,
+            url: `${homePath}api/OpenXDA/MeterActivity/QueryFileGroupEvents?FileGroupID=${fileGroupID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -171,7 +171,7 @@ export default class SEBrowserdService {
 
         this.eventSearchHandle = $.ajax({
             type: "POST",
-            url: `${homePath}api/PQDashboard/GetEventSearchData`,
+            url: `${homePath}api/OpenXDA/GetEventSearchData`,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(params),
             dataType: 'json',
@@ -188,7 +188,7 @@ export default class SEBrowserdService {
 
         this.eventSearchAssetVoltageDisturbancesHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/GetEventSearchAssetVoltageDisturbances?EventID=${eventID}`,
+            url: `${homePath}api/OpenXDA/GetEventSearchAssetVoltageDisturbances?EventID=${eventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -204,7 +204,7 @@ export default class SEBrowserdService {
 
         this.eventSearchAssetFaultSegmentsHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/GetEventSearchFaultSegments?EventID=${eventID}`,
+            url: `${homePath}api/OpenXDA/GetEventSearchFaultSegments?EventID=${eventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -220,7 +220,7 @@ export default class SEBrowserdService {
 
         this.eventSearchAssetHistoryHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/GetEventSearchHistory?EventID=${eventID}`,
+            url: `${homePath}api/OpenXDA/GetEventSearchHistory?EventID=${eventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,

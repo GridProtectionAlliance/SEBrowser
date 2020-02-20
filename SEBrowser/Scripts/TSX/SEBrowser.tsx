@@ -26,8 +26,6 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Route, NavLink } from 'react-router-dom';
 import createHistory from "history/createBrowserHistory"
-import * as queryString from "query-string";
-
 import About from './Components/About';
 import MeterActivity from './Components/MeterActivity';
 import EventSearch from './Components/EventSearch/EventSearch';
@@ -46,7 +44,6 @@ class SEBrowserMainPage extends React.Component<{}, SEBrowser.State>{
     constructor(props, context) {
         super(props, context);
         this.history = createHistory();
-        var query = queryString.parse(this.history['location'].search);
 
         this.state = {
         }

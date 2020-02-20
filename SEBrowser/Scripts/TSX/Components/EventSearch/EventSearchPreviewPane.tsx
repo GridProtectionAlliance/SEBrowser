@@ -22,9 +22,8 @@
 //       Added Carde for Relay Performance and plot of TCE.
 //
 //******************************************************************************************************
-import * as React from 'react';
-import * as moment from 'moment';
-import OpenSEEService from './../../../../TS/Services/OpenSEE';
+import React from 'react';
+import OpenSEEService from './../../../TS/Services/OpenSEE';
 import EventSearchNoteWindow from './EventSearchNoteWindow';
 import EventSearchAssetVoltageDisturbances from './EventSearchAssetVoltageDisturbances';
 import EventSearchFaultSegments from './EventSearchAssetFaultSegments';

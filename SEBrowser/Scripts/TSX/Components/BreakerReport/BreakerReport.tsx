@@ -23,16 +23,13 @@
 /// <reference path="BreakerReport.d.ts" />
 
 import * as React from 'react';
-import * as moment from 'moment';
-
 import BreakerReportNavbar from './BreakerReportNavbar';
-
 import createHistory from "history/createBrowserHistory"
-import * as queryString from "query-string";
 import { History } from 'history';
 import { clone, isEqual } from 'lodash';
 
 const momentDateFormat = "MM/DD/YYYY";
+declare var homePath: string;
 
 export default class BreakerReport extends React.Component<{}, State>{
     history: History<any>;

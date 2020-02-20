@@ -21,16 +21,15 @@
 //
 //******************************************************************************************************
 
-import * as React from 'react';
-import * as moment from 'moment';
-import PQDashboardService from './../../../../TS/Services/PQDashboard';
+import React from 'react';
+import SEBrowserService from './../../../TS/Services/SEBrowser';
 
 export default class EventSearchFaultSegments extends React.Component<{ eventId: number }, {tableRows: Array<JSX.Element>, count: number }>{
-    pqDashboardService: PQDashboardService;
+    seBrowserService: SEBrowserService;
     constructor(props, context) {
         super(props, context);
 
-        this.pqDashboardService = new PQDashboardService();
+        this.seBrowserService = new SEBrowserService();
 
         this.state = {
             tableRows: [],
@@ -51,7 +50,7 @@ export default class EventSearchFaultSegments extends React.Component<{ eventId:
 
 
     createTableRows(eventID: number) {
-        this.pqDashboardService.getEventSearchAsssetFaultSegmentsData(eventID).done(data => {
+        this.seBrowserService.getEventSearchAsssetFaultSegmentsData(eventID).done(data => {
             var rows = data.map((d,i) =>
                 <tr key={i}>
                     <td>{d.SegmentType}</td>

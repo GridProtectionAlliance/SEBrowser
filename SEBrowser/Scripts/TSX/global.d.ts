@@ -21,6 +21,28 @@
 //
 //******************************************************************************************************
 
+declare global {
+    var homePath: string;
+
+    namespace moment {
+        function utc(timestamp: string): any;
+    }
+    function moment(inp?: any, format?: any, strict?: boolean): any;
+    function moment(inp?: any, format?: any, language?: string, strict?: boolean): any;
+
+    namespace queryString {
+        function parse(str: string, opts?: object): object
+        function stringify(obj: object, opts?: object): object
+
+    }
+}
+
+
 export namespace SEBrowser {
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
 }
+
+export namespace OpenXDA {
+    interface Event { EventID: number, FileStartTime: string, AssetName: string, AssetType: string, VoltageClass: string, EventType: string, BreakerOperation: boolean }
+}
+

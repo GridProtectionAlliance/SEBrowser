@@ -21,9 +21,8 @@
 //
 //******************************************************************************************************
 
-import * as React from 'react';
-import * as moment from 'moment';
-import OpenSEEService from '../../../../TS/Services/OpenSEE';
+import React from 'react';
+import OpenSEEService from '../../../TS/Services/OpenSEE';
 
 export default class EventSearchRrelayPerformance extends React.Component<{ eventId: number }, {tableRows: Array<JSX.Element> }>{
     openSEEService: OpenSEEService;

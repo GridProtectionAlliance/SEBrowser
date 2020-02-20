@@ -21,9 +21,10 @@
 //
 //******************************************************************************************************
 
-import * as React from 'react';
-import { clone } from 'lodash';
-import BreakerReportService from './../../../../TS/Services/SEDashboard/BreakerReport'
+import React from 'react';
+import BreakerReportService from './../../../TS/Services/BreakerReport'
+declare var homePath: string;
+
 export interface BreakerReportNavbarProps {
     fromDate: string,
     toDate: string,

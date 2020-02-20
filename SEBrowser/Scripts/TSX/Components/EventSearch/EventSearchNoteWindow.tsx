@@ -21,14 +21,9 @@
 //
 //******************************************************************************************************
 
-import * as React from 'react';
-import * as moment from 'moment';
-import OpenSEEService from './../../../../TS/Services/OpenSEE';
+import React from 'react';
 
 function EventSearchNoteWindow(props: { eventId: number }): JSX.Element {
-
-    var openSEEService = new OpenSEEService();
-
     const [tableRows, setTableRows] = React.useState<Array<JSX.Element>>([]);
     const [note, setNote] = React.useState<string>('');
     const [count, setCount] = React.useState<number>(0);
@@ -38,7 +33,7 @@ function EventSearchNoteWindow(props: { eventId: number }): JSX.Element {
     }, [props.eventId]);
 
     function createTableRows() {
-        openSEEService.getNotes(props.eventId).done(data => {
+        getNotes(props.eventId).done(data => {
             var rows = data.map(d => <tr key={d.ID}><td>{d.Note}</td><td>{moment(d.Timestamp).format("MM/DD/YYYY HH:mm")}</td><td>{d.UserAccount}</td><td>
                 <button className="btn btn-sm" onClick={(e) => handleEdit(d)}><span><i className="fa fa-pencil"></i></span></button>
                 <button className="btn btn-sm" onClick={(e) => handleDelete(d)}><span><i className="fa fa-times"></i></span></button>
@@ -49,20 +44,69 @@ function EventSearchNoteWindow(props: { eventId: number }): JSX.Element {
         });
     }
 
+    function getNotes(eventid: number): JQuery.jqXHR {
+        if (this.noteHandle !== undefined)
+            this.noteHandle.abort();
+
+        this.noteHandle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenSEE/GetNotes?eventId=${eventid}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: false,
+            async: true
+        });
+
+        return this.noteHandle;
+
+    }
+
+
+    function addNote(note): JQuery.jqXHR{
+        return $.ajax({
+            type: "POST",
+            url: `${homePath}api/OpenSEE/AddNote`,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(note),
+            cache: false,
+            async: true,
+            processData: false,
+            error: function (jqXhr, textStatus, errorThrown) {
+                console.log(errorThrown);
+            }
+        });
+    }
+
+    function deleteNote(note): any {
+        return $.ajax({
+            type: "DELETE",
+            url: `${homePath}api/OpenSEE/DeleteNote`,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(note),
+            cache: false,
+            async: true,
+            processData: false,
+            error: function (jqXhr, textStatus, errorThrown) {
+                console.log(errorThrown);
+            }
+        });
+    }
+
+
     function handleAdd() {
-        openSEEService.addNote({ ID: 0, EventID: props.eventId, Note: note }).done(e => {
+        addNote({ ID: 0, EventID: props.eventId, Note: note }).done(e => {
             setNote('');
             createTableRows();
         });
     }
 
     function handleDelete(d) {
-        openSEEService.deleteNote(d).done(() => createTableRows());
+        deleteNote(d).done(() => createTableRows());
     }
 
     function handleEdit(d) {
         setNote(d.Note);
-        openSEEService.deleteNote(d).done(() => createTableRows());
+        deleteNote(d).done(() => createTableRows());
     }
 
     return (

@@ -22,10 +22,14 @@
 //       Added Filter for Events with TCE.
 //
 //******************************************************************************************************
-import * as React from 'react';
-import { clone } from 'lodash';
+import React from 'react';
 
 export interface EventSearchNavbarProps {
+    line: boolean,
+    bus: boolean,
+    breaker: boolean,
+    capacitorBank: boolean,
+    transformer: boolean
     dfr: boolean,
     pqMeter: boolean,
     g200: boolean,
@@ -214,6 +218,42 @@ export default class EventSearchNavbar extends React.Component<EventSearchNavbar
                                 </form>
                             </fieldset>
                         </li>
+                        <li className="nav-item" style={{ width: '25%', paddingRight: 10 }}>
+                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                                <legend className="w-auto" style={{ fontSize: 'large' }}>Asset Types:</legend>
+                                <form>
+                                    <ul style={{ listStyleType: 'none', padding: 0, width: '100%', position: 'relative', float: 'left' }}>
+                                        <li><label><input type="checkbox" onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                            var value = e.target.checked;
+                                            this.props.stateSetter({
+                                                line: value,
+                                                bus: value,
+                                                breaker: value,
+                                                transformer: value,
+                                                capacitorBank: value
+                                            });
+                                        }} defaultChecked={true} />  Select All </label></li>
+                                        <li><label><input type="checkbox" onChange={() => {
+                                            this.props.stateSetter({ line: !this.props.line });
+                                        }} checked={this.props.line} />  Lines </label></li>
+                                        <li><label><input type="checkbox" onChange={() => {
+                                            this.props.stateSetter({ bus: !this.props.bus });
+                                        }} checked={this.props.bus} />  Buses</label></li>
+                                        <li><label><input type="checkbox" onChange={() => {
+                                            this.props.stateSetter({ breaker: !this.props.breaker });
+                                        }} checked={this.props.breaker} />  Breakers</label></li>
+                                        <li><label><input type="checkbox" onChange={() => {
+                                            this.props.stateSetter({ transformer: !this.props.transformer });
+                                        }} checked={this.props.transformer} /> Transformers </label></li>
+                                        <li><label><input type="checkbox" onChange={() => {
+                                            this.props.stateSetter({ capacitorBank: !this.props.capacitorBank });
+                                        }} checked={this.props.capacitorBank} /> Cap Banks </label></li>
+
+                                    </ul>
+                                </form>
+                            </fieldset>
+                        </li>
+
                         <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>Voltage Class:</legend>

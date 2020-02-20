@@ -26,7 +26,8 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <WebGreaseLibPath>..\packages\WebGrease.1.5.2\lib</WebGreaseLibPath>
-    <TypeScriptToolsVersion>3.7</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -220,9 +221,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\bootstrap4-datetimepicker.css" />
     <Content Include="Data\SEBrowser.sql" />
     <Content Include="Global.asax" />
+    <Content Include="Images\SE Browser - Spelled out - 111 high.png" />
     <Content Include="Readme.txt" />
+    <Content Include="Scripts\Lib\bootstrap4-datetimepicker.min.js" />
     <Content Include="Shared\Content\Images\ui-icons_444444_256x240.png" />
     <Content Include="Shared\Content\Images\ui-icons_555555_256x240.png" />
     <Content Include="Shared\Content\Images\ui-icons_777620_256x240.png" />
@@ -239,6 +243,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\OpenXDAController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -259,35 +264,36 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Scripts\Dist\" />
-    <Folder Include="Scripts\Lib\" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Scripts\TSX\Components\About.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\BreakerReport\BreakerReport.d.ts" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\BreakerReport\BreakerReport.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\BreakerReport\BreakerReportNavbar.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearch.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchAssetFaultSegments.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchAssetHistory.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchAssetVoltageDisturbances.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchCorrelatedSags.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchEsriMap.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchList.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchListedEventsNoteWindow.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchNavbar.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchNoteWindow.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewPane.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchRelayPerformance.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\MeterActivity.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\PQDashboardNavbar.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\RelayReport\RelayPerformanceTrend.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\RelayReport\RelayReport.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\RelayReport\RelayReportNavBar.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\RelayReport\RelayReportPane.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\Table.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\global.d.ts" />
-    <TypeScriptCompile Include="Scripts\TSX\SEBrowser.tsx" />
-    <TypeScriptCompile Include="Scripts\TS\Services\SEBrowser.ts" />
+    <Content Include="Scripts\TSX\Components\About.tsx" />
+    <Content Include="Scripts\TSX\Components\BreakerReport\BreakerReport.d.ts" />
+    <Content Include="Scripts\TSX\Components\BreakerReport\BreakerReport.tsx" />
+    <Content Include="Scripts\TSX\Components\BreakerReport\BreakerReportNavbar.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearch.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchAssetFaultSegments.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchAssetHistory.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchAssetVoltageDisturbances.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchCorrelatedSags.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchEsriMap.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchList.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchListedEventsNoteWindow.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchNavbar.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchNoteWindow.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewPane.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchRelayPerformance.tsx" />
+    <Content Include="Scripts\TSX\Components\MeterActivity.tsx" />
+    <Content Include="Scripts\TSX\Components\SEDashboardNavbar.tsx" />
+    <Content Include="Scripts\TSX\Components\RelayReport\RelayPerformanceTrend.tsx" />
+    <Content Include="Scripts\TSX\Components\RelayReport\RelayReport.tsx" />
+    <Content Include="Scripts\TSX\Components\RelayReport\RelayReportNavBar.tsx" />
+    <Content Include="Scripts\TSX\Components\RelayReport\RelayReportPane.tsx" />
+    <Content Include="Scripts\TSX\Components\Table.tsx" />
+    <Content Include="Scripts\TSX\global.d.ts" />
+    <Content Include="Scripts\TSX\SEBrowser.tsx" />
+    <Content Include="Scripts\TS\Services\BreakerReport.ts" />
+    <Content Include="Scripts\TS\Services\OpenSEE.ts" />
+    <Content Include="Scripts\TS\Services\SEBrowser.ts" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />

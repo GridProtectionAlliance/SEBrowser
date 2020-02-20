@@ -23,30 +23,27 @@
 //
 //******************************************************************************************************
 
-import * as React from 'react';
-import * as moment from 'moment';
+import React from 'react';
 import { clone, isEqual } from 'lodash';
 
 import createHistory from "history/createBrowserHistory"
-import * as queryString from "query-string";
 import { History } from 'history';
 import EventSearchList from './EventSearchList';
 import EventSearchNavbar, { EventSearchNavbarProps } from './EventSearchNavbar';
 import EventPreviewPane from './EventSearchPreviewPane';
 import EventSearchListedEventsNoteWindow from './EventSearchListedEventsNoteWindow';
+import { OpenXDA } from '../../global';
+import queryString from 'querystring';
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
 
-export interface OpenXDAEvent {
-    EventID: number, FileStartTime: string, AssetName: string, AssetType: string, VoltageClass: string, EventType: string, BreakerOperation: boolean
-}
 interface IProps { }
 interface IState extends EventSearchNavbarProps {
     eventid: number,
     searchText: string,
-    searchList: Array<OpenXDAEvent>
+    searchList: Array<OpenXDA.Event>
 }
 
 export default class EventSearch extends React.Component<IProps, IState>{
@@ -57,9 +54,14 @@ export default class EventSearch extends React.Component<IProps, IState>{
         super(props, context);
 
         this.history = createHistory();
-        var query = queryString.parse(this.history['location'].search);
+        var query = queryString.parse(this.history['location'].search, "&", "=", {decodeURIComponent: queryString.unescape});
 
         this.state = {
+            line: (query['line'] != undefined ? query['line'] == 'true' : true),
+            bus: (query['bus'] != undefined ? query['bus'] == 'true' : true),
+            breaker: (query['breaker'] != undefined ? query['breaker'] == 'true' : true),
+            transformer: (query['transformer'] != undefined ? query['transformer'] == 'true' : true),
+            capacitorBank: (query['capacitorBank'] != undefined ? query['capacitorBank'] == 'true' : true),
             dfr: (query['dfr'] != undefined ? query['dfr'] == 'true' : true),
             pqMeter: (query['pqMeter'] != undefined ? query['pqMeter'] == 'true': true),
             g200: (query['g200'] != undefined ? query['g200'] == 'true' : true),
@@ -77,12 +79,12 @@ export default class EventSearch extends React.Component<IProps, IState>{
             others: (query['others'] != undefined ? query['others'] == 'true' : true),
             date: (query['date'] != undefined ? query['date'] : moment().format(momentDateFormat)),
             time: (query['time'] != undefined ? query['time'] : moment().format(momentTimeFormat)),
-            windowSize: (query['windowSize'] != undefined ? query['windowSize'] : 10),
-            timeWindowUnits: (query['timeWindowUnits'] != undefined ? query['timeWindowUnits'] : 2),
-            eventid: (query['eventid'] != undefined ? query['eventid'] : -1),
-            searchText: (query['searchText'] != undefined ? query['searchText'] : ''),
-            make: (query['make'] != undefined ? query['make'] : 'All'),
-            model: (query['model'] != undefined ? query['model'] : 'All'),
+            windowSize: (query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10),
+            timeWindowUnits: (query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2),
+            eventid: (query['eventid'] != undefined ? parseInt(query['eventid'].toString()) : -1),
+            searchText: (query['searchText'] != undefined ? query['searchText'].toString() : ''),
+            make: (query['make'] != undefined ? query['make'].toString() : 'All'),
+            model: (query['model'] != undefined ? query['model'].toString() : 'All'),
             searchList: [],
             stateSetter: this.stateSetter.bind(this)
         };
@@ -123,7 +125,7 @@ export default class EventSearch extends React.Component<IProps, IState>{
     stateSetter(obj: any): void {
         function toQueryString(state: IState) {
             var dataTypes = ["boolean", "number", "string"]
-            var stateObject: IState = clone(state);
+            var stateObject: any = clone(state);
             stateObject.eventid = state.eventid;
             stateObject.searchText = state.searchText;
             delete stateObject.searchList;
@@ -131,7 +133,7 @@ export default class EventSearch extends React.Component<IProps, IState>{
                 if (dataTypes.indexOf(typeof (stateObject[key])) < 0)
                     delete stateObject[key];
             })
-            return queryString.stringify(stateObject, { encode: false });
+            return queryString.stringify(stateObject, "&", "=", {encodeURIComponent: queryString.escape});
         }
 
         var oldQueryString = toQueryString(this.state);

@@ -21,22 +21,22 @@
 //
 //******************************************************************************************************
 
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 import Table from './../Table';
-import PQDashboardService from './../../../../TS/Services/PQDashboard';
+import SEBrowserService from './../../../TS/Services/SEBrowser';
 import { orderBy, filter, clone, isEqual } from 'lodash';
-import * as moment from 'moment';
 import { EventSearchNavbarProps } from './EventSearchNavbar';
+import { OpenXDA } from 'global';
 
 interface IProps { eventid: number, searchText: string, stateSetter(obj): void, searchBarProps: EventSearchNavbarProps }
 export default class EventSearchList extends React.Component<IProps, { sortField: string, ascending: boolean, data: Array<any> }> {
-    pqDashboardService: PQDashboardService;
+    seBrowserService: SEBrowserService;
     constructor(props, context) {
         super(props, context);
 
-        this.pqDashboardService = new PQDashboardService();
+        this.seBrowserService = new SEBrowserService();
 
         this.state = {
             sortField: "FileStartTime",
@@ -123,7 +123,9 @@ export default class EventSearchList extends React.Component<IProps, { sortField
     }
 
     getData(props) {
-        this.pqDashboardService.getEventSearchData(props.searchBarProps).done(results => {
+        this.seBrowserService.getEventSearchData(props.searchBarProps).done(results => {
+            if (results.length > 100) alert("The query you submitted was too large and only the first 100 records were return.  Please refine your search if necessary.")
+
             var filtered = filter(results, obj => {
                 return obj.AssetName.toLowerCase().indexOf(props.searchText) >= 0 ||
                     obj.AssetType.toLowerCase().indexOf(props.searchText) >= 0 ||
@@ -144,15 +146,16 @@ export default class EventSearchList extends React.Component<IProps, { sortField
 
     render() {
         return (
-            <div style={{width: '100%', maxHeight: window.innerHeight - 314, overflowY:"scroll"}}>
-            <Table
+            <div style={{width: '100%', maxHeight: window.innerHeight - 314, overflowY: "hidden"}}>
+            <Table<OpenXDA.Event>
                 cols={[
-                    { key: 'FileStartTime', label: 'Time', headerStyle: { width: 'calc(20%)' }, colStyle: { width: 'calc(20%)' }, content: (item, key, style) => <span>{moment(item.FileStartTime).format('MM/DD/YYYY')}<br />{moment(item.FileStartTime).format('HH:mm:ss.SSSSSSS')}</span> },
-                    { key: 'AssetName', label: 'Asset', headerStyle: { width: '20%' }, colStyle: { width: '20%' } },
-                    { key: 'AssetType', label: 'Asset Tp', headerStyle: { width: '15%' }, colStyle: { width: '15%' } },
-                    { key: 'VoltageClass', label: 'kV', headerStyle: { width: '15%' }, colStyle: { width: '15%' }, content: (item, key, style) => item[key].toString().split('.')[1] != undefined && item[key].toString().split('.')[1].length > 3 ? item[key].toFixed(3) : item[key] },
-                    { key: 'EventType', label: 'Evt Cl', headerStyle: { width: '15%' }, colStyle: { width: '15%' } },
-                    { key: 'BreakerOperation', label: 'Brkr Op', headerStyle: { width: '15%' }, colStyle: { width: '15%' }, content: (item, key, style) => <span><i className={(item.BreakerOperation > 0 ? "fa fa-check" : '')}></i></span> },
+                    { key: "FileStartTime", label: 'Time', headerStyle: { width: 'calc(20%)' }, rowStyle: { width: 'calc(20%)' }, content: (item, key) => <span>{moment(item.FileStartTime).format('MM/DD/YYYY')}<br />{moment(item.FileStartTime).format('HH:mm:ss.SSSSSSS')}</span> },
+                    { key: "AssetName", label: 'Asset', headerStyle: { width: '20%' }, rowStyle: { width: '20%' } },
+                    { key: "AssetType", label: 'Asset Tp', headerStyle: { width: '15%' }, rowStyle: { width: '15%' } },
+                    { key: "VoltageClass", label: 'kV', headerStyle: { width: '15%' }, rowStyle: { width: '15%' }, content: (item, key, style) => item[key].toString().split('.')[1] != undefined && item[key].toString().split('.')[1].length > 3 ? (item[key] as number).toFixed(3) : item[key] },
+                    { key: "EventType", label: 'Evt Cl', headerStyle: { width: '15%' }, rowStyle: { width: '15%' } },
+                    { key: "BreakerOperation", label: 'Brkr Op', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' }, content: (item, key, style) => <span><i className={(item.BreakerOperation == true ? "fa fa-check" : '')}></i></span> },
+                    { key: null, label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
 
                 ]}
                 tableClass="table table-hover"
@@ -170,8 +173,8 @@ export default class EventSearchList extends React.Component<IProps, { sortField
                     }
                 }}
                 onClick={(item) => this.props.stateSetter({ eventid: item.row.EventID })}
-                //theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                //tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 314 }}
+                theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 314 }}
                 rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)'}}
                 selected={(item) => {
                     if (item.EventID == this.props.eventid) return true;
