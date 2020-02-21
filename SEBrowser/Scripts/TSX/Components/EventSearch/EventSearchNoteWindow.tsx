@@ -29,11 +29,12 @@ function EventSearchNoteWindow(props: { eventId: number }): JSX.Element {
     const [count, setCount] = React.useState<number>(0);
 
     React.useEffect(() => {
-        createTableRows();
+        return createTableRows();
     }, [props.eventId]);
 
     function createTableRows() {
-        getNotes(props.eventId).done(data => {
+        let handle = getNotes(props.eventId);
+        handle.done(data => {
             var rows = data.map(d => <tr key={d.ID}><td>{d.Note}</td><td>{moment(d.Timestamp).format("MM/DD/YYYY HH:mm")}</td><td>{d.UserAccount}</td><td>
                 <button className="btn btn-sm" onClick={(e) => handleEdit(d)}><span><i className="fa fa-pencil"></i></span></button>
                 <button className="btn btn-sm" onClick={(e) => handleDelete(d)}><span><i className="fa fa-times"></i></span></button>
@@ -42,30 +43,28 @@ function EventSearchNoteWindow(props: { eventId: number }): JSX.Element {
             setTableRows(rows);
             setCount(rows.length);
         });
+
+        return function () {
+            if (handle.abort != undefined) handle.abort();
+        }
     }
 
     function getNotes(eventid: number): JQuery.jqXHR {
-        if (this.noteHandle !== undefined)
-            this.noteHandle.abort();
-
-        this.noteHandle = $.ajax({
+        return $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenSEE/GetNotes?eventId=${eventid}`,
+            url: `${homePath}api/OpenXDA/GetNotes?eventId=${eventid}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,
             async: true
         });
-
-        return this.noteHandle;
-
     }
 
 
     function addNote(note): JQuery.jqXHR{
         return $.ajax({
             type: "POST",
-            url: `${homePath}api/OpenSEE/AddNote`,
+            url: `${homePath}api/OpenXDA/AddNote`,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(note),
             cache: false,
@@ -80,7 +79,7 @@ function EventSearchNoteWindow(props: { eventId: number }): JSX.Element {
     function deleteNote(note): any {
         return $.ajax({
             type: "DELETE",
-            url: `${homePath}api/OpenSEE/DeleteNote`,
+            url: `${homePath}api/OpenXDA/DeleteNote`,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(note),
             cache: false,

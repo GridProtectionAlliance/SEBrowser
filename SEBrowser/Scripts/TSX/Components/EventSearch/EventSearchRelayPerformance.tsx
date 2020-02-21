@@ -24,7 +24,7 @@
 import React from 'react';
 import OpenSEEService from '../../../TS/Services/OpenSEE';
 
-export default class EventSearchRrelayPerformance extends React.Component<{ eventId: number }, {tableRows: Array<JSX.Element> }>{
+export default class EventSearchRrelayPerformance extends React.Component<{ EventID: number, IsBreaker: boolean }, {tableRows: Array<JSX.Element> }>{
     openSEEService: OpenSEEService;
     constructor(props, context) {
         super(props, context);
@@ -37,26 +37,26 @@ export default class EventSearchRrelayPerformance extends React.Component<{ even
     }
 
     componentDidMount() {
-        if (this.props.eventId >= 0)
-            this.createTableRows(this.props.eventId);
+        if (this.props.IsBreaker && this.props.EventID >= 0)
+            this.createTableRows(this.props.EventID);
     }
     componentWillUnmount() {
     }
     componentWillReceiveProps(nextProps) {
-        if (nextProps.eventId >= 0)
+        if (this.props.IsBreaker && nextProps.eventId >= 0)
             this.createTableRows(nextProps.eventId);
     }
 
 
     createTableRows(eventID: number) {
-        this.openSEEService.getRelayPerformance(this.props.eventId).done(data => {
+        this.openSEEService.getRelayPerformance(this.props.EventID).done(data => {
             var rows = [];
 
             for (var index = 0; index < data.length; ++index) {
                 var row = data[index];
                 var background = 'default';
 
-                if (row.EventID == this.props.eventId)
+                if (row.EventID == this.props.EventID)
                     background = 'lightyellow';
 
                 rows.push(Row(row, background));
@@ -67,6 +67,7 @@ export default class EventSearchRrelayPerformance extends React.Component<{ even
     }
 
     render() {
+        if (!this.props.IsBreaker) return null;
         return (
             <div className="card">
                 <div className="card-header">Breaker Performance:</div>

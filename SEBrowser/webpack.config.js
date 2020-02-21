@@ -41,8 +41,9 @@ module.exports = {
         jquery: 'jQuery',
         react: 'React',
         'react-dom': 'ReactDOM',
-        moment: 'moment'
-
+        moment: 'moment',
+        d3: 'd3',
+        'react-router-dom': 'ReactRouterDOM',
     },
     plugins: [
         new webpack.ProvidePlugin({

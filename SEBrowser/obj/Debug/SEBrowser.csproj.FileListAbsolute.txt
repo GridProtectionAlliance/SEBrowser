@@ -149,6 +149,8 @@ C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\System.Xml.XPath.XDocument
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\AjaxMin.dll
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\Antlr3.Runtime.dll
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\ExpressionEvaluator.dll
+C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\FaultAlgorithms.dll
+C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\FaultData.dll
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\GSF.Communication.dll
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\GSF.Core.dll
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\GSF.Security.dll
@@ -175,6 +177,7 @@ C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\Microsoft.Owin.Hosting.dll
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\Microsoft.Owin.Security.dll
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\Microsoft.Web.Infrastructure.dll
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\Newtonsoft.Json.dll
+C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\openXDA.Model.dll
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\Owin.dll
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\RazorEngine.dll
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\System.Buffers.dll
@@ -242,3 +245,5 @@ C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\obj\Debug\SEBrowser.csproj.Cop
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\obj\Debug\SEBrowser.dll
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\obj\Debug\SEBrowser.pdb
 C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\obj\Debug\SEBrowser.csprojAssemblyReference.cache
+C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\GSF.PQDIF.dll
+C:\Users\bernest\Source\Repos\SEBrowser\SEBrowser\bin\Ionic.Zlib.dll

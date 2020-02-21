@@ -50,7 +50,7 @@ export default class EventSearchHistory extends React.Component<{ eventId: numbe
 
         this.correlatedSagsHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenSEE/GetTimeCorrelatedSags?eventId=${eventid}`,
+            url: `${homePath}api/OpenXDA/GetTimeCorrelatedSags?eventId=${eventid}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,

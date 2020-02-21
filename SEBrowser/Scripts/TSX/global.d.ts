@@ -43,6 +43,8 @@ export namespace SEBrowser {
 }
 
 export namespace OpenXDA {
-    interface Event { EventID: number, FileStartTime: string, AssetName: string, AssetType: string, VoltageClass: string, EventType: string, BreakerOperation: boolean }
+    interface Event { EventID: number, FileStartTime: string, AssetName: string, AssetType: AssetTypeName, VoltageClass: string, EventType: string, BreakerOperation: boolean }
+
+    type AssetTypeName = 'Line' | 'Breaker' | 'Transformer' | 'CapacitorBank' | 'Bus';
 }
 

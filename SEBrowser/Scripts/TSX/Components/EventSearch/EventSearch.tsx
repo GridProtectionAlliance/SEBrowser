@@ -113,8 +113,9 @@ export default class EventSearch extends React.Component<IProps, IState>{
                         </div>
                         <EventSearchList eventid={this.state.eventid} searchText={this.state.searchText} searchBarProps={this.state} stateSetter={this.stateSetter.bind(this)} />
                     </div>
-                    <div style={{ width: '50%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
-                        <EventPreviewPane eventid={this.state.eventid} />
+                    <div style={{ width: '50%', height: '100%', maxHeight: 'calc(100% - 100px)', position: 'relative', float: 'right', overflowY: 'scroll' }}>{
+                        this.state.searchList.length > 0 && this.state.searchList.find(x => x.EventID == this.state.eventid) != undefined ? <EventPreviewPane eventid={this.state.eventid} AssetType={this.state.searchList.find(x => x.EventID == this.state.eventid).AssetType} />: null
+                    }
                     </div>
 
                 </div>

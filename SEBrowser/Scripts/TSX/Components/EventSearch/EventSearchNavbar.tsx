@@ -93,7 +93,7 @@ export default class EventSearchNavbar extends React.Component<EventSearchNavbar
     GetMakes() {
         $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/GetEventSearchMeterMakes`,
+            url: `${homePath}api/OpenXDA/GetEventSearchMeterMakes`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -104,7 +104,7 @@ export default class EventSearchNavbar extends React.Component<EventSearchNavbar
     GetModels(make: string): void {
         $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/GetEventSearchMeterModels/${make}`,
+            url: `${homePath}api/OpenXDA/GetEventSearchMeterModels/${make}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -122,36 +122,27 @@ export default class EventSearchNavbar extends React.Component<EventSearchNavbar
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>Time Window:</legend>
                                 <form>
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }} >Date: </label>
                                     <div className="form-group" style={{ height: 30 }}>
-                                        <label style={{ width: 200, position: 'relative', float: "left" }} >Date: </label>
-                                        <div className='input-group' style={{ width: 'calc(50% - 100px)', position: 'relative', float: "right" }}>
+                                        <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
                                             <input id="timePicker" className='form-control' value={this.props.time} onChange={(e) => {
                                                 this.props.stateSetter({ time: (e.target as any).value });
                                             }} />
-                                            <div className="input-group-append">
-                                                <span className="input-group-text"> <i className="fa fa-clock-o"></i></span>
-                                            </div>
                                         </div>
 
-                                        <div className='input-group date' style={{ width: 'calc(50% - 100px)', position: 'relative', float: "right" }}>
+                                        <div className='input-group date' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
                                             <input className='form-control' id='datePicker' value={this.props.date} onChange={(e) => {
                                                 this.props.stateSetter({ date: (e.target as any).value });
                                             }} />
-                                            <div className="input-group-append">
-                                                <span className="input-group-text"> <i className="fa fa-calendar"></i></span>
-                                            </div>
                                         </div>
 
                                     </div>
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
                                     <div className="form-group" style={{ height: 30 }}>
-                                        <label style={{ width: 200, position: 'relative', float: "left" }}>Time Window Size(+/-): </label>
-                                        <input style={{ width: 'calc(100% - 200px)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} value={this.props.windowSize} onChange={(e) => {
+                                        <input style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} value={this.props.windowSize} onChange={(e) => {
                                             this.props.stateSetter({ windowSize: (e.target as any).value });
                                         }} type="number" />
-                                    </div>
-                                    <div className="form-group" style={{ height: 30 }}>
-                                        <label style={{ width: 200, position: 'relative', float: "left" }}>Time Window Units: </label>
-                                        <select style={{ width: 'calc(100% - 200px)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} value={this.props.timeWindowUnits} onChange={(e) => {
+                                        <select style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} value={this.props.timeWindowUnits} onChange={(e) => {
                                             this.props.stateSetter({ timeWindowUnits: (e.target as any).value });
                                         }} >
                                             <option value="7">Year</option>
@@ -163,8 +154,8 @@ export default class EventSearchNavbar extends React.Component<EventSearchNavbar
                                             <option value="1">Second</option>
                                             <option value="0">Millisecond</option>
                                         </select>
-                                    </div>
 
+                                    </div>
                                 </form>
                             </fieldset>
                         </li>
@@ -310,8 +301,8 @@ export default class EventSearchNavbar extends React.Component<EventSearchNavbar
                                         }} checked={this.props.pqMeter} />  PQMeter</label></li>
                                     </ul>
                                     <div className="form-group" style={{ height: 30 }}>
-                                        <label style={{ width: 200, position: 'relative', float: "left" }}>Make: </label>
-                                        <select style={{ width: 'calc(100% - 200px)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} value={this.props.make} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                        <label style={{ width: 75, position: 'relative', float: "left" }}>Make: </label>
+                                        <select style={{ width: 'calc(100% - 75px)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} value={this.props.make} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                                             var make = e.target.value;
                                             this.props.stateSetter({ make: make, model: 'All' });
                                         }} >
@@ -319,8 +310,8 @@ export default class EventSearchNavbar extends React.Component<EventSearchNavbar
                                         </select>
                                     </div>
                                     <div className="form-group" style={{ height: 30 }}>
-                                        <label style={{ width: 200, position: 'relative', float: "left" }}>Model: </label>
-                                        <select style={{ width: 'calc(100% - 200px)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} value={this.props.model} disabled={this.props.make == 'All'} onChange={(e) => {
+                                        <label style={{ width: 75, position: 'relative', float: "left" }}>Model: </label>
+                                        <select style={{ width: 'calc(100% - 75px)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} value={this.props.model} disabled={this.props.make == 'All'} onChange={(e) => {
                                             this.props.stateSetter({ model: (e.target as any).value });
                                         }} >
                                             {this.state.modelsRows}

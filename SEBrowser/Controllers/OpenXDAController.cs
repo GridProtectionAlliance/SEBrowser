@@ -1,12 +1,16 @@
-﻿using GSF;
+﻿using FaultData.DataAnalysis;
+using GSF;
 using GSF.Data;
+using GSF.Data.Model;
 using GSF.Web;
+using openXDA.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Caching;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 
@@ -264,7 +268,7 @@ namespace SEBrowser.Controllers
                     FROM
 	                    Event JOIN
 	                    EventType ON Event.EventTypeID = EventType.ID JOIN
-	                    Event as OrgEvt ON Event.MeterID = OrgEvt.MeterID AND Event.LineID = OrgEvt.LineID AND Event.ID != OrgEvt.ID
+	                    Event as OrgEvt ON Event.MeterID = OrgEvt.MeterID AND Event.AssetID = OrgEvt.AssetID AND Event.ID != OrgEvt.ID
                     WHERE 
 	                    OrgEvt.ID = {0}"
                     , eventID);
@@ -301,6 +305,388 @@ namespace SEBrowser.Controllers
 
         }
 
+        [Route("GetTimeCorrelatedSags"), HttpGet]
+        public DataTable GetTimeCorrelatedSags()
+        {
+            const string TimeCorrelatedSagsSQL =
+                "SELECT " +
+                "    Event.ID AS EventID, " +
+                "    EventType.Name AS EventType, " +
+                "    FORMAT(Sag.PerUnitMagnitude * 100.0, '0.#') AS SagMagnitudePercent, " +
+                "    FORMAT(Sag.DurationSeconds * 1000.0, '0') AS SagDurationMilliseconds, " +
+                "    FORMAT(Sag.DurationCycles, '0.##') AS SagDurationCycles, " +
+                "    Event.StartTime, " +
+                "    Meter.Name AS MeterName, " +
+                "    Asset.AssetName " +
+                "FROM " +
+                "    Event JOIN " +
+                "    EventType ON Event.EventTypeID = EventType.ID JOIN " +
+                "    Meter ON Event.MeterID = Meter.ID JOIN " +
+                "    MeterAsset ON " +
+                "        Event.MeterID = MeterAsset.MeterID AND " +
+                "        Event.AssetID = MeterAsset.AssetID JOIN" +
+                "   Asset ON Asset.ID = MeterAsset.AssetID  CROSS APPLY " +
+                "    ( " +
+                "        SELECT TOP 1 " +
+                "            Disturbance.PerUnitMagnitude, " +
+                "            Disturbance.DurationSeconds, " +
+                "            Disturbance.DurationCycles " +
+                "        FROM " +
+                "            Disturbance JOIN " +
+                "            EventType DisturbanceType ON Disturbance.EventTypeID = DisturbanceType.ID JOIN " +
+                "            Phase ON " +
+                "                Disturbance.PhaseID = Phase.ID AND " +
+                "                Phase.Name = 'Worst' " +
+                "        WHERE " +
+                "            Disturbance.EventID = Event.ID AND " +
+                "            DisturbanceType.Name = 'Sag' AND " +
+                "            Disturbance.StartTime <= {1} AND " +
+                "            Disturbance.EndTime >= {0} " +
+                "        ORDER BY PerUnitMagnitude DESC " +
+                "    ) Sag " +
+                "ORDER BY " +
+                "    Sag.PerUnitMagnitude, " +
+                "    Event.StartTime";
+
+        Dictionary<string, string> query = Request.QueryParameters();
+            int eventID = int.Parse(query["eventId"]);
+
+            if (eventID <= 0) return new DataTable();
+            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            {
+                double timeTolerance = connection.ExecuteScalar<double>("SELECT Value FROM Setting WHERE Name = 'TimeTolerance'");
+                DateTime startTime = connection.ExecuteScalar<DateTime>("SELECT StartTime FROM Event WHERE ID = {0}", eventID);
+                DateTime endTime = connection.ExecuteScalar<DateTime>("SELECT EndTime FROM Event WHERE ID = {0}", eventID);
+                DateTime adjustedStartTime = startTime.AddSeconds(-timeTolerance);
+                DateTime adjustedEndTime = endTime.AddSeconds(timeTolerance);
+                DataTable dataTable = connection.RetrieveData(TimeCorrelatedSagsSQL, adjustedStartTime, adjustedEndTime);
+                return dataTable;
+            }
+        }
+
+        [Route("GetNotes"), HttpGet]
+        public DataTable GetNotes()
+        {
+            Dictionary<string, string> query = Request.QueryParameters();
+            int eventID = int.Parse(query["eventId"]);
+            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            {
+                const string SQL = "SELECT * FROM EventNote WHERE EventID = {0}";
+
+                DataTable dataTable = connection.RetrieveData(SQL, eventID);
+                return dataTable;
+            }
+
+
+        }
+
+        [Route("GetRelayPerformance"), HttpGet]
+        public DataTable GetRelayPerformance()
+        {
+            Dictionary<string, string> query = Request.QueryParameters();
+            int eventID = int.Parse(query["eventId"]);
+            if (eventID <= 0) return new DataTable();
+            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            {
+                Event evt = new TableOperations<Event>(connection).QueryRecordWhere("ID = {0}", eventID);
+                return RelayHistoryTable(evt.AssetID, -1);
+            }
+
+        }
+
+        private DataTable RelayHistoryTable(int relayID, int eventID)
+        {
+            DataTable dataTable;
+
+            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            {
+                if (eventID > 0) { dataTable = connection.RetrieveData("SELECT * FROM BreakerHistory WHERE BreakerID = {0} AND EventID = {1}", relayID, eventID); }
+                else { dataTable = connection.RetrieveData("SELECT * FROM BreakerHistory WHERE BreakerID = {0}", relayID); }
+            }
+            return dataTable;
+        }
+
+
+
+        [Route("GetData"), HttpGet]
+        public IHttpActionResult GetData()
+        {
+            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            {
+                Dictionary<string, string> query = Request.QueryParameters();
+                DateTime epoch = new DateTime(1970, 1, 1);
+
+                int eventId = int.Parse(query["eventId"]);
+                string type = query["type"];
+                string dataType = query["dataType"];
+                int pixels = (int)double.Parse(query["pixels"]);
+
+                Event evt = new TableOperations<Event>(connection).QueryRecordWhere("ID = {0}", eventId);
+                Meter meter = new TableOperations<Meter>(connection).QueryRecordWhere("ID = {0}", evt.MeterID);
+                meter.ConnectionFactory = () => new AdoDataConnection(SettingsCategory);
+
+                int calcCycle = connection.ExecuteScalar<int?>("SELECT CalculationCycle FROM FaultSummary WHERE EventID = {0} AND IsSelectedAlgorithm = 1", evt.ID) ?? -1;
+                double systemFrequency = connection.ExecuteScalar<double?>("SELECT Value FROM Setting WHERE Name = 'SystemFrequency'") ?? 60.0;
+
+                DateTime startTime = (query.ContainsKey("startDate") ? DateTime.Parse(query["startDate"]) : evt.StartTime);
+                DateTime endTime = (query.ContainsKey("endDate") ? DateTime.Parse(query["endDate"]) : evt.EndTime);
+                if (dataType == "Time")
+                {
+                    DataGroup dataGroup;
+                    dataGroup = QueryDataGroup(eventId, meter);
+                    Dictionary<string, IEnumerable<double[]>> returnData = new Dictionary<string, IEnumerable<double[]>>();
+                    bool hasVoltLN = dataGroup.DataSeries.Select(x => x.SeriesInfo.Channel.Phase.Name).Where(x => x.Contains("N")).Any();
+                    foreach (var series in dataGroup.DataSeries)
+                    {
+                        List<double[]> data = series.DataPoints.Select(dp => new double[2] { (dp.Time - epoch).TotalMilliseconds, dp.Value }).ToList();
+                        if (type == "Voltage")
+                        {
+                            if (series.SeriesInfo.Channel.MeasurementType.Name == "Voltage" && series.SeriesInfo.Channel.MeasurementCharacteristic.Name == "Instantaneous" && series.SeriesInfo.Channel.Phase.Name.Contains("N"))
+                            {
+                                returnData.Add("V" + series.SeriesInfo.Channel.Phase.Name, Downsample(data, pixels));
+                            }
+                            else if (series.SeriesInfo.Channel.MeasurementType.Name == "Voltage" && series.SeriesInfo.Channel.MeasurementCharacteristic.Name == "Instantaneous" && !hasVoltLN)
+                            {
+                                returnData.Add("V" + series.SeriesInfo.Channel.Phase.Name, Downsample(data, pixels));
+                            }
+
+                        }
+                        else if (type == "TripCoilCurrent") {
+                            if (series.SeriesInfo.Channel.MeasurementType.Name == "TripCoilCurrent" && series.SeriesInfo.Channel.MeasurementCharacteristic.Name == "Instantaneous")
+                            {
+                                returnData.Add("TCE" + series.SeriesInfo.Channel.Phase.Name, Downsample(data, pixels));
+                            }
+                        }
+                        else
+                        {
+                            if (series.SeriesInfo.Channel.MeasurementType.Name == "Current" && series.SeriesInfo.Channel.MeasurementCharacteristic.Name == "Instantaneous")
+                            {
+                                returnData.Add("I" + series.SeriesInfo.Channel.Phase.Name, Downsample(data, pixels));
+                            }
+                        }
+
+                    }
+
+                    return Ok(returnData);
+                }
+
+                return Ok();
+                //    if (dataType == "Time")
+                //    {
+                //        DataGroup dataGroup;
+                //        if (type == "Voltage")
+                //        {
+                //            dataGroup = QueryDataGroup(eventId, meter);
+                //            tempD3 = GetD3DataLookup(dataGroup, type);
+                //        }
+
+                //        else
+                //        {
+                //            dataGroup = QueryDataGroup(eventId, meter);
+                //            temp = GetDataLookup(dataGroup, type);
+                //        }
+
+                //    }
+                //    else if (dataType == "Statistics")
+                //    {
+                //        temp = GetStatisticsLookup(evt.AssetID, type);
+                //    }
+                //    else
+                //    {
+                //        VICycleDataGroup viCycleDataGroup;
+                //        if (type == "Voltage")
+                //        {
+                //            viCycleDataGroup = QueryVICycleDataGroup(eventId, meter);
+                //            tempD3 = GetD3FrequencyDataLookup(viCycleDataGroup, type);
+                //        }
+                //        else
+                //        {
+                //            viCycleDataGroup = QueryVICycleDataGroup(eventId, meter);
+                //            temp = GetFrequencyDataLookup(viCycleDataGroup, type);
+                //        }
+                //    }
+
+                //    JsonReturn returnDict = new JsonReturn();
+
+                //    if (type == "Voltage")
+                //    {
+                //        foreach (string key in tempD3.Keys)
+                //        {
+                //            if (tempD3[key].DataPoints.Count() > 0)
+                //            {
+                //                if (dictD3.ContainsKey(key))
+                //                    dictD3[key].DataPoints = dictD3[key].DataPoints.Concat(temp[key].DataPoints).ToList();
+                //                else
+                //                    dictD3.Add(key, tempD3[key]);
+                //            }
+                //        }
+
+                //        if (dictD3.Count == 0) return null;
+
+                //        List<D3Series> returnList = new List<D3Series>();
+
+                //        foreach (string key in dictD3.Keys)
+                //        {
+                //            D3Series series = new D3Series();
+                //            series = dictD3[key];
+
+                //            series.DataPoints = Downsample(dictD3[key].DataPoints.OrderBy(x => x[0]).ToList(), pixels, new Range<DateTime>(startTime, endTime));
+
+                //            returnList.Add(series);
+                //        }
+
+                //        returnDict.Data = returnList;
+
+                //    }
+                //    else
+                //    {
+                //        foreach (string key in temp.Keys)
+                //        {
+                //            if (temp[key].DataPoints.Count() > 0)
+                //            {
+                //                if (dict.ContainsKey(key))
+                //                    dict[key].DataPoints = dict[key].DataPoints.Concat(temp[key].DataPoints).ToList();
+                //                else
+                //                    dict.Add(key, temp[key]);
+                //            }
+                //        }
+
+                //        if (dict.Count == 0) return null;
+
+
+                //        List<FlotSeries> returnList = new List<FlotSeries>();
+
+                //        if (dataType == "Statistics")
+                //        {
+                //            foreach (string key in dict.Keys)
+                //            {
+                //                FlotSeries series = new FlotSeries();
+                //                series = dict[key];
+
+                //                series.DataPoints = dict[key].DataPoints.OrderBy(x => x[0]).ToList();
+
+                //                returnList.Add(series);
+                //            }
+
+                //            returnDict.StartDate = evt.StartTime;
+                //            returnDict.EndDate = evt.EndTime;
+                //            returnDict.Data = null;
+                //            returnDict.CalculationTime = 0;
+                //            returnDict.CalculationEnd = 0;
+
+                //            return returnDict;
+
+                //        }
+
+                //        foreach (string key in dict.Keys)
+                //        {
+                //            FlotSeries series = new FlotSeries();
+                //            series = dict[key];
+
+                //            series.DataPoints = Downsample(dict[key].DataPoints.OrderBy(x => x[0]).ToList(), pixels, new Range<DateTime>(startTime, endTime));
+
+                //            returnList.Add(series);
+                //        }
+
+                //        returnDict.Data = null;
+                //    }
+
+                //    double calcTime = (calcCycle >= 0 ? dict.First().Value.DataPoints[calcCycle][0] : 0);
+
+
+                //    returnDict.StartDate = evt.StartTime;
+                //    returnDict.EndDate = evt.EndTime;
+
+                //    returnDict.CalculationTime = calcTime;
+                //    returnDict.CalculationEnd = calcTime + 1000 / systemFrequency;
+
+                //    return returnDict;
+            }
+
+        }
+
+        private DataGroup QueryDataGroup(int eventID, Meter meter)
+        {
+            string target = $"DataGroup-{eventID}";
+
+            Task<DataGroup> dataGroupTask = new Task<DataGroup>(() =>
+            {
+                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                {
+                    List<byte[]> data = ChannelData.DataFromEvent(eventID, connection);
+                    return ToDataGroup(meter, data);
+                }
+            });
+
+            if (s_memoryCache.Add(target, dataGroupTask, new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(10.0D) }))
+                dataGroupTask.Start();
+
+            dataGroupTask = (Task<DataGroup>)s_memoryCache.Get(target);
+
+            return dataGroupTask.Result;
+        }
+
+
+        private DataGroup ToDataGroup(Meter meter, List<byte[]> data)
+        {
+            DataGroup dataGroup = new DataGroup();
+            dataGroup.FromData(meter, data);
+            VIDataGroup vIDataGroup = new VIDataGroup(dataGroup);
+            return vIDataGroup.ToDataGroup();
+        }
+
+        private List<double[]> Downsample(List<double[]> series, int maxSampleCount)
+        {
+            List<double[]> data = new List<double[]>();
+            DateTime epoch = new DateTime(1970, 1, 1);
+            double startTime = series.First()[0];
+            double endTime = series.Last()[0];
+            int step = (int)(endTime * 1000 - startTime * 1000) / maxSampleCount;
+            if (step < 1)
+                step = 1;
+
+            series = series.Where(x => x[0] >= startTime && x[0] <= endTime).ToList();
+
+            int index = 0;
+
+            for (double n = startTime * 1000; n <= endTime * 1000; n += 2 * step)
+            {
+                double[] min = null;
+                double[] max = null;
+
+                while (index < series.Count() && series[index][0] * 1000 < n + 2 * step)
+                {
+                    if (min == null || min[1] > series[index][1])
+                        min = series[index];
+
+                    if (max == null || max[1] <= series[index][1])
+                        max = series[index];
+
+                    ++index;
+                }
+
+                if (min != null)
+                {
+                    if (min[0] < max[0])
+                    {
+                        data.Add(min);
+                        data.Add(max);
+                    }
+                    else if (min[0] > max[0])
+                    {
+                        data.Add(max);
+                        data.Add(min);
+                    }
+                    else
+                    {
+                        data.Add(min);
+                    }
+                }
+            }
+
+            return data;
+
+        }
 
 
         #endregion
