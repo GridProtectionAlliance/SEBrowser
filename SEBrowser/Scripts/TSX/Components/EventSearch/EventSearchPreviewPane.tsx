@@ -33,6 +33,7 @@ import { OpenXDA } from 'global'
 import EventSearchBreakerPerformance from './EventSearchBreakerPerformance';
 import EventSearchPreviewD3Chart from './EventSearchPreviewD3Chart';
 import EventSearchPreviewD3ChartAxis from './EventSearchPreviewD3ChartAxis';
+import EventSearchFileInfo from './EventSearchFileInfo';
 
 export default class EventPreviewPane extends React.Component<{ eventid: number, AssetType: OpenXDA.AssetTypeName }, {}> {
     render() {
@@ -41,7 +42,7 @@ export default class EventPreviewPane extends React.Component<{ eventid: number,
         return (
             <div>
                 <div className="card">
-                    <div className="card-header"><a href={homePath + 'Main/OpenSEE?eventid=' + this.props.eventid} target="_blank">View in OpenSEE</a></div>
+                    <div className="card-header"><a href={openSEEInstance + '?eventid=' + this.props.eventid} target="_blank">View in OpenSEE</a></div>
                     <div className="card-body">
                         <EventSearchPreviewD3Chart EventID={this.props.eventid} MeasurementType='Voltage' DataType='Time' />
                         <EventSearchPreviewD3Chart EventID={this.props.eventid} MeasurementType='Current' DataType='Time' />
@@ -52,6 +53,7 @@ export default class EventPreviewPane extends React.Component<{ eventid: number,
                 <EventSearchFaultSegments eventId={this.props.eventid} />
                 <EventSearchAssetVoltageDisturbances eventId={this.props.eventid} />
                 <EventSearchCorrelatedSags eventId={this.props.eventid} />
+                <EventSearchFileInfo EventID={this.props.eventid} />
                 <EventSearchHistory eventId={this.props.eventid} />
                 <EventSearchRelayPerformance EventID={this.props.eventid} IsBreaker={this.props.AssetType == 'Breaker'}/>
                 <EventSearchBreakerPerformance EventID={this.props.eventid} IsBreaker={this.props.AssetType == 'Breaker'}/>

@@ -23,6 +23,9 @@
 
 declare global {
     var homePath: string;
+    var xdaInstance: string;
+    var scInstance: string;
+    var openSEEInstance: string;
 
     namespace moment {
         function utc(timestamp: string): any;

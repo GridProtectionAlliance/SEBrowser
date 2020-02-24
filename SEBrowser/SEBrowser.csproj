@@ -320,6 +320,7 @@
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchBreakerPerformance.tsx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchFileInfo.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewD3ChartAxis.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewD3Chart.tsx" />
   </ItemGroup>

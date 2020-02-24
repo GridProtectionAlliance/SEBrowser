@@ -29,8 +29,6 @@ const EventSearchPreviewD3ChartAxis = (props: { EventID: number }) => {
     let svgHeight = 25;
     let margin = { top: 20, right: 20, bottom: 20, left: 50 };
     let width = svgWidth - margin.left - margin.right;
-    let height = svgHeight - margin.top - margin.bottom;
-    const [paths, setPaths] = React.useState <Array<JSX.Element>>([]);
     const [hidden, setHidden] = React.useState<boolean>(true);
 
     React.useEffect(() => {
@@ -95,8 +93,7 @@ const EventSearchPreviewD3ChartAxis = (props: { EventID: number }) => {
         x.domain([series[0][0], series[series.length-1][0]]);
 
         select('#xaxis').call(axisBottom(x).ticks(5).tickFormat((domainValue: number, index: number) => {
-            console.log(domainValue, index);
-            return moment('01/01/1970 00:00:00').add('milliseconds', domainValue).format('ss.SSS');
+            return moment('1970-01-01T00:00:00').add(domainValue,'milliseconds').format('ss.SSS');
         })).call(g => g.select(".domain").remove());
     }
     

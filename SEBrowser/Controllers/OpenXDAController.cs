@@ -380,6 +380,68 @@ namespace SEBrowser.Controllers
 
         }
 
+        [Route("GetFileName/{eventID:int}"), HttpGet]
+        public IHttpActionResult GetFileName(int eventID)
+        {
+            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            {
+                DataFile dataFile = new TableOperations<DataFile>(connection).QueryRecord("FileSize DESC", new RecordRestriction("FileGroupID = (SELECT FileGroupID FROM Event WHERE ID = {0})", eventID));
+                return Ok(dataFile.FilePath);
+            }
+
+
+        }
+
+        [Route("GetMeterConfiguration/{eventID:int}"), HttpGet]
+        public IHttpActionResult GetMeterConfiguration(int eventID)
+        {
+            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            {
+                const string SQL = @"
+                SELECT
+	                Meter.AssetKey as MeterKey,
+	                FileGroupMeterConfiguration.MeterConfigurationID
+                FROM
+	                FileGroup JOIN
+	                Event ON Event.FileGroupID = FileGroup.ID LEFT JOIN
+	                FileGroupMeterConfiguration ON FileGroup.ID = FileGroupMeterConfiguration.FileGroupID JOIN
+	                Meter ON Event.MeterID = Meter.ID
+                WHERE
+	                Event.ID = {0}
+                ";
+
+                DataTable dataTable = connection.RetrieveData(SQL, eventID);
+                return Ok(dataTable.Select().First().ItemArray);
+            }
+
+        }
+
+
+        [Route("GetMappedChannels/{eventID:int}"), HttpGet]
+        public IHttpActionResult GetMappedChannels(int eventID)
+        {
+            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            {
+                const string SQL = @"
+                    SELECT
+	                    Channel.Name as Channel,
+	                    Series.SourceIndexes as Mapping
+                    FROM
+	                    Event LEFT JOIN
+	                    Channel ON Event.MeterID = Channel.MeterID AND Event.AssetID = Channel.AssetID LEFT JOIN
+	                    Series ON Channel.ID = Series.ChannelID
+                    WHERE 
+	                    Event.ID = {0} AND Enabled = 1 AND Series.SourceIndexes !=''
+                ";
+
+                DataTable dataTable = connection.RetrieveData(SQL, eventID);
+                return Ok(dataTable);
+            }
+
+
+        }
+
+
         [Route("GetRelayPerformance"), HttpGet]
         public DataTable GetRelayPerformance()
         {

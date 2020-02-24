@@ -124,7 +124,7 @@ export default class EventSearchList extends React.Component<IProps, { sortField
 
     getData(props) {
         this.seBrowserService.getEventSearchData(props.searchBarProps).done(results => {
-            if (results.length > 100) alert("The query you submitted was too large and only the first 100 records were return.  Please refine your search if necessary.")
+            if (results.length > 100) alert("The query you submitted was too large ("+results.length.toString()+" records) and only the first 100 records were return.  Please refine your search if necessary.")
 
             var filtered = filter(results, obj => {
                 return obj.AssetName.toLowerCase().indexOf(props.searchText) >= 0 ||

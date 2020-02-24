@@ -34,6 +34,8 @@ const EventSearchPreviewD3Chart = (props: { EventID: number, MeasurementType: 'C
     const [hidden, setHidden] = React.useState<boolean>(true);
 
     React.useEffect(() => {
+        setHidden(true);
+        setPaths([]);
         return GetData();
     }, [props.EventID]);
 
