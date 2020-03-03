@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  global.d.ts - Gbtc
+//  EventSearchOpenSEE.tsx - Gbtc
 //
 //  Copyright © 2020, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -16,39 +16,24 @@
 //
 //  Code Modification History:
 //  ----------------------------------------------------------------------------------------------------
-//  02/19/2020 - Billy Ernest
+//  03/03/2020 - Billy Ernest
 //       Generated original version of source code.
 //
 //******************************************************************************************************
+import React from 'react';
+import EventSearchPreviewD3Chart from './EventSearchPreviewD3Chart';
+import EventSearchPreviewD3ChartAxis from './EventSearchPreviewD3ChartAxis';
 
-declare global {
-    var homePath: string;
-    var xdaInstance: string;
-    var scInstance: string;
-    var openSEEInstance: string;
-
-    namespace moment {
-        function utc(timestamp: string): any;
-    }
-    function moment(inp?: any, format?: any, strict?: boolean): any;
-    function moment(inp?: any, format?: any, language?: string, strict?: boolean): any;
-
-    namespace queryString {
-        function parse(str: string, opts?: object): object
-        function stringify(obj: object, opts?: object): object
-
-    }
+export default function EventSearchOpenSEE(props: { EventID: number }) {
+    return (
+        <div className="card">
+            <div className="card-header"><a href={openSEEInstance + '?eventid=' + props.EventID} target="_blank">View in OpenSEE</a></div>
+            <div className="card-body">
+                <EventSearchPreviewD3Chart EventID={props.EventID} MeasurementType='Voltage' DataType='Time' />
+                <EventSearchPreviewD3Chart EventID={props.EventID} MeasurementType='Current' DataType='Time' />
+                <EventSearchPreviewD3Chart EventID={props.EventID} MeasurementType='TripCoilCurrent' DataType='Time' />
+                <EventSearchPreviewD3ChartAxis EventID={props.EventID} />
+            </div>
+        </div>
+)
 }
-
-
-export namespace SEBrowser {
-    interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
-    interface EventPreviewPaneSetting { ID:number, Name: string, Show: boolean, OrderBy: number }
-}
-
-export namespace OpenXDA {
-    interface Event { EventID: number, FileStartTime: string, AssetName: string, AssetType: AssetTypeName, VoltageClass: string, EventType: string, BreakerOperation: boolean }
-
-    type AssetTypeName = 'Line' | 'Breaker' | 'Transformer' | 'CapacitorBank' | 'Bus';
-}
-

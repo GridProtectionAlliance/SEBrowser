@@ -144,6 +144,36 @@ INSERT [dbo].[Settings] ([Scope], [Name], [Value], [ApplicationInstance], [Roles
 GO
 INSERT [dbo].[Settings] ([Scope], [Name], [Value], [ApplicationInstance], [Roles]) VALUES (N'app.setting', N'OpenSEEInstance', N'http://localhost/OpenSEE', 0, N'Administrator')
 GO
+INSERT [dbo].[Settings] ([Scope], [Name], [Value], [ApplicationInstance], [Roles]) VALUES (N'eventPreviewPane.widgetSetting', N'OpenSEEInstance', N'http://localhost/OpenSEE', 0, N'Administrator')
+GO
+
+CREATE TABLE EventPreviewPaneSetting(
+	ID int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+	Name varchar(200) NOT NULL,
+	Show bit NOT NULL DEFAULT (1),
+	OrderBy bit NOT NULL
+)
+
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchOpenSEE', 1,1)
+GO
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchFaultSegments', 1,2)
+GO
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchAssetVoltageDisturbances', 1,3)
+GO
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchCorrelatedSags', 1,4)
+GO
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('TVAESRIMap', 0,5)
+GO
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchFileInfo', 0,6)
+GO
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchHistory', 1,7)
+GO
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchRelayPerformance', 0,8)
+GO
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchBreakerPerformance', 0,9)
+GO
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchNoteWindow', 1,10)
+GO
 
 
 CREATE TABLE [dbo].[ValueListGroup](

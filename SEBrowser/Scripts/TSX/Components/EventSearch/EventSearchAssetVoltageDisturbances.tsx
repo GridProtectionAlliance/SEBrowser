@@ -24,7 +24,7 @@
 import React from 'react';
 import SEBrowserService from './../../../TS/Services/SEBrowser';
 
-export default class EventSearchAssetVoltageDisturbances extends React.Component<{ eventId: number }, {tableRows: Array<JSX.Element> }>{
+export default class EventSearchAssetVoltageDisturbances extends React.Component<{ EventID: number }, {tableRows: Array<JSX.Element> }>{
     seBrowserService: SEBrowserService;
     constructor(props, context) {
         super(props, context);
@@ -37,14 +37,14 @@ export default class EventSearchAssetVoltageDisturbances extends React.Component
     }
 
     componentDidMount() {
-        if (this.props.eventId >= 0)
-            this.createTableRows(this.props.eventId);
+        if (this.props.EventID >= 0)
+            this.createTableRows(this.props.EventID);
     }
     componentWillUnmount() {
     }
     componentWillReceiveProps(nextProps) {
-        if (nextProps.eventId >= 0)
-            this.createTableRows(nextProps.eventId);
+        if (nextProps.EventID >= 0)
+            this.createTableRows(nextProps.EventID);
     }
 
 

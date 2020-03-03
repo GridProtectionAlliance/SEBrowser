@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  global.d.ts - Gbtc
+//  EventPreviewPaneSetting.cs - Gbtc
 //
 //  Copyright © 2020, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -16,39 +16,25 @@
 //
 //  Code Modification History:
 //  ----------------------------------------------------------------------------------------------------
-//  02/19/2020 - Billy Ernest
+//  03/03/2020 - Billy Ernest
 //       Generated original version of source code.
 //
 //******************************************************************************************************
 
-declare global {
-    var homePath: string;
-    var xdaInstance: string;
-    var scInstance: string;
-    var openSEEInstance: string;
+using GSF.Data.Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 
-    namespace moment {
-        function utc(timestamp: string): any;
+namespace SEBrowser.Model.System
+{
+    public class EventPreviewPaneSetting
+    {
+        [PrimaryKey(true)]
+        public int ID { get; set; }
+        public string Name { get; set; }
+        public bool Show { get; set; }
+        public int OrderBy { get; set; }
     }
-    function moment(inp?: any, format?: any, strict?: boolean): any;
-    function moment(inp?: any, format?: any, language?: string, strict?: boolean): any;
-
-    namespace queryString {
-        function parse(str: string, opts?: object): object
-        function stringify(obj: object, opts?: object): object
-
-    }
 }
-
-
-export namespace SEBrowser {
-    interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
-    interface EventPreviewPaneSetting { ID:number, Name: string, Show: boolean, OrderBy: number }
-}
-
-export namespace OpenXDA {
-    interface Event { EventID: number, FileStartTime: string, AssetName: string, AssetType: AssetTypeName, VoltageClass: string, EventType: string, BreakerOperation: boolean }
-
-    type AssetTypeName = 'Line' | 'Breaker' | 'Transformer' | 'CapacitorBank' | 'Bus';
-}
-

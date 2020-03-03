@@ -214,13 +214,13 @@ export default class SEBrowserdService {
         return this.eventSearchAssetFaultSegmentsHandle;
     }
 
-    getEventSearchAsssetHistoryData(eventID: number): JQuery.jqXHR {
+    getEventSearchAsssetHistoryData(eventID: number, count: number): JQuery.jqXHR {
         if (this.eventSearchAssetHistoryHandle !== undefined)
             this.eventSearchAssetHistoryHandle.abort();
 
         this.eventSearchAssetHistoryHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/GetEventSearchHistory?EventID=${eventID}`,
+            url: `${homePath}api/OpenXDA/GetEventSearchHistory/${eventID}/${count}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,

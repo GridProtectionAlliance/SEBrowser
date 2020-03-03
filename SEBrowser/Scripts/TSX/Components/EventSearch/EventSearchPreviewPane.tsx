@@ -29,37 +29,76 @@ import EventSearchFaultSegments from './EventSearchAssetFaultSegments';
 import EventSearchHistory from './EventSearchAssetHistory';
 import EventSearchCorrelatedSags from './EventSearchCorrelatedSags';
 import EventSearchRelayPerformance from './EventSearchRelayPerformance';
-import { OpenXDA } from 'global'
+import { OpenXDA, SEBrowser } from 'global'
 import EventSearchBreakerPerformance from './EventSearchBreakerPerformance';
-import EventSearchPreviewD3Chart from './EventSearchPreviewD3Chart';
-import EventSearchPreviewD3ChartAxis from './EventSearchPreviewD3ChartAxis';
 import EventSearchFileInfo from './EventSearchFileInfo';
+import TVAESRIMap from './TVAESRIMap/TVAESRIMap';
+import EventSearchOpenSEE from './EventSearchOpenSEE';
 
-export default class EventPreviewPane extends React.Component<{ eventid: number, AssetType: OpenXDA.AssetTypeName }, {}> {
+export default class EventPreviewPane extends React.Component<{ EventID: number, AssetType: OpenXDA.AssetTypeName }, { Settings: Array<SEBrowser.EventPreviewPaneSetting>}> {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            Settings: []
+        }
+    }
+
+    componentDidMount() {
+        this.GetSettings();
+    }
+
+    GetSettings() {
+        $.ajax({
+            type: "GET",
+            url: `${homePath}api/SEBrowser/GetEventPreviewPaneSettings`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        }).done((settings: Array<SEBrowser.EventPreviewPaneSetting>) => this.setState({ Settings: settings }));
+    }
+    
     render() {
-        if (this.props.eventid == -1) return <div></div>;
+        if (this.props.EventID == -1 || this.state.Settings.length == 0) return <div></div>;
 
-        return (
+        return this.state.Settings.filter(setting => setting.Show).map((setting, index) => {
+            if (setting.Name.indexOf('EventSearchOpenSEE') >= 0)
+                return <EventSearchOpenSEE key={index} EventID={this.props.EventID} />;
+            else if (setting.Name.indexOf('EventSearchFaultSegments') >= 0)
+                return <EventSearchFaultSegments key={index} EventID={this.props.EventID} />;
+            else if (setting.Name.indexOf('EventSearchAssetVoltageDisturbances') >= 0)
+                return <EventSearchAssetVoltageDisturbances key={index} EventID={this.props.EventID} />;
+            else if (setting.Name.indexOf('EventSearchCorrelatedSags') >= 0)
+                return <EventSearchCorrelatedSags key={index} EventID={this.props.EventID} />;
+            else if (setting.Name.indexOf('TVAESRIMap') >= 0)
+                return <TVAESRIMap key={index} EventID={this.props.EventID} />;
+            else if (setting.Name.indexOf('EventSearchFileInfo') >= 0)
+                return <EventSearchFileInfo key={index} EventID={this.props.EventID} />;
+            else if (setting.Name.indexOf('EventSearchHistory') >= 0)
+                return <EventSearchHistory key={index} EventID={this.props.EventID} />;
+            else if (setting.Name.indexOf('EventSearchRelayPerformance') >= 0)
+                return <EventSearchRelayPerformance key={index} EventID={this.props.EventID} IsBreaker={this.props.AssetType == 'Breaker'}/>;
+            else if (setting.Name.indexOf('EventSearchBreakerPerformance') >= 0)
+                return <EventSearchBreakerPerformance key={index} EventID={this.props.EventID} IsBreaker={this.props.AssetType == 'Breaker'} />;
+            else if (setting.Name.indexOf('EventSearchNoteWindow') >= 0)
+                return <EventSearchNoteWindow key={index} EventID={this.props.EventID} />;
+        });
+
+        /*return (
             <div>
-                <div className="card">
-                    <div className="card-header"><a href={openSEEInstance + '?eventid=' + this.props.eventid} target="_blank">View in OpenSEE</a></div>
-                    <div className="card-body">
-                        <EventSearchPreviewD3Chart EventID={this.props.eventid} MeasurementType='Voltage' DataType='Time' />
-                        <EventSearchPreviewD3Chart EventID={this.props.eventid} MeasurementType='Current' DataType='Time' />
-                        <EventSearchPreviewD3Chart EventID={this.props.eventid} MeasurementType='TripCoilCurrent' DataType='Time' />
-                        <EventSearchPreviewD3ChartAxis EventID={this.props.eventid} />
-                    </div>
-                </div>
-                <EventSearchFaultSegments eventId={this.props.eventid} />
-                <EventSearchAssetVoltageDisturbances eventId={this.props.eventid} />
-                <EventSearchCorrelatedSags eventId={this.props.eventid} />
-                <EventSearchFileInfo EventID={this.props.eventid} />
-                <EventSearchHistory eventId={this.props.eventid} />
-                <EventSearchRelayPerformance EventID={this.props.eventid} IsBreaker={this.props.AssetType == 'Breaker'}/>
-                <EventSearchBreakerPerformance EventID={this.props.eventid} IsBreaker={this.props.AssetType == 'Breaker'}/>
-                <EventSearchNoteWindow eventId={this.props.eventid} />
+                <EventSearchOpenSEE EventID={this.props.EventID} />
+                <EventSearchFaultSegments eventId={this.props.EventID} />
+                <EventSearchAssetVoltageDisturbances eventId={this.props.EventID} />
+                <EventSearchCorrelatedSags eventId={this.props.EventID} />
+                <TVAESRIMap EventID={this.props.EventID} />
+                <EventSearchFileInfo EventID={this.props.EventID} />
+                <EventSearchHistory EventID={this.props.EventID} />
+                <EventSearchRelayPerformance EventID={this.props.EventID} IsBreaker={this.props.AssetType == 'Breaker'}/>
+                <EventSearchBreakerPerformance EventID={this.props.EventID} IsBreaker={this.props.AssetType == 'Breaker'}/>
+                <EventSearchNoteWindow eventId={this.props.EventID} />
             </div>
-        );
+        );*/
     }
 }
 

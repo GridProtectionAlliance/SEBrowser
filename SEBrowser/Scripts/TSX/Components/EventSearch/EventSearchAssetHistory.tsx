@@ -24,7 +24,7 @@
 import React from 'react';
 import SEBrowserService from './../../../TS/Services/SEBrowser';
 
-export default class EventSearchHistory extends React.Component<{ eventId: number }, {tableRows: Array<JSX.Element> }>{
+export default class EventSearchHistory extends React.Component<{ EventID: number }, {tableRows: Array<JSX.Element>, count: number }>{
     seBrowserService: SEBrowserService;
     constructor(props, context) {
         super(props, context);
@@ -32,24 +32,25 @@ export default class EventSearchHistory extends React.Component<{ eventId: numbe
         this.seBrowserService = new SEBrowserService();
 
         this.state = {
-            tableRows: []
+            tableRows: [],
+            count: 10
         };
     }
 
     componentDidMount() {
-        if (this.props.eventId >= 0)
-            this.createTableRows(this.props.eventId);
+        if (this.props.EventID >= 0)
+            this.createTableRows(this.props.EventID, this.state.count);
     }
     componentWillUnmount() {
     }
     componentWillReceiveProps(nextProps) {
         if (nextProps.eventId >= 0)
-            this.createTableRows(nextProps.eventId);
+            this.createTableRows(nextProps.eventId, this.state.count);
     }
 
 
-    createTableRows(eventID: number) {
-        this.seBrowserService.getEventSearchAsssetHistoryData(eventID).done(data => {
+    createTableRows(eventID: number, count: number) {
+        this.seBrowserService.getEventSearchAsssetHistoryData(eventID, count).done(data => {
             var rows = data.map((d,i) =>
                 <tr key={i}>
                     <td>{d.EventType}</td>
@@ -64,8 +65,16 @@ export default class EventSearchHistory extends React.Component<{ eventId: numbe
     render() {
         return (
             <div className="card">
-                <div className="card-header">Asset History:</div>
+                <div className="card-header">Asset History:
+                    <select className='pull-right' value={this.state.count} onChange={(evt) => this.setState({ count: parseInt(evt.target.value) }, () => this.createTableRows(this.props.EventID, this.state.count) )}>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="75">75</option>
+                        <option value="100">100</option>
 
+                    </select>
+                </div>
                 <div className="card-body">
                     <table className="table">
                         <thead>

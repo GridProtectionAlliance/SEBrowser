@@ -23,17 +23,17 @@
 
 import React from 'react';
 
-function EventSearchNoteWindow(props: { eventId: number }): JSX.Element {
+function EventSearchNoteWindow(props: { EventID: number }): JSX.Element {
     const [tableRows, setTableRows] = React.useState<Array<JSX.Element>>([]);
     const [note, setNote] = React.useState<string>('');
     const [count, setCount] = React.useState<number>(0);
 
     React.useEffect(() => {
         return createTableRows();
-    }, [props.eventId]);
+    }, [props.EventID]);
 
     function createTableRows() {
-        let handle = getNotes(props.eventId);
+        let handle = getNotes(props.EventID);
         handle.done(data => {
             var rows = data.map(d => <tr key={d.ID}><td>{d.Note}</td><td>{moment(d.Timestamp).format("MM/DD/YYYY HH:mm")}</td><td>{d.UserAccount}</td><td>
                 <button className="btn btn-sm" onClick={(e) => handleEdit(d)}><span><i className="fa fa-pencil"></i></span></button>
@@ -93,7 +93,7 @@ function EventSearchNoteWindow(props: { eventId: number }): JSX.Element {
 
 
     function handleAdd() {
-        addNote({ ID: 0, EventID: props.eventId, Note: note }).done(e => {
+        addNote({ ID: 0, EventID: props.EventID, Note: note }).done(e => {
             setNote('');
             createTableRows();
         });

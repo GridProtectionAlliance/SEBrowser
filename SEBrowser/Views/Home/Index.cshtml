@@ -40,7 +40,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head id="Head1" runat="server">
-    <title>SC Browser</title>
+    <title>SE Browser</title>
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta charset="utf-8" />
@@ -50,9 +50,12 @@
     <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
     <meta http-equiv="pragma" content="no-cache" />
 
-    @*<link rel="shortcut icon" type="image/ico" href="~/favicon.ico" />*@
+    <link rel="shortcut icon" type="image/ico" href="~/Images/icon.png" />
     <link href="@Url.Content("~/@GSF/Web/Shared/Content/bootstrap4.css")" rel="stylesheet">
     <link href="@Url.Content("~/@GSF/Web/Shared/Content/font-awesome.css")" rel="stylesheet">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.15/dijit/themes/claro/claro.css">
+  	<link rel="stylesheet" href="http://js.arcgis.com/3.15/esri/css/esri.css">
+
     <link href="~/Content/bootstrap4-datetimepicker.css" rel="stylesheet"/>
     <style>
         body {
@@ -104,35 +107,40 @@
         <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/default.polyfill.min.js")"></script>
     }
 
-    <script src="@("~/@GSF/Web/Shared/Scripts/jquery.js")"></script>
-    <script src="@("~/@GSF/Web/Shared/Scripts/jquery-ui.js")"></script>
-    <script src="@("~/@GSF/Web/Shared/Scripts/moment.js")"></script>
-    <script src="@("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.min.js")"></script>
-    <script src="@("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.crosshair.min.js")"></script>
-    <script src="@("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.navigate.min.js")"></script>
-    <script src="@("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.selection.min.js")"></script>
-    <script src="@("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.time.min.js")"></script>
-    <script src="@("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.rangeselection.min.js")"></script>
-    <script src="@("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.axislabels.min.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/jquery.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/jquery-ui.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/moment.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.min.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.crosshair.min.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.navigate.min.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.selection.min.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.time.min.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.rangeselection.min.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.axislabels.min.js")"></script>
 
-    <script src="@("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.dashes.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.dashes.js")"></script>
 
-    <script src="@("~/@GSF/Web/Shared/Scripts/popper.js")"></script>
-    <script src="@("~/@GSF/Web/Shared/Scripts/bootstrap4.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/popper.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/bootstrap4.js")"></script>
     <script src="~/Scripts/Lib/bootstrap4-datetimepicker.min.js"></script>
 @if (Model.IsDebug())
 {
-    <script src="@("~/@GSF/Web/Shared/Scripts/react.development.js")"></script>
-    <script src="@("~/@GSF/Web/Shared/Scripts/react-dom.development.js")"></script> 
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/react.development.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/react-dom.development.js")"></script> 
 }
 else
 {
-    <script src="@("~/@GSF/Web/Shared/Scripts/react.production.min.js")"></script>
-    <script src="@("~/@GSF/Web/Shared/Scripts/react-dom.production.min.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/react.production.min.js")"></script>
+    <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/react-dom.production.min.js")"></script>
 
 }
     <script src="~/Scripts/Lib/react-router-dom.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="~/Scripts/Lib/d3.v4.min.js" type="text/javascript" charset="utf-8"></script>
+
+    <script src="http://js.arcgis.com/3.15/"></script>
+    <script>
+        window.esri.require = require;
+	</script>
 
     <script src="@Url.Content("~/Scripts/SEBrowser.js")"></script>
 </body>

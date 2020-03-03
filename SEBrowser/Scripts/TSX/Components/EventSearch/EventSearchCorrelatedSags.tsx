@@ -23,7 +23,7 @@
 
 import React from 'react';
 
-export default class EventSearchHistory extends React.Component<{ eventId: number }, { tableRows: Array<JSX.Element> }>{
+export default class EventSearchHistory extends React.Component<{ EventID: number }, { tableRows: Array<JSX.Element> }>{
     correlatedSagsHandle: JQuery.jqXHR;
     constructor(props, context) {
         super(props, context);
@@ -34,14 +34,14 @@ export default class EventSearchHistory extends React.Component<{ eventId: numbe
     }
 
     componentDidMount() {
-        if (this.props.eventId >= 0)
-            this.createTableRows(this.props.eventId);
+        if (this.props.EventID >= 0)
+            this.createTableRows(this.props.EventID);
     }
     componentWillUnmount() {
     }
     componentWillReceiveProps(nextProps) {
-        if (nextProps.eventId >= 0)
-            this.createTableRows(nextProps.eventId);
+        if (nextProps.EventID >= 0)
+            this.createTableRows(nextProps.EventID);
     }
 
     getTimeCorrelatedSags(eventid: number): JQuery.jqXHR {
@@ -62,14 +62,14 @@ export default class EventSearchHistory extends React.Component<{ eventId: numbe
 
 
     createTableRows(eventID: number) {
-        this.getTimeCorrelatedSags(this.props.eventId).done(data => {
+        this.getTimeCorrelatedSags(this.props.EventID).done(data => {
             var rows = [];
 
             for (var index = 0; index < data.length; ++index) {
                 var row = data[index];
                 var background = 'default';
 
-                if (row.EventID == this.props.eventId)
+                if (row.EventID == this.props.EventID)
                     background = 'lightyellow';
 
                 rows.push(Row(row, background));

@@ -8,8 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.Caching;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
@@ -252,16 +255,14 @@ namespace SEBrowser.Controllers
 
         }
 
-        [Route("GetEventSearchHistory"), HttpGet]
-        public DataTable GetEventSearchHistory()
+        [Route("GetEventSearchHistory/{eventID:int}/{count:int}"), HttpGet]
+        public DataTable GetEventSearchHistory(int eventID, int count = 10)
         {
             using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
             {
-                Dictionary<string, string> query = Request.QueryParameters();
-                int eventID = int.Parse(query["EventID"]);
-
                 DataTable table = connection.RetrieveData(@" 
                     SELECT
+                        TOP " +count.ToString() + @"
 	                    EventType.Name as EventType,
 	                    Event.StartTime,
 	                    Event.ID
@@ -270,7 +271,10 @@ namespace SEBrowser.Controllers
 	                    EventType ON Event.EventTypeID = EventType.ID JOIN
 	                    Event as OrgEvt ON Event.MeterID = OrgEvt.MeterID AND Event.AssetID = OrgEvt.AssetID AND Event.ID != OrgEvt.ID
                     WHERE 
-	                    OrgEvt.ID = {0}"
+	                    OrgEvt.ID = {0}
+                    ORDER BY 
+                        Event.StartTime DESC
+                    "
                     , eventID);
 
                 return table;
@@ -440,6 +444,66 @@ namespace SEBrowser.Controllers
 
 
         }
+
+        [Route("GetFaultInfo/{eventID:int}"), HttpGet]
+        public IHttpActionResult GetFaultInfo(int eventID)
+        {
+            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            {
+                try
+                {
+
+                    WebClient request = new WebClient() { UseDefaultCredentials = true};
+                    const string SQL = @"
+                        select 
+	                        Distance,
+	                        Asset.AssetKey as AssetName,
+	                        Location.LocationKey as StationName,
+                            FaultSummary.Inception
+                        FROM
+	                        FaultSummary JOIN
+	                        Event ON Event.ID = FaultSummary.EventID JOIN
+	                        Asset ON Event.AssetID = Asset.ID JOIN
+	                        Meter ON event.MeterID = MEter.ID JOIN
+	                        Location ON Meter.LocationID = Location.ID
+                        WHERE
+	                        FaultSummary.EventID = {0} AND FaultSummary.IsSelectedAlgorithm = 1
+                    ";
+
+                    DataTable dataTable = connection.RetrieveData(SQL, eventID);
+                    if (dataTable.Rows.Count == 0) return Ok(new string[] { });
+                
+                    string response = request.DownloadString($"http://opsptpsnet.cha.tva.gov:8025/TLI/StructureCrawler/FaultFinder.asp?Station={dataTable.Select().First()["StationName"]}&Line={dataTable.Select().First()["AssetName"]}&Mileage={dataTable.Select().First()["Distance"]}");
+                    string data = Regex.Replace(response, @"\s", "");
+                    data = Regex.Replace(data, @".+<[Bb][Ob][Dd][Yy]><[Bb][Rr]>?(?=)", "");
+                    data = Regex.Replace(data, @"</[Bb][Ob].*", "");
+                    data = Regex.Replace(data, @"<[Bb][Rr]>", "\n");
+
+                    DataTable table = new DataTable();
+                    List<string> headers = data.Split('\n')[0].Split(',').ToList();
+                    List<List<string>> rows = data.Split('\n').Where((x, i) => i > 0).Select(x => x.Split(',').ToList()).ToList();
+
+                    headers.ForEach(header => table.Columns.Add(header));
+                    rows.ForEach(row => {
+                        var newRow = table.NewRow();
+                        for (int i = 0; i < headers.Count; ++i) {
+                            newRow[headers[i]] = row[i];
+                        }
+                        table.Rows.Add(newRow);
+                    });
+
+                    return Ok(new { LineNumber = dataTable.Select().First()["AssetName"].ToString(), Inception = dataTable.Select().First()["Inception"].ToString(), Longitude = table.Select().First()["Longitude"].ToString(), Latitude = table.Select().First()["Latitude"].ToString() });
+
+                }
+                catch (Exception ex) {
+                    return InternalServerError(ex);
+                }
+
+            }
+
+        }
+
+
 
 
         [Route("GetRelayPerformance"), HttpGet]

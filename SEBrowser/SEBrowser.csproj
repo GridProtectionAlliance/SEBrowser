@@ -239,25 +239,31 @@
     <Content Include="Content\bootstrap4-datetimepicker.css" />
     <Content Include="Data\SEBrowser.sql" />
     <Content Include="Global.asax" />
+    <Content Include="Images\icon.png" />
     <Content Include="Images\SE Browser - Spelled out - 111 high.png" />
     <Content Include="Readme.txt" />
     <Content Include="Scripts\Lib\bootstrap4-datetimepicker.min.js" />
     <Content Include="Scripts\Lib\d3.v4.min.js" />
     <Content Include="Scripts\Lib\react-router-dom.min.js" />
+    <Content Include="Scripts\SEBrowser.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Web.config" />
-    <Content Include="webpack.config.js" />
+    <None Include="webpack.config.js" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\SEBrowserController.cs" />
     <Compile Include="Controllers\OpenXDAController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="GlobalSettings.cs" />
     <Compile Include="Model\AppModel.cs" />
+    <Compile Include="Model\System\EventPreviewPaneSetting.cs" />
     <Compile Include="Model\System\Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
@@ -265,56 +271,61 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ApplicationInsights.config" />
-    <Content Include="package.json" />
+    <None Include="package.json" />
     <None Include="packages.config" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Web.config" />
-    <Content Include="tsconfig.json" />
+    <None Include="tsconfig.json" />
     <Content Include="Scripts\Lib\react-router-dom.min.js.map" />
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Scripts\Dist\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\About.tsx" />
-    <Content Include="Scripts\TSX\Components\BreakerReport\BreakerReport.d.ts" />
-    <Content Include="Scripts\TSX\Components\BreakerReport\BreakerReport.tsx" />
-    <Content Include="Scripts\TSX\Components\BreakerReport\BreakerReportNavbar.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearch.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchAssetFaultSegments.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchAssetHistory.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchAssetVoltageDisturbances.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchCorrelatedSags.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchEsriMap.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchList.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchListedEventsNoteWindow.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchNavbar.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchNoteWindow.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewPane.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchRelayPerformance.tsx" />
-    <Content Include="Scripts\TSX\Components\MeterActivity.tsx" />
-    <Content Include="Scripts\TSX\Components\SEDashboardNavbar.tsx" />
-    <Content Include="Scripts\TSX\Components\RelayReport\RelayPerformanceTrend.tsx" />
-    <Content Include="Scripts\TSX\Components\RelayReport\RelayReport.tsx" />
-    <Content Include="Scripts\TSX\Components\RelayReport\RelayReportNavBar.tsx" />
-    <Content Include="Scripts\TSX\Components\RelayReport\RelayReportPane.tsx" />
-    <Content Include="Scripts\TSX\Components\Table.tsx" />
-    <Content Include="Scripts\TSX\global.d.ts" />
-    <Content Include="Scripts\TSX\SEBrowser.tsx" />
-    <Content Include="Scripts\TS\Services\BreakerReport.ts" />
-    <Content Include="Scripts\TS\Services\OpenSEE.ts" />
-    <Content Include="Scripts\TS\Services\SEBrowser.ts" />
+    <None Include="Scripts\TSX\Components\About.tsx" />
+    <None Include="Scripts\TSX\Components\BreakerReport\BreakerReport.d.ts" />
+    <None Include="Scripts\TSX\Components\BreakerReport\BreakerReport.tsx" />
+    <None Include="Scripts\TSX\Components\BreakerReport\BreakerReportNavbar.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearch.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchAssetFaultSegments.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchAssetHistory.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchAssetVoltageDisturbances.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchCorrelatedSags.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchEsriMap.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchList.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchListedEventsNoteWindow.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchNavbar.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchNoteWindow.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewPane.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchRelayPerformance.tsx" />
+    <None Include="Scripts\TSX\Components\MeterActivity.tsx" />
+    <None Include="Scripts\TSX\Components\SEDashboardNavbar.tsx" />
+    <None Include="Scripts\TSX\Components\RelayReport\RelayPerformanceTrend.tsx" />
+    <None Include="Scripts\TSX\Components\RelayReport\RelayReport.tsx" />
+    <None Include="Scripts\TSX\Components\RelayReport\RelayReportNavBar.tsx" />
+    <None Include="Scripts\TSX\Components\RelayReport\RelayReportPane.tsx" />
+    <None Include="Scripts\TSX\Components\Table.tsx" />
+    <None Include="Scripts\TSX\global.d.ts" />
+    <None Include="Scripts\TSX\SEBrowser.tsx" />
+    <None Include="Scripts\TS\Services\BreakerReport.ts" />
+    <None Include="Scripts\TS\Services\OpenSEE.ts" />
+    <None Include="Scripts\TS\Services\SEBrowser.ts" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchBreakerPerformance.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchBreakerPerformance.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchFileInfo.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewD3ChartAxis.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewD3Chart.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchFileInfo.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewD3ChartAxis.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewD3Chart.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\TVAESRIMap\TVAESRIMap.tsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchOpenSEE.tsx" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
