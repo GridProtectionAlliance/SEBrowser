@@ -31,7 +31,6 @@ export default class SEBrowserdService {
     eventSearchHandle: JQuery.jqXHR;
     eventSearchAssetVoltageDisturbancesHandle: JQuery.jqXHR;
     eventSearchAssetFaultSegmentsHandle: JQuery.jqXHR;
-    eventSearchAssetHistoryHandle: JQuery.jqXHR;
     subStationRelayReportHandle: JQuery.jqXHR;
     BreakerRelayReportHandle: JQuery.jqXHR;
     channelRelayReportHandle: JQuery.jqXHR;
@@ -44,7 +43,6 @@ export default class SEBrowserdService {
         this.getEventSearchData = this.getEventSearchData.bind(this);
         this.getEventSearchAsssetVoltageDisturbancesData = this.getEventSearchAsssetVoltageDisturbancesData.bind(this);
         this.getEventSearchAsssetFaultSegmentsData = this.getEventSearchAsssetFaultSegmentsData.bind(this);
-        this.getEventSearchAsssetHistoryData = this.getEventSearchAsssetHistoryData.bind(this);
 
         this.GetSubStationData = this.GetSubStationData.bind(this);
         this.GetBreakerData = this.GetBreakerData.bind(this);
@@ -213,22 +211,4 @@ export default class SEBrowserdService {
 
         return this.eventSearchAssetFaultSegmentsHandle;
     }
-
-    getEventSearchAsssetHistoryData(eventID: number, count: number): JQuery.jqXHR {
-        if (this.eventSearchAssetHistoryHandle !== undefined)
-            this.eventSearchAssetHistoryHandle.abort();
-
-        this.eventSearchAssetHistoryHandle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/OpenXDA/GetEventSearchHistory/${eventID}/${count}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: true,
-            async: true
-        });
-
-        return this.eventSearchAssetHistoryHandle;
-    }
-
-
 }

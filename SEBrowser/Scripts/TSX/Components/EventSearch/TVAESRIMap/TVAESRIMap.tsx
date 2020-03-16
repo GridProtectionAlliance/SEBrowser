@@ -22,41 +22,27 @@
 //******************************************************************************************************
 
 import React from 'react';
+import leaflet from 'leaflet';
+import 'esri-leaflet';
+import proj4 from 'proj4';
+import 'proj4leaflet';
 
-export default class TVAESRIMap extends React.Component<{ EventID: number }, { LtgSource: '0' | '1', Results: any, LineNumber: string, Latitude: string, Longitude: string, Inception: Date, Window: number }, {}>{
-    graphicsUtils: any;
-    Point: any;
-    Query: any;
-    QueryTask: any;
-    Graphic: any;
-    GeometryService: any;
-    BufferParameters: any;
-    map: any;
-    faultSymbol: any;
-    ltgSymbol: any;
-    lineSymbol: any;
-
+export default class TVAESRIMap extends React.Component<{ EventID: number }, { Results: any, FaultInfo: Array<{ StationName: string, Inception: number, Latitude: number, Longitude: number, Distance: number, AssetName: string }>, Window: number }, {}>{
+    map: leaflet.Map;
     constructor(props, context) {
         super(props, context);
 
         this.state = {
             Results: null,
-            LineNumber: null,
-            Latitude: '0',
-            Longitude: '0',
-            Inception: null,
-            LtgSource: '0',
+            FaultInfo: [],
             Window: 2
         };
 
-        this.execute = this.execute.bind(this);
-        this.reset = this.reset.bind(this);
-        this.executeltg = this.executeltg.bind(this);
-        this.showResults = this.showResults.bind(this);
-        this.zoomLine = this.zoomLine.bind(this);
+        proj4.defs('EPSG:3857', "+title=WGS 84 / Pseudo-Mercator +proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs");
+
     }
 
-    GetFaultInfo() {
+    GetFaultInfo(): JQuery.jqXHR<Array<{ StationName: string, Inception: number, Latitude: number, Longitude: number, Distance: number, AssetName: string}>>{
         return $.ajax({
             type: "GET",
             url: `${homePath}api/OpenXDA/GetFaultInfo/${this.props.EventID}`,
@@ -64,176 +50,194 @@ export default class TVAESRIMap extends React.Component<{ EventID: number }, { L
             dataType: 'json',
             cache: true,
             async: true
-        }).done(data => this.setState({LineNumber: data.LineNumber, Inception: new Date(data.Inception), Latitude: data.Latitude, Longitude: data.Longitude }));
+        });
     }
+
+    GetLightningInfo() {
+        return $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/GetLightningInfo/${this.props.EventID}/${this.state.Window}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+    }
+
     async componentDidMount() {
-        await this.GetFaultInfo();
+        const faultInfo = await this.GetFaultInfo();
+        this.setState({ FaultInfo: faultInfo });
+        const lightningInfo = await this.GetLightningInfo();
+        this.setState({ Results: lightningInfo });
 
-        let esri = (window as any).esri;
-        esri.require([
-            "esri/map", "esri/graphicsUtils", "esri/layers/ArcGISDynamicMapServiceLayer", "esri/layers/ImageParameters", "esri/geometry/Point",
-            "esri/tasks/query", "esri/tasks/QueryTask", "esri/graphic", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/symbols/SimpleFillSymbol",
-            "esri/tasks/GeometryService", "esri/tasks/BufferParameters", "esri/urlUtils"
-        ], (Map, graphicsUtils, ArcGISDynamicServiceLayer, ImageParameters, Point, Query, QueryTask, Graphic, SimpleMarkerSymbol,
-            SimpleLineSymbol, SimpleFillSymbol, GeometryService, BufferParameters, urlUtils) => {
-            this.graphicsUtils = graphicsUtils;
-            this.Point = Point;
-            this.Query = Query;
-            this.QueryTask = QueryTask;
-            this.Graphic = Graphic;
-            this.GeometryService = GeometryService;
-            this.BufferParameters = BufferParameters;
+        this.map = leaflet.map('map', { center: [35, -85], zoom: 7 });
+        leaflet.esri.basemapLayer('Gray').addTo(this.map);
 
-            urlUtils.addProxyRule({
-                proxyUrl: "http://pq/arcgisproxynew/proxy.ashx",
-                urlPrefix: "https://gis.tva.gov/arcgis/rest/services/"
+        let transmissionLayer = leaflet.esri.dynamicMapLayer({ url:'', opacity: 0.3, f: 'image' });
+        transmissionLayer.options['url'] = `http://pq/arcgisproxynew/proxy.ashx?https://gis.tva.gov/arcgis/rest/services/EGIS_Transmission/Transmission_Grid_Restricted_2/MapServer/`;
+        transmissionLayer.options['f'] = 'image';
+        transmissionLayer.bindPopup((err, featureCollection, response) => console.log(featureCollection)).addTo(this.map);
+            
+        let safetyLayer = leaflet.esri.dynamicMapLayer({ url: ``, opacity: 1, f: 'image' });
+        safetyLayer.options['url'] = `http://pq/arcgisproxynew/proxy.ashx?https://gis.tva.gov/arcgis/rest/services/EGIS_Edit/safetyHazards/MapServer/`;
+        safetyLayer.options['f'] = 'image';
+        safetyLayer.addTo(this.map);
+
+        let lscLayer = leaflet.esri.dynamicMapLayer({ url: ``, opacity: 0.3, f: 'image' });
+        lscLayer.options['url'] = `http://pq/arcgisproxynew/proxy.ashx?https://gis.tva.gov/arcgis/rest/services/EGIS_Transmission/Transmission_Station_Assets/MapServer/`;
+        lscLayer.options['f'] = 'image';
+        lscLayer.addTo(this.map);
+
+        let time = moment(faultInfo[0].Inception);
+        let timestring = time.utc().format('YYYY-MM-DDTHH') + ':' + (time.minutes() - time.minutes() % 5).toString();
+
+        var radar_current = leaflet.tileLayer.wms("https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r-t.cgi?time=" + timestring + '&', {
+            layers: 'nexrad-n0r-wmst',
+            format: 'image/png',
+            transparent: true,
+            opacity: 0.5,
+            attribution: "Weather data © 2016 IEM Nexrad",
+        });
+
+        this.map.addLayer(radar_current);
+
+        if (lightningInfo.length > 0) {
+            let lightningIcon = leaflet.icon({
+                iconUrl: homePath + 'Images/lightning.png',
+                iconSize:[20,25]
             });
 
-            let fltLine = new SimpleLineSymbol();
-            fltLine.setWidth(3);
-            fltLine.setColor({ r: 26, g: 26, b: 26, a: 1 });
-
-            this.faultSymbol = new SimpleMarkerSymbol();
-            this.faultSymbol.setStyle(SimpleMarkerSymbol.STYLE_X);
-            this.faultSymbol.setColor({ r: 255, g: 0, b: 0, a: 0 });
-
-            this.faultSymbol.setOutline(fltLine);
-
-            let ltgLine = new SimpleLineSymbol();
-            ltgLine.setWidth(3);
-            ltgLine.setColor({ r: 230, g: 230, b: 0, a: 1 });
-
-            this.ltgSymbol = new SimpleMarkerSymbol();
-            this.ltgSymbol.setStyle(SimpleMarkerSymbol.STYLE_DIAMOND);
-            this.ltgSymbol.setColor({ r: 230, g: 230, b: 0, a: 1 });
-            this.ltgSymbol.setOutline(ltgLine);
-
-            this.lineSymbol = new SimpleFillSymbol();
-            this.lineSymbol.setColor({ r: 100, g: 100, b: 100, a: 0.25 });
-            this.lineSymbol.setOutline(null);
-
-            this.map = new Map("map", { basemap: "gray", center: [-86, 35], zoom: 7 });
-
-
-            var txLayer = new ArcGISDynamicServiceLayer("https://gis.tva.gov/arcgis/rest/services/EGIS_Transmission/Transmission_Grid_Restricted_2/MapServer", { "id": "txlines", "opacity": 0.5, "visible": true });
-            this.map.addLayer(txLayer);
-
-
-            var imageParms = new ImageParameters();
-            imageParms.layerIds = [8];
-            imageParms.layerOption = ImageParameters.LAYER_OPTION_SHOW;
-            var lscLayer = new ArcGISDynamicServiceLayer("https://gis.tva.gov/arcgis/rest/services/EGIS_Transmission/Transmission_Station_Assets/MapServer", { "id": "LSC", "visible": true, "imageParameters": imageParms });
-            this.map.addLayer(lscLayer);
-
-
-            var lineHazardsLayer = new ArcGISDynamicServiceLayer("https://gis.tva.gov/arcgis/rest/services/EGIS_Transmission/Property_Hazards/MapServer", { "id": "lineHazards", "opacity": 0.5, "visible": true });
-            this.map.addLayer(lineHazardsLayer);
-
-            this.map.on("load", this.execute);
-
-        });
-
-    }
-
-    execute() {
-        this.map.graphics.clear();
-        this.map.centerAndZoom([-86, 35], 7);
-
-        let lnqueryTask = new this.QueryTask("https://gis.tva.gov/arcgis/rest/services/EGIS_Transmission/Transmission_Grid_Restricted_2/MapServer/6");
-        let lnQuery = new this.Query();
-        lnQuery.returnGeometry = true;
-        lnQuery.outFields = ["LINENAME"];
-
-
-        lnQuery.where = "UPPER(LINENAME) like '%" + this.state.LineNumber.toUpperCase() + "%'";
-        lnqueryTask.execute(lnQuery, this.executeltg);
-    }
-
-    reset() {
-        this.execute();
-    }
-
-    getOffset(t: Date) { //t is the date object to check, returns CDT daylight saving time is in effect.
-        return t.toTimeString().indexOf("ST") > 0 ? 'CST' : 'CDT';
-    }
-
-    executeltg(results) {
-        let esri = (window as any).esri;
-
-        let query = new this.Query();
-        query.returnGeometry = true;
-        query.outFields = [
-            "DISPLAYTIME", "LATITUDE", "LONGITUDE", "AMPLITUDE"
-        ];
-
-        let gsvc = new this.GeometryService("https://gis.tva.gov/arcgis/rest/services/Utilities/Geometry/GeometryServer");
-        let ltgqturl = "https://gis.tva.gov/arcgis/rest/services/EGIS/LightningQuery/MapServer/" + this.state.LtgSource;
-        let ltgqueryTask = new this.QueryTask(ltgqturl);
-
-   
-        let starttime = new Date(this.state.Inception)
-        starttime.setSeconds(this.state.Inception.getSeconds() - this.state.Window);
-        let endtime = new Date(this.state.Inception)
-        endtime.setSeconds(this.state.Inception.getSeconds() + this.state.Window)
-
-        let startoffset = this.getOffset(starttime);
-        let endoffset = this.getOffset(endtime);
-
-
-        starttime = new Date(`${starttime} ${startoffset}`);
-        endtime = new Date(`${endtime} ${endoffset}`);
-
-        query.timeExtent = { startTime: starttime, endTime: endtime, toJson: () => [starttime.getTime(), endtime.getTime()] };
-
-
-        //combine line search results into a single feature
-        let totalLine = [];
-
-        for (let i = 0, il = results.features.length; i < il; i++) {
-            totalLine.push(results.features[i].geometry);
-        }
-
-        let params = new this.BufferParameters();
-        params.geometries = totalLine;
-        params.unionResults = true;
-        params.distances = [0.5];
-        params.unit = esri.tasks.GeometryService.UNIT_STATUTE_MILE;
-        gsvc.buffer(params, geometries => {
-            let graphic = new this.Graphic(geometries[0], this.lineSymbol);
-            this.map.graphics.add(graphic);
-            query.geometry = geometries[0];
-            query.spatialrealationship = esri.tasks.Query.SPATIAL_REL_INTERSECTS;
-            //zoom
-            this.zoomLine();
-            ltgqueryTask.execute(query, this.showResults);
-
-        });
-
-
-    }
-
-
-    zoomLine() {
-        this.map.setExtent(this.graphicsUtils.graphicsExtent(this.map.graphics.graphics), true);
-        //add fault location to map
-        if (this.state.Latitude.length > 0) {
-            if (this.state.Longitude.length > 0) {
-                var faultpoint = new this.Point(this.state.Longitude, this.state.Latitude);
-                let graphic = new this.Graphic(faultpoint, this.faultSymbol);
-                this.map.graphics.add(graphic);
+            for (let i = 0; i < lightningInfo.length; i++) {
+                leaflet.marker([lightningInfo[i].Latitude, lightningInfo[i].Longitude], {icon: lightningIcon}).addTo(this.map);
             }
         }
 
+
+        if (faultInfo.length > 0) {
+            leaflet.marker([faultInfo[0].Latitude, faultInfo[0].Longitude]).addTo(this.map);
+        }
+
+        $.ajax({
+            type: 'GET',
+            url: `http://pq/arcgisproxynew/proxy.ashx?https://gis.tva.gov/arcgis/rest/services/EGIS_Transmission/Transmission_Grid_Restricted_2/MapServer/6/query?`+ encodeURI(`f=json&where=UPPER(LINENAME) like '%${this.state.FaultInfo[0].AssetName.toUpperCase()}%'&returnGeometry=true&outfiels=LINENAME`),
+            contentType: "application/json; charset=utf-8",
+            cache: false,
+            async: true
+
+
+        }).done(lineGeometeries => {
+            let params = {
+                f: 'json',
+                unionResults: true,
+                geodesic: false,
+                distances: 0.5,
+                geometries: JSON.stringify({ geometryType: "esriGeometryPolyline",geometries: JSON.parse(lineGeometeries).features.map(a => a.geometry) }),
+                inSR: 102100,
+                unit: 9093
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: 'http://pq/arcgisproxynew/proxy.ashx?https://gis.tva.gov/arcgis/rest/services/Utilities/Geometry/GeometryServer/buffer',
+                data: params,
+                dataType: 'application/json',
+                cache: false,
+                async: true
+            }).always(rsp => {
+                let buffer = leaflet.Proj.geoJson(this.poly(JSON.parse(rsp.responseText).geometries[0]), {
+                    style: function (feature) {
+                        return { color: feature.properties.color, opacity: feature.properties.opacity };
+                    }
+                });
+
+                buffer.addTo(this.map);
+                this.map.fitBounds(buffer.getBounds());
+            });
+
+        })
     }
 
 
-    showResults(results) {
-        this.setState({ Results: results });
+    poly(geometry): any {
+        var outPut = {
+            "type": "FeatureCollection",
+            "features": []
+        };
+        //first we check for some easy cases, like if their is only one ring
+        if (geometry.rings.length === 1) {
+            outPut.features.push({ type: 'Feature', properties: { color: 'black', opacity: 1 }, geometry: { "type": "Polygon", "coordinates": geometry.rings }, crs: { type: "name", properties: { name: "EPSG:3857" } } });
+        } else {
+            /*if it isn't that easy then we have to start checking ring direction, basically the ring goes clockwise its part of the polygon, if it goes counterclockwise it is a hole in the polygon, but geojson does it by haveing an array with the first element be the polygons and the next elements being holes in it*/
+            var ccc = this.dP(geometry.rings);
+            var d = ccc[0];
+            var dd = ccc[1];
+            var r = [];
+            if (dd.length === 0) {
+                /*if their are no holes we don't need to worry about this, but do need to stuck each ring inside its own array*/
+                var l2 = d.length;
+                var i3 = 0;
+                while (l2 > i3) {
+                    r.push([d[i3]]);
+                    i3++;
+                }
+                outPut.features.push({ type: 'Feature', properties: { color: 'black', opacity: 1 }, geometry: { "type": "MultiPolygon", "coordinates": r }, crs: { type: "name", properties: { name: "EPSG:3857" } } });
+            } else if (d.length === 1) {
+                /*if their is only one clockwise ring then we know all holes are in that poly*/
+                dd.unshift(d[0]);
+                outPut.features.push({ type: 'Feature', properties: { color: 'black', opacity: 1 }, geometry: { "type": "Polygon", "coordinates": dd }, crs: { type: "name", properties: { name: "EPSG:3857" } } });
 
-        for (let i = 0; i < results.features.length; i++) {
-            let graphic = new this.Graphic(results.features[i].geometry, this.ltgSymbol);
-            this.map.graphics.add(graphic);
+            } else {
+                /*if their are multiple rings and holes we have no way of knowing which belong to which without looking at it specially, so just dump the coordinates and add  a hole field, this may cause errors*/
+                outPut.features.push({ type: 'Feature', properties: { color: 'black', opacity: 1 }, geometry: { "type": "MultiPolygon", "coordinates": d, "holes": dd }, crs: { type: "name", properties: { name: "EPSG:3857" } }});
+            }
+
         }
+
+        return outPut
+    }
+
+    dP(a) {
+        //returns an array of 2 arrays, the first being all the clockwise ones, the second counter clockwise
+        var d = [];
+        var dd = [];
+        var l = a.length;
+        var ii = 0;
+        while (l > ii) {
+            if (this.c(a[ii])) {
+                d.push(a[ii]);
+            } else {
+                dd.push(a[ii]);
+            }
+            ii++;
+        }
+        return [d, dd];
+    }
+
+    c(a) {
+        //return true if clockwise
+        var l = a.length - 1;
+        var i = 0;
+        var o = 0;
+
+        while (l > i) {
+            o += (a[i][0] * a[i + 1][1] - a[i + 1][0] * a[i][1]);
+
+            i++;
+        }
+        return o <= 0;
+    }
+
+    epsg3857ToLatLong(a:[number,number]): [number,number]
+    {
+        let e = 2.7182818284;
+        let x = 20037508.34;
+
+        let lon = a[1] * 180 / x;
+        let lat = a[0] * x / 180;
+        lat = Math.atan(Math.E^(Math.PI*lat/180))/(Math.PI/360) - 90;
+
+        return [lat,lon];
+
     }
 
     render() {
@@ -243,35 +247,25 @@ export default class TVAESRIMap extends React.Component<{ EventID: number }, { L
                 <div className="card-body">
 
                     <div id="map" style={{ height: 400, padding: 5, border: 'solid 1px gray' }}>
-                        <select className="form-control" style={{ width: 100, position: "absolute", zIndex: 1, top: 80, right: 30 }} value={this.state.LtgSource} onChange={(evt) => this.setState({ LtgSource: evt.target.value as '0' | '1' })}><option value="0">Vaisala</option><option value="1">Weatherbug</option></select>
+                        <select className="form-control" style={{ width: 100, position: "absolute", zIndex: 1000, top: 10, right: 10 }} value={this.state.Window} onChange={(evt) => this.setState({ Window: parseInt(evt.target.value) },() => this.componentDidMount())}>
+                            <option value="2">+/- 2 sec</option>
+                            <option value="5">+/- 5 sec</option>
+                            <option value="10">+/- 10 sec</option>
+                            <option value="20">+/- 20 sec</option>
+                            <option value="30">+/- 30 sec</option>
+                            <option value="60">+/- 60 sec</option>
+                        </select>
                     </div>
-
-                <div className="form-inline">
-                    <div className="form-group" >
-                        <label className="" style={{ margin: '0 10px 0 10px' }}>Time Window:</label>
-                        <input className="form-control" type="text" value={this.state.Window} onChange={(evt) => this.setState({ Window: parseInt(evt.target.value, 10) })} />
-
-                    </div>
-                    <div className="form-group" style={{ width: 150 }}>
-                        <label className="" style={{ margin: '0 10px 0 10px' }}>Line No:</label>
-                        <input className="form-control" type="text" id="lno" value={this.state.LineNumber} onChange={(evt) => this.setState({ LineNumber: evt.target.value })} />
-                    </div>
-                    <div className="form-group">
-                        <button onClick={(evt) => this.execute()}>Get Details</button>
-                        <button onClick={(evt) => this.reset()}>Reset</button>
-                    </div>
-
-                </div>
                 <div style={{ maxHeight: window.innerHeight * 0.3 - 45, overflowY: "auto" }}>
                     {(this.state.Results == null ? <span>Searching...</span> : null)}
-                    {(this.state.Results != null && this.state.Results.features.length == 0 ? <span>No Lightning Records Found</span> : null)}
-                    {(this.state.Results != null && this.state.Results.features.length > 0 ?
+                    {(this.state.Results != null && this.state.Results.length == 0 ? <span>No Lightning Records Found</span> : null)}
+                    {(this.state.Results != null && this.state.Results.length > 0 ?
                         <table className="table" style={{ maxHeight: 'calc(30% - 50px)', height: 'calc(30% - 50px)' }}>
                             <thead>
-                                <tr>{Object.keys(this.state.Results.features[0].attributes).map((attr, index) => <th key={index}>{attr}</th>)}</tr>
+                                <tr>{Object.keys(this.state.Results[0]).map((attr, index) => <th key={index}>{attr}</th>)}</tr>
                             </thead>
                             <tbody>
-                                {this.state.Results.features.map((feature, index) => <tr key={index}>{Object.keys(feature.attributes).map((attribute, i) => <td key={i}>{feature.attributes[attribute]}</td>)}</tr>)}
+                                    {this.state.Results.map((result, index) => <tr key={index}>{Object.keys(result).map((attribute, i) => <td key={i}>{result[attribute]}</td>)}</tr>)}
                             </tbody>
                         </table>
                         : null)}
@@ -282,13 +276,3 @@ export default class TVAESRIMap extends React.Component<{ EventID: number }, { L
     }
 
 }
-
-let queryString = {
-    StartTime: '',
-    EndTime: '',
-    LineNumber: '',
-    FaultLatitude: '',
-    FaultLongitude: ''
-};
-
-decodeURI(location.search).replace(new RegExp("([^?=&]+)(=([^&]*))?", "g"), ($0, $1, $2, $3) => queryString[$1] = $3);

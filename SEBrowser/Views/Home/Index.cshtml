@@ -55,7 +55,7 @@
     <link href="@Url.Content("~/@GSF/Web/Shared/Content/font-awesome.css")" rel="stylesheet">
     <link rel="stylesheet" href="http://js.arcgis.com/3.15/dijit/themes/claro/claro.css">
   	<link rel="stylesheet" href="http://js.arcgis.com/3.15/esri/css/esri.css">
-
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
     <link href="~/Content/bootstrap4-datetimepicker.css" rel="stylesheet"/>
     <style>
         body {
@@ -119,7 +119,8 @@
     <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.axislabels.min.js")"></script>
 
     <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.dashes.js")"></script>
-
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/esri-leaflet@2.3.3/dist/esri-leaflet.js"></script>
     <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/popper.js")"></script>
     <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/bootstrap4.js")"></script>
     <script src="~/Scripts/Lib/bootstrap4-datetimepicker.min.js"></script>
@@ -136,12 +137,6 @@ else
 }
     <script src="~/Scripts/Lib/react-router-dom.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="~/Scripts/Lib/d3.v4.min.js" type="text/javascript" charset="utf-8"></script>
-
-    <script src="http://js.arcgis.com/3.15/"></script>
-    <script>
-        window.esri.require = require;
-	</script>
-
     <script src="@Url.Content("~/Scripts/SEBrowser.js")"></script>
 </body>
 </html>

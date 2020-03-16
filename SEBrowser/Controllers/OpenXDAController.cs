@@ -1,4 +1,27 @@
-﻿using FaultData.DataAnalysis;
+﻿//******************************************************************************************************
+//  OpenXDAController.cs - Gbtc
+//
+//  Copyright © 2020, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+//  file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  03/04/2020 - Billy Ernest
+//       Generated original version of source code.
+//
+//******************************************************************************************************
+
+using FaultData.DataAnalysis;
 using GSF;
 using GSF.Data;
 using GSF.Data.Model;
@@ -282,6 +305,39 @@ namespace SEBrowser.Controllers
 
         }
 
+        [Route("GetEventSearchHistoryStats/{eventID:int}"), HttpGet]
+        public DataTable GetEventSearchHistoryStats(int eventID, int count = 10)
+        {
+            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            {
+                DataTable table = connection.RetrieveData(@" 
+                    SELECT
+	                    ROUND(MAX(VPeak)/Asset.VoltageKV/1000, 3) as VPeakMax,
+	                    MAX(VMax) as VMax,
+	                    MIN(VMin) as VMin,
+	                    MAX(IMax) as IMax,
+	                    MAX(I2tMax) as I2tMax,
+	                    ROUND(MAX(IPeak),3) as IPeakMax,
+	                    ROUND(AVG(InitialMW),3) as AVGMW
+                    FROM
+	                    Asset  JOIN
+	                    Event ON Event.AssetID = Asset.ID JOIN
+	                    EventStat ON EventStat.EventID = Event.ID  OUTER APPLY
+	                    (SELECT ROUND(MAX(VMax)/Asset.VoltageKV/1000,3) as VMax FROM (VALUES(VAMax), (VBMax), (VCMax), (VABMax), (VBCMax), (VCAMax)) AS VMaxView(VMax)) as VMax OUTER APPLY
+	                    (SELECT ROUND(MIN(VMin)/Asset.VoltageKV/1000,3) as VMin FROM (VALUES(VAMin), (VBMin), (VCMin), (VABMin), (VBCMin), (VCAMin)) AS VMinView(VMin)) as VMin OUTER APPLY
+	                    (SELECT ROUND(MAX(IMax),3) as IMax FROM (VALUES(IAMax), (IBMax), (ICMax)) AS IMaxView(IMax)) as IMax OUTER APPLY
+	                    (SELECT ROUND(MAX(I2tMax),3) as I2tMax FROM (VALUES(IA2t), (IB2t), (IC2t)) AS I2tView(I2tMax)) as I2tMax
+                    WHERE Asset.ID = (SELECT AssetID FROM Event WHERE ID = {0})
+                    GROUP BY VoltageKV
+                    "
+                    , eventID);
+
+                return table;
+            }
+
+        }
+
+
 
         [Route("GetEventSearchMeterMakes"), HttpGet]
         public IHttpActionResult GetEventSearchMeterMakes()
@@ -453,49 +509,65 @@ namespace SEBrowser.Controllers
                 try
                 {
 
-                    WebClient request = new WebClient() { UseDefaultCredentials = true};
                     const string SQL = @"
                         select 
 	                        Distance,
 	                        Asset.AssetKey as AssetName,
 	                        Location.LocationKey as StationName,
-                            FaultSummary.Inception
+                            FaultSummary.Inception, 
+	                        Structure.Latitude,
+	                        Structure.Longitude
                         FROM
 	                        FaultSummary JOIN
 	                        Event ON Event.ID = FaultSummary.EventID JOIN
 	                        Asset ON Event.AssetID = Asset.ID JOIN
 	                        Meter ON event.MeterID = MEter.ID JOIN
-	                        Location ON Meter.LocationID = Location.ID
+	                        Location ON Meter.LocationID = Location.ID LEFT JOIN 
+                            NearestStructure ON FaultSummary.ID = NearestStructure.FaultSummaryID LEFT JOIN
+	                        Structure ON NearestStructure.StructureID = Structure.ID
                         WHERE
 	                        FaultSummary.EventID = {0} AND FaultSummary.IsSelectedAlgorithm = 1
                     ";
 
                     DataTable dataTable = connection.RetrieveData(SQL, eventID);
-                    if (dataTable.Rows.Count == 0) return Ok(new string[] { });
-                
-                    string response = request.DownloadString($"http://opsptpsnet.cha.tva.gov:8025/TLI/StructureCrawler/FaultFinder.asp?Station={dataTable.Select().First()["StationName"]}&Line={dataTable.Select().First()["AssetName"]}&Mileage={dataTable.Select().First()["Distance"]}");
-                    string data = Regex.Replace(response, @"\s", "");
-                    data = Regex.Replace(data, @".+<[Bb][Ob][Dd][Yy]><[Bb][Rr]>?(?=)", "");
-                    data = Regex.Replace(data, @"</[Bb][Ob].*", "");
-                    data = Regex.Replace(data, @"<[Bb][Rr]>", "\n");
 
-                    DataTable table = new DataTable();
-                    List<string> headers = data.Split('\n')[0].Split(',').ToList();
-                    List<List<string>> rows = data.Split('\n').Where((x, i) => i > 0).Select(x => x.Split(',').ToList()).ToList();
-
-                    headers.ForEach(header => table.Columns.Add(header));
-                    rows.ForEach(row => {
-                        var newRow = table.NewRow();
-                        for (int i = 0; i < headers.Count; ++i) {
-                            newRow[headers[i]] = row[i];
-                        }
-                        table.Rows.Add(newRow);
-                    });
-
-                    return Ok(new { LineNumber = dataTable.Select().First()["AssetName"].ToString(), Inception = dataTable.Select().First()["Inception"].ToString(), Longitude = table.Select().First()["Longitude"].ToString(), Latitude = table.Select().First()["Latitude"].ToString() });
+                    return Ok(dataTable);
 
                 }
                 catch (Exception ex) {
+                    return InternalServerError(ex);
+                }
+
+            }
+
+        }
+
+        [Route("GetLightningInfo/{eventID:int}/{timeWindow:int}"), HttpGet]
+        public IHttpActionResult GetLightningInfo(int eventID, int timeWindow)
+        {
+            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            {
+                try
+                {
+
+                    const string SQL = @"
+                        SELECT
+	                        Service, DisplayTime, Amplitude, Latitude,Longitude
+                        FROM
+	                        LightningStrike JOIN
+	                        Event ON LightningStrike.EventID = Event.ID JOIN
+	                        FaultSummary ON Event.ID = FaultSummary.EventID AND FaultSummary.IsSelectedAlgorithm = 1
+                        WHERE
+	                        Event.ID = {0} AND CAST(LightningStrike.DisplayTime as datetime2) BETWEEN DateAdd(S,-{1}, FaultSummary.Inception) AND  DateAdd(S,{1}, FaultSummary.Inception)
+                    ";
+
+                    DataTable dataTable = connection.RetrieveData(SQL, eventID, timeWindow);
+
+                    return Ok(dataTable);
+
+                }
+                catch (Exception ex)
+                {
                     return InternalServerError(ex);
                 }
 

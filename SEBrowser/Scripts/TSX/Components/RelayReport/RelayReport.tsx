@@ -28,6 +28,7 @@ import { History } from 'history';
 import RelayReportNavBar, { RelayReportNavBarProps } from './RelayReportNavBar';
 import RelayReportPane from './RelayReportPane';
 
+import * as queryString from 'querystring';
 
 
 interface IProps { }
@@ -49,8 +50,8 @@ export default class RelayReport extends React.Component<IProps, IState>{
         this.state = {
             searchBarProps: {
                 stateSetter: this.stateSetter.bind(this),
-                BreakerID: (query['breakerid'] != undefined ? query['breakerid'] : -1),
-                ChannelID: (query['channelid'] != undefined ? query['channelid'] : -1),
+                BreakerID: (query['breakerid'] != undefined ? parseInt(query['breakerid'] as string) : -1),
+                ChannelID: (query['channelid'] != undefined ? parseInt( query['channelid'] as string) : -1),
             },
             
         };
@@ -89,7 +90,7 @@ export default class RelayReport extends React.Component<IProps, IState>{
                 if (dataTypes.indexOf(typeof (stateObject[key])) < 0)
                     delete stateObject[key];
             })
-            return queryString.stringify(stateObject, { encode: false });
+            return queryString.stringify(stateObject as any);
         }
 
         var oldQueryString = toQueryString(this.state);

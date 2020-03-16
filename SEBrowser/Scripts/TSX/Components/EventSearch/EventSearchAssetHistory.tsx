@@ -22,72 +22,94 @@
 //******************************************************************************************************
 
 import React from 'react';
-import SEBrowserService from './../../../TS/Services/SEBrowser';
 
-export default class EventSearchHistory extends React.Component<{ EventID: number }, {tableRows: Array<JSX.Element>, count: number }>{
-    seBrowserService: SEBrowserService;
-    constructor(props, context) {
-        super(props, context);
+const EventSearchHistory = (props: { EventID: number }) => {
+    const [historyData, setHistoryData] = React.useState<Array<any>>([]);
+    const [statsData, setStatsData] = React.useState<any>({});
 
-        this.seBrowserService = new SEBrowserService();
+    const [count, setCount] = React.useState<number>(10);
 
-        this.state = {
-            tableRows: [],
-            count: 10
-        };
-    }
+    React.useEffect(() => {
+        let handle1 = getHistoryData();
+        handle1.done((data) => setHistoryData(data));
+        let handle2 = getStatsData();
+        handle2.done((data) => setStatsData(data[0]));
 
-    componentDidMount() {
-        if (this.props.EventID >= 0)
-            this.createTableRows(this.props.EventID, this.state.count);
-    }
-    componentWillUnmount() {
-    }
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.eventId >= 0)
-            this.createTableRows(nextProps.eventId, this.state.count);
-    }
+        return () => {
+            if (handle1.abort != undefined) handle1.abort();
+            if (handle2.abort != undefined) handle2.abort();
+
+        }
+    }, [props.EventID, count]);
 
 
-    createTableRows(eventID: number, count: number) {
-        this.seBrowserService.getEventSearchAsssetHistoryData(eventID, count).done(data => {
-            var rows = data.map((d,i) =>
-                <tr key={i}>
-                    <td>{d.EventType}</td>
-                    <td>{moment(d.StartTime).format('MM/DD/YYYY HH:mm:ss.SSS')}</td>
-                    <td><a href={homePath + 'Main/OpenSEE?eventid=' + d.ID} target="_blank">View in OpenSEE</a></td>
-                </tr>)
-
-            this.setState({ tableRows: rows});
+    function getHistoryData() {
+        return  $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/GetEventSearchHistory/${props.EventID}/${count}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
         });
     }
 
-    render() {
-        return (
-            <div className="card">
-                <div className="card-header">Asset History:
-                    <select className='pull-right' value={this.state.count} onChange={(evt) => this.setState({ count: parseInt(evt.target.value) }, () => this.createTableRows(this.props.EventID, this.state.count) )}>
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="75">75</option>
-                        <option value="100">100</option>
-
-                    </select>
-                </div>
-                <div className="card-body">
-                    <table className="table">
-                        <thead>
-                            <tr><th>Event Type</th><th>Date</th><th></th></tr>
-                        </thead>
-                        <tbody>
-                            {this.state.tableRows}
-                        </tbody>
-
-                    </table>
-
-                </div>
-            </div>
-        );
+    function getStatsData() {
+        return $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/GetEventSearchHistoryStats/${props.EventID}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
     }
+
+    return (
+        <div className="card">
+            <div className="card-header">Asset History:
+                <select className='pull-right' value={count} onChange={(evt) => setCount(parseInt(evt.target.value))}>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="75">75</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            <div className="card-body">
+                <table className="table">
+                    <thead>
+                        <tr><th>Stat</th><th>Value</th></tr>
+                    </thead>
+                    <tbody>
+                        {Object.keys(statsData).map((key, i) =>
+                            <tr key={i}>
+                                <td>{key}</td>
+                                <td>{statsData[key]}</td>
+                            </tr>)}
+                    </tbody>
+
+                </table>
+
+
+                <table className="table">
+                    <thead>
+                        <tr><th>Event Type</th><th>Date</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        {historyData.map((d, i) =>
+                            <tr key={i}>
+                                <td>{d.EventType}</td>
+                                <td>{moment(d.StartTime).format('MM/DD/YYYY HH:mm:ss.SSS')}</td>
+                                <td><a href={homePath + 'Main/OpenSEE?eventid=' + d.ID} target="_blank">View in OpenSEE</a></td>
+                            </tr>)}
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+    );
 }
+
+export default EventSearchHistory;

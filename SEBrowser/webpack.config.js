@@ -44,6 +44,10 @@ module.exports = {
         moment: 'moment',
         d3: 'd3',
         'react-router-dom': 'ReactRouterDOM',
+        'leaflet': 'L',
+        'esri-leaflet': {
+            root: ['L', 'esri']
+        }
     },
     plugins: [
         new webpack.ProvidePlugin({

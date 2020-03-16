@@ -24,7 +24,7 @@
 import React from 'react';
 import OpenSEEService from '../../../TS/Services/OpenSEE';
 
-export default class EventSearchBreakerPerformance extends React.Component<{ EventID: number, IsBreaker: boolean }, { ShowRelayHistory: boolean }>{
+export default class EventSearchBreakerPerformance extends React.Component<{ EventID: number }, { ShowRelayHistory: boolean }>{
     openSEEService: OpenSEEService;
     optionsTripTime: object;
     optionsPickupTime: object;
@@ -227,7 +227,7 @@ export default class EventSearchBreakerPerformance extends React.Component<{ Eve
     }
 
     componentDidMount() {
-        if (this.props.IsBreaker) this.getData(this.props);
+        this.getData(this.props);
     }
     componentWillUnmount() {
     }
@@ -303,7 +303,6 @@ export default class EventSearchBreakerPerformance extends React.Component<{ Eve
     }
 
     render() {
-        if (!this.props.IsBreaker) return null;
         return (
             <div className="card" >
                 <div className="card-header">Historic Breaker Performance</div>

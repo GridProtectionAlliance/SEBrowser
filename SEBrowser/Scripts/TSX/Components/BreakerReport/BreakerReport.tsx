@@ -27,7 +27,7 @@ import BreakerReportNavbar from './BreakerReportNavbar';
 import createHistory from "history/createBrowserHistory"
 import { History } from 'history';
 import { clone, isEqual } from 'lodash';
-
+import * as queryString from 'querystring';
 const momentDateFormat = "MM/DD/YYYY";
 declare var homePath: string;
 
@@ -43,7 +43,7 @@ export default class BreakerReport extends React.Component<{}, State>{
         this.state = {
             fromDate: (query['fromDate'] != undefined ? query['fromDate'] : moment().subtract(30, 'days').format(momentDateFormat)),
             toDate: (query['toDate'] != undefined ? query['toDate'] : moment().format(momentDateFormat)),
-            breaker: (query['breaker'] != undefined ? query['breaker'] : '0'),
+            breaker: (query['breaker'] != undefined ? query['breaker'] as string : '0'),
         }
 
         this.history['listen']((location, action) => {
@@ -51,7 +51,7 @@ export default class BreakerReport extends React.Component<{}, State>{
             this.setState({
                 fromDate: (query['fromDate'] != undefined ? query['fromDate'] : moment().subtract(30, 'days').format(momentDateFormat)),
                 toDate: (query['toDate'] != undefined ? query['toDate'] : moment().format(momentDateFormat)),
-                breaker: (query['breaker'] != undefined ? query['breaker'] : '0'),
+                breaker: (query['breaker'] != undefined ? query['breaker'] as string : '0'),
             });
         });
 
@@ -78,7 +78,7 @@ export default class BreakerReport extends React.Component<{}, State>{
                 if (dataTypes.indexOf(typeof (stateObject[key])) < 0)
                     delete stateObject[key];
             })
-            return queryString.stringify(stateObject, { encode: false });
+            return queryString.stringify(stateObject as any);
         }
 
         var oldQueryString = toQueryString(this.state);

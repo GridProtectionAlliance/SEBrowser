@@ -22,7 +22,7 @@
 //******************************************************************************************************
 
 import React from 'react';
-import {  scaleLinear,select, extent,axisBottom} from 'd3';
+import {  scaleLinear,select, axisBottom} from 'd3';
 
 const EventSearchPreviewD3ChartAxis = (props: { EventID: number }) => {
     let svgWidth = (window.innerWidth - 300) / 2 - 17 - 40;

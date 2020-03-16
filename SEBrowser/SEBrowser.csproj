@@ -240,6 +240,7 @@
     <Content Include="Data\SEBrowser.sql" />
     <Content Include="Global.asax" />
     <Content Include="Images\icon.png" />
+    <Content Include="Images\lightning.png" />
     <Content Include="Images\SE Browser - Spelled out - 111 high.png" />
     <Content Include="Readme.txt" />
     <Content Include="Scripts\Lib\bootstrap4-datetimepicker.min.js" />
@@ -256,6 +257,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\LightningQueryController.cs" />
     <Compile Include="Controllers\SEBrowserController.cs" />
     <Compile Include="Controllers\OpenXDAController.cs" />
     <Compile Include="Global.asax.cs">
@@ -325,7 +327,10 @@
     <None Include="Scripts\TSX\Components\EventSearch\TVAESRIMap\TVAESRIMap.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchOpenSEE.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchOpenSEE.tsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\TSX\Components\EventSearch\TVALightning\TVALightning.tsx" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

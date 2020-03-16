@@ -151,7 +151,7 @@ CREATE TABLE EventPreviewPaneSetting(
 	ID int IDENTITY(1,1) NOT NULL PRIMARY KEY,
 	Name varchar(200) NOT NULL,
 	Show bit NOT NULL DEFAULT (1),
-	OrderBy bit NOT NULL
+	OrderBy int NOT NULL
 )
 
 INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchOpenSEE', 1,1)
@@ -173,6 +173,8 @@ GO
 INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchBreakerPerformance', 0,9)
 GO
 INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchNoteWindow', 1,10)
+GO
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('TVALightning', 0,11)
 GO
 
 

@@ -24,7 +24,7 @@
 import React from 'react';
 import OpenSEEService from '../../../TS/Services/OpenSEE';
 
-export default class EventSearchRrelayPerformance extends React.Component<{ EventID: number, IsBreaker: boolean }, {tableRows: Array<JSX.Element> }>{
+export default class EventSearchRrelayPerformance extends React.Component<{ EventID: number }, {tableRows: Array<JSX.Element> }>{
     openSEEService: OpenSEEService;
     constructor(props, context) {
         super(props, context);
@@ -37,13 +37,13 @@ export default class EventSearchRrelayPerformance extends React.Component<{ Even
     }
 
     componentDidMount() {
-        if (this.props.IsBreaker && this.props.EventID >= 0)
+        if (this.props.EventID >= 0)
             this.createTableRows(this.props.EventID);
     }
     componentWillUnmount() {
     }
     componentWillReceiveProps(nextProps) {
-        if (this.props.IsBreaker && nextProps.eventId >= 0)
+        if (nextProps.eventId >= 0)
             this.createTableRows(nextProps.eventId);
     }
 
@@ -67,7 +67,6 @@ export default class EventSearchRrelayPerformance extends React.Component<{ Even
     }
 
     render() {
-        if (!this.props.IsBreaker) return null;
         return (
             <div className="card">
                 <div className="card-header">Breaker Performance:</div>

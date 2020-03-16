@@ -34,6 +34,7 @@ import EventSearchBreakerPerformance from './EventSearchBreakerPerformance';
 import EventSearchFileInfo from './EventSearchFileInfo';
 import TVAESRIMap from './TVAESRIMap/TVAESRIMap';
 import EventSearchOpenSEE from './EventSearchOpenSEE';
+import TVALightningChart from './TVALightning/TVALightning';
 
 export default class EventPreviewPane extends React.Component<{ EventID: number, AssetType: OpenXDA.AssetTypeName }, { Settings: Array<SEBrowser.EventPreviewPaneSetting>}> {
     constructor(props) {
@@ -73,32 +74,19 @@ export default class EventPreviewPane extends React.Component<{ EventID: number,
                 return <EventSearchCorrelatedSags key={index} EventID={this.props.EventID} />;
             else if (setting.Name.indexOf('TVAESRIMap') >= 0)
                 return <TVAESRIMap key={index} EventID={this.props.EventID} />;
+            else if (setting.Name.indexOf('TVALightning') >= 0)
+                return <TVALightningChart key={index} EventID={this.props.EventID} />;
             else if (setting.Name.indexOf('EventSearchFileInfo') >= 0)
                 return <EventSearchFileInfo key={index} EventID={this.props.EventID} />;
             else if (setting.Name.indexOf('EventSearchHistory') >= 0)
                 return <EventSearchHistory key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchRelayPerformance') >= 0)
-                return <EventSearchRelayPerformance key={index} EventID={this.props.EventID} IsBreaker={this.props.AssetType == 'Breaker'}/>;
-            else if (setting.Name.indexOf('EventSearchBreakerPerformance') >= 0)
-                return <EventSearchBreakerPerformance key={index} EventID={this.props.EventID} IsBreaker={this.props.AssetType == 'Breaker'} />;
+            else if (setting.Name.indexOf('EventSearchRelayPerformance') >= 0 && this.props.AssetType == 'Breaker')
+                return <EventSearchRelayPerformance key={index} EventID={this.props.EventID} />;
+            else if (setting.Name.indexOf('EventSearchBreakerPerformance') >= 0 && this.props.AssetType == 'Breaker')
+                return <EventSearchBreakerPerformance key={index} EventID={this.props.EventID}/>;
             else if (setting.Name.indexOf('EventSearchNoteWindow') >= 0)
                 return <EventSearchNoteWindow key={index} EventID={this.props.EventID} />;
         });
-
-        /*return (
-            <div>
-                <EventSearchOpenSEE EventID={this.props.EventID} />
-                <EventSearchFaultSegments eventId={this.props.EventID} />
-                <EventSearchAssetVoltageDisturbances eventId={this.props.EventID} />
-                <EventSearchCorrelatedSags eventId={this.props.EventID} />
-                <TVAESRIMap EventID={this.props.EventID} />
-                <EventSearchFileInfo EventID={this.props.EventID} />
-                <EventSearchHistory EventID={this.props.EventID} />
-                <EventSearchRelayPerformance EventID={this.props.EventID} IsBreaker={this.props.AssetType == 'Breaker'}/>
-                <EventSearchBreakerPerformance EventID={this.props.EventID} IsBreaker={this.props.AssetType == 'Breaker'}/>
-                <EventSearchNoteWindow eventId={this.props.EventID} />
-            </div>
-        );*/
     }
 }
 
