@@ -336,6 +336,9 @@
   <ItemGroup>
     <Content Include="Scripts\TSX\Components\EventSearch\TVA\FaultInfo.tsx" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\TSX\Components\EventSearch\LineParameters.tsx" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

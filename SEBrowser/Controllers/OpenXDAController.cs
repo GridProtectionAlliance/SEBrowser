@@ -575,6 +575,38 @@ namespace SEBrowser.Controllers
 
         }
 
+        [Route("LineParameters/{eventID:int}"), HttpGet]
+        public IHttpActionResult GetLineParameters(int eventID)
+        {
+            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            {
+                try
+                {
+
+                    const string SQL = @"
+                        SELECT
+	                        LineView.*
+                        FROM
+	                        LineView JOIN
+	                        Event ON Event.AssetID = LineView.ID
+                        WHERE
+	                        Event.ID = {0}
+                    ";
+
+                    DataTable dataTable = connection.RetrieveData(SQL, eventID);
+
+                    return Ok(dataTable);
+
+                }
+                catch (Exception ex)
+                {
+                    return InternalServerError(ex);
+                }
+
+            }
+
+        }
+
 
 
 
@@ -669,136 +701,6 @@ namespace SEBrowser.Controllers
                 }
 
                 return Ok();
-                //    if (dataType == "Time")
-                //    {
-                //        DataGroup dataGroup;
-                //        if (type == "Voltage")
-                //        {
-                //            dataGroup = QueryDataGroup(eventId, meter);
-                //            tempD3 = GetD3DataLookup(dataGroup, type);
-                //        }
-
-                //        else
-                //        {
-                //            dataGroup = QueryDataGroup(eventId, meter);
-                //            temp = GetDataLookup(dataGroup, type);
-                //        }
-
-                //    }
-                //    else if (dataType == "Statistics")
-                //    {
-                //        temp = GetStatisticsLookup(evt.AssetID, type);
-                //    }
-                //    else
-                //    {
-                //        VICycleDataGroup viCycleDataGroup;
-                //        if (type == "Voltage")
-                //        {
-                //            viCycleDataGroup = QueryVICycleDataGroup(eventId, meter);
-                //            tempD3 = GetD3FrequencyDataLookup(viCycleDataGroup, type);
-                //        }
-                //        else
-                //        {
-                //            viCycleDataGroup = QueryVICycleDataGroup(eventId, meter);
-                //            temp = GetFrequencyDataLookup(viCycleDataGroup, type);
-                //        }
-                //    }
-
-                //    JsonReturn returnDict = new JsonReturn();
-
-                //    if (type == "Voltage")
-                //    {
-                //        foreach (string key in tempD3.Keys)
-                //        {
-                //            if (tempD3[key].DataPoints.Count() > 0)
-                //            {
-                //                if (dictD3.ContainsKey(key))
-                //                    dictD3[key].DataPoints = dictD3[key].DataPoints.Concat(temp[key].DataPoints).ToList();
-                //                else
-                //                    dictD3.Add(key, tempD3[key]);
-                //            }
-                //        }
-
-                //        if (dictD3.Count == 0) return null;
-
-                //        List<D3Series> returnList = new List<D3Series>();
-
-                //        foreach (string key in dictD3.Keys)
-                //        {
-                //            D3Series series = new D3Series();
-                //            series = dictD3[key];
-
-                //            series.DataPoints = Downsample(dictD3[key].DataPoints.OrderBy(x => x[0]).ToList(), pixels, new Range<DateTime>(startTime, endTime));
-
-                //            returnList.Add(series);
-                //        }
-
-                //        returnDict.Data = returnList;
-
-                //    }
-                //    else
-                //    {
-                //        foreach (string key in temp.Keys)
-                //        {
-                //            if (temp[key].DataPoints.Count() > 0)
-                //            {
-                //                if (dict.ContainsKey(key))
-                //                    dict[key].DataPoints = dict[key].DataPoints.Concat(temp[key].DataPoints).ToList();
-                //                else
-                //                    dict.Add(key, temp[key]);
-                //            }
-                //        }
-
-                //        if (dict.Count == 0) return null;
-
-
-                //        List<FlotSeries> returnList = new List<FlotSeries>();
-
-                //        if (dataType == "Statistics")
-                //        {
-                //            foreach (string key in dict.Keys)
-                //            {
-                //                FlotSeries series = new FlotSeries();
-                //                series = dict[key];
-
-                //                series.DataPoints = dict[key].DataPoints.OrderBy(x => x[0]).ToList();
-
-                //                returnList.Add(series);
-                //            }
-
-                //            returnDict.StartDate = evt.StartTime;
-                //            returnDict.EndDate = evt.EndTime;
-                //            returnDict.Data = null;
-                //            returnDict.CalculationTime = 0;
-                //            returnDict.CalculationEnd = 0;
-
-                //            return returnDict;
-
-                //        }
-
-                //        foreach (string key in dict.Keys)
-                //        {
-                //            FlotSeries series = new FlotSeries();
-                //            series = dict[key];
-
-                //            series.DataPoints = Downsample(dict[key].DataPoints.OrderBy(x => x[0]).ToList(), pixels, new Range<DateTime>(startTime, endTime));
-
-                //            returnList.Add(series);
-                //        }
-
-                //        returnDict.Data = null;
-                //    }
-
-                //    double calcTime = (calcCycle >= 0 ? dict.First().Value.DataPoints[calcCycle][0] : 0);
-
-
-                //    returnDict.StartDate = evt.StartTime;
-                //    returnDict.EndDate = evt.EndTime;
-
-                //    returnDict.CalculationTime = calcTime;
-                //    returnDict.CalculationEnd = calcTime + 1000 / systemFrequency;
-
-                //    return returnDict;
             }
 
         }

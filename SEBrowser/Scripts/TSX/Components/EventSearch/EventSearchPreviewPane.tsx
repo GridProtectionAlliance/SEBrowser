@@ -36,8 +36,9 @@ import TVAESRIMap from './TVA/ESRIMap';
 import EventSearchOpenSEE from './EventSearchOpenSEE';
 import TVALightningChart from './TVA/Lightning';
 import TVAFaultInfo from './TVA/FaultInfo';
+import LineParameters from './LineParameters';
 
-export default class EventPreviewPane extends React.Component<{ EventID: number, AssetType: OpenXDA.AssetTypeName }, { Settings: Array<SEBrowser.EventPreviewPaneSetting>}> {
+export default class EventPreviewPane extends React.Component<{ EventID: number, AssetType: OpenXDA.AssetTypeName, EventType: OpenXDA.EventTypeName }, { Settings: Array<SEBrowser.EventPreviewPaneSetting>}> {
     constructor(props) {
         super(props);
 
@@ -75,9 +76,10 @@ export default class EventPreviewPane extends React.Component<{ EventID: number,
                 return <EventSearchCorrelatedSags key={index} EventID={this.props.EventID} />;
             else if (setting.Name.indexOf('TVAESRIMap') >= 0)
                 return <TVAESRIMap key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('TVAFaultInfo') >= 0)
+            else if (setting.Name.indexOf('TVAFaultInfo') >= 0 && this.props.AssetType == 'Line' && (this.props.EventType == 'Fault' || this.props.EventType == "RecloseIntoFault"))
                 return <TVAFaultInfo key={index} EventID={this.props.EventID} />;
-
+            else if (setting.Name.indexOf('LineParameters') >= 0 && this.props.AssetType == 'Line' && (this.props.EventType == 'Fault' || this.props.EventType == "RecloseIntoFault"))
+                return <LineParameters key={index} EventID={this.props.EventID} />;
             else if (setting.Name.indexOf('TVALightning') >= 0)
                 return <TVALightningChart key={index} EventID={this.props.EventID} />;
             else if (setting.Name.indexOf('EventSearchFileInfo') >= 0)
