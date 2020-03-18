@@ -257,7 +257,8 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\LightningQueryController.cs" />
+    <Compile Include="Controllers\OpenXDA\FaultInfoController.cs" />
+    <Compile Include="Controllers\TVA\LightningQueryController.cs" />
     <Compile Include="Controllers\SEBrowserController.cs" />
     <Compile Include="Controllers\OpenXDAController.cs" />
     <Compile Include="Global.asax.cs">
@@ -324,13 +325,16 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchFileInfo.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewD3ChartAxis.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewD3Chart.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\TVAESRIMap\TVAESRIMap.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\TVA\ESRIMap.tsx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchOpenSEE.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\EventSearch\TVALightning\TVALightning.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\TVA\Lightning.tsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\TSX\Components\EventSearch\TVA\FaultInfo.tsx" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

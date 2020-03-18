@@ -176,6 +176,16 @@ INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchNoteWin
 GO
 INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('TVALightning', 0,11)
 GO
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('TVAFaultInfo', 1,12)
+GO
+
+CREATE TABLE Links(
+	ID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+	Name varchar(100) NOT NULL UNIQUE,
+	Display varchar(100) NOT NULL,
+	Value varchar(max) NOT NULL
+)
+
 
 
 CREATE TABLE [dbo].[ValueListGroup](

@@ -32,9 +32,10 @@ import EventSearchRelayPerformance from './EventSearchRelayPerformance';
 import { OpenXDA, SEBrowser } from 'global'
 import EventSearchBreakerPerformance from './EventSearchBreakerPerformance';
 import EventSearchFileInfo from './EventSearchFileInfo';
-import TVAESRIMap from './TVAESRIMap/TVAESRIMap';
+import TVAESRIMap from './TVA/ESRIMap';
 import EventSearchOpenSEE from './EventSearchOpenSEE';
-import TVALightningChart from './TVALightning/TVALightning';
+import TVALightningChart from './TVA/Lightning';
+import TVAFaultInfo from './TVA/FaultInfo';
 
 export default class EventPreviewPane extends React.Component<{ EventID: number, AssetType: OpenXDA.AssetTypeName }, { Settings: Array<SEBrowser.EventPreviewPaneSetting>}> {
     constructor(props) {
@@ -74,6 +75,9 @@ export default class EventPreviewPane extends React.Component<{ EventID: number,
                 return <EventSearchCorrelatedSags key={index} EventID={this.props.EventID} />;
             else if (setting.Name.indexOf('TVAESRIMap') >= 0)
                 return <TVAESRIMap key={index} EventID={this.props.EventID} />;
+            else if (setting.Name.indexOf('TVAFaultInfo') >= 0)
+                return <TVAFaultInfo key={index} EventID={this.props.EventID} />;
+
             else if (setting.Name.indexOf('TVALightning') >= 0)
                 return <TVALightningChart key={index} EventID={this.props.EventID} />;
             else if (setting.Name.indexOf('EventSearchFileInfo') >= 0)

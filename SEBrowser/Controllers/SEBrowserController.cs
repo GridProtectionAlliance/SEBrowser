@@ -41,6 +41,23 @@ namespace SEBrowser.Controllers
                 return InternalServerError(ex);
             }
         }
+
+        [Route("GetLinks/{category}"), HttpGet]
+        public IHttpActionResult GetLinks(string category)
+        {
+            try
+            {
+                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                {
+                    return Ok(connection.RetrieveData("SELECT * FROM Links WHERE Name LIKE {0} + '%'", category));
+                }
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
+
         #endregion
 
     }

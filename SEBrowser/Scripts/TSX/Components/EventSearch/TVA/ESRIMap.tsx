@@ -27,7 +27,7 @@ import 'esri-leaflet';
 import proj4 from 'proj4';
 import 'proj4leaflet';
 
-export default class TVAESRIMap extends React.Component<{ EventID: number }, { Results: any, FaultInfo: Array<{ StationName: string, Inception: number, Latitude: number, Longitude: number, Distance: number, AssetName: string }>, Window: number }, {}>{
+export default class ESRIMap extends React.Component<{ EventID: number }, { Results: any, FaultInfo: Array<{ StationName: string, Inception: number, Latitude: number, Longitude: number, Distance: number, AssetName: string }>, Window: number }, {}>{
     map: leaflet.Map;
     constructor(props, context) {
         super(props, context);

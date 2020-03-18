@@ -45,7 +45,7 @@ dlldata.c
 # DNX
 project.lock.json
 artifacts/
-
+*/package_lock.json
 *_i.c
 *_p.c
 *_i.h
@@ -219,3 +219,4 @@ FakesAssemblies/
 **/*.Server/ModelManifest.xml
 _Pvt_Extensions
 /Publish.zip
+/SEBrowser/package-lock.json
