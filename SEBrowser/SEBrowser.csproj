@@ -87,6 +87,9 @@
     <Reference Include="GSF.Web, Version=2.3.268.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\GSF.Web.2.3.268-beta\lib\net46\GSF.Web.dll</HintPath>
     </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.11.22.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.11.22\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
     <Reference Include="Ionic.Zlib">
       <HintPath>..\Dependencies\GSF\Ionic.Zlib.dll</HintPath>
     </Reference>
@@ -258,6 +261,8 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\OpenXDA\FaultInfoController.cs" />
+    <Compile Include="Controllers\TVA\SIDAQueryController.cs" />
+    <Compile Include="Controllers\TVA\ESRIMapQueryController.cs" />
     <Compile Include="Controllers\TVA\LightningQueryController.cs" />
     <Compile Include="Controllers\SEBrowserController.cs" />
     <Compile Include="Controllers\OpenXDAController.cs" />
@@ -338,6 +343,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Scripts\TSX\Components\EventSearch\LineParameters.tsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\TSX\Components\EventSearch\TVA\StructureInfo.tsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\TSX\Components\EventSearch\TVA\SIDA.tsx" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

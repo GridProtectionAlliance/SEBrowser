@@ -35,7 +35,7 @@ export default class ESRIMap extends React.Component<{ EventID: number }, { Resu
         this.state = {
             Results: null,
             FaultInfo: [],
-            Window: 2
+            Window: 2, 
         };
 
         proj4.defs('EPSG:3857', "+title=WGS 84 / Pseudo-Mercator +proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs");
@@ -69,7 +69,6 @@ export default class ESRIMap extends React.Component<{ EventID: number }, { Resu
         this.setState({ FaultInfo: faultInfo });
         const lightningInfo = await this.GetLightningInfo();
         this.setState({ Results: lightningInfo });
-
         this.map = leaflet.map('map', { center: [35, -85], zoom: 7 });
         leaflet.esri.basemapLayer('Gray').addTo(this.map);
 
