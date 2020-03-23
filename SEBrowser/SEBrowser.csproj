@@ -261,6 +261,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\OpenXDA\FaultInfoController.cs" />
+    <Compile Include="Controllers\TVA\SOEQueryController.cs" />
     <Compile Include="Controllers\TVA\SIDAQueryController.cs" />
     <Compile Include="Controllers\TVA\ESRIMapQueryController.cs" />
     <Compile Include="Controllers\TVA\LightningQueryController.cs" />
@@ -349,6 +350,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Scripts\TSX\Components\EventSearch\TVA\SIDA.tsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\TSX\Components\EventSearch\TVA\SOE.tsx" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

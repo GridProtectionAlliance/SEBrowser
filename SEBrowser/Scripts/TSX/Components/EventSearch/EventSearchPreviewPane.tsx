@@ -39,6 +39,7 @@ import TVAFaultInfo from './TVA/FaultInfo';
 import LineParameters from './LineParameters';
 import StructureInfo from './TVA/StructureInfo';
 import TVASIDA from './TVA/SIDA';
+import TVASOE from './TVA/SOE';
 
 export default class EventPreviewPane extends React.Component<{ EventID: number, AssetType: OpenXDA.AssetTypeName, EventType: OpenXDA.EventTypeName }, { Settings: Array<SEBrowser.EventPreviewPaneSetting>}> {
     constructor(props) {
@@ -86,6 +87,8 @@ export default class EventPreviewPane extends React.Component<{ EventID: number,
                 return <TVALightningChart key={index} EventID={this.props.EventID} />;
             else if (setting.Name.indexOf('TVASIDA') >= 0)
                 return <TVASIDA key={index} EventID={this.props.EventID} />;
+            else if (setting.Name.indexOf('TVASOE') >= 0)
+                return <TVASOE key={index} EventID={this.props.EventID} />;
 
             else if (setting.Name.indexOf('TVAStructureInfo') >= 0)
                 return <StructureInfo key={index} EventID={this.props.EventID} />;
