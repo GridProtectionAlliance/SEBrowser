@@ -338,25 +338,25 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchOpenSEE.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\EventSearch\TVA\Lightning.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\TVA\Lightning.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\EventSearch\TVA\FaultInfo.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\TVA\FaultInfo.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\EventSearch\LineParameters.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\LineParameters.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\EventSearch\TVA\StructureInfo.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\TVA\StructureInfo.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\EventSearch\TVA\SIDA.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\TVA\SIDA.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\EventSearch\TVA\SOE.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\TVA\SOE.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\EventSearch\TVA\LSC.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\TVA\LSC.tsx" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
