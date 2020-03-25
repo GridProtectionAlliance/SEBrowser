@@ -26,6 +26,7 @@ declare global {
     var xdaInstance: string;
     var scInstance: string;
     var openSEEInstance: string;
+    var faultLocationInstance: string;
 
     namespace moment {
         function utc(timestamp: string): any;

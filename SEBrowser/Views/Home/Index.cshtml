@@ -30,6 +30,7 @@
         ViewBag.xdaInstance = connection.ExecuteScalar<string>("SELECT Value FROM Settings WHERE Name = 'XDAInstance'");
         ViewBag.scInstance = connection.ExecuteScalar<string>("SELECT Value FROM Settings WHERE Name = 'SCInstance'");
         ViewBag.openSEEInstance = connection.ExecuteScalar<string>("SELECT Value FROM Settings WHERE Name = 'OpenSEEInstance'");
+        ViewBag.faultLocationInstance = connection.ExecuteScalar<string>("SELECT Value FROM Settings WHERE Name = 'FaultLocationInstance'");
 
     }
 }
@@ -97,8 +98,9 @@
     <div id="pageBody"></div>
     <script>
         var xdaInstance = '@Html.Raw(ViewBag.xdaInstance)';
-        var scInstance = '@Html.Raw(ViewBag.SCInstance)';
-        var openSEEInstance = '@Html.Raw(ViewBag.OpenSEEInstance)';
+        var scInstance = '@Html.Raw(ViewBag.scInstance)';
+        var openSEEInstance = '@Html.Raw(ViewBag.openSEEInstance)';
+        var faultLocationInstance = '@Html.Raw(ViewBag.faultLocationInstance)';
 
         var homePath = '@Html.Raw(Url.Content("~/"))';
         var controllerViewPath = homePath + '@Html.Raw(this.ViewContext.RouteData.GetRequiredString("controller"))/@Html.Raw(this.ViewContext.RouteData.GetRequiredString("action"))';
