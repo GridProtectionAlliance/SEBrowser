@@ -207,7 +207,7 @@ export default class EventSearchListedEventsNoteWindow extends React.Component<{
     addMultiNote(note: string, eventIDs: Array<number>): JQuery.jqXHR {
         return $.ajax({
             type: "POST",
-            url: `${homePath}api/OpenSEE/AddMultiNote`,
+            url: `${homePath}api/OpenXDA/Note/Multi`,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify({ note: note, eventIDs: eventIDs }),
             cache: false,
@@ -222,7 +222,7 @@ export default class EventSearchListedEventsNoteWindow extends React.Component<{
     deleteNote(note): JQuery.jqXHR {
         return $.ajax({
             type: "DELETE",
-            url: `${homePath}api/OpenSEE/DeleteNote`,
+            url: `${homePath}api/OpenXDA/Note`,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(note),
             cache: false,
@@ -237,7 +237,7 @@ export default class EventSearchListedEventsNoteWindow extends React.Component<{
     deleteMultiNote(Note: string, UserAccount: string, Timestamp: string): JQuery.jqXHR {
         return $.ajax({
             type: "DELETE",
-            url: `${homePath}api/OpenSEE/DeleteMultiNote`,
+            url: `${homePath}api/OpenXDA/Note`,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify({ Note: Note, UserAccount: UserAccount, Timestamp: Timestamp }),
             cache: false,

@@ -260,6 +260,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\OpenXDA\NoteController.cs" />
     <Compile Include="Controllers\OpenXDA\FaultInfoController.cs" />
     <Compile Include="Controllers\TVA\LSCQueryController.cs" />
     <Compile Include="Controllers\TVA\SOEQueryController.cs" />

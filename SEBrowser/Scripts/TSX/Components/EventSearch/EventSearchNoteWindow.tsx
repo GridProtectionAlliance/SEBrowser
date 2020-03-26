@@ -52,7 +52,7 @@ function EventSearchNoteWindow(props: { EventID: number }): JSX.Element {
     function getNotes(eventid: number): JQuery.jqXHR {
         return $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/GetNotes?eventId=${eventid}`,
+            url: `${homePath}api/OpenXDA/Note/${eventid}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,
@@ -64,7 +64,7 @@ function EventSearchNoteWindow(props: { EventID: number }): JSX.Element {
     function addNote(note): JQuery.jqXHR{
         return $.ajax({
             type: "POST",
-            url: `${homePath}api/OpenXDA/AddNote`,
+            url: `${homePath}api/OpenXDA/Note`,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(note),
             cache: false,
@@ -79,7 +79,7 @@ function EventSearchNoteWindow(props: { EventID: number }): JSX.Element {
     function deleteNote(note): any {
         return $.ajax({
             type: "DELETE",
-            url: `${homePath}api/OpenXDA/DeleteNote`,
+            url: `${homePath}api/OpenXDA/Note`,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify(note),
             cache: false,

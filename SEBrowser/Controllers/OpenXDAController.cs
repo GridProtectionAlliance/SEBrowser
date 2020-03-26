@@ -424,22 +424,6 @@ namespace SEBrowser.Controllers
             }
         }
 
-        [Route("GetNotes"), HttpGet]
-        public DataTable GetNotes()
-        {
-            Dictionary<string, string> query = Request.QueryParameters();
-            int eventID = int.Parse(query["eventId"]);
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
-            {
-                const string SQL = "SELECT * FROM EventNote WHERE EventID = {0}";
-
-                DataTable dataTable = connection.RetrieveData(SQL, eventID);
-                return dataTable;
-            }
-
-
-        }
-
         [Route("GetFileName/{eventID:int}"), HttpGet]
         public IHttpActionResult GetFileName(int eventID)
         {
@@ -489,9 +473,13 @@ namespace SEBrowser.Controllers
                     FROM
 	                    Event LEFT JOIN
 	                    Channel ON Event.MeterID = Channel.MeterID AND Event.AssetID = Channel.AssetID LEFT JOIN
-	                    Series ON Channel.ID = Series.ChannelID
+	                    Series ON Channel.ID = Series.ChannelID LEFT JOIN
+	                    MeasurementType ON MeasurementType.ID = Channel.MeasurementTypeID LEFT JOIN
+	                    Phase ON Channel.PhaseID = Phase.ID
                     WHERE 
 	                    Event.ID = {0} AND Enabled = 1 AND Series.SourceIndexes !=''
+                    ORDER BY
+	                    MeasurementType.Name DESC, Phase.Name ASC
                 ";
 
                 DataTable dataTable = connection.RetrieveData(SQL, eventID);
