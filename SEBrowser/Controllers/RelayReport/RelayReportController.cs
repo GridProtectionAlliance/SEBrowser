@@ -44,7 +44,6 @@ using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using static OpenSEE.Controller.OpenSEEController;
 
 namespace PQDashboard.Controllers.BreakerReport
 {
@@ -56,6 +55,26 @@ namespace PQDashboard.Controllers.BreakerReport
         // Fields
         private DateTime m_epoch = new DateTime(1970, 1, 1);
 
+        public class FlotSeries
+        {
+            public int ChannelID;
+            public string ChannelName;
+            public string ChannelDescription;
+            public string MeasurementType;
+            public string MeasurementCharacteristic;
+            public string Phase;
+            public string SeriesType;
+            public string ChartLabel;
+            public List<double[]> DataPoints = new List<double[]>();
+        }
+        public class JsonReturn
+        {
+            public DateTime StartDate;
+            public DateTime EndDate;
+            public double CalculationTime;
+            public double CalculationEnd;
+            public List<FlotSeries> Data;
+        }
         #endregion
 
         #region [ Constructors ]

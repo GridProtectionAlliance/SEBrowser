@@ -54,8 +54,8 @@ export default class EventSearchFaultSegments extends React.Component<{ EventID:
             var rows = data.map((d,i) =>
                 <tr key={i}>
                     <td>{d.SegmentType}</td>
-                    <td>{moment(d.StartTime).format('mm:ss.SSS')}</td>
-                    <td>{moment(d.EndTime).format('mm:ss.SSS')}</td>
+                    <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
+                    <td>{moment(d.EndTime).format('HH:mm:ss.SSS')}</td>
                 </tr>)
 
             this.setState({ tableRows: rows , count: rows.length});

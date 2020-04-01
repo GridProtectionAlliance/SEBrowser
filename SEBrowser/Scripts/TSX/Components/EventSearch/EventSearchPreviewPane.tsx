@@ -43,12 +43,13 @@ import TVASOE from './TVA/SOE';
 import TVALSC from './TVA/LSC';
 import TVAPQWeb from './TVA/PQWeb';
 
-export default class EventPreviewPane extends React.Component<{ EventID: number, AssetType: OpenXDA.AssetTypeName, EventType: OpenXDA.EventTypeName, StartTime: string }, { Settings: Array<SEBrowser.EventPreviewPaneSetting>}> {
+export default class EventPreviewPane extends React.Component<{ EventID: number, AssetType: OpenXDA.AssetTypeName, EventType: OpenXDA.EventTypeName, StartTime: string }, { Settings: Array<SEBrowser.EventPreviewPaneSetting>, Tab: 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All'}> {
     constructor(props) {
         super(props);
 
         this.state = {
-            Settings: []
+            Settings: [],
+            Tab: 'Waveform'
         }
     }
 
@@ -70,46 +71,68 @@ export default class EventPreviewPane extends React.Component<{ EventID: number,
     render() {
         if (this.props.EventID == -1 || this.state.Settings.length == 0) return <div></div>;
 
-        return this.state.Settings.filter(setting => setting.Show).map((setting, index) => {
-            if (setting.Name.indexOf('EventSearchOpenSEE') >= 0)
+        return (
+            <>
+                <ul className="nav nav-tabs">
+                    <li className="nav-item">
+                        <a className={"nav-link" + (this.state.Tab == "Waveform" ? " active" : "")} onClick={() => this.setState({ Tab: 'Waveform' })}>Waveform Analysis</a>
+                    </li>
+                    <li className="nav-item">
+                        <a className={"nav-link" + (this.state.Tab == "Fault" ? " active" : "")} onClick={() => this.setState({ Tab: 'Fault' })}>Fault</a>
+                    </li>
+                    <li className="nav-item">
+                        <a className={"nav-link" + (this.state.Tab == "Correlating" ? " active" : "")} onClick={() => this.setState({ Tab: 'Correlating' })}>Correlating Events</a>
+                    </li>
+                    <li className="nav-item">
+                        <a className={"nav-link" + (this.state.Tab == "Configuration" ? " active" : "")} onClick={() => this.setState({ Tab: 'Configuration' })}>Configuration</a>
+                    </li>
+                    <li className="nav-item">
+                        <a className={"nav-link" + (this.state.Tab == "All" ? " active" : "")} onClick={() => this.setState({ Tab: 'All' })}>All</a>
+                    </li>
+                </ul>
+                <div style={{ height: 'calc(100% - 72px)', maxHeight: 'calc(100% - 72px)', overflowY: 'scroll'}}>
+            {this.state.Settings.filter(setting => setting.Show).map((setting, index) => {
+            if (setting.Name.indexOf('EventSearchOpenSEE') >= 0 && (this.state.Tab == "Waveform" || this.state.Tab == "All"))
                 return <EventSearchOpenSEE key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchFaultSegments') >= 0)
+            else if (setting.Name.indexOf('EventSearchFaultSegments') >= 0 && (this.state.Tab == "Waveform" || this.state.Tab == "All"))
                 return <EventSearchFaultSegments key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchAssetVoltageDisturbances') >= 0)
+            else if (setting.Name.indexOf('EventSearchAssetVoltageDisturbances') >= 0 && (this.state.Tab == "Waveform" || this.state.Tab == "All"))
                 return <EventSearchAssetVoltageDisturbances key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchCorrelatedSags') >= 0)
+            else if (setting.Name.indexOf('EventSearchCorrelatedSags') >= 0 && (this.state.Tab == "Correlating" || this.state.Tab == "All"))
                 return <EventSearchCorrelatedSags key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('TVAESRIMap') >= 0)
+            else if (setting.Name.indexOf('TVAESRIMap') >= 0 && (this.state.Tab == "Fault" || this.state.Tab == "All"))
                 return <TVAESRIMap key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('TVAFaultInfo') >= 0 && this.props.AssetType == 'Line' && (this.props.EventType == 'Fault' || this.props.EventType == "RecloseIntoFault"))
+            else if (setting.Name.indexOf('TVAFaultInfo') >= 0 && this.props.AssetType == 'Line' && (this.props.EventType == 'Fault' || this.props.EventType == "RecloseIntoFault") && (this.state.Tab == "Fault" || this.state.Tab == "All"))
                 return <TVAFaultInfo key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('LineParameters') >= 0 && this.props.AssetType == 'Line' && (this.props.EventType == 'Fault' || this.props.EventType == "RecloseIntoFault"))
+            else if (setting.Name.indexOf('LineParameters') >= 0 && this.props.AssetType == 'Line' && (this.props.EventType == 'Fault' || this.props.EventType == "RecloseIntoFault") && (this.state.Tab == "Fault" || this.state.Tab == "All"))
                 return <LineParameters key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('TVALightning') >= 0)
+            else if (setting.Name.indexOf('TVALightning') >= 0 && (this.state.Tab == "Fault" || this.state.Tab == "All"))
                 return <TVALightningChart key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('TVASIDA') >= 0)
+            else if (setting.Name.indexOf('TVASIDA') >= 0 && (this.state.Tab == "Correlating" || this.state.Tab == "All"))
                 return <TVASIDA key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('TVASOE') >= 0)
+            else if (setting.Name.indexOf('TVASOE') >= 0 && (this.state.Tab == "Correlating" || this.state.Tab == "All"))
                 return <TVASOE key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('TVALSC') >= 0)
+            else if (setting.Name.indexOf('TVALSC') >= 0 && (this.state.Tab == "Correlating" || this.state.Tab == "All"))
                 return <TVALSC key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('TVAPQWeb') >= 0)
+            else if (setting.Name.indexOf('TVAPQWeb') >= 0 && (this.state.Tab == "Correlating" || this.state.Tab == "All"))
                 return <TVAPQWeb key={index} EventID={this.props.EventID} StartTime={this.props.StartTime} />;
 
-            else if (setting.Name.indexOf('TVAStructureInfo') >= 0)
+            else if (setting.Name.indexOf('TVAStructureInfo') >= 0 && (this.state.Tab == "Fault" || this.state.Tab == "All"))
                 return <StructureInfo key={index} EventID={this.props.EventID} />;
 
-            else if (setting.Name.indexOf('EventSearchFileInfo') >= 0)
+            else if (setting.Name.indexOf('EventSearchFileInfo') >= 0 && (this.state.Tab == "Configuration" || this.state.Tab == "All"))
                 return <EventSearchFileInfo key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchHistory') >= 0)
+            else if (setting.Name.indexOf('EventSearchHistory') >= 0 && (this.state.Tab == "Fault" || this.state.Tab == "All"))
                 return <EventSearchHistory key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchRelayPerformance') >= 0 && this.props.AssetType == 'Breaker')
+            else if (setting.Name.indexOf('EventSearchRelayPerformance') >= 0 && this.props.AssetType == 'Breaker' && ( this.state.Tab == "All"))
                 return <EventSearchRelayPerformance key={index} EventID={this.props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchBreakerPerformance') >= 0 && this.props.AssetType == 'Breaker')
+            else if (setting.Name.indexOf('EventSearchBreakerPerformance') >= 0 && this.props.AssetType == 'Breaker' && (this.state.Tab == "All"))
                 return <EventSearchBreakerPerformance key={index} EventID={this.props.EventID}/>;
-            else if (setting.Name.indexOf('EventSearchNoteWindow') >= 0)
+            else if (setting.Name.indexOf('EventSearchNoteWindow') >= 0 && (this.state.Tab == "Configuration" || this.state.Tab == "All"))
                 return <EventSearchNoteWindow key={index} EventID={this.props.EventID} />;
-        });
+            })}
+        </div>
+        </>)
     }
 }
 

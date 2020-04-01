@@ -93,6 +93,9 @@
     <Reference Include="Ionic.Zlib">
       <HintPath>..\Dependencies\GSF\Ionic.Zlib.dll</HintPath>
     </Reference>
+    <Reference Include="MathNet.Numerics, Version=4.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathNet.Numerics.4.9.0\lib\net461\MathNet.Numerics.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.AI.Agent.Intercept, Version=2.4.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ApplicationInsights.Agent.Intercept.2.4.0\lib\net45\Microsoft.AI.Agent.Intercept.dll</HintPath>
     </Reference>
@@ -151,11 +154,17 @@
     <Reference Include="openXDA.Model">
       <HintPath>..\Dependencies\GSF\openXDA.Model.dll</HintPath>
     </Reference>
+    <Reference Include="openXDA.Reports">
+      <HintPath>..\Dependencies\GSF\openXDA.Reports.dll</HintPath>
+    </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="RazorEngine, Version=3.10.0.0, Culture=neutral, PublicKeyToken=9ee697374c7e744a, processorArchitecture=MSIL">
       <HintPath>..\packages\RazorEngine.3.10.0\lib\net45\RazorEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="Reports">
+      <HintPath>..\Dependencies\GSF\Reports.dll</HintPath>
     </Reference>
     <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.4.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
@@ -179,6 +188,7 @@
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Web.Cors, Version=5.2.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.Cors.5.2.4\lib\net45\System.Web.Cors.dll</HintPath>
@@ -269,6 +279,11 @@
     <Compile Include="Controllers\RelayReport\RelayReportController.cs" />
     <Compile Include="Controllers\SEBrowserController.cs" />
     <Compile Include="Controllers\OpenXDAController.cs" />
+    <Compile Include="Controllers\TVA\ESRIMapQueryController.cs" />
+    <Compile Include="Controllers\TVA\LightningQueryController.cs" />
+    <Compile Include="Controllers\TVA\LSCQueryController.cs" />
+    <Compile Include="Controllers\TVA\SIDAQueryController.cs" />
+    <Compile Include="Controllers\TVA\SOEQueryController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

@@ -54,9 +54,9 @@ export default class EventSearchAssetVoltageDisturbances extends React.Component
                 <tr key={i}>
                     <td>{d.EventType}</td>
                     <td>{d.Phase}</td>
-                    <td>{d.PerUnitMagnitude.toFixed(3)}</td>
-                    <td>{d.DurationSeconds.toFixed(3)}</td>
-                    <td>{moment(d.StartTime).format('mm:ss.SSS')}</td>
+                    <td>{(d.PerUnitMagnitude * 100).toFixed(1)}</td>
+                    <td>{(d.DurationSeconds * 1000).toFixed(2)}</td>
+                    <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
                 </tr>)
 
             this.setState({ tableRows: rows});
@@ -71,7 +71,7 @@ export default class EventSearchAssetVoltageDisturbances extends React.Component
                 <div className="card-body">
                     <table className="table">
                         <thead>
-                            <tr><th>Distrubance Type</th><th>Phase</th><th>Magnitude</th><th>Duration</th><th>Start Time</th></tr>
+                            <tr><th>Disturbance Type</th><th>Phase</th><th>Magnitude (%)</th><th>Duration (ms)</th><th>Start Time</th></tr>
                         </thead>
                         <tbody>
                             {this.state.tableRows}

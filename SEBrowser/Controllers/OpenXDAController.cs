@@ -242,8 +242,9 @@ namespace SEBrowser.Controllers
 	                    EventType ON Disturbance.EventTypeID = EventType.ID
                     WHERE
 	                    Phase.Name != 'WORST' AND  
-	                    eventid = {0}"
-                        , eventID
+	                    eventid = {0}
+                    ORDER BY Disturbance.StartTime
+                    ", eventID
                     );
 
                 return table;
@@ -269,8 +270,9 @@ namespace SEBrowser.Controllers
 	                    SegmentType ON FaultSegment.SegmentTypeID = SegmentType.ID	                    
                     WHERE
                         eventid = {0} AND
-                        SegmentType.Name != 'Fault'"
-                        , eventID
+                        SegmentType.Name != 'Fault'
+                    ORDER BY FaultSegment.StartTime
+                    ", eventID
                     );
 
                 return table;
@@ -405,8 +407,8 @@ namespace SEBrowser.Controllers
                 "        ORDER BY PerUnitMagnitude DESC " +
                 "    ) Sag " +
                 "ORDER BY " +
-                "    Sag.PerUnitMagnitude, " +
-                "    Event.StartTime";
+                "    Event.StartTime, " +
+                "    Sag.PerUnitMagnitude";
 
         Dictionary<string, string> query = Request.QueryParameters();
             int eventID = int.Parse(query["eventId"]);

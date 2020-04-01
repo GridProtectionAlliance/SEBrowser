@@ -109,7 +109,7 @@ const Row = (row, background) => {
             <td key={'EventType' + row.EventID}>{row.EventType}</td>
             <td key={'SagMagnitude' + row.EventID}>{row.SagMagnitudePercent}%</td>
             <td key={'SagDuration' + row.EventID}>{row.SagDurationMilliseconds} ms ({row.SagDurationCycles} cycles)</td>
-            <td key={'StartTime' + row.EventID}>{moment(row.StartTime).format('mm:ss.SSS')}</td>
+            <td key={'StartTime' + row.EventID}>{moment(row.StartTime).format('HH:mm:ss.SSS')}</td>
             <td key={'MeterName' + row.EventID}>{row.MeterName}</td>
             <td key={'LineName' + row.EventID}>{row.LineName}</td>
         </tr>
