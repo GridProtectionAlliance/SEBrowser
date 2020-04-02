@@ -25,7 +25,7 @@ import React from 'react';
 
 const LineParameters = (props: { EventID: number }) => {
     const [hidden, setHidden] = React.useState<boolean>(true);
-    const [lineParameters, setLineParameters] = React.useState<{ Length?: number,X0?: number, X1?: number, R1?: number, R0?: number}>(null);
+    const [lineParameters, setLineParameters] = React.useState<{ ID?: number, Length?: number,X0?: number, X1?: number, R1?: number, R0?: number}>(null);
     React.useEffect(() => {
         return GetData();
     }, [props.EventID]);
@@ -71,7 +71,9 @@ const LineParameters = (props: { EventID: number }) => {
     if (lineParameters == null) return null;
     return (
         <div className="card" hidden={hidden}>
-            <div className="card-header">Line Parameters:</div>
+            <div className="card-header">Line Parameters:
+                <a className="pull-right" target="_blank" href={`${scInstance}?name=Asset&AssetID=${lineParameters.ID}`}>Line Configuration Via System Center</a>
+            </div>
             <div className="card-body">
                 <table className='table'>
                     <thead>

@@ -81,11 +81,11 @@ function EventSearchFileInfo(props: { EventID: number }) {
 
     return (
         <div className="card">
-            <div className="card-header">File Info:</div>
+            <div className="card-header">File Info:
+                <a className="pull-right" target="_blank" href={scInstance + `?name=ConfigurationHistory&MeterKey=${meterKey}&MeterConfigurationID=${meterConfigurationID}`}>Meter Configuration Via System Center</a>
+            </div>
 
             <div className="card-body">
-                <table className="table"><thead><tr><td style={{ borderBottom: '2px solid #dee2e6' }}><a href={scInstance + `?name=ConfigurationHistory&MeterKey=${meterKey}&MeterConfigurationID=${meterConfigurationID}`}>Meter Configuration Via System Center</a></td></tr></thead></table>
-
                 <table className="table"><thead><tr><th>File:</th><td style={{borderBottom: '2px solid #dee2e6'}}>{fileName}</td></tr></thead></table>
                 <h6>Mapped Channels</h6>
                 <table className="table">

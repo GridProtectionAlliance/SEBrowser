@@ -26,6 +26,7 @@ import SEBrowserService from './../../../TS/Services/SEBrowser';
 
 export default class EventSearchFaultSegments extends React.Component<{ EventID: number }, {tableRows: Array<JSX.Element>, count: number }>{
     seBrowserService: SEBrowserService;
+    handle: JQuery.jqXHR;
     constructor(props, context) {
         super(props, context);
 
@@ -35,6 +36,8 @@ export default class EventSearchFaultSegments extends React.Component<{ EventID:
             tableRows: [],
             count: 0
         };
+
+        this.handle = null;
     }
 
     componentDidMount() {
@@ -42,6 +45,7 @@ export default class EventSearchFaultSegments extends React.Component<{ EventID:
             this.createTableRows(this.props.EventID);
     }
     componentWillUnmount() {
+        if (this.handle.abort != undefined) this.handle.abort();
     }
     componentWillReceiveProps(nextProps) {
         if (nextProps.EventID >= 0)
@@ -50,12 +54,13 @@ export default class EventSearchFaultSegments extends React.Component<{ EventID:
 
 
     createTableRows(eventID: number) {
-        this.seBrowserService.getEventSearchAsssetFaultSegmentsData(eventID).done(data => {
+        this.handle = this.seBrowserService.getEventSearchAsssetFaultSegmentsData(eventID).done(data => {
             var rows = data.map((d,i) =>
                 <tr key={i}>
                     <td>{d.SegmentType}</td>
                     <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
                     <td>{moment(d.EndTime).format('HH:mm:ss.SSS')}</td>
+                    <td>{(moment(d.EndTime).diff(moment(d.StartTime))/16.66667).toFixed(1)}</td>
                 </tr>)
 
             this.setState({ tableRows: rows , count: rows.length});
@@ -70,7 +75,7 @@ export default class EventSearchFaultSegments extends React.Component<{ EventID:
                 <div className="card-body">
                     <table className="table">
                         <thead>
-                            <tr><th>Evolution</th><th>Inception</th><th>End</th></tr>
+                            <tr><th>Evolution</th><th>Inception</th><th>End</th><th>Duration (c)</th></tr>
                         </thead>
                         <tbody>
                             {this.state.tableRows}

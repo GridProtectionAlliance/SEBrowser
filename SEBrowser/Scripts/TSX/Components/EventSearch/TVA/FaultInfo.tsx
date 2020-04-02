@@ -78,7 +78,7 @@ const FaultInfo = (props: { EventID: number }) => {
             <div className="card-body">
                 <table className='table'>
                     <tbody>
-                        <tr><td>Fault Inception Time: </td><td>{faultInfo.FaultTime}</td></tr>
+                        <tr><td>Fault Inception Time: </td><td>{moment(faultInfo.FaultTime).format('YYYY-MM-DD HH:mm:ss.SSS')} (Central Time)</td></tr>
                         <tr><td>Fault Duration: </td><td>{faultInfo.FaultDuration} cycles / {(faultInfo.FaultDuration == undefined ? '': (faultInfo.FaultDuration * 16.6).toFixed(2))} ms</td></tr>
                         <tr><td>Fault Type: </td><td>{faultInfo.FaultType}</td></tr>
                         <tr><td>Location: </td><td>{faultInfo.FaultDistance}  miles from {faultInfo.StationName}({faultInfo.StationID}) on {faultInfo.LineName}({faultInfo.LineAssetKey})</td></tr>
