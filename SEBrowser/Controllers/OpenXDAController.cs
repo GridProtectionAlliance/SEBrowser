@@ -698,22 +698,23 @@ namespace SEBrowser.Controllers
         private DataGroup QueryDataGroup(int eventID, Meter meter)
         {
             string target = $"DataGroup-{eventID}";
-
-            Task<DataGroup> dataGroupTask = new Task<DataGroup>(() =>
-            {
-                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+          
+                Task<DataGroup> dataGroupTask = new Task<DataGroup>(() =>
                 {
-                    List<byte[]> data = ChannelData.DataFromEvent(eventID, connection);
-                    return ToDataGroup(meter, data);
-                }
-            });
+                    using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                    {
+                        List<byte[]> data = ChannelData.DataFromEvent(eventID, SettingsCategory);
+                        return ToDataGroup(meter, data);
+                    }
+                });
 
-            if (s_memoryCache.Add(target, dataGroupTask, new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(10.0D) }))
-                dataGroupTask.Start();
+                if (s_memoryCache.Add(target, dataGroupTask, new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(10.0D) }))
+                    dataGroupTask.Start();
 
-            dataGroupTask = (Task<DataGroup>)s_memoryCache.Get(target);
+                dataGroupTask = (Task<DataGroup>)s_memoryCache.Get(target);
 
-            return dataGroupTask.Result;
+                return dataGroupTask.Result;
+            
         }
 
 
