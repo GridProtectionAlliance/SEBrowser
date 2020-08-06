@@ -272,6 +272,7 @@
     <Compile Include="Controllers\BreakerReport\AllBreakersReportController.cs" />
     <Compile Include="Controllers\BreakerReport\IndividualBreakerReportController.cs" />
     <Compile Include="Controllers\BreakerReport\MaximoBreakersController.cs" />
+    <Compile Include="Controllers\CapBankReport\CapBankReportController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MeterActivity\MeterActivityController.cs" />
     <Compile Include="Controllers\OpenXDA\NoteController.cs" />
@@ -376,6 +377,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\TSX\Components\EventSearch\TVA\PQWeb.tsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\TSX\Components\CapBankReport\CapBankReport.tsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\TSX\Components\CapBankReport\CapBankReportNavBar.tsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\TSX\Components\CapBankReport\CapBankReportPane.tsx" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

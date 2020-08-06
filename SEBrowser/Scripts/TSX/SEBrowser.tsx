@@ -31,8 +31,10 @@ import MeterActivity from './Components/MeterActivity';
 import EventSearch from './Components/EventSearch/EventSearch';
 import BreakerReport from './Components/BreakerReport/BreakerReport';
 import RelayReport from './Components/RelayReport/RelayReport';
+import CapBankReport from './Components/CapBankReport/CapBankReport';
 
 import { SEBrowser } from 'global';
+
 
 declare var homePath: string;
 declare var controllerViewPath: string;
@@ -61,7 +63,7 @@ class SEBrowserMainPage extends React.Component<{}, SEBrowser.State>{
                                 <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/meteractivity"}>Meter Activity</NavLink>
                                 <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/breakerreport"}>Breaker Report</NavLink>
                                 <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/relayreport"}>Relay Report</NavLink>
-
+                                <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/capbankreport"}>CapBank Report</NavLink>
                             </div>
                             <div style={{ width: '100%', textAlign: 'center' }}>
 
@@ -76,6 +78,7 @@ class SEBrowserMainPage extends React.Component<{}, SEBrowser.State>{
                         <Route path={controllerViewPath + "/meteractivity"} component={MeterActivity} />
                         <Route path={controllerViewPath + "/breakerreport"} component={BreakerReport} />
                         <Route path={controllerViewPath + "/relayreport"} component={RelayReport} />
+                        <Route path={controllerViewPath + "/capbankreport"} component={CapBankReport} />
                     </div>
                 </div>
         </Router>
