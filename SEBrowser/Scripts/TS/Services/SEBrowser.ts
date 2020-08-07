@@ -104,7 +104,7 @@ export default class SEBrowserdService {
 
         this.BreakerRelayReportHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/RelayReport/GetLineData?locationID=${substationID}`,
+            url: `${homePath}api/OpenXDA/RelayReport/GetBreakerData?locationID=${substationID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,

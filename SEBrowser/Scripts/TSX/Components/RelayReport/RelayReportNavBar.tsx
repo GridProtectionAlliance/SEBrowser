@@ -34,7 +34,7 @@ export interface RelayReportNavBarProps {
     ChannelID: number
 }
 
-export default class RelayReportNavBar extends React.Component<RelayReportNavBarProps, { LineID: number, LocationID: number, showCoilSelection: boolean }>{
+export default class RelayReportNavBar extends React.Component<RelayReportNavBarProps, { BreakerID: number, LocationID: number, showCoilSelection: boolean }>{
     seBrowserService: SEBrowserService;
 
     constructor(props, context) {
@@ -43,7 +43,7 @@ export default class RelayReportNavBar extends React.Component<RelayReportNavBar
         this.seBrowserService = new SEBrowserService();
         this.state = {
             LocationID: -1,
-            LineID: -1,
+            BreakerID: -1,
             showCoilSelection: false
         };
     }
@@ -61,7 +61,7 @@ export default class RelayReportNavBar extends React.Component<RelayReportNavBar
         this.seBrowserService.GetBreakerData(LocationID).done(results => {
             $(this.refs.Breaker).children().remove();
             for (var breaker of results) {
-                $(this.refs.Breaker).append(new Option(breaker.AssetKey, breaker.LineID.toString()));
+                $(this.refs.Breaker).append(new Option(breaker.AssetKey, breaker.AssetId.toString()));
             };
 
             if ($(this.refs.Breaker).children("option:selected").val()) {
@@ -88,9 +88,9 @@ export default class RelayReportNavBar extends React.Component<RelayReportNavBar
         });
     }
 
-    getCoilData(LineID: number ) {
+    getCoilData(BreakerID: number ) {
 
-        this.seBrowserService.GetCoilData(LineID).done(results => {
+        this.seBrowserService.GetCoilData(BreakerID).done(results => {
             if (results.length < 2) {
                 this.setState({ showCoilSelection: false });
                 var object = _.clone(this.props) as RelayReportNavBarProps;

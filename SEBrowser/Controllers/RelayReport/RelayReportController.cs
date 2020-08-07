@@ -104,18 +104,17 @@ namespace PQDashboard.Controllers.BreakerReport
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
                     sc.CommandText = @" 
-                     SELECT	ID AS LocationID,
-                        AssetKey,
+                     SELECT ID AS LocationID,
+                        LocationKey,
                         Name AS AssetName 
                     FROM	
-	                    MeterLocation
+	                    Location
                     WHERE
-	                    ( SELECT COUNT(RP.ID) FROM RelayPerformance RP LEFT JOIN
-			                    Channel ON RP.ChannelID = Channel.ID LEFT JOIN
-			                    Line ON Line.ID = Channel.LineID LEFT JOIN
-			                    MeterLocationLine ON MeterLocationLine.LineID = Line.ID
-		                    WHERE MeterLocationLine.MeterLocationID = MeterLocation.ID) > 0
-                    ORDER BY AssetKey";
+	                    ( SELECT COUNT(Asset.ID) FROM Asset LEFT JOIN
+			                    AssetType ON Asset.AssetTypeID = AssetType.ID LEFT JOIN
+			                    AssetLocation ON Asset.ID = AssetLocation.AssetID 
+		                    WHERE AssetType.Name = 'Breaker' AND AssetLocation.LocationID = Location.ID) > 0
+                    ORDER BY LocationKey";
 
                     sc.CommandType = CommandType.Text;
 
@@ -128,8 +127,8 @@ namespace PQDashboard.Controllers.BreakerReport
 
         }
 
-        [Route("GetLineData"), HttpGet]
-        public DataTable GetLineData()
+        [Route("GetBreakerData"), HttpGet]
+        public DataTable GetBreakerData()
         {
             Dictionary<string, string> query = Request.QueryParameters();
             int locationID = int.Parse(query["locationID"]);
@@ -140,17 +139,13 @@ namespace PQDashboard.Controllers.BreakerReport
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
-                    sc.CommandText = @" 
-                   SELECT Line.ID AS LineID,
-                        Line.AssetKey
+                    sc.CommandText = @" SELECT Breaker.ID AS AssetId,
+                Breaker.AssetKey
                     FROM	
-	                    Line LEFT JOIN MeterLocationLine ON Line.ID = MeterLocationLine.LineID
+	                    Breaker LEFT JOIN AssetLocation ON Breaker.ID = AssetLocation.AssetID
                     WHERE
-                        MeterLocationLine.MeterLocationID = " + locationID + @"
-						AND (SELECT COUNT(RP.ID) FROM RelayPerformance RP LEFT JOIN 
-								Channel ON Channel.ID = RP.ChannelID
-							WHERE Channel.LineID = Line.ID ) > 0
-                    ORDER BY Line.AssetKey";
+                        AssetLocation.LocationID = " + locationID + @"
+                    ORDER BY Breaker.AssetKey";
 
                     sc.CommandType = CommandType.Text;
 
@@ -180,7 +175,7 @@ namespace PQDashboard.Controllers.BreakerReport
                         Name
                     FROM Channel
                     WHERE
-                        Channel.LineID = " + lineID + @"
+                        Channel.AssetId = " + lineID + @"
 						AND (SELECT COUNT(RP.ID) FROM RelayPerformance RP 
 							WHERE RP.ChannelID = Channel.ID ) > 0
                     ORDER BY Name";
@@ -212,7 +207,7 @@ namespace PQDashboard.Controllers.BreakerReport
                 catch { breakerID = -1; }
 
                
-                Line breaker = new TableOperations<Line>(connection).QueryRecordWhere("ID = {0}", breakerID);
+                Breaker breaker = new TableOperations<Breaker>(connection).QueryRecordWhere("ID = {0}", breakerID);
 
                 temp = GetStatisticsLookup(breaker.ID,channelID);
 
@@ -310,11 +305,11 @@ namespace PQDashboard.Controllers.BreakerReport
             {
                 if (channelID > 0)
                 {
-                    dataTable = connection.RetrieveData("SELECT * FROM BreakerHistory WHERE LineID = {0} AND TripCoilChannelID = {1}", relayID, channelID);
+                    dataTable = connection.RetrieveData("SELECT * FROM BreakerHistory WHERE BreakerId = {0} AND TripCoilChannelID = {1}", relayID, channelID);
                 }
                 else
                 {
-                    dataTable = connection.RetrieveData("SELECT * FROM BreakerHistory WHERE LineID = {0}", relayID);
+                    dataTable = connection.RetrieveData("SELECT * FROM BreakerHistory WHERE BreakerId = {0}", relayID);
                 }
             }
             return dataTable;
