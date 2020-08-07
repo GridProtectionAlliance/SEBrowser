@@ -95,7 +95,7 @@ namespace PQDashboard.Controllers.BreakerReport
         [Route("GetSubstationData"), HttpGet]
         public DataTable GetSubstationData()
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 
                 
@@ -133,7 +133,7 @@ namespace PQDashboard.Controllers.BreakerReport
             Dictionary<string, string> query = Request.QueryParameters();
             int locationID = int.Parse(query["locationID"]);
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 DataTable table = new DataTable();
 
@@ -164,7 +164,7 @@ namespace PQDashboard.Controllers.BreakerReport
             Dictionary<string, string> query = Request.QueryParameters();
             int lineID = int.Parse(query["lineID"]);
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 DataTable table = new DataTable();
 
@@ -195,7 +195,7 @@ namespace PQDashboard.Controllers.BreakerReport
         public JsonReturn GetData()
         {
             Dictionary<string, FlotSeries> temp;
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 Dictionary<string, string> query = Request.QueryParameters();
                 int breakerID;
@@ -301,7 +301,7 @@ namespace PQDashboard.Controllers.BreakerReport
         {
             DataTable dataTable;
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 if (channelID > 0)
                 {
