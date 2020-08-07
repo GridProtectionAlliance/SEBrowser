@@ -74,7 +74,7 @@ export default class CapBankReport extends React.Component<IProps, IState>{
                 <CapBankReportNavBar {...this.state.searchBarProps}/>
                 <div style={{ width: '100%', height: 'calc( 100% - 118px)' }}>
                     <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
-                        <CapBankReportPane capBankID={this.state.searchBarProps.CapBankID} channelid={this.state.searchBarProps.ChannelID} />
+                        
                     </div>
 
                 </div>
@@ -82,6 +82,7 @@ export default class CapBankReport extends React.Component<IProps, IState>{
         );
     }
 
+    //<CapBankReportPane capBankID={this.state.searchBarProps.CapBankID} channelid={this.state.searchBarProps.ChannelID} />
     stateSetter(obj) {
         function toQueryString(state: IState) {
             var dataTypes = ["boolean", "number", "string"]

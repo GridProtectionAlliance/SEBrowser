@@ -344,11 +344,9 @@ export default class CapBankReportPane extends React.Component<{ capBankID: numb
         if (this.props.capBankID == -1) return <div></div>;
 
         const showRelayHistory = this.state.showRelayHistory;
-
+        //<RelayPerformanceTrend {...this.props} />
         return (
             <div>
-                <RelayPerformanceTrend {...this.props} />
-
                 <div className="card">
                     <div className="card-header">Historic Breaker Performance</div>
                     <div className="card-body">

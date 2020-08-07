@@ -34,7 +34,8 @@ export default class SEBrowserdService {
     subStationRelayReportHandle: JQuery.jqXHR;
     BreakerRelayReportHandle: JQuery.jqXHR;
     channelRelayReportHandle: JQuery.jqXHR;
-    
+    subStationCapBankReportHandle: JQuery.jqXHR;
+    capBankCapBankReportHandle: JQuery.jqXHR;
 
     constructor() {
         this.getMostActiveMeterActivityData = this.getMostActiveMeterActivityData.bind(this);
@@ -47,6 +48,9 @@ export default class SEBrowserdService {
         this.GetSubStationData = this.GetSubStationData.bind(this);
         this.GetBreakerData = this.GetBreakerData.bind(this);
         this.GetCoilData = this.GetCoilData.bind(this);
+
+        this.GetCapBankSubstationData = this.GetCapBankSubstationData.bind(this);
+        this.GetCapBankData = this.GetCapBankData.bind(this);
     }
 
     getMostActiveMeterActivityData(numresults: number, column: string): JQuery.jqXHR {
@@ -66,14 +70,43 @@ export default class SEBrowserdService {
         return this.mostActiveMeterHandle;
     }
 
-    
+    GetCapBankSubstationData(): JQuery.jqXHR {
+        if (this.subStationCapBankReportHandle !== undefined)
+            this.subStationCapBankReportHandle.abort();
+
+        this.subStationCapBankReportHandle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/PQDashboard/CapBankReport/GetSubstationData`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+        return this.subStationCapBankReportHandle;
+    }
+
+    GetCapBankData(substationID: number): JQuery.jqXHR {
+        if (this.capBankCapBankReportHandle !== undefined)
+            this.capBankCapBankReportHandle.abort();
+
+        this.capBankCapBankReportHandle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/PQDashboard/CapBankReport/GetCapBankData?locationID=${substationID}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+        return this.capBankCapBankReportHandle;
+    }
+
     GetSubStationData(): JQuery.jqXHR {
         if (this.subStationRelayReportHandle !== undefined)
             this.subStationRelayReportHandle.abort();
 
         this.subStationRelayReportHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/RelayReport/GetSubstationData`,
+            url: `${homePath}api/PQDashboard/RelayReport/GetSubstationData`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -89,7 +122,7 @@ export default class SEBrowserdService {
 
         this.channelRelayReportHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/RelayReport/GetCoilData?lineID=${lineid}`,
+            url: `${homePath}api/PQDashboard/RelayReport/GetCoilData?lineID=${lineid}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -104,7 +137,7 @@ export default class SEBrowserdService {
 
         this.BreakerRelayReportHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/RelayReport/GetBreakerData?locationID=${substationID}`,
+            url: `${homePath}api/PQDashboard/RelayReport/GetBreakerData?locationID=${substationID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,

@@ -95,7 +95,7 @@ namespace PQDashboard.Controllers.CapBankReport
         [Route("GetSubstationData"), HttpGet]
         public DataTable GetSubstationData()
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 
                 
@@ -104,18 +104,17 @@ namespace PQDashboard.Controllers.CapBankReport
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
                     sc.CommandText = @" 
-                     SELECT	ID AS LocationID,
-                        AssetKey,
+                     SELECT ID AS LocationID,
+                        LocationKey,
                         Name AS AssetName 
                     FROM	
-	                    MeterLocation
+	                    Location
                     WHERE
-	                    ( SELECT COUNT(RP.ID) FROM RelayPerformance RP LEFT JOIN
-			                    Channel ON RP.ChannelID = Channel.ID LEFT JOIN
-			                    Line ON Line.ID = Channel.LineID LEFT JOIN
-			                    MeterLocationLine ON MeterLocationLine.LineID = Line.ID
-		                    WHERE MeterLocationLine.MeterLocationID = MeterLocation.ID) > 0
-                    ORDER BY AssetKey";
+	                    ( SELECT COUNT(Asset.ID) FROM Asset LEFT JOIN
+			                    AssetType ON Asset.AssetTypeID = AssetType.ID LEFT JOIN
+			                    AssetLocation ON Asset.ID = AssetLocation.AssetID 
+		                    WHERE AssetType.Name = 'CapacitorBank' AND AssetLocation.LocationID = Location.ID) > 0
+                    ORDER BY LocationKey";
 
                     sc.CommandType = CommandType.Text;
 
@@ -128,29 +127,26 @@ namespace PQDashboard.Controllers.CapBankReport
 
         }
 
-        [Route("GetLineData"), HttpGet]
-        public DataTable GetLineData()
+        [Route("GetCapBankData"), HttpGet]
+        public DataTable GetCapBankData()
         {
             Dictionary<string, string> query = Request.QueryParameters();
             int locationID = int.Parse(query["locationID"]);
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 DataTable table = new DataTable();
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
                     sc.CommandText = @" 
-                   SELECT Line.ID AS LineID,
-                        Line.AssetKey
+                   SELECT CapBank.ID AS Id,
+                          CapBank.AssetKey
                     FROM	
-	                    Line LEFT JOIN MeterLocationLine ON Line.ID = MeterLocationLine.LineID
+	                    CapBank LEFT JOIN AssetLocation ON CapBank.ID = AssetLocation.AssetID
                     WHERE
-                        MeterLocationLine.MeterLocationID = " + locationID + @"
-						AND (SELECT COUNT(RP.ID) FROM RelayPerformance RP LEFT JOIN 
-								Channel ON Channel.ID = RP.ChannelID
-							WHERE Channel.LineID = Line.ID ) > 0
-                    ORDER BY Line.AssetKey";
+                        AssetLocation.LocationID = " + locationID + @"
+                    ORDER BY AssetKey";
 
                     sc.CommandType = CommandType.Text;
 
@@ -306,7 +302,7 @@ namespace PQDashboard.Controllers.CapBankReport
         {
             DataTable dataTable;
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 if (channelID > 0)
                 {
