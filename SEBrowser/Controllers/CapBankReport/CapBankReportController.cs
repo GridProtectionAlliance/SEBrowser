@@ -55,26 +55,7 @@ namespace PQDashboard.Controllers.CapBankReport
         // Fields
         private DateTime m_epoch = new DateTime(1970, 1, 1);
 
-        public class FlotSeries
-        {
-            public int ChannelID;
-            public string ChannelName;
-            public string ChannelDescription;
-            public string MeasurementType;
-            public string MeasurementCharacteristic;
-            public string Phase;
-            public string SeriesType;
-            public string ChartLabel;
-            public List<double[]> DataPoints = new List<double[]>();
-        }
-        public class JsonReturn
-        {
-            public DateTime StartDate;
-            public DateTime EndDate;
-            public double CalculationTime;
-            public double CalculationEnd;
-            public List<FlotSeries> Data;
-        }
+       
         #endregion
 
         #region [ Constructors ]
@@ -159,27 +140,21 @@ namespace PQDashboard.Controllers.CapBankReport
 
         }
 
-        [Route("GetCoilData"), HttpGet]
-        public DataTable GetCoilData()
+        [Route("GetEventTable"), HttpGet]
+        public DataTable GetEventTable()
         {
             Dictionary<string, string> query = Request.QueryParameters();
-            int lineID = int.Parse(query["lineID"]);
+            int capBankId = int.Parse(query["capBankId"]);
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 DataTable table = new DataTable();
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
-                    sc.CommandText = @" 
-                   SELECT ID AS ChannelID,
-                        Name
-                    FROM Channel
-                    WHERE
-                        Channel.LineID = " + lineID + @"
-						AND (SELECT COUNT(RP.ID) FROM RelayPerformance RP 
-							WHERE RP.ChannelID = Channel.ID ) > 0
-                    ORDER BY Name";
+                    sc.CommandText = $@" 
+                   SELECT * FROM CBReportEventTable WHERE CapBankID = {capBankId}
+                    ORDER BY Time";
 
                     sc.CommandType = CommandType.Text;
 
@@ -192,149 +167,7 @@ namespace PQDashboard.Controllers.CapBankReport
 
         }
 
-        [Route("GetTrend"), HttpGet]
-        public JsonReturn GetData()
-        {
-            Dictionary<string, FlotSeries> temp;
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
-            {
-                Dictionary<string, string> query = Request.QueryParameters();
-                int breakerID;
-                int channelID;
-                try { channelID = int.Parse(query["channelid"]); }
-                catch { channelID = -1; }
-
-                try { breakerID = int.Parse(query["breakerid"]); }
-                catch { breakerID = -1; }
-
-               
-                Line breaker = new TableOperations<Line>(connection).QueryRecordWhere("ID = {0}", breakerID);
-
-                temp = GetStatisticsLookup(breaker.ID,channelID);
-
-            }
-
-            Dictionary<string, FlotSeries> dict = new Dictionary<string, FlotSeries>();
-
-            foreach (string key in temp.Keys)
-            {
-                if (temp[key].DataPoints.Count() > 0)
-                {
-                    if (dict.ContainsKey(key))
-                        dict[key].DataPoints = dict[key].DataPoints.Concat(temp[key].DataPoints).ToList();
-                    else
-                        dict.Add(key, temp[key]);
-                }
-            }
-            if (dict.Count == 0) return null;
-
-            JsonReturn returnDict = new JsonReturn();
-            List<FlotSeries> returnList = new List<FlotSeries>();
-
-            foreach (string key in dict.Keys)
-            {
-                FlotSeries series = new FlotSeries();
-                series = dict[key];
-
-                series.DataPoints = dict[key].DataPoints.OrderBy(x => x[0]).ToList();
-
-                returnList.Add(series);
-            }
-
-            //returnDict.StartDate = evt.StartTime;
-            //returnDict.EndDate = evt.EndTime;
-            returnDict.Data = null;
-            returnDict.CalculationTime = 0;
-            returnDict.CalculationEnd = 0;
-
-            return returnDict;
-        }
-
-        private Dictionary<string, FlotSeries> GetStatisticsLookup(int LineID, int channelID = -1)
-        {
-            Dictionary<string, FlotSeries> result = new Dictionary<string, FlotSeries>();
-
-            DataTable relayHistory = RelayHistoryTable(LineID, channelID);
-
-            DataRow[] dr = relayHistory.Select();
-
-            List<String> RelayParamters = new List<string>()
-            {
-                "TripTime",
-                "PickupTime",
-                "TripCoilCondition",
-                "Imax1",
-                "Imax2",
-                "TripTimeAlert",
-                "PickupTimeAlert",
-                "TripCoilConditionAlert",
-            };
-
-            foreach (String param in RelayParamters)
-            {
-                double scaling = 1.0;
-                if ((param == "PickupTime") || (param == "TripTime"))
-                {
-                    scaling = 0.1d;
-
-                }
-                List<double[]> dataPoints = dr.Select(dataPoint => new double[] { dataPoint.ConvertField<DateTime>("TripInitiate").Subtract(m_epoch).TotalMilliseconds, dataPoint.ConvertField<double>(param) * scaling }).ToList();
-                result.Add(param, new FlotSeries()
-                {
-                    ChannelID = 0,
-                    ChannelName = param,
-                    ChannelDescription = "Relay " + param,
-                    MeasurementCharacteristic = param,
-                    MeasurementType = param,
-                    Phase = "",
-                    SeriesType = "",
-                    DataPoints = dataPoints,
-                    ChartLabel = param
-                });
-
-            }
-
-            return result;
-
-        }
-
-        private DataTable RelayHistoryTable(int relayID, int channelID=-1)
-        {
-            DataTable dataTable;
-
-            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
-            {
-                if (channelID > 0)
-                {
-                    dataTable = connection.RetrieveData("SELECT * FROM BreakerHistory WHERE LineID = {0} AND TripCoilChannelID = {1}", relayID, channelID);
-                }
-                else
-                {
-                    dataTable = connection.RetrieveData("SELECT * FROM BreakerHistory WHERE LineID = {0}", relayID);
-                }
-            }
-            return dataTable;
-        }
-
-        [Route("GetRelayPerformance"), HttpGet]
-        public DataTable GetRelayPerformance()
-        {
-            Dictionary<string, string> query = Request.QueryParameters();
-            int lineID;
-            int channelID;
-
-            try { channelID = int.Parse(query["channelID"]); }
-            catch { channelID = -1; }
-
-            try { lineID = int.Parse(query["lineID"]); }
-            catch { lineID = -1; }
-            
-            if (lineID <= 0) return new DataTable();
-            
-            return RelayHistoryTable(lineID, channelID);
-            
-        }
-
+        
         #endregion
 
     }

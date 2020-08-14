@@ -36,6 +36,13 @@ interface IState {
     searchBarProps: CapBankReportNavBarProps,
 }
 
+interface ICBAnalyticResult {
+    EventID: number, PhaseID: number, CBStatusID: number, DataErrorID: number, CBOperationID: number, DeEnergizedBanks: number, EnergizedBanks: number, InServiceBank: number, DeltaQ: number,
+    Ipre: number, Ipost: number, Vpre: number, Vpost: number, MVAsc: number, IsRes: boolean, ResFreq: number, THDpre: number, THDpost: number, THDVpre: number, THDVpost: number, StepPre: number,
+    StepPost: number, SwitchingFreq: number, Vpeak: number, Xpre: number, Xpost: number, Time: number, Toffset: number
+}
+
+
 export default class CapBankReport extends React.Component<IProps, IState>{
     history: History<any>;
     historyHandle: any;
@@ -51,9 +58,9 @@ export default class CapBankReport extends React.Component<IProps, IState>{
             searchBarProps: {
                 stateSetter: this.stateSetter.bind(this),
                 CapBankID: (query['capBankId'] != undefined ? parseInt(query['capBankId'] as string) : -1),
-                ChannelID: (query['channelid'] != undefined ? parseInt( query['channelid'] as string) : -1),
+                startDate: 0,
+                endDate: 0,
             },
-            
         };
     }
 
@@ -67,16 +74,16 @@ export default class CapBankReport extends React.Component<IProps, IState>{
     componentWillReceiveProps(nextProps: IProps) {
     }
 
+    getData() {
+
+    }
 
     render() {
         return (
             <div style={{ width: '100%', height: '100%' }}>
                 <CapBankReportNavBar {...this.state.searchBarProps}/>
                 <div style={{ width: '100%', height: 'calc( 100% - 118px)' }}>
-                    <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
-                        
-                    </div>
-
+                    <CapBankReportPane {...this.state.searchBarProps}/>
                 </div>
             </div>
         );
@@ -108,3 +115,5 @@ export default class CapBankReport extends React.Component<IProps, IState>{
 
 
 }
+
+

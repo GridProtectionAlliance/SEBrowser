@@ -31,7 +31,9 @@ export interface Substation {
 export interface CapBankReportNavBarProps {
     stateSetter(state): void,
     CapBankID: number,
-    ChannelID: number
+    startDate: number,
+    endDate: number
+
 }
 
 export default class CapBankReportNavBar extends React.Component<CapBankReportNavBarProps, { LineID: number, LocationID: number, showCoilSelection: boolean }>{
@@ -65,14 +67,21 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
             };
 
             if ($(this.refs.Breaker).children("option:selected").val()) {
-                var object = _.clone(this.props) as CapBankReportNavBarProps;
-                object.CapBankID = parseInt($(this.refs.Breaker).children("option:selected").val().toString());
-                this.props.stateSetter({ searchBarProps: object });
-                this.getCoilData(parseInt($(this.refs.Breaker).children("option:selected").val().toString()))
+                this.setCapBank( parseInt($(this.refs.Breaker).children("option:selected").val().toString()));
             }
             
         });
        
+    }
+
+    setCapBank(capBankId: number) {
+       
+        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        object.CapBankID = capBankId;
+        this.props.stateSetter({ searchBarProps: object });
+
+        
+
     }
 
     getSubstationData() {
@@ -88,37 +97,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         });
     }
 
-    getCoilData(LineID: number ) {
-
-        /*this.seBrowserService.GetCoilData(LineID).done(results => {
-            if (results.length < 2) {
-                this.setState({ showCoilSelection: false });
-                var object = _.clone(this.props) as CapBankReportNavBarProps;
-                object.ChannelID = -1;
-                object.CapBankID = parseInt($(this.refs.Breaker).children("option:selected").val().toString());
-                this.props.stateSetter({ searchBarProps: object });
-                return;
-
-            };
-           
-            this.setState({ showCoilSelection: true });
-
-            $(this.refs.Coil).children().remove();
-            for (var coil of results) {
-                $(this.refs.Coil).append(new Option(coil.Name, coil.ChannelID.toString()));
-            };
-
-            if ($(this.refs.Coil).children("option:selected").val()) {
-                var object = _.clone(this.props) as CapBankReportNavBarProps;
-                object.ChannelID = parseInt($(this.refs.Coil).children("option:selected").val().toString());
-                object.CapBankID = parseInt($(this.refs.Breaker).children("option:selected").val().toString());
-                this.props.stateSetter({ searchBarProps: object });
-            }
-
-        });*/
-
-    }
-
+   
     render() {
 
         return (
@@ -137,21 +116,21 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                         }} >
                                         </select>
                                     </div>
-
+                                    <div className="form-group" style={{ height: 30 }}>
+                                        <label style={{ width: 200, position: 'relative', float: "left" }}>Cap Bank: </label>
+                                        <select ref="Breaker" style={{ width: 'calc(100% - 200px)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
+                                            this.setCapBank(parseInt((e.target as any).value.toString()));
+                                        }} >
+                                        </select>
+                                    </div>
                                 </form>
                             </fieldset>
                         </li>
                         <li className="nav-item" style={{ width: '50%' , paddingRight: 10 }}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Capacitor Bank:</legend>
+                                <legend className="w-auto" style={{ fontSize: 'large' }}>Time:</legend>
                                 <form>
-                                    <div className="form-group" style={{ height: 30 }}>
-                                        <label style={{ width: 200, position: 'relative', float: "left" }}>Cap Bank: </label>
-                                        <select ref="Breaker" style={{ width: 'calc(100% - 200px)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            this.getCoilData((e.target as any).value);
-                                        }} >
-                                        </select>
-                                    </div>
+                                    
 
                                 </form>
                             </fieldset>
