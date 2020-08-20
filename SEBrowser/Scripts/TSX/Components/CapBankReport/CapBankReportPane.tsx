@@ -26,21 +26,31 @@ import _ from 'lodash';
 import TrendingCard from './TrendingCard';
 //import RelayPerformanceTrend from './RelayPerformanceTrend';
 
-interface ICapBankReportPaneState { EventData: Array<ICBEvent> }
+interface ICapBankReportPaneState {
+    EventData: Array<ICBEvent>,
+    SwitchingData: Array<ICBSwitching>,
+}
 
 
 interface ICBEvent {
     ID: number, EventID: number, Phase: string, Status: string, DataErrorID: number, Operation: string, DeltaQ: number, MVAsc: number, IsRes: boolean, Time: string
 }
 
+interface ICBSwitching {
+    ID: number, EventID: number, Phase: string, SwitchingCondition: string, R: number, X: number, Duration: number, Time: string
+}
+
 export default class CapBankReportPane extends React.Component<CapBankReportNavBarProps, ICapBankReportPaneState> {
    
     eventTableHandle: JQuery.jqXHR;
+    switchingTableHandle: JQuery.jqXHR;
+
     constructor(props, context) {
         super(props, context);
 
         this.state = {
             EventData: [],
+            SwitchingData: []
         };
 
         
@@ -49,23 +59,24 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
 
     componentDidMount() {
         if (this.props.CapBankID >= 0)
-            this.getData(this.props.CapBankID);
+            this.getData(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
         let oldProps = _.clone(this.props);
 
         if (!_.isEqual(nextProps, oldProps) && nextProps.CapBankID >= 0)
-            this.getData(nextProps.CapBankID);
+            this.getData(nextProps);
     }
 
-    getEventTableData(capBankId: number): JQuery.jqXHR {
+    getEventTableData(props: CapBankReportNavBarProps): JQuery.jqXHR {
         if (this.eventTableHandle !== undefined)
             this.eventTableHandle.abort();
 
         this.eventTableHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${capBankId}`,
+            url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${props.CapBankID}&date=${props.date}` +
+                `&time=${props.time}&timeWindowunits=${props.timeWindowUnits}&windowSize=${props.windowSize}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,
@@ -75,14 +86,40 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         return this.eventTableHandle;
     }
 
-    getData(capBankId: number) {
-        this.getEventTableData(capBankId).then(data => {
+    getSwitchingTableData(props: CapBankReportNavBarProps): JQuery.jqXHR {
+        if (this.switchingTableHandle !== undefined)
+            this.switchingTableHandle.abort();
+
+        this.switchingTableHandle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/PQDashboard/CapBankReport/GetSwitchingTable?capBankId=${props.CapBankID}&date=${props.date}` +
+                `&time=${props.time}&timeWindowunits=${props.timeWindowUnits}&windowSize=${props.windowSize}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: false,
+            async: true
+        });
+
+        return this.switchingTableHandle;
+    }
+
+    getData(props: CapBankReportNavBarProps) {
+        this.getEventTableData(props).then(data => {
             
             if (data == null) {
                 this.setState({EventData: []})
                 return;
             }
             this.setState({ EventData: data })
+        });
+
+        this.getSwitchingTableData(props).then(data => {
+
+            if (data == null) {
+                this.setState({ SwitchingData: [] })
+                return;
+            }
+            this.setState({ SwitchingData: data })
         });
     }
 
@@ -101,14 +138,26 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <tbody>
                                 {this.state.EventData.map(row => EventRow(row))}
                             </tbody>
-
                         </table>
                     </div>
                 </div>
                 <div className="card">
-                    <div className="card-header">Cap Bank Analytic Events</div>
+                    <div className="card-header">Short Circuit Power Trend</div>
                     <div className="card-body">
                         <TrendingCard getData={this.getXpostData.bind(this)} keyString={'XPost'} allowZoom={true} height={200} Tstart={1500} Tend={1700} yLabel={'Test Label'} />
+                    </div>
+                </div>
+                <div className="card">
+                    <div className="card-header">Pre-Insertion Switching Events</div>
+                    <div className="card-body">
+                        <table className="table">
+                            <thead>
+                                <SwitchingHeader />
+                            </thead>
+                            <tbody>
+                                {this.state.SwitchingData.map(row => SwitchingRow(row))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>)
@@ -152,3 +201,28 @@ const EventHeader = () => {
     );
 }
 
+const SwitchingHeader = () => {
+    return (
+        <tr key='Header'>
+            <th key='Time'>Time</th>
+            <th key='Phase'>Phase</th>
+            <th key='Condition'>Switching Condition</th>
+            <th key='R'>Resistance</th>
+            <th key='X'>Reactance</th>
+            <th key='Duration'>Switching Duration</th>
+        </tr>
+    );
+}
+
+const SwitchingRow = (row: ICBSwitching) => {
+    return (
+        <tr key={row.ID}>
+            <td key={'Time' + row.ID}>{moment(row.Time).format('MM/DD/YY HH:mm:ss.SSSS')}</td>
+            <td key={'Phase' + row.ID}>{row.Phase}</td>
+            <td key={'Condition' + row.ID}>{row.SwitchingCondition}</td>
+            <td key={'R' + row.ID}>{row.R.toFixed(3)} pu</td>
+            <td key={'X' + row.ID}>{row.X.toFixed(3)} pu</td>
+            <td key={'Duration' + row.ID}>{row.Duration.toFixed(2)} ms</td>
+        </tr>
+    );
+}

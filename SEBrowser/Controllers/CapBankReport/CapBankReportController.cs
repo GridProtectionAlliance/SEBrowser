@@ -55,7 +55,18 @@ namespace PQDashboard.Controllers.CapBankReport
         // Fields
         private DateTime m_epoch = new DateTime(1970, 1, 1);
 
-       
+        enum TimeWindowUnits
+        {
+            Millisecond,
+            Second,
+            Minute,
+            Hour,
+            Day,
+            Week,
+            Month,
+            Year
+        }
+
         #endregion
 
         #region [ Constructors ]
@@ -145,6 +156,9 @@ namespace PQDashboard.Controllers.CapBankReport
         {
             Dictionary<string, string> query = Request.QueryParameters();
             int capBankId = int.Parse(query["capBankId"]);
+            DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+            string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
+            int windowSize = int.Parse(query["windowSize"]);
 
             using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
@@ -153,7 +167,9 @@ namespace PQDashboard.Controllers.CapBankReport
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
                     sc.CommandText = $@" 
-                   SELECT * FROM CBReportEventTable WHERE CapBankID = {capBankId}
+                    SELECT * FROM CBReportEventTable WHERE CapBankID = {capBankId} AND
+                        Time BETWEEN DATEADD({timeWindowUnits}, {(-1 * windowSize)}, '{dateTime}') AND
+                                                DATEADD({timeWindowUnits}, {(windowSize)},  '{dateTime}') 
                     ORDER BY Time";
 
                     sc.CommandType = CommandType.Text;
@@ -167,7 +183,53 @@ namespace PQDashboard.Controllers.CapBankReport
 
         }
 
-        
+        [Route("GetSwitchingTable"), HttpGet]
+        public DataTable GetSwitchingTable()
+        {
+            Dictionary<string, string> query = Request.QueryParameters();
+            int capBankId = int.Parse(query["capBankId"]);
+            DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+            string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
+            int windowSize = int.Parse(query["windowSize"]);
+
+
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+            {
+                DataTable table = new DataTable();
+
+                using (IDbCommand sc = connection.Connection.CreateCommand())
+                {
+                    sc.CommandText = $@" 
+                    SELECT 
+                        CBSwitchHealthAnalytic.ID AS ID,
+	                    CBSwitchHealthAnalytic.R AS R,
+	                    CBSwitchHealthAnalytic.X AS X,
+	                    CBSwitchHealthAnalytic.Duration AS Duration,
+	                    CBAnalyticResult.EventID AS EventID,
+	                    CBAnalyticResult.Time AS Time,
+	                    Phase.Name AS Phase,
+	                    CBSwitchingCondition.Description AS SwitchingCondition
+                    FROM CBSwitchHealthAnalytic LEFT JOIN 
+	                    CBAnalyticResult ON CBAnalyticResult.ID = CBSwitchHealthAnalytic.CBResultID LEFT JOIN 
+	                    CBSwitchingCondition ON CBSwitchingCondition.ID = CBSwitchHealthAnalytic.CBSwitchingConditionID LEFT JOIN
+	                    Phase ON Phase.ID = CBAnalyticResult.PhaseID 
+                    WHERE (SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId} AND
+                        CBAnalyticResult.Time BETWEEN DATEADD({timeWindowUnits}, {(-1 * windowSize)}, '{dateTime}') AND
+                                                DATEADD({timeWindowUnits}, {(windowSize)},  '{dateTime}') 
+                    ORDER BY CBAnalyticResult.Time";
+
+                    sc.CommandType = CommandType.Text;
+
+                    IDataReader rdr = sc.ExecuteReader();
+                    table.Load(rdr);
+
+                    return table;
+                }
+            }
+
+        }
+
+
         #endregion
 
     }

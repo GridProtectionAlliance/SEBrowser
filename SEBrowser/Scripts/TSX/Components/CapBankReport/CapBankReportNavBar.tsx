@@ -24,6 +24,11 @@ import * as React from 'react';
 import _ from 'lodash';
 import SEBrowserService from './../../../TS/Services/SEBrowser';
 
+
+const momentDateFormat = "MM/DD/YYYY";
+const momentTimeFormat = "HH:mm:ss.SSS";
+
+
 export interface Substation {
     LocationID: number, AssetKey: string, AssetName: string
 }
@@ -31,9 +36,10 @@ export interface Substation {
 export interface CapBankReportNavBarProps {
     stateSetter(state): void,
     CapBankID: number,
-    startDate: number,
-    endDate: number
-
+    date: string,
+    time: string,
+    windowSize: number,
+    timeWindowUnits: number,
 }
 
 export default class CapBankReportNavBar extends React.Component<CapBankReportNavBarProps, { LineID: number, LocationID: number, showCoilSelection: boolean }>{
@@ -52,6 +58,16 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
 
     componentDidMount() {
         this.getSubstationData();
+
+        $('#datePicker').datetimepicker({ format: momentDateFormat });
+        $('#datePicker').on('dp.change', (e) => {
+            this.props.stateSetter({ date: (e.target as any).value });
+        });
+
+        $('#timePicker').datetimepicker({ format: momentTimeFormat });
+        $('#timePicker').on('dp.change', (e) => {
+            this.props.stateSetter({ time: (e.target as any).value });
+        });
     }
 
     componentWillReceiveProps(nextProps: CapBankReportNavBarProps) {
@@ -126,12 +142,44 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                 </form>
                             </fieldset>
                         </li>
-                        <li className="nav-item" style={{ width: '50%' , paddingRight: 10 }}>
+                        <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Time:</legend>
+                                <legend className="w-auto" style={{ fontSize: 'large' }}>Time Window:</legend>
                                 <form>
-                                    
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }} >Date: </label>
+                                    <div className="form-group" style={{ height: 30 }}>
+                                        <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
+                                            <input id="timePicker" className='form-control' value={this.props.time} onChange={(e) => {
+                                                this.props.stateSetter({ time: (e.target as any).value });
+                                            }} />
+                                        </div>
 
+                                        <div className='input-group date' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
+                                            <input className='form-control' id='datePicker' value={this.props.date} onChange={(e) => {
+                                                this.props.stateSetter({ date: (e.target as any).value });
+                                            }} />
+                                        </div>
+
+                                    </div>
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
+                                    <div className="form-group" style={{ height: 30 }}>
+                                        <input style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} value={this.props.windowSize} onChange={(e) => {
+                                            this.props.stateSetter({ windowSize: (e.target as any).value });
+                                        }} type="number" />
+                                        <select style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} value={this.props.timeWindowUnits} onChange={(e) => {
+                                            this.props.stateSetter({ timeWindowUnits: (e.target as any).value });
+                                        }} >
+                                            <option value="7">Year</option>
+                                            <option value="6">Month</option>
+                                            <option value="5">Week</option>
+                                            <option value="4">Day</option>
+                                            <option value="3">Hour</option>
+                                            <option value="2">Minute</option>
+                                            <option value="1">Second</option>
+                                            <option value="0">Millisecond</option>
+                                        </select>
+
+                                    </div>
                                 </form>
                             </fieldset>
                         </li>
