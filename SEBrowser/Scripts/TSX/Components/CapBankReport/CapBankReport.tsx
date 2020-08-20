@@ -65,7 +65,7 @@ export default class CapBankReport extends React.Component<IProps, IState>{
         return (
             <div style={{ width: '100%', height: '100%' }}>
                 <CapBankReportNavBar {...this.state.searchBarProps}/>
-                <div style={{ width: '100%', height: 'calc( 100% - 118px)' }}>
+                <div style={{ width: '100%', height: 'calc( 100% - 175px)' }}>
                     <CapBankReportPane {...this.state.searchBarProps}/>
                 </div>
             </div>

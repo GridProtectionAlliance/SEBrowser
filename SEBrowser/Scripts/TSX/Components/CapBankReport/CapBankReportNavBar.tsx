@@ -42,18 +42,12 @@ export interface CapBankReportNavBarProps {
     timeWindowUnits: number,
 }
 
-export default class CapBankReportNavBar extends React.Component<CapBankReportNavBarProps, { LineID: number, LocationID: number, showCoilSelection: boolean }>{
+export default class CapBankReportNavBar extends React.Component<CapBankReportNavBarProps, {}>{
     seBrowserService: SEBrowserService;
 
     constructor(props, context) {
         super(props, context);
-
         this.seBrowserService = new SEBrowserService();
-        this.state = {
-            LocationID: -1,
-            LineID: -1,
-            showCoilSelection: false
-        };
     }
 
     componentDidMount() {
@@ -61,12 +55,12 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
 
         $('#datePicker').datetimepicker({ format: momentDateFormat });
         $('#datePicker').on('dp.change', (e) => {
-            this.props.stateSetter({ date: (e.target as any).value });
+            this.setDate((e.target as any).value);
         });
 
         $('#timePicker').datetimepicker({ format: momentTimeFormat });
         $('#timePicker').on('dp.change', (e) => {
-            this.props.stateSetter({ time: (e.target as any).value });
+            this.setTime((e.target as any).value);
         });
     }
 
@@ -95,10 +89,36 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         var object = _.clone(this.props) as CapBankReportNavBarProps;
         object.CapBankID = capBankId;
         this.props.stateSetter({ searchBarProps: object });
-
-        
-
     }
+
+    setDate(date: string) {
+
+        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        object.date = date;
+        this.props.stateSetter({ searchBarProps: object });
+    }
+
+    setTime(time: string) {
+
+        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        object.time = time;
+        this.props.stateSetter({ searchBarProps: object });
+    }
+
+    setTimeWindowUnits(timeWindowUnits: number) {
+
+        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        object.timeWindowUnits = timeWindowUnits;
+        this.props.stateSetter({ searchBarProps: object });
+    }
+
+    setWindowSize(windowSize: number) {
+
+        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        object.windowSize = windowSize;
+        this.props.stateSetter({ searchBarProps: object });
+    }
+
 
     getSubstationData() {
         this.seBrowserService.GetCapBankSubstationData().done(results => {
@@ -123,18 +143,18 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                     <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                         <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Substation:</legend>
+                                <legend className="w-auto" style={{ fontSize: 'large' }}>Capacitor Bank:</legend>
                                 <form>
+                                    <label style={{ width: '100%', position: 'relative', float: "left"  }}>Substation: </label>
                                     <div className="form-group" style={{ height: 30 }}>
-                                        <label style={{ width: 200, position: 'relative', float: "left" }}>Substation: </label>
-                                        <select ref="SubStation" style={{ width: 'calc(100% - 200px)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
+                                        <select ref="SubStation" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
                                             this.getCapBankData((e.target as any).value);
                                         }} >
                                         </select>
                                     </div>
+                                        <label style={{ width: '100%', position: 'relative', float: "left" }}>Cap Bank: </label>
                                     <div className="form-group" style={{ height: 30 }}>
-                                        <label style={{ width: 200, position: 'relative', float: "left" }}>Cap Bank: </label>
-                                        <select ref="Breaker" style={{ width: 'calc(100% - 200px)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
+                                        <select ref="Breaker" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
                                             this.setCapBank(parseInt((e.target as any).value.toString()));
                                         }} >
                                         </select>
@@ -150,13 +170,13 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                     <div className="form-group" style={{ height: 30 }}>
                                         <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
                                             <input id="timePicker" className='form-control' value={this.props.time} onChange={(e) => {
-                                                this.props.stateSetter({ time: (e.target as any).value });
+                                                this.setTime((e.target as any).value);
                                             }} />
                                         </div>
 
                                         <div className='input-group date' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
                                             <input className='form-control' id='datePicker' value={this.props.date} onChange={(e) => {
-                                                this.props.stateSetter({ date: (e.target as any).value });
+                                                this.setDate((e.target as any).value);
                                             }} />
                                         </div>
 
@@ -164,10 +184,10 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
                                     <div className="form-group" style={{ height: 30 }}>
                                         <input style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} value={this.props.windowSize} onChange={(e) => {
-                                            this.props.stateSetter({ windowSize: (e.target as any).value });
+                                            this.setWindowSize((e.target as any).value);
                                         }} type="number" />
                                         <select style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} value={this.props.timeWindowUnits} onChange={(e) => {
-                                            this.props.stateSetter({ timeWindowUnits: (e.target as any).value });
+                                            this.setTimeWindowUnits((e.target as any).value);
                                         }} >
                                             <option value="7">Year</option>
                                             <option value="6">Month</option>
