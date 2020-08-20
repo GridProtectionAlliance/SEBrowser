@@ -23,6 +23,7 @@
 import * as React from 'react';
 import { CapBankReportNavBarProps } from './CapBankReportNavBar';
 import _ from 'lodash';
+import TrendingCard from './TrendingCard';
 //import RelayPerformanceTrend from './RelayPerformanceTrend';
 
 interface ICapBankReportPaneState { EventData: Array<ICBEvent> }
@@ -95,7 +96,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                     <div className="card-body">
                         <table className="table">
                             <thead>
-                                <EventHeader />
+                                <EventHeader/>
                             </thead>
                             <tbody>
                                 {this.state.EventData.map(row => EventRow(row))}
@@ -104,8 +105,20 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         </table>
                     </div>
                 </div>
+                <div className="card">
+                    <div className="card-header">Cap Bank Analytic Events</div>
+                    <div className="card-body">
+                        <TrendingCard getData={this.getXpostData.bind(this)} keyString={'XPost'} allowZoom={true} height={200} Tstart={1500} Tend={1700} yLabel={'Test Label'} />
+                    </div>
+                </div>
             </div>)
         
+    }
+
+    getXpostData(ctrl: TrendingCard) {
+        ctrl.stateSetter({
+            data: [{data: [[1500,10],[1550,15],[1600,10],[1650,15],[1700,20]], color: '#ff0000', label: 'Test'}]
+        });
     }
 }
 
