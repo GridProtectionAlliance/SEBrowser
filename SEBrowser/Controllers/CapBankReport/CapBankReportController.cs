@@ -235,6 +235,8 @@ namespace PQDashboard.Controllers.CapBankReport
 
         }
 
+        #region [ Trending Data ]
+
         [Route("GetSCTrend"), HttpGet]
         public TrendSeries GetSCTrend()
         {
@@ -261,6 +263,56 @@ namespace PQDashboard.Controllers.CapBankReport
 
             return shortCircuitTrend;
         }
+
+        [Route("GetSwitchingTrend"), HttpGet]
+        public List<TrendSeries> GetSwitchingTrend()
+        {
+            Dictionary<string, string> query = Request.QueryParameters();
+            int capBankId = int.Parse(query["capBankId"]);
+            DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+            string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
+            int windowSize = int.Parse(query["windowSize"]);
+
+            List<TrendSeries> impedanceTrend = new List<TrendSeries>() {new TrendSeries()
+            {
+                color = "#ff0000",
+                label = "Pre-Insertion Resistance ",
+                data = new List<double[]>()
+            },
+            new TrendSeries()
+            {
+                color = "#0000ff",
+                label = "Pre-Insertion Reactance",
+                data = new List<double[]>()
+            } };
+
+            string restriction = $"Time BETWEEN DATEADD({ timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}')";
+
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+            {
+                string sqlQuery = $@"SELECT
+                        CBSwitchHealthAnalytic.ID AS ID,
+	                    CBSwitchHealthAnalytic.R AS R,
+	                    CBSwitchHealthAnalytic.X AS X,
+	                    CBAnalyticResult.Time AS Time
+                    FROM CBSwitchHealthAnalytic LEFT JOIN
+                        CBAnalyticResult ON CBAnalyticResult.ID = CBSwitchHealthAnalytic.CBResultID 
+                    WHERE(SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId} AND
+                        CBAnalyticResult.Time BETWEEN DATEADD({timeWindowUnits}, {(-1 * windowSize)}, '{dateTime}') AND
+                        DATEADD({timeWindowUnits}, {(windowSize)},  '{dateTime}') 
+                    ORDER BY CBAnalyticResult.Time";
+
+                DataTable table = connection.RetrieveData(sqlQuery);
+
+                impedanceTrend[0].data = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("R") ?? 0 }).ToList();
+                impedanceTrend[1].data = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("X") ?? 0 }).ToList();
+
+            }
+
+            return impedanceTrend;
+        }
+        #endregion 
+
         #endregion
 
     }

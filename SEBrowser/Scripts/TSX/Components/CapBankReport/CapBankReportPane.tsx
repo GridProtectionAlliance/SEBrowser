@@ -30,6 +30,7 @@ interface ICapBankReportPaneState {
     EventData: Array<ICBEvent>,
     SwitchingData: Array<ICBSwitching>,
     scTrendData: Array<ITrendSeries>,
+    switchingTrendData: Array<ITrendSeries>,
     Tstart: number,
     Tend: number,
 }
@@ -48,6 +49,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
     eventTableHandle: JQuery.jqXHR;
     switchingTableHandle: JQuery.jqXHR;
     scTrendHandle: JQuery.jqXHR;
+    switchingTrendHandle: JQuery.jqXHR;
 
     constructor(props, context) {
         super(props, context);
@@ -56,6 +58,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
             EventData: [],
             SwitchingData: [],
             scTrendData: [],
+            switchingTrendData: [],
             Tstart: 0,
             Tend: 0,
         };
@@ -140,6 +143,15 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
             if (data.data.length > 0)
                 this.setState({ scTrendData: [data] });
         });
+
+        this.getSwitchingTrendData().then(data => {
+
+            if (data == null) {
+                return;
+            }
+
+            this.setState({ switchingTrendData: data.filter(item => item.data.length > 0) });
+        });
     }
 
     render() {
@@ -177,6 +189,12 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                                 {this.state.SwitchingData.map(row => SwitchingRow(row))}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+                <div className="card">
+                    <div className="card-header">Switching Impedance Trend</div>
+                    <div className="card-body">
+                        <TrendingCard data={this.state.switchingTrendData} keyString={'Impedance'} allowZoom={true} height={200} yLabel={'Switching Impedance (pu)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                     </div>
                 </div>
             </div>)
@@ -228,6 +246,23 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         });
 
         return this.scTrendHandle;
+    }
+
+    getSwitchingTrendData() {
+        if (this.switchingTrendHandle !== undefined)
+            this.switchingTrendHandle.abort();
+
+        this.switchingTrendHandle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/PQDashboard/CapBankReport/GetSwitchingTrend?capBankId=${this.props.CapBankID}&date=${this.props.date}` +
+                `&time=${this.props.time}&timeWindowunits=${this.props.timeWindowUnits}&windowSize=${this.props.windowSize}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: false,
+            async: true
+        });
+
+        return this.switchingTrendHandle;
     }
 }
 
