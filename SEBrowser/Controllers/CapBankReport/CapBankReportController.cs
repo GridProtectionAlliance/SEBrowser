@@ -55,6 +55,12 @@ namespace PQDashboard.Controllers.CapBankReport
         // Fields
         private DateTime m_epoch = new DateTime(1970, 1, 1);
 
+        public class TrendSeries {
+            public string color;
+            public string label;
+            public List<double[]> data;
+        }
+
         enum TimeWindowUnits
         {
             Millisecond,
@@ -229,7 +235,32 @@ namespace PQDashboard.Controllers.CapBankReport
 
         }
 
+        [Route("GetSCTrend"), HttpGet]
+        public TrendSeries GetSCTrend()
+        {
+            Dictionary<string, string> query = Request.QueryParameters();
+            int capBankId = int.Parse(query["capBankId"]);
+            DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+            string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
+            int windowSize = int.Parse(query["windowSize"]);
 
+            TrendSeries shortCircuitTrend = new TrendSeries()
+            {
+                color = "#ff0000",
+                label = "Short Circuit Power (MVA)",
+                data = new List<double[]>()
+            };
+
+            string restriction = $"Time BETWEEN DATEADD({ timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}')";
+
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+            {
+                shortCircuitTrend.data = (new TableOperations<CBAnalyticResult>(connection)).QueryRecordsWhere("(SELECT AssetID FROM EVENT WHERE Event.ID = EventID) = {0} AND " + restriction, capBankId)
+                    .Select(item => new double[2] { item.Time.Subtract(m_epoch).TotalMilliseconds, (item.DeltaQ?? 0) }).ToList();
+            }
+
+            return shortCircuitTrend;
+        }
         #endregion
 
     }

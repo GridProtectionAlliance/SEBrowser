@@ -22,13 +22,16 @@
 //******************************************************************************************************
 import * as React from 'react';
 import { CapBankReportNavBarProps } from './CapBankReportNavBar';
-import _ from 'lodash';
-import TrendingCard from './TrendingCard';
+import _, { cloneDeep } from 'lodash';
+import TrendingCard, { ITrendSeries } from './TrendingCard';
 //import RelayPerformanceTrend from './RelayPerformanceTrend';
 
 interface ICapBankReportPaneState {
     EventData: Array<ICBEvent>,
     SwitchingData: Array<ICBSwitching>,
+    scTrendData: Array<ITrendSeries>,
+    Tstart: number,
+    Tend: number,
 }
 
 
@@ -44,13 +47,17 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
    
     eventTableHandle: JQuery.jqXHR;
     switchingTableHandle: JQuery.jqXHR;
+    scTrendHandle: JQuery.jqXHR;
 
     constructor(props, context) {
         super(props, context);
 
         this.state = {
             EventData: [],
-            SwitchingData: []
+            SwitchingData: [],
+            scTrendData: [],
+            Tstart: 0,
+            Tend: 0,
         };
 
         
@@ -59,24 +66,27 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
 
     componentDidMount() {
         if (this.props.CapBankID >= 0)
-            this.getData(this.props);
+            this.getData();
     }
 
-    componentWillReceiveProps(nextProps) {
-        let oldProps = _.clone(this.props);
+    componentDidUpdate(oldProps: CapBankReportNavBarProps) {
+        let newProps = _.clone(this.props);
 
-        if (!_.isEqual(nextProps, oldProps) && nextProps.CapBankID >= 0)
-            this.getData(nextProps);
+        if (!_.isEqual(newProps, oldProps) && newProps.CapBankID >= 0) {
+            this.getData();
+            this.getTimeLimits()
+        }
+            
     }
 
-    getEventTableData(props: CapBankReportNavBarProps): JQuery.jqXHR {
+    getEventTableData(): JQuery.jqXHR {
         if (this.eventTableHandle !== undefined)
             this.eventTableHandle.abort();
 
         this.eventTableHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${props.CapBankID}&date=${props.date}` +
-                `&time=${props.time}&timeWindowunits=${props.timeWindowUnits}&windowSize=${props.windowSize}`,
+            url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${this.props.CapBankID}&date=${this.props.date}` +
+                `&time=${this.props.time}&timeWindowunits=${this.props.timeWindowUnits}&windowSize=${this.props.windowSize}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,
@@ -86,14 +96,14 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         return this.eventTableHandle;
     }
 
-    getSwitchingTableData(props: CapBankReportNavBarProps): JQuery.jqXHR {
+    getSwitchingTableData(): JQuery.jqXHR {
         if (this.switchingTableHandle !== undefined)
             this.switchingTableHandle.abort();
 
         this.switchingTableHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/GetSwitchingTable?capBankId=${props.CapBankID}&date=${props.date}` +
-                `&time=${props.time}&timeWindowunits=${props.timeWindowUnits}&windowSize=${props.windowSize}`,
+            url: `${homePath}api/PQDashboard/CapBankReport/GetSwitchingTable?capBankId=${this.props.CapBankID}&date=${this.props.date}` +
+                `&time=${this.props.time}&timeWindowunits=${this.props.timeWindowUnits}&windowSize=${this.props.windowSize}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,
@@ -103,8 +113,8 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         return this.switchingTableHandle;
     }
 
-    getData(props: CapBankReportNavBarProps) {
-        this.getEventTableData(props).then(data => {
+    getData() {
+        this.getEventTableData().then(data => {
             
             if (data == null) {
                 this.setState({EventData: []})
@@ -113,13 +123,22 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
             this.setState({ EventData: data })
         });
 
-        this.getSwitchingTableData(props).then(data => {
+        this.getSwitchingTableData().then(data => {
 
             if (data == null) {
                 this.setState({ SwitchingData: [] })
                 return;
             }
             this.setState({ SwitchingData: data })
+        });
+
+        this.getScTrendData().then(data => {
+
+            if (data == null) {
+                return;
+            }
+            if (data.data.length > 0)
+                this.setState({ scTrendData: [data] });
         });
     }
 
@@ -144,7 +163,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                 <div className="card">
                     <div className="card-header">Short Circuit Power Trend</div>
                     <div className="card-body">
-                        <TrendingCard getData={this.getXpostData.bind(this)} keyString={'XPost'} allowZoom={true} height={200} Tstart={1500} Tend={1700} yLabel={'Test Label'} />
+                        <TrendingCard data={this.state.scTrendData} keyString={'Sc'} allowZoom={true} height={200} yLabel={'Short Circuit Power (MVA)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                     </div>
                 </div>
                 <div className="card">
@@ -164,10 +183,51 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         
     }
 
-    getXpostData(ctrl: TrendingCard) {
-        ctrl.stateSetter({
-            data: [{data: [[1500,10],[1550,15],[1600,10],[1650,15],[1700,20]], color: '#ff0000', label: 'Test'}]
+    getTimeLimits() {
+        let dT = this.props.windowSize;
+        let Tcenter = moment(this.props.date + " " + this.props.time);
+        let dUnit = "";
+
+        if (this.props.timeWindowUnits == 0)
+            dUnit = "ms";
+        else if (this.props.timeWindowUnits == 1)
+            dUnit = "s"
+        else if (this.props.timeWindowUnits == 2)
+            dUnit = "m"
+        else if (this.props.timeWindowUnits == 3)
+            dUnit = "h"
+        else if (this.props.timeWindowUnits == 4)
+            dUnit = "d"
+        else if (this.props.timeWindowUnits == 5)
+            dUnit = "w"
+        else if (this.props.timeWindowUnits == 6)
+            dUnit = "M"
+        else if (this.props.timeWindowUnits == 7)
+            dUnit = "y"
+
+        let Tstart = cloneDeep(Tcenter);
+        Tstart.subtract(dT, dUnit);
+        let Tend = cloneDeep(Tcenter);
+        Tend.add(dT, dUnit);
+
+        this.setState({ Tstart: Tstart.valueOf(), Tend: Tend.valueOf()})
+    }
+
+    getScTrendData() {
+        if (this.scTrendHandle !== undefined)
+            this.scTrendHandle.abort();
+
+        this.scTrendHandle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/PQDashboard/CapBankReport/GetSCTrend?capBankId=${this.props.CapBankID}&date=${this.props.date}` +
+                `&time=${this.props.time}&timeWindowunits=${this.props.timeWindowUnits}&windowSize=${this.props.windowSize}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: false,
+            async: true
         });
+
+        return this.scTrendHandle;
     }
 }
 

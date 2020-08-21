@@ -28,24 +28,25 @@ import { History } from 'history';
 import * as queryString from 'querystring';
 import _ from 'lodash';
 import * as d3 from '../../../Lib/d3.v4.min';
+import { isNullOrUndefined } from 'util';
 
 interface IProps {
-    getData: (base: TrendingCard) => void,
     allowZoom: boolean,
     keyString: string,
     height:number,
+    data: Array<ITrendSeries>,
     xLabel?: string,
     yLabel?: string,
-    Tstart: number,
-    Tend: number
+    Tstart?: number,
+    Tend?: number,
 }
 interface IState {
-    data: Array<ID3Line>,
+    
     Tstart: number,
     Tend: number
 }
 
-interface ID3Line {
+export interface ITrendSeries {
 
     data: Array<[number,number]>,
     color: string,
@@ -72,6 +73,9 @@ export default class TrendingCard extends React.Component<IProps, IState>{
     yAxis: any;
     xAxis: any;
 
+    yExp: any;
+    xLbl: any;
+
     mouseDownPos: ImousePosition;
 
     constructor(props, context) {
@@ -83,31 +87,24 @@ export default class TrendingCard extends React.Component<IProps, IState>{
         var query = queryString.parse(this.history['location'].search);
 
         this.state = {
-            data: [],
             Tstart: 0,
             Tend: 0
         };
     }
 
-    componentDidMount() {
-        this.props.getData(this);
-    }
 
-    componentWillUnmount() {
-    }
 
     componentDidUpdate(prevProps: IProps, prevState: IState) {
-        if (!_.isEqual(prevState.data, this.state.data))
+        if (!_.isEqual(prevProps, this.props)) {
             this.generatePlot();
-        else if (!_.isEqual(prevProps, this.props))
-            this.generatePlot();
+        }
         else
             this.updatePlot();
     }    
 
     generatePlot() {
         // remove the previous SVG object
-        d3.select("#trendWindow-" + this.props.keyString +  ">svg").remove()
+        d3.select("#trendWindow-" + this.props.keyString + ">svg").remove()
 
         //add new Plot
         var container = d3.select("#trendWindow-" + this.props.keyString);
@@ -118,40 +115,37 @@ export default class TrendingCard extends React.Component<IProps, IState>{
             .attr("transform", "translate(40,10)");
 
         //Then Create Axisis
-        let ymax = Math.max(...this.state.data.map(item => Math.max(...item.data.map(p => p[1]))));
-        let ymin = Math.min(...this.state.data.map(item => Math.min(...item.data.map(p => p[1]))));;
+        let ymax = Math.max(...this.props.data.map(item => Math.max(...item.data.map(p => p[1]))));
+        let ymin = Math.min(...this.props.data.map(item => Math.min(...item.data.map(p => p[1]))));;
 
         this.yscale = d3.scaleLinear()
             .domain([ymin, ymax])
             .range([this.props.height - 60, 0]);
 
-        if (this.state.Tstart === 0)
-            this.stateSetter({ Tstart: this.props.Tstart })
-        if (this.state.Tend === 0)
-            this.stateSetter({ Tend: this.props.Tend })
+        if (!isNullOrUndefined(this.props.Tstart))
+            this.stateSetter({ Tstart: this.props.Tstart });
+        else
+            this.stateSetter({ Tstart: Math.min(...this.props.data.map(item => Math.min(...item.data.map(p => p[0])))) });
+
+        if (!isNullOrUndefined(this.props.Tend))
+            this.stateSetter({ Tend: this.props.Tend });
+        else
+            this.stateSetter({ Tend: Math.max(...this.props.data.map(item => Math.max(...item.data.map(p => p[0])))) });
 
         this.xscale = d3.scaleLinear()
             .domain([this.state.Tstart, this.state.Tend])
             .range([20, container.node().getBoundingClientRect().width - 100])
             ;
 
-        this.yAxis = svg.append("g").attr("transform", "translate(20,0)").call(d3.axisLeft(this.yscale));
+        this.yAxis = svg.append("g").attr("transform", "translate(20,0)").call(d3.axisLeft(this.yscale).tickFormat((d, i) => this.formatValueTick(d)));
         this.xAxis = svg.append("g").attr("transform", "translate(0," + (this.props.height - 60) + ")").call(d3.axisBottom(this.xscale).tickFormat((d, i) => this.formatTimeTick(d)));
 
-
-        if (this.props.xLabel !== null)
-            svg.append("text")
-                .attr("transform", "translate(" + ((container.node().getBoundingClientRect().width - 100) / 2) + " ," + (this.props.height - 20) + ")")
-                .style("text-anchor", "middle")
-                .text(this.props.xLabel);
-
-        else
-            svg.append("text")
-                .attr("transform", "translate(" + ((container.node().getBoundingClientRect().width - 100) / 2) + " ," + (this.props.height - 20) + ")")
-                .style("text-anchor", "middle")
-                .text("Time");
-
-        if (this.props.yLabel !== null)
+        this.xLbl = svg.append("text")
+            .attr("transform", "translate(" + ((container.node().getBoundingClientRect().width - 100) / 2) + " ," + (this.props.height - 20) + ")")
+            .style("text-anchor", "middle")
+            .text("");
+       
+        if (this.props.yLabel != null)
             svg.append("text")
                 .attr("transform", "rotate(-90)")
                 .attr("y", -30)
@@ -160,6 +154,13 @@ export default class TrendingCard extends React.Component<IProps, IState>{
                 .style("text-anchor", "middle")
                 .text(this.props.yLabel);
 
+
+
+        this.yExp = svg.append("text")
+            .style("text-anchor", "end")
+            .text("");
+
+        this.updateAxisLabel();
 
         //Add Hover
         this.hover = svg.append("line")
@@ -182,7 +183,7 @@ export default class TrendingCard extends React.Component<IProps, IState>{
 
         let ctrl = this;
 
-        this.state.data.forEach(row =>
+        this.props.data.forEach(row =>
             this.paths.append("path").datum(row.data.map(p => { return { x: p[0], y: p[1] } })).attr("fill", "none")
                 .attr("stroke", row.color)
                 .attr("stroke-width", 2.0)
@@ -195,6 +196,16 @@ export default class TrendingCard extends React.Component<IProps, IState>{
                         return tx && ty;
                     })
                 ));
+
+        /*this.props.data.forEach(row =>
+            this.paths.append("circle").datum(row.data.map(p => { return { x: p[0], y: p[1] } }))
+                .attr('cx', function (d) { return ctrl.xscale(d.x) })
+                .attr('cy', function (d) { return ctrl.yscale(d.y)})
+                .attr('r', 5)
+                .style('stroke', '#000a19')
+                .style('fill', '#000a19')
+                .style('opacity', 0.5)
+            );*/
 
         //Add Zoom Window
         this.brush = svg.append("rect")
@@ -221,7 +232,8 @@ export default class TrendingCard extends React.Component<IProps, IState>{
         //Update Axis
         this.xscale.domain([this.state.Tstart, this.state.Tend]);
         this.yscale.domain(this.getYlimit());
-        this.yAxis.transition().duration(1000).call(d3.axisLeft(this.yscale));
+        this.yAxis.transition().duration(1000).call(d3.axisLeft(this.yscale).tickFormat((d, i) => this.formatValueTick(d)));
+        this.xAxis.transition().duration(1000).call(d3.axisBottom(this.xscale).tickFormat((d, i) => this.formatTimeTick(d)));
 
         //Set Colors, update Visibility and Points
         let ctrl = this;
@@ -240,16 +252,65 @@ export default class TrendingCard extends React.Component<IProps, IState>{
                             let ty = !isNaN(parseFloat(ctrl.yscale(d.y)));
                             return tx && ty;
                         })
-                    );
+        );
 
+        this.updateAxisLabel();
+
+        /*this.paths.selectAll('circle')
+            .transition()
+            .duration(1000)
+            .attr("cx", function (d) { return ctrl.xscale(d.x) })
+            .attr("cy", function (d) { return ctrl.yscale(d.y) })*/
+    }
+
+    updateAxisLabel() {
+        let lim = this.getYlimit().map(p => Math.abs(p));
+        let h = Math.max(...lim);
+
+        let exp = Math.floor(Math.log10(h));
+        let tripple = Math.floor(exp / 3);
+        if (tripple == 0)
+            this.yExp.text("");
+        else
+            this.yExp.text("x10^" + (tripple * 3).toFixed(0));
+
+        h = this.state.Tend - this.state.Tstart;
+        h = h / 1000.0;
+
+        let tUnit = ""
+        if (h < 15)
+            tUnit = " (ms)"
+        else if (h < 2 * 60)
+            tUnit = " (s)"
+        else if (h < 30 * 60)
+            tUnit = " (min:sec)"
+        else if (h < 60 * 60)
+            tUnit = " (min)"
+        else if (h < 30 * 60 * 60)
+            tUnit = " (hr:min)"
+        else if (h < 2 * 24 * 60 * 60)
+            tUnit = " (hr)"
+        else if (h < 30 * 24 * 60 * 60)
+            tUnit = " (m/d hr)"
+        else if (h < 20 * 30 * 24 * 60 * 60)
+            tUnit = " (m/d)"
+
+
+
+        if (this.props.xLabel != null)
+            this.xLbl.text(this.props.xLabel + tUnit);
+
+        else
+            this.xLbl.text("Time" + tUnit);
+           
     }
 
     getYlimit() {
 
         let ymin = Number.MAX_VALUE;
-        let ymax = Number.MIN_VALUE;
+        let ymax = -Number.MAX_VALUE;
 
-        this.state.data.forEach(item => {
+        this.props.data.forEach(item => {
             item.data.forEach(p => {
                 if (p[0] > this.state.Tstart && p[0] < this.state.Tend) {
                     if (p[1] > ymax)
@@ -266,9 +327,49 @@ export default class TrendingCard extends React.Component<IProps, IState>{
     formatTimeTick(d: number) {
         let TS = moment(d);
         let h = this.state.Tend - this.state.Tstart
+        h = h / 1000.0;
 
-        return TS.format("HH:mm")
+        if (h < 15)
+            return TS.format("SSS.SS")
+        if (h < 30)
+            return TS.format("ss.SS")
+        if (h < 2 * 60)
+            return TS.format("ss")
+        if (h < 30 * 60)
+            return TS.format("mm:ss")
+        if (h < 60*60)
+            return TS.format("mm")
+        if (h < 30*60 * 60)
+            return TS.format("hh:mm")
+        if (h < 2*24*60 * 60)
+            return TS.format("hh")
+        if (h < 30*24*60 * 60)
+            return TS.format("MM/DD hh")
+        if (h < 20*30 * 24 * 60 * 60)
+            return TS.format("MM/DD")
+        if (h < 365*15* 24 * 60 * 60)
+            return TS.format("MM YYYY")
 
+        return TS.format("YYYY")
+
+    }
+
+    formatValueTick(d: number) {
+        let lim = this.getYlimit().map(p => Math.abs(p));
+        let h = Math.max(...lim);
+        let val = d;
+
+        let exp = Math.floor(Math.log10(h));
+        let tripple = Math.floor(exp / 3);
+        if (tripple !== 0 )
+            val = d / (10**(tripple * 3));
+
+        if (Math.abs(val) >= 100)
+            return val.toFixed(1);
+        if (Math.abs(val) >= 10)
+            return val.toFixed(2);
+        return val.toFixed(3);
+        
     }
 
     mousemove() {
