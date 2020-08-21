@@ -203,7 +203,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
 
     getTimeLimits() {
         let dT = this.props.windowSize;
-        let Tcenter = moment(this.props.date + " " + this.props.time);
+        let Tcenter = moment(this.props.date + " " + this.props.time,"MM/dd/yyyy HH:mm:ss.SSSS");
         let dUnit = "";
 
         if (this.props.timeWindowUnits == 0)

@@ -72,16 +72,16 @@ export default class CapBankReport extends React.Component<IProps, IState>{
         );
     }
 
-    //<CapBankReportPane capBankID={this.state.searchBarProps.CapBankID} channelid={this.state.searchBarProps.ChannelID} />
+    
     stateSetter(obj) {
         function toQueryString(state: IState) {
             var dataTypes = ["boolean", "number", "string"]
             var stateObject: IState = clone(state);
-            $.each(Object.keys(stateObject), (index, key) => {
-                if (dataTypes.indexOf(typeof (stateObject[key])) < 0)
-                    delete stateObject[key];
+            $.each(Object.keys(stateObject.searchBarProps), (index, key) => {
+                if (dataTypes.indexOf(typeof (stateObject.searchBarProps[key])) < 0)
+                    delete stateObject.searchBarProps[key];
             })
-            return queryString.stringify(stateObject as any);
+            return queryString.stringify(stateObject.searchBarProps as any);
         }
 
         var oldQueryString = toQueryString(this.state);

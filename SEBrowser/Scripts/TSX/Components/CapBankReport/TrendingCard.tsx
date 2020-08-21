@@ -29,6 +29,7 @@ import * as queryString from 'querystring';
 import _ from 'lodash';
 import * as d3 from '../../../Lib/d3.v4.min';
 import { isNullOrUndefined } from 'util';
+import { deepEqual } from 'assert';
 
 interface IProps {
     allowZoom: boolean,
@@ -43,7 +44,9 @@ interface IProps {
 interface IState {
     
     Tstart: number,
-    Tend: number
+    Tend: number,
+    hover: number,
+    points: Array<ITrendPoint>
 }
 
 export interface ITrendSeries {
@@ -52,6 +55,12 @@ export interface ITrendSeries {
     color: string,
     label: string,
 
+}
+
+interface ITrendPoint {
+    t: number,
+    y: number,
+    index: number
 }
 
 interface ImousePosition {
@@ -73,8 +82,12 @@ export default class TrendingCard extends React.Component<IProps, IState>{
     yAxis: any;
     xAxis: any;
 
+    markers: any;
+    mouseMarker: any;
     yExp: any;
     xLbl: any;
+
+
 
     mouseDownPos: ImousePosition;
 
@@ -83,12 +96,11 @@ export default class TrendingCard extends React.Component<IProps, IState>{
 
         this.history = createHistory();
         this.mouseDownPos = { x: 0, y: 0, t: 0 };
-
-        var query = queryString.parse(this.history['location'].search);
-
         this.state = {
             Tstart: 0,
-            Tend: 0
+            Tend: 0,
+            hover: 0,
+            points: this.props.data.map((series, index) => { return { t: series.data[0][0], y: series.data[0][1], index: index } })
         };
     }
 
@@ -97,9 +109,23 @@ export default class TrendingCard extends React.Component<IProps, IState>{
     componentDidUpdate(prevProps: IProps, prevState: IState) {
         if (!_.isEqual(prevProps, this.props)) {
             this.generatePlot();
+            if (this.state.points.length !== this.props.data.length)
+                this.setState({ points: this.props.data.map((series, index) => { return { t: series.data[0][0], y: series.data[0][1], index: index } }) });
+
         }
-        else
+        else if (this.state.Tstart !== prevState.Tstart || this.state.Tend !== prevState.Tend)
             this.updatePlot();
+        else if (this.state.hover !== prevState.hover) {
+            this.setState({
+                points: this.props.data.map((series, index) => {
+                    let i = this.reduceIndex(series.data, series.data.length - 1, 0, this.state.hover)
+                    return { t: series.data[i][0], y: series.data[i][1], index: index }
+                })
+            })
+        }
+        else if (!isEqual(this.state.points, prevState.points))
+            this.updateMouse();
+            
     }    
 
     generatePlot() {
@@ -114,7 +140,7 @@ export default class TrendingCard extends React.Component<IProps, IState>{
             .attr("height", this.props.height).append("g")
             .attr("transform", "translate(40,10)");
 
-        //Then Create Axisis
+        //Then Create Axis
         let ymax = Math.max(...this.props.data.map(item => Math.max(...item.data.map(p => p[1]))));
         let ymin = Math.min(...this.props.data.map(item => Math.min(...item.data.map(p => p[1]))));;
 
@@ -178,8 +204,18 @@ export default class TrendingCard extends React.Component<IProps, IState>{
             .attr("x", 20)
             .attr("y", 0);
 
+        // Add seperate clip Path for Markers that is 5-10 outside the original to make sure we don't cut off half of a marker
+        svg.append("defs").append("svg:clipPath")
+            .attr("id", "Markerclip-" + this.props.keyString)
+            .append("svg:rect")
+            .attr("width", 'calc(100% - 110px)')
+            .attr("height", this.props.height - 50)
+            .attr("x", 15)
+            .attr("y", -5);
+
 
         this.paths = svg.append("g").attr("id", "path-" + this.props.keyString).attr("clip-path", "url(#clip-" + this.props.keyString + ")");
+        this.markers = svg.append("g").attr("id", "marker-" + this.props.keyString).attr("clip-path", "url(#Markerclip-" + this.props.keyString + ")")
 
         let ctrl = this;
 
@@ -197,15 +233,28 @@ export default class TrendingCard extends React.Component<IProps, IState>{
                     })
                 ));
 
-        /*this.props.data.forEach(row =>
-            this.paths.append("circle").datum(row.data.map(p => { return { x: p[0], y: p[1] } }))
+        
+        this.props.data.forEach((row, index) =>
+            this.markers.append("g").selectAll("circle").data(row.data.map((p,i) => { return { x: p[0], y: p[1], pointIndex: i, dataIndex: index } })).enter().append("circle")
                 .attr('cx', function (d) { return ctrl.xscale(d.x) })
                 .attr('cy', function (d) { return ctrl.yscale(d.y)})
-                .attr('r', 5)
-                .style('stroke', '#000a19')
-                .style('fill', '#000a19')
+                .attr('r', 3)
+                .style('stroke', '#000000')
+                .style('fill', row.color)
                 .style('opacity', 0.5)
-            );*/
+            );
+
+        this.mouseMarker = svg.append("g").attr("id", "MouseMarker-" + this.props.keyString).attr("clip-path", "url(#Markerclip-" + this.props.keyString + ")")
+
+      
+        this.mouseMarker.selectAll("circle")
+            .data(this.state.points).enter().append("circle")
+            .attr('cx', function (d) { return ctrl.xscale(d.t) })
+            .attr('cy', function (d) { return ctrl.yscale(d.y) })
+            .attr('r', 5)
+            .style('stroke', '#000000')
+            .style('fill', function (d) { return ctrl.props.data[d.index].color })
+            .style('opacity',0.6)
 
         //Add Zoom Window
         this.brush = svg.append("rect")
@@ -256,12 +305,37 @@ export default class TrendingCard extends React.Component<IProps, IState>{
 
         this.updateAxisLabel();
 
-        /*this.paths.selectAll('circle')
+        this.markers.selectAll('circle')
             .transition()
             .duration(1000)
             .attr("cx", function (d) { return ctrl.xscale(d.x) })
-            .attr("cy", function (d) { return ctrl.yscale(d.y) })*/
+            .attr("cy", function (d) { return ctrl.yscale(d.y) })
+
+        this.updateMouse();
     }
+
+    updateMouse() {
+        let ctrl = this;
+        this.mouseMarker.selectAll("circle").style('opacity', 0.0);
+
+        this.mouseMarker.selectAll("circle").data(this.state.points).enter().append("circle")
+            .attr('cx', function (d) { return ctrl.xscale(d.t) })
+            .attr('cy', function (d) { return ctrl.yscale(d.y) })
+            .attr('r', 5)
+            .style('stroke', '#000000')
+            .style('fill', function (d) { return ctrl.props.data[d.index].color })
+            .style('opacity', 0.0);
+
+        this.mouseMarker.selectAll("circle").exit().remove();
+
+
+        this.mouseMarker.selectAll("circle")
+            .attr("cx", function (d) { return ctrl.xscale(d.t) })
+            .attr("cy", function (d) { return ctrl.yscale(d.y) })
+        .transition().duration(1000).style("opacity", 1.0)
+
+    }
+
 
     updateAxisLabel() {
         let lim = this.getYlimit().map(p => Math.abs(p));
@@ -388,11 +462,16 @@ export default class TrendingCard extends React.Component<IProps, IState>{
             else
                 this.brush.attr("x", this.mouseDownPos.x).attr("width", -w)
         }
+
+        let t = this.xscale.invert(x)
+        this.setState({ hover:  t})
     }
 
     mouseout() {
         this.brush.style("opacity", 0);
         this.hover.style("opacity", 0);
+        this.setState({ hover: 0 });
+        this.mouseMarker.selectAll("circle").style("opacity", 0);
     }
 
     mouseDown() {
@@ -431,33 +510,41 @@ export default class TrendingCard extends React.Component<IProps, IState>{
         return (
             <div>
                 <div id={"trendWindow-" + this.props.keyString} style={{ height: this.props.height, float: 'left', width: '100%' }}></div>
+                <div id={"legendWindow-" + this.props.keyString} style={{ float: 'left', width: '100%', display: 'flex' }}>
+                    {(this.state.points.length == this.props.data.length? this.state.points.map(pt => LegendEntry(this.props.data[pt.index], pt)): null)}
+                </div>
             </div>);
     }
 
     stateSetter(obj) {
-        function toQueryString(state: IState) {
-            var dataTypes = ["boolean", "number", "string"]
-            var stateObject: IState = clone(state);
-            $.each(Object.keys(stateObject), (index, key) => {
-                if (dataTypes.indexOf(typeof (stateObject[key])) < 0)
-                    delete stateObject[key];
-            })
-            return queryString.stringify(stateObject as any);
-        }
-
-        var oldQueryString = toQueryString(this.state);
-
-        this.setState(obj, () => {
-            var newQueryString = toQueryString(this.state);
-
-            if (!isEqual(oldQueryString, newQueryString)) {
-                clearTimeout(this.historyHandle);
-                this.historyHandle = setTimeout(() => this.history['push'](this.history['location'].pathname + '?' + newQueryString), 500);
-            }
-        });
+        this.setState(obj);
     }
 
+    
+
+    reduceIndex(series: Array<[number,number]>, upper: number, lower: number, t: number): number {
+    if (upper == lower)
+        return upper;
+
+    if (t >= series[upper][0])
+        return upper;
+    if (t <= series[lower][0])
+        return lower;
+
+    const middle = Math.ceil((upper + lower) / 2.0);
+    if (t >= series[middle][0])
+        return this.reduceIndex(series, upper, middle, t);
+    else
+        return this.reduceIndex(series, middle - 1, lower, t);
+}
 
 }
 
-
+const LegendEntry = (data: ITrendSeries, point: ITrendPoint) => {
+    return (
+        <div key={data.label} style = {{display: 'flex', alignItems: 'center', marginRight: '20px'}}>
+            <div style={{ width: ' 10px', height: 0, borderTop: '2px solid', borderRight: '10px solid', borderBottom: '2px solid', borderLeft: '10px solid', borderColor: data.color, overflow: 'hidden', marginRight: '5px' }}></div>
+            <label style={{ marginTop: '0.5rem' }}> {data.label} ({point.y})</label>
+        </div>
+    );
+}
