@@ -43,7 +43,8 @@ interface IProps { }
 interface IState extends EventSearchNavbarProps {
     eventid: number,
     searchText: string,
-    searchList: Array<OpenXDA.Event>
+    searchList: Array<OpenXDA.Event>,
+    initialTab?: string,
 }
 
 export default class EventSearch extends React.Component<IProps, IState>{
@@ -86,7 +87,8 @@ export default class EventSearch extends React.Component<IProps, IState>{
             make: (query['make'] != undefined ? query['make'].toString() : 'All'),
             model: (query['model'] != undefined ? query['model'].toString() : 'All'),
             searchList: [],
-            stateSetter: this.stateSetter.bind(this)
+            stateSetter: this.stateSetter.bind(this),
+            initialTab: (query['tab'] != undefined ? query['tab'].toString() : undefined),
         };
     }
 
@@ -114,7 +116,7 @@ export default class EventSearch extends React.Component<IProps, IState>{
                         <EventSearchList eventid={this.state.eventid} searchText={this.state.searchText} searchBarProps={this.state} stateSetter={this.stateSetter.bind(this)} />
                     </div>
                     <div style={{ width: '50%', height: '100%', position: 'relative', float: 'right', overflowY: 'none' }}>{
-                        this.state.searchList.length > 0 && this.state.searchList.find(x => x.EventID == this.state.eventid) != undefined ? <EventPreviewPane EventID={this.state.eventid} AssetType={this.state.searchList.find(x => x.EventID == this.state.eventid).AssetType} EventType={this.state.searchList.find(x => x.EventID == this.state.eventid).EventType} StartTime={this.state.searchList.find(x => x.EventID == this.state.eventid).FileStartTime}/>: null
+                        this.state.searchList.length > 0 && this.state.searchList.find(x => x.EventID == this.state.eventid) != undefined ? <EventPreviewPane EventID={this.state.eventid} AssetType={this.state.searchList.find(x => x.EventID == this.state.eventid).AssetType} EventType={this.state.searchList.find(x => x.EventID == this.state.eventid).EventType} StartTime={this.state.searchList.find(x => x.EventID == this.state.eventid).FileStartTime} InitialTab={this.state.initialTab as ('Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All')} /> : null
                     }
                     </div>
 

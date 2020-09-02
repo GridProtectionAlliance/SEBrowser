@@ -44,13 +44,14 @@ import TVALSC from './TVA/LSC';
 import TVAPQWeb from './TVA/PQWeb';
 import EventSearchCapBankAnalyticOverview from './EventSearchCapBankAnalyticOverview';
 
-export default class EventPreviewPane extends React.Component<{ EventID: number, AssetType: OpenXDA.AssetTypeName, EventType: OpenXDA.EventTypeName, StartTime: string }, { Settings: Array<SEBrowser.EventPreviewPaneSetting>, Tab: 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All'}> {
+
+export default class EventPreviewPane extends React.Component<{ EventID: number, AssetType: OpenXDA.AssetTypeName, EventType: OpenXDA.EventTypeName, StartTime: string, InitialTab?: ('Waveform' | 'Fault' |'Correlating'|'Configuration'|'All') }, { Settings: Array<SEBrowser.EventPreviewPaneSetting>, Tab: 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All'}> {
     constructor(props) {
         super(props);
 
         this.state = {
             Settings: [],
-            Tab: 'Waveform'
+            Tab: (this.props.InitialTab == null ? 'Waveform' : this.props.InitialTab)
         }
     }
 

@@ -269,7 +269,9 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
 const EventRow = (row: ICBEvent) => {
     return (
         <tr key={row.ID}>
-            <td key={'Time' + row.ID}>{moment(row.Time).format('MM/DD/YY HH:mm:ss.SSSS')}</td>
+            <td key={'Time' + row.ID}><a
+                href={'./eventsearch?line=true&date=' + moment(row.Time).format('MM/DD/YYYY') + '&time=' + moment(row.Time).format('HH:mm:ss.SSS') + '&windowSize=10&timeWindowUnits=2&tab=All&eventid=' + row.EventID}
+            > {moment(row.Time).format('MM/DD/YY HH:mm:ss.SSSS')}</a></td>
             <td key={'Phase' + row.ID}>{row.Phase}</td>
             <td key={'Operation' + row.ID}>{row.Operation}</td>
             <td key={'Status' + row.ID}>{row.Status}</td>
@@ -281,6 +283,8 @@ const EventRow = (row: ICBEvent) => {
     );
 }
 
+//09 % 2F02%2F2020
+//12%3A31%3A09.616
 const EventHeader = () => {
     return (
         <tr key='Header'>
