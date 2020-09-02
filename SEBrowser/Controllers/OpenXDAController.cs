@@ -614,6 +614,33 @@ namespace SEBrowser.Controllers
 
         }
 
+        [Route("getCapBankAnalytic"), HttpGet]
+        public DataTable GetCapBankAnalytic()
+        {
+            Dictionary<string, string> query = Request.QueryParameters();
+            int eventID = int.Parse(query["eventId"]);
+            if (eventID <= 0) return new DataTable();
+            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            {
+                string sqlQuery = @"SELECT CBAnalyticResult.ID,
+                                        Phase.Name AS Phase,
+                                        CBStatus.Description AS Status,
+	                                    CBOperation.Description As Operation,
+                                        CBAnalyticResult.DeltaQ,
+	                                    CBAnalyticResult.MVAsc,
+	                                    CBAnalyticResult.THDpre,
+	                                    CBAnalyticResult.THDpost
+                                    FROM CBAnalyticResult LEFT JOIN Phase ON Phase.ID = CBAnalyticResult.PhaseID LEFT JOIN
+	                                    CBStatus ON CBStatus.Id = CBAnalyticResult.CBStatusID LEFT JOIN
+	                                    CBOperation ON CBOperation.ID = CBAnalyticResult.CBOperationID
+	                                    WHERE
+	                                    CBAnalyticResult.EventID = {0}";
+
+                return connection.RetrieveData(sqlQuery, eventID); ;
+            }
+
+        }
+
         private DataTable RelayHistoryTable(int relayID, int eventID)
         {
             DataTable dataTable;

@@ -42,6 +42,7 @@ import TVASIDA from './TVA/SIDA';
 import TVASOE from './TVA/SOE';
 import TVALSC from './TVA/LSC';
 import TVAPQWeb from './TVA/PQWeb';
+import EventSearchCapBankAnalyticOverview from './EventSearchCapBankAnalyticOverview';
 
 export default class EventPreviewPane extends React.Component<{ EventID: number, AssetType: OpenXDA.AssetTypeName, EventType: OpenXDA.EventTypeName, StartTime: string }, { Settings: Array<SEBrowser.EventPreviewPaneSetting>, Tab: 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All'}> {
     constructor(props) {
@@ -127,7 +128,9 @@ export default class EventPreviewPane extends React.Component<{ EventID: number,
             else if (setting.Name.indexOf('EventSearchRelayPerformance') >= 0 && this.props.AssetType == 'Breaker' && ( this.state.Tab == "All"))
                 return <EventSearchRelayPerformance key={index} EventID={this.props.EventID} />;
             else if (setting.Name.indexOf('EventSearchBreakerPerformance') >= 0 && this.props.AssetType == 'Breaker' && (this.state.Tab == "All"))
-                return <EventSearchBreakerPerformance key={index} EventID={this.props.EventID}/>;
+                return <EventSearchBreakerPerformance key={index} EventID={this.props.EventID} />;
+            else if (setting.Name.indexOf('EventSearchCapBankAnalyticOverview') >= 0 && this.props.AssetType == 'CapacitorBank' && (this.state.Tab == "All"))
+                return <EventSearchCapBankAnalyticOverview key={index} EventID={this.props.EventID} />;
             else if (setting.Name.indexOf('EventSearchNoteWindow') >= 0 && (this.state.Tab == "Configuration" || this.state.Tab == "All"))
                 return <EventSearchNoteWindow key={index} EventID={this.props.EventID} />;
             })}

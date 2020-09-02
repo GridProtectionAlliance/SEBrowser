@@ -42,6 +42,7 @@ export default class OpenSEEService{
     RelayPerformanceHandle: JQuery.jqXHR;
     relayTrendHandle: JQuery.jqXHR;
     RelayTrendPerformanceHandle: JQuery.jqXHR;
+    CapBankAnlayticHandle: JQuery.jqXHR;
 
     constructor() {
         this.getFaultDistanceData = this.getFaultDistanceData.bind(this);
@@ -49,6 +50,7 @@ export default class OpenSEEService{
         this.getStatisticData = this.getStatisticData.bind(this);
         this.getRelayTrendData = this.getRelayTrendData.bind(this);
         this.getRelayTrendPerformance = this.getRelayTrendPerformance.bind(this);
+        this.getCapBankAnalytic = this.getCapBankAnalytic.bind(this);
     }
     
 
@@ -234,6 +236,23 @@ export default class OpenSEEService{
 
         return this.RelayPerformanceHandle;
     }
+
+    getCapBankAnalytic(eventId): JQuery.jqXHR {
+        if (this.CapBankAnlayticHandle !== undefined)
+            this.CapBankAnlayticHandle.abort();
+
+        this.CapBankAnlayticHandle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/getCapBankAnalytic?eventId=${eventId}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+
+        return this.CapBankAnlayticHandle;
+    }
+
 
     getRelayTrendPerformance(breakerid, channelId): JQuery.jqXHR {
         if (this.RelayTrendPerformanceHandle !== undefined)

@@ -387,6 +387,12 @@
   <ItemGroup>
     <Content Include="Scripts\TSX\Components\CapBankReport\CapBankReportPane.tsx" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\TSX\Components\CapBankReport\TrendingCard.tsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchCapBankAnalyticOverview.tsx" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

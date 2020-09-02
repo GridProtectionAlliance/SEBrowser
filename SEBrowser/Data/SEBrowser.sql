@@ -172,11 +172,13 @@ INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchRelayPe
 GO
 INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchBreakerPerformance', 0,9)
 GO
-INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchNoteWindow', 1,10)
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchNoteWindow', 1,11)
 GO
-INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('TVALightning', 0,11)
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('TVALightning', 0,12)
 GO
-INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('TVAFaultInfo', 1,12)
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('TVAFaultInfo', 1,13)
+GO
+INSERT EventPreviewPaneSetting (Name, Show, OrderBy) VALUES ('EventSearchCapBankAnalyticOverview', 0,10)
 GO
 
 CREATE TABLE Links(
