@@ -40,14 +40,33 @@ export interface CapBankReportNavBarProps {
     time: string,
     windowSize: number,
     timeWindowUnits: number,
+    selectedBank: number,
 }
 
-export default class CapBankReportNavBar extends React.Component<CapBankReportNavBarProps, {}>{
+interface CapBank {
+    Id: number,
+    AssetKey: string,
+    numBanks: number,
+    fused: boolean,
+    compensated: boolean
+}
+
+interface Istate {
+    capBanks: Array<CapBank>,
+    subStations: Array<Substation>
+
+}
+
+export default class CapBankReportNavBar extends React.Component<CapBankReportNavBarProps, Istate>{
     seBrowserService: SEBrowserService;
 
     constructor(props, context) {
         super(props, context);
         this.seBrowserService = new SEBrowserService();
+        this.state = {
+            capBanks: [],
+            subStations: [],
+        };
     }
 
     componentDidMount() {
@@ -69,17 +88,8 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
 
     getCapBankData(LocationID: number) {
         
-        this.setState({ LocationID: LocationID });
         this.seBrowserService.GetCapBankData(LocationID).done(results => {
-            $(this.refs.Breaker).children().remove();
-            for (var capBank of results) {
-                $(this.refs.Breaker).append(new Option(capBank.AssetKey, capBank.Id.toString()));
-            };
-
-            if ($(this.refs.Breaker).children("option:selected").val()) {
-                this.setCapBank( parseInt($(this.refs.Breaker).children("option:selected").val().toString()));
-            }
-            
+            this.setState({ capBanks: results })
         });
        
     }
@@ -88,6 +98,13 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
        
         var object = _.clone(this.props) as CapBankReportNavBarProps;
         object.CapBankID = capBankId;
+        object.selectedBank = -1;
+        this.props.stateSetter({ searchBarProps: object });
+    }
+
+    setBankNumber(capBankNumber: number) {
+        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        object.selectedBank = capBankNumber;
         this.props.stateSetter({ searchBarProps: object });
     }
 
@@ -127,7 +144,6 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                 $(this.refs.SubStation).append(new Option(station.AssetName, station.LocationID.toString()));
                 if ($(this.refs.SubStation).children("option:selected").val()) {
                     var selected = parseInt($(this.refs.SubStation).children("option:selected").val().toString());
-                    this.setState({ LocationID: selected });
                     this.getCapBankData(selected);
                 }};
         });
@@ -135,6 +151,19 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
 
    
     render() {
+
+        let bankOptions: Array<JSX.Element> = [];
+        let i = 1;
+        let n = 1;
+        if (this.state.capBanks.find(cB => cB.Id == this.props.CapBankID) != null)
+            n = this.state.capBanks.find(cB => cB.Id == this.props.CapBankID).numBanks;
+
+        bankOptions.push(<option value={-1}> {'System'} </option>)
+
+        for (i = 0; i < n; i++) {
+            bankOptions.push(<option value={i+1}> {i+1} </option>)
+        }
+        
 
         return (
             <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -152,11 +181,20 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                         }} >
                                         </select>
                                     </div>
-                                        <label style={{ width: '100%', position: 'relative', float: "left" }}>Cap Bank: </label>
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Cap Bank Group: </label>
                                     <div className="form-group" style={{ height: 30 }}>
                                         <select ref="Breaker" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
                                             this.setCapBank(parseInt((e.target as any).value.toString()));
                                         }} >
+                                            {this.state.capBanks.map(item => <option value={item.Id}> {item.AssetKey} </option>)}
+                                        </select>
+                                    </div>
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Bank: </label>
+                                    <div className="form-group" style={{ height: 30 }}>
+                                        <select ref="CapBankId" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
+                                            this.setBankNumber(parseInt((e.target as any).value.toString()));
+                                        }} >
+                                            {bankOptions}
                                         </select>
                                     </div>
                                 </form>

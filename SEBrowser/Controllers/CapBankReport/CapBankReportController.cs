@@ -139,7 +139,10 @@ namespace PQDashboard.Controllers.CapBankReport
                 {
                     sc.CommandText = @" 
                    SELECT CapBank.ID AS Id,
-                          CapBank.AssetKey
+                          CapBank.AssetKey,
+                          CapBank.NumberOfBanks AS numBanks,
+                          CapBank.Fused AS fused,
+                          CapBank.Compensated AS compensated
                     FROM	
 	                    CapBank LEFT JOIN AssetLocation ON CapBank.ID = AssetLocation.AssetID
                     WHERE
