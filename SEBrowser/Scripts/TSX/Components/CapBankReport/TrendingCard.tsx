@@ -54,7 +54,8 @@ export interface ITrendSeries {
     data: Array<[number,number]>,
     color: string,
     label: string,
-
+    lineStyle: ('-' | ':'),
+    includeLegend: boolean,
 }
 
 interface ITrendPoint {
@@ -100,7 +101,7 @@ export default class TrendingCard extends React.Component<IProps, IState>{
             Tstart: 0,
             Tend: 0,
             hover: 0,
-            points: this.props.data.map((series, index) => { return { t: series.data[0][0], y: series.data[0][1], index: index } })
+            points: this.props.data.filter(series => series.includeLegend).map((series, index) => { return { t: series.data[0][0], y: series.data[0][1], index: index } })
         };
     }
 
@@ -109,15 +110,15 @@ export default class TrendingCard extends React.Component<IProps, IState>{
     componentDidUpdate(prevProps: IProps, prevState: IState) {
         if (!_.isEqual(prevProps, this.props)) {
             this.generatePlot();
-            if (this.state.points.length !== this.props.data.length)
-                this.setState({ points: this.props.data.map((series, index) => { return { t: series.data[0][0], y: series.data[0][1], index: index } }) });
+            if (this.state.points.length !== this.props.data.filter(series => series.includeLegend).length)
+                this.setState({ points: this.props.data.filter(series => series.includeLegend).map((series, index) => { return { t: series.data[0][0], y: series.data[0][1], index: index } }) });
 
         }
         else if (this.state.Tstart !== prevState.Tstart || this.state.Tend !== prevState.Tend)
             this.updatePlot();
         else if (this.state.hover !== prevState.hover) {
             this.setState({
-                points: this.props.data.map((series, index) => {
+                points: this.props.data.filter(series => series.includeLegend).map((series, index) => {
                     let i = this.reduceIndex(series.data, series.data.length - 1, 0, this.state.hover)
                     return { t: series.data[i][0], y: series.data[i][1], index: index }
                 })
@@ -219,8 +220,8 @@ export default class TrendingCard extends React.Component<IProps, IState>{
 
         let ctrl = this;
 
-        this.props.data.forEach(row =>
-            this.paths.append("path").datum(row.data.map(p => { return { x: p[0], y: p[1] } })).attr("fill", "none")
+        this.props.data.forEach(row => {
+            let ln = this.paths.append("path").datum(row.data.map(p => { return { x: p[0], y: p[1] } })).attr("fill", "none")
                 .attr("stroke", row.color)
                 .attr("stroke-width", 2.0)
                 .attr("d", d3.line()
@@ -230,11 +231,14 @@ export default class TrendingCard extends React.Component<IProps, IState>{
                         let tx = !isNaN(parseFloat(ctrl.xscale(d.x)));
                         let ty = !isNaN(parseFloat(ctrl.yscale(d.y)));
                         return tx && ty;
-                    })
-                ));
+                    }))
+
+            if (row.lineStyle = ':')
+                ln.attr("stroke-dasharray", ("10,5"));
+        });
 
         
-        this.props.data.forEach((row, index) =>
+        this.props.data.filter(series => series.includeLegend).forEach((row, index) =>
             this.markers.append("g").selectAll("circle").data(row.data.map((p,i) => { return { x: p[0], y: p[1], pointIndex: i, dataIndex: index } })).enter().append("circle")
                 .attr('cx', function (d) { return ctrl.xscale(d.x) })
                 .attr('cy', function (d) { return ctrl.yscale(d.y)})
@@ -253,7 +257,7 @@ export default class TrendingCard extends React.Component<IProps, IState>{
             .attr('cy', function (d) { return ctrl.yscale(d.y) })
             .attr('r', 5)
             .style('stroke', '#000000')
-            .style('fill', function (d) { return ctrl.props.data[d.index].color })
+            .style('fill', function (d) { return ctrl.props.data.filter(series => series.includeLegend)[d.index].color })
             .style('opacity',0.6)
 
         //Add Zoom Window
@@ -323,7 +327,7 @@ export default class TrendingCard extends React.Component<IProps, IState>{
             .attr('cy', function (d) { return ctrl.yscale(d.y) })
             .attr('r', 5)
             .style('stroke', '#000000')
-            .style('fill', function (d) { return ctrl.props.data[d.index].color })
+            .style('fill', function (d) { return ctrl.props.data.filter(series => series.includeLegend)[d.index].color })
             .style('opacity', 0.0);
 
         this.mouseMarker.selectAll("circle").exit().remove();
@@ -511,7 +515,7 @@ export default class TrendingCard extends React.Component<IProps, IState>{
             <div>
                 <div id={"trendWindow-" + this.props.keyString} style={{ height: this.props.height, float: 'left', width: '100%' }}></div>
                 <div id={"legendWindow-" + this.props.keyString} style={{ float: 'left', width: '100%', display: 'flex' }}>
-                    {(this.state.points.length == this.props.data.length? this.state.points.map(pt => LegendEntry(this.props.data[pt.index], pt)): null)}
+                    {(this.state.points.length == this.props.data.filter(series => series.includeLegend).length ? this.state.points.map(pt => LegendEntry(this.props.data.filter(series => series.includeLegend)[pt.index], pt)): null)}
                 </div>
             </div>);
     }

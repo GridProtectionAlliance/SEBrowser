@@ -59,6 +59,8 @@ namespace PQDashboard.Controllers.CapBankReport
             public string color;
             public string label;
             public List<double[]> data;
+            public string lineStyle;
+            public bool includeLegend;
         }
 
         enum TimeWindowUnits
@@ -253,7 +255,9 @@ namespace PQDashboard.Controllers.CapBankReport
             {
                 color = "#ff0000",
                 label = "Short Circuit Power (MVA)",
-                data = new List<double[]>()
+                data = new List<double[]>(),
+                lineStyle = ":",
+                includeLegend = true
             };
 
             string restriction = $"Time BETWEEN DATEADD({ timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}')";
@@ -280,13 +284,17 @@ namespace PQDashboard.Controllers.CapBankReport
             {
                 color = "#ff0000",
                 label = "Pre-Insertion Resistance ",
-                data = new List<double[]>()
+                data = new List<double[]>(),
+                lineStyle = "-",
+                includeLegend = false
             },
             new TrendSeries()
             {
                 color = "#0000ff",
                 label = "Pre-Insertion Reactance",
-                data = new List<double[]>()
+                data = new List<double[]>(),
+                lineStyle = ":",
+                includeLegend = true
             } };
 
             string restriction = $"Time BETWEEN DATEADD({ timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}')";
