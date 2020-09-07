@@ -111,10 +111,10 @@ export default class TrendingCard extends React.Component<IProps, IState>{
 
     componentDidUpdate(prevProps: IProps, prevState: IState) {
         if (!_.isEqual(prevProps, this.props)) {
-            this.generatePlot();
             if (this.state.points.length !== this.props.data.filter(series => series.includeLegend).length)
-                this.setState({ points: this.props.data.filter(series => series.includeLegend).map((series, index) => { return { t: series.data[0][0], y: series.data[0][1], index: index } }) });
-
+                this.setState({ points: this.props.data.filter(series => series.includeLegend).map((series, index) => { return { t: series.data[0][0], y: series.data[0][1], index: index } }) },() => this.generatePlot());
+            else
+                this.generatePlot();
         }
         else if (this.state.Tstart !== prevState.Tstart || this.state.Tend !== prevState.Tend)
             this.updatePlot();
@@ -143,6 +143,8 @@ export default class TrendingCard extends React.Component<IProps, IState>{
             .attr("height", this.props.height).append("g")
             .attr("transform", "translate(40,10)");
 
+        if (this.props.data.length == 0)
+            return;
         //Then Create Axis
         let ymax = Math.max(...this.props.data.map(item => Math.max(...item.data.map(p => p[1]))));
         let ymin = Math.min(...this.props.data.map(item => Math.min(...item.data.map(p => p[1]))));;
