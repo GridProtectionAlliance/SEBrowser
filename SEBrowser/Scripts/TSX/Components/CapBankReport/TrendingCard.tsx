@@ -105,7 +105,9 @@ export default class TrendingCard extends React.Component<IProps, IState>{
         };
     }
 
-
+    componentDidMount() {
+        this.generatePlot();
+    }
 
     componentDidUpdate(prevProps: IProps, prevState: IState) {
         if (!_.isEqual(prevProps, this.props)) {
