@@ -548,8 +548,10 @@ export default class TrendingCard extends React.Component<IProps, IState>{
 
 const LegendEntry = (data: ITrendSeries, point: ITrendPoint) => {
     return (
-        <div key={data.label} style = {{display: 'flex', alignItems: 'center', marginRight: '20px'}}>
-            <div style={{ width: ' 10px', height: 0, borderTop: '2px solid', borderRight: '10px solid', borderBottom: '2px solid', borderLeft: '10px solid', borderColor: data.color, overflow: 'hidden', marginRight: '5px' }}></div>
+        <div key={data.label} style={{ display: 'flex', alignItems: 'center', marginRight: '20px' }}>
+            {(data.lineStyle == '-' ?
+                <div style={{ width: ' 10px', height: 0, borderTop: '2px solid', borderRight: '10px solid', borderBottom: '2px solid', borderLeft: '10px solid', borderColor: data.color, overflow: 'hidden', marginRight: '5px' }}></div> :
+                <div style={{ width: ' 10px', height: '4px', borderTop: '0px solid', borderRight: '3px solid', borderBottom: '0px solid', borderLeft: '3px solid', borderColor: data.color, overflow: 'hidden', marginRight: '5px' }}></div>)}
             <label style={{ marginTop: '0.5rem' }}> {data.label} ({point.y})</label>
         </div>
     );
