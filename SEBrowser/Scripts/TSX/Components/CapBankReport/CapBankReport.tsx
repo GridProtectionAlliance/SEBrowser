@@ -58,6 +58,7 @@ export default class CapBankReport extends React.Component<IProps, IState>{
                 windowSize: (query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10),
                 timeWindowUnits: (query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2),          
                 selectedBank: (query['selectedBank'] != undefined ? parseInt(query['selectedBank'].toString()) : -1),
+                StationId: (query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1),
                 showRes: (query['showRes'] != undefined ? query['showRes'] == 'true' : true),
                 showNonRes: (query['showNonRes'] != undefined ? query['showNonRes'] == 'true' : true),
                 CBStatError: (query['CBStatError'] != undefined ? query['CBStatError'] == 'true' : false),

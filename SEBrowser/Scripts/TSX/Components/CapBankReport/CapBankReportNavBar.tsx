@@ -30,7 +30,7 @@ const momentTimeFormat = "HH:mm:ss.SSS";
 
 
 export interface Substation {
-    LocationID: number, AssetKey: string, AssetName: string
+    LocationID: number, LocationKey: string, AssetName: string
 }
 
 export interface EventFilter {
@@ -62,6 +62,7 @@ export interface CapBankReportNavBarProps extends EventFilter {
     windowSize: number,
     timeWindowUnits: number,
     selectedBank: number,
+    StationId: number,
    
 }
 
@@ -168,18 +169,19 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
 
     getSubstationData() {
         this.seBrowserService.GetCapBankSubstationData().done(results => {
-            $(this.refs.SubStation).children().remove();
-            for (var station of results) {
-                $(this.refs.SubStation).append(new Option(station.AssetName, station.LocationID.toString()));
-                if ($(this.refs.SubStation).children("option:selected").val()) {
-                    var selected = parseInt($(this.refs.SubStation).children("option:selected").val().toString());
-                    this.getCapBankData(selected);
-                }};
+            if (results == null)
+                return
+            this.setState({ subStations: results });
+            if (this.props.StationId != undefined)
+                this.getCapBankData(this.props.StationId);
         });
     }
 
-    applyFilter() {
-        // Apply Filter states to Props
+    setStation(id: number) {
+        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        object.StationId = id;
+        this.props.stateSetter({ searchBarProps: object });
+        this.getCapBankData(id);
     }
    
     render() {
@@ -209,24 +211,25 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                 <form>
                                     <label style={{ width: '100%', position: 'relative', float: "left"  }}>Substation: </label>
                                     <div className="form-group" style={{ height: 30 }}>
-                                        <select ref="SubStation" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            this.getCapBankData((e.target as any).value);
-                                        }} >
+                                            <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
+                                                this.setStation((e.target as any).value);
+                                            }} value={this.props.StationId}>
+                                                {this.state.subStations.map(item => <option key={item.LocationID} value={item.LocationID} > {item.AssetName} </option>)}
                                         </select>
                                     </div>
                                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Cap Bank Group: </label>
                                     <div className="form-group" style={{ height: 30 }}>
-                                        <select ref="Breaker" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            this.setCapBank(parseInt((e.target as any).value.toString()));
-                                        }} >
-                                            {this.state.capBanks.map(item => <option key={item.Id} value={item.Id}> {item.AssetKey} </option>)}
+                                            <select ref="Breaker" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
+                                                this.setCapBank(parseInt((e.target as any).value.toString()));
+                                            }} value={this.props.CapBankID}>
+                                                {this.state.capBanks.map(item => <option key={item.Id} value={item.Id} > {item.AssetKey} </option>)}
                                         </select>
                                     </div>
                                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Bank: </label>
                                     <div className="form-group" style={{ height: 30 }}>
-                                        <select ref="CapBankId" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            this.setBankNumber(parseInt((e.target as any).value.toString()));
-                                        }} >
+                                            <select ref="CapBankId" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
+                                                this.setBankNumber(parseInt((e.target as any).value.toString()));
+                                            }} >
                                             {bankOptions}
                                         </select>
                                     </div>
