@@ -237,7 +237,7 @@ export default class TrendingCard extends React.Component<IProps, IState>{
                         return tx && ty;
                     }))
 
-            if (row.lineStyle = ':')
+            if (row.lineStyle == ':')
                 ln.attr("stroke-dasharray", ("10,5"));
         });
 
