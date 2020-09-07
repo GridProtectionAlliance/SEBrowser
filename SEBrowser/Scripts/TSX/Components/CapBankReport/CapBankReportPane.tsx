@@ -109,6 +109,54 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
             
     }
 
+    getFilterString() {
+        let filter = "";
+
+        //First Filter is Resonance
+        // Special case because if they are both disabled we treat them as both enabled....
+        // This case would make no sense otherwhise
+        if (this.props.showRes !== this.props.showNonRes)
+            filter = `&resFilt=${this.props.showRes ? '1' : '0'}`
+
+        //Next Filter is CapBankStatus
+        let capBankStat = [];
+        if (this.props.CBStatAll || this.props.CBStatError)
+            capBankStat.push(-1);
+        if (this.props.CBStatAll || this.props.CBStat0)
+            capBankStat.push(0);
+        if (this.props.CBStatAll || this.props.CBStat2)
+            capBankStat.push(2);
+        if (this.props.CBStatAll || this.props.CBStat3)
+            capBankStat.push(3);
+        if (this.props.CBStatAll || this.props.CBStat4)
+            capBankStat.push(4);
+        if (this.props.CBStatAll || this.props.CBStat5)
+            capBankStat.push(5);
+        if (this.props.CBStatAll || this.props.CBStat6)
+            capBankStat.push(6);
+        if (this.props.CBStatAll || this.props.CBStat7)
+            capBankStat.push(7);
+        if (this.props.CBStatAll || this.props.CBStat8)
+            capBankStat.push(8);
+        if (this.props.CBStatAll || this.props.CBStat10)
+            capBankStat.push(10);
+        if (this.props.CBStatAll || this.props.CBStat11)
+            capBankStat.push(11);
+        if (this.props.CBStatAll || this.props.CBStat12)
+            capBankStat.push(12);
+        if (this.props.CBStatAll || this.props.CBStat20)
+            capBankStat.push(20);
+        if (this.props.CBStatAll || this.props.CBStat21)
+            capBankStat.push(21);
+        if (this.props.CBStatAll || this.props.CBStat22)
+            capBankStat.push(22);
+
+        if (capBankStat.length > 0)
+            filter = filter + `&statFilt=${capBankStat.join(',')}`
+
+        return filter;
+    }
+
     getEventTableData(): JQuery.jqXHR {
         if (this.eventTableHandle !== undefined)
             this.eventTableHandle.abort();
@@ -339,7 +387,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
             type: "GET",
             url: `${homePath}api/PQDashboard/CapBankReport/GetTrend?capBankId=${this.props.CapBankID}&date=${this.props.date}` +
                 `&time=${this.props.time}&timeWindowunits=${this.props.timeWindowUnits}&windowSize=${this.props.windowSize}` +
-                `&bankNum=${this.props.selectedBank}`,
+                `&bankNum=${this.props.selectedBank}` + this.getFilterString(),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,

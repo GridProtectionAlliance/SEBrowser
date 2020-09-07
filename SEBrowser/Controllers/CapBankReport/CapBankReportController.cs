@@ -269,13 +269,17 @@ namespace PQDashboard.Controllers.CapBankReport
             string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
             int windowSize = int.Parse(query["windowSize"]);
             int selectedBank = int.Parse(query["bankNum"]);
+            
 
+            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD({ timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}'))";
+            string capBankRestriction = $"((SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId})";
+            string bankNumRestriction = $"(CBAnalyticResult.EnergizedBanks = {selectedBank} OR CBAnalyticResult.DeEnergizedBanks = {selectedBank})";
+            string bankNumAfterRestriction = $"(CBAnalyticResult.StepPost = {selectedBank})";
+            string bankNumBeforeRestriction = $"(CBAnalyticResult.StepPre = {selectedBank})";
+            string otherFilter = ProcessFilter(query);
 
-            string timeRestriction = $"CBAnalyticResult.Time BETWEEN DATEADD({ timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}')";
-            string capBankRestriction = $"(SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId}";
-            string bankNumRestriction = $"CBAnalyticResult.EnergizedBanks = {selectedBank} OR CBAnalyticResult.DeEnergizedBanks = {selectedBank}";
-            string bankNumAfterRestriction = $"CBAnalyticResult.StepPost = {selectedBank}";
-            string bankNumBeforeRestriction = $"CBAnalyticResult.StepPre = {selectedBank}";
+            if (string.IsNullOrEmpty(otherFilter))
+                otherFilter = "1=1";
 
             TrendingResponse result = new TrendingResponse()
             {
@@ -323,7 +327,7 @@ namespace PQDashboard.Controllers.CapBankReport
                         CBAnalyticResult.Vpeak AS Vpeak
 
                         FROM CBAnalyticResult WHERE 
-                            {capBankRestriction} AND {timeRestriction} AND {phaseRestriction} AND {bankNumRestriction}
+                            {capBankRestriction} AND {timeRestriction} AND {phaseRestriction} AND {bankNumRestriction} AND ({otherFilter})
                         ORDER BY CBAnalyticResult.Time";
 
                         DataTable table = connection.RetrieveData(sqlQuery);
@@ -348,7 +352,7 @@ namespace PQDashboard.Controllers.CapBankReport
                         CBAnalyticResult.Xpre AS Xpre
 
                         FROM CBAnalyticResult WHERE 
-                            {capBankRestriction} AND {timeRestriction} AND {phaseRestriction} AND {bankNumBeforeRestriction}
+                            {capBankRestriction} AND {timeRestriction} AND {phaseRestriction} AND {bankNumBeforeRestriction} AND ({otherFilter})
                         ORDER BY CBAnalyticResult.Time";
 
                         table = connection.RetrieveData(sqlQuery);
@@ -369,7 +373,7 @@ namespace PQDashboard.Controllers.CapBankReport
                         CBAnalyticResult.Xpost AS Xpost
 
                         FROM CBAnalyticResult WHERE 
-                            {capBankRestriction} AND {timeRestriction} AND {phaseRestriction} AND {bankNumAfterRestriction}
+                            {capBankRestriction} AND {timeRestriction} AND {phaseRestriction} AND {bankNumAfterRestriction} AND ({otherFilter})
                         ORDER BY CBAnalyticResult.Time";
 
                         table = connection.RetrieveData(sqlQuery);
@@ -595,10 +599,30 @@ namespace PQDashboard.Controllers.CapBankReport
                             });
 
                     }
+
+
                 }
             }
 
             return result;
+        }
+
+        private string ProcessFilter(Dictionary<string, string> query)
+        {
+            string filter = "";
+            string val;
+
+            if (query.TryGetValue("resFilt", out val))
+            {
+                filter = $"CBAnalyticResult.IsRes = {val}";
+            }
+
+            if (query.TryGetValue("statFilt", out val))
+            {
+                filter = filter + (filter== ""? "" : "AND ") + $"CBAnalyticResult.CBStatusID IN  ({val})";
+            }
+
+            return filter;
         }
         #endregion 
 

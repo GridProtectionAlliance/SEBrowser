@@ -33,7 +33,28 @@ export interface Substation {
     LocationID: number, AssetKey: string, AssetName: string
 }
 
-export interface CapBankReportNavBarProps {
+export interface EventFilter {
+    showRes: boolean,
+    showNonRes: boolean,
+    CBStatError: boolean,
+    CBStat0: boolean,
+    CBStat2: boolean,
+    CBStat3: boolean,
+    CBStat4: boolean,
+    CBStat5: boolean,
+    CBStat6: boolean,
+    CBStat7: boolean,
+    CBStat8: boolean,
+    CBStat10: boolean,
+    CBStat11: boolean,
+    CBStat12: boolean,
+    CBStat20: boolean,
+    CBStat21: boolean,
+    CBStat22: boolean,
+    CBStatAll: boolean,
+}
+
+export interface CapBankReportNavBarProps extends EventFilter {
     stateSetter(state): void,
     CapBankID: number,
     date: string,
@@ -41,6 +62,7 @@ export interface CapBankReportNavBarProps {
     windowSize: number,
     timeWindowUnits: number,
     selectedBank: number,
+   
 }
 
 interface CapBank {
@@ -53,19 +75,18 @@ interface CapBank {
 
 interface Istate {
     capBanks: Array<CapBank>,
-    subStations: Array<Substation>
-
+    subStations: Array<Substation>,
 }
 
 export default class CapBankReportNavBar extends React.Component<CapBankReportNavBarProps, Istate>{
     seBrowserService: SEBrowserService;
 
-    constructor(props, context) {
+    constructor(props: CapBankReportNavBarProps, context) {
         super(props, context);
         this.seBrowserService = new SEBrowserService();
         this.state = {
             capBanks: [],
-            subStations: [],
+            subStations: []
         };
     }
 
@@ -136,6 +157,14 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         this.props.stateSetter({ searchBarProps: object });
     }
 
+    setFilter(obj) {
+        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        if (obj.showRes != undefined)
+            object.showRes = obj.showRes;
+        if (obj.showNonRes != undefined)
+            object.showNonRes = obj.showNonRes;
+        this.props.stateSetter({ searchBarProps: object });
+    }
 
     getSubstationData() {
         this.seBrowserService.GetCapBankSubstationData().done(results => {
@@ -149,6 +178,9 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         });
     }
 
+    applyFilter() {
+        // Apply Filter states to Props
+    }
    
     render() {
 
@@ -166,11 +198,12 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         
 
         return (
+            <>
             <nav className="navbar navbar-expand-lg navbar-light bg-light">
 
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
-                        <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
+                        <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>Capacitor Bank:</legend>
                                 <form>
@@ -200,7 +233,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                 </form>
                             </fieldset>
                         </li>
-                        <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
+                        <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>Time Window:</legend>
                                 <form>
@@ -241,10 +274,156 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                 </form>
                             </fieldset>
                         </li>
-
+                        <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
+                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                                <legend className="w-auto" style={{ fontSize: 'large' }}>Additional Filter:</legend>
+                                    <button className="btn btn-primary" data-toggle='modal' data-target='#newFilter' onClick={(evt) => evt.preventDefault()} >Edit Filter</button>
+                            </fieldset>
+                        </li>
                     </ul>
                 </div>
             </nav>
+
+            <div className="modal" id="newFilter">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h4 className="modal-title">Filter CapBank Events</h4>
+                            <button type="button" className="close" data-dismiss="modal">&times;</button>
+                        </div>
+                        <div className="modal-body">
+                                <div style={{ width: '30%', paddingRight: 10 }}>
+                                    <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                                        <legend className="w-auto" style={{ fontSize: 'large' }}>Resonance:</legend>
+                                        <form>
+                                            <ul style={{ listStyleType: 'none', padding: 0, width: '100%', position: 'relative', float: 'left' }}>
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    this.setFilter({ showRes: !this.props.showRes });
+                                                }} checked={this.props.showRes} /> Resonance </label></li>
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    this.setFilter({ showNonRes: !this.props.showNonRes });
+                                                }} checked={this.props.showNonRes} /> No Resonance</label></li>
+                                            </ul>
+                                        </form>
+                                    </fieldset>
+                                </div>
+                                <div style={{ width: '30%', paddingRight: 10 }}>
+                                    <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                                        <legend className="w-auto" style={{ fontSize: 'large' }}>CapBank Status:</legend>
+                                        <form>
+                                            <ul style={{ listStyleType: 'none', padding: 0, width: '100%', position: 'relative', float: 'left' }}>
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                     this.setFilter({ CBStatAll: !this.props.CBStatAll});
+                                                }} checked={this.props.CBStatAll} /> All </label></li>
+
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    let obj = {CBStat0: !this.props.CBStat0}
+                                                    if (this.props.CBStatAll && this.props.CBStat0)
+                                                        obj["CBStatAll"] = false;
+                                                    this.setFilter(obj);
+                                                }} checked={this.props.CBStat0 || this.props.CBStatAll} /> Normal </label></li>
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    let obj = { CBStat2: !this.props.CBStat2 }
+                                                    if (this.props.CBStatAll && this.props.CBStat2)
+                                                        obj["CBStatAll"] = false;
+                                                    this.setFilter(obj);
+                                                }} checked={this.props.CBStat2 || this.props.CBStatAll} /> Shorted/Blown Fluse </label></li>
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    let obj = { CBStat3: !this.props.CBStat3 }
+                                                    if (this.props.CBStatAll && this.props.CBStat3)
+                                                        obj["CBStatAll"] = false;
+                                                    this.setFilter(obj);
+                                                }} checked={this.props.CBStat3 || this.props.CBStatAll} /> Failed to Open </label></li>
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    let obj = { CBStat4: !this.props.CBStat4 }
+                                                    if (this.props.CBStatAll && this.props.CBStat4)
+                                                        obj["CBStatAll"] = false;
+                                                    this.setFilter(obj);
+                                                }} checked={this.props.CBStat4 || this.props.CBStatAll} /> Restrike; Opened </label>
+                                                </li>
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    let obj = { CBStat5: !this.props.CBStat5 }
+                                                    if (this.props.CBStatAll && this.props.CBStat5)
+                                                        obj["CBStatAll"] = false;
+                                                    this.setFilter(obj);
+                                                }} checked={this.props.CBStat5 || this.props.CBStatAll} /> Restrike; Failed to Open </label>
+                                                </li>
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    let obj = { CBStat6: !this.props.CBStat6 }
+                                                    if (this.props.CBStatAll && this.props.CBStat6)
+                                                        obj["CBStatAll"] = false;
+                                                    this.setFilter(obj);
+                                                }} checked={this.props.CBStat6 || this.props.CBStatAll} /> System Sag/Swell</label>
+                                                </li>
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    let obj = { CBStat7: !this.props.CBStat7 }
+                                                    if (this.props.CBStatAll && this.props.CBStat7)
+                                                        obj["CBStatAll"] = false;
+                                                    this.setFilter(obj);
+                                                }} checked={this.props.CBStat7 || this.props.CBStatAll} /> No Switching Op. </label>
+                                                </li>
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    let obj = { CBStat8: !this.props.CBStat8 }
+                                                    if (this.props.CBStatAll && this.props.CBStat8)
+                                                        obj["CBStatAll"] = false;
+                                                    this.setFilter(obj);
+                                                }} checked={this.props.CBStat8 || this.props.CBStatAll} /> Abnormal Pre-InsertionsSwitch </label>
+                                                </li>
+
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    let obj = { CBStat10: !this.props.CBStat10 }
+                                                    if (this.props.CBStatAll && this.props.CBStat10)
+                                                        obj["CBStatAll"] = false;
+                                                    this.setFilter(obj);
+                                                }} checked={this.props.CBStat10 || this.props.CBStatAll} /> Failed to Close </label>
+                                                </li>
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    let obj = { CBStat11: !this.props.CBStat11 }
+                                                    if (this.props.CBStatAll && this.props.CBStat11)
+                                                        obj["CBStatAll"] = false;
+                                                    this.setFilter(obj);
+                                                }} checked={this.props.CBStat11 || this.props.CBStatAll} /> Missing Pole </label>
+                                                </li>
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    let obj = { CBStat12: !this.props.CBStat12 }
+                                                    if (this.props.CBStatAll && this.props.CBStat12)
+                                                        obj["CBStatAll"] = false;
+                                                    this.setFilter(obj);
+                                                }} checked={this.props.CBStat12 || this.props.CBStatAll} /> Dur. between Poles Long </label>
+                                                </li>
+
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    let obj = { CBStat20: !this.props.CBStat20 }
+                                                    if (this.props.CBStatAll && this.props.CBStat20)
+                                                        obj["CBStatAll"] = false;
+                                                    this.setFilter(obj);
+                                                }} checked={this.props.CBStat20 || this.props.CBStatAll} /> Fuseless units shorted/ Fuse dailed to Clear </label>
+                                                </li>
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    let obj = { CBStat21: !this.props.CBStat21 }
+                                                    if (this.props.CBStatAll && this.props.CBStat21)
+                                                        obj["CBStatAll"] = false;
+                                                    this.setFilter(obj);
+                                                }} checked={this.props.CBStat21 || this.props.CBStatAll} /> Blown Fuse Detected </label>
+                                                </li>
+                                                <li><label><input type="checkbox" onChange={() => {
+                                                    let obj = { CBStat22: !this.props.CBStat22 }
+                                                    if (this.props.CBStatAll && this.props.CBStat22)
+                                                        obj["CBStatAll"] = false;
+                                                    this.setFilter(obj);
+                                                }} checked={this.props.CBStat22 || this.props.CBStatAll} /> Other </label>
+                                                </li>
+
+                                            </ul>
+                                        </form>
+                                    </fieldset>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            </>
         );
     }
 }
