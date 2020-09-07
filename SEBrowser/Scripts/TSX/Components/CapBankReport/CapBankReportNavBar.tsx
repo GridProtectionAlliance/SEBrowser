@@ -158,10 +158,10 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         if (this.state.capBanks.find(cB => cB.Id == this.props.CapBankID) != null)
             n = this.state.capBanks.find(cB => cB.Id == this.props.CapBankID).numBanks;
 
-        bankOptions.push(<option value={-1}> {'System'} </option>)
+        bankOptions.push(<option key={-1} value={-1}> {'System'} </option>)
 
         for (i = 0; i < n; i++) {
-            bankOptions.push(<option value={i+1}> {i+1} </option>)
+            bankOptions.push(<option key={i} value={i+1}> {i+1} </option>)
         }
         
 
@@ -186,7 +186,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                         <select ref="Breaker" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
                                             this.setCapBank(parseInt((e.target as any).value.toString()));
                                         }} >
-                                            {this.state.capBanks.map(item => <option value={item.Id}> {item.AssetKey} </option>)}
+                                            {this.state.capBanks.map(item => <option key={item.Id} value={item.Id}> {item.AssetKey} </option>)}
                                         </select>
                                     </div>
                                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Bank: </label>
