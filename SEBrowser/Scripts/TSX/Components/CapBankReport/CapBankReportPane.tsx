@@ -26,11 +26,26 @@ import _, { cloneDeep } from 'lodash';
 import TrendingCard, { ITrendSeries } from './TrendingCard';
 //import RelayPerformanceTrend from './RelayPerformanceTrend';
 
+interface ITrendDataSet {
+    DeltaQ: Array<ITrendSeries>,
+    Irms: Array<ITrendSeries>,
+    DeltaIrms: Array<ITrendSeries>,
+    Vrms: Array<ITrendSeries>,
+    DeltaVrms: Array<ITrendSeries>,
+    Q: Array<ITrendSeries>,
+    Freq: Array<ITrendSeries>,
+    THD: Array<ITrendSeries>,
+    DeltaTHD: Array<ITrendSeries>,
+    SwitchingFreq: Array<ITrendSeries>,
+    PeakV: Array<ITrendSeries>,
+    Xcap: Array<ITrendSeries>,
+    DeltaXcap: Array<ITrendSeries>,
+}
+
 interface ICapBankReportPaneState {
     EventData: Array<ICBEvent>,
     SwitchingData: Array<ICBSwitching>,
-    scTrendData: Array<ITrendSeries>,
-    switchingTrendData: Array<ITrendSeries>,
+    TrendData: ITrendDataSet,
     Tstart: number,
     Tend: number,
 }
@@ -48,8 +63,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
    
     eventTableHandle: JQuery.jqXHR;
     switchingTableHandle: JQuery.jqXHR;
-    scTrendHandle: JQuery.jqXHR;
-    switchingTrendHandle: JQuery.jqXHR;
+    trendHandle: JQuery.jqXHR;
 
     constructor(props, context) {
         super(props, context);
@@ -57,8 +71,21 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         this.state = {
             EventData: [],
             SwitchingData: [],
-            scTrendData: [],
-            switchingTrendData: [],
+            TrendData: {
+                DeltaQ: [],
+                Irms: [],
+                DeltaIrms: [],
+                Vrms: [],
+                DeltaVrms: [],
+                Q: [],
+                Freq: [],
+                THD: [],
+                DeltaTHD: [],
+                SwitchingFreq: [],
+                PeakV: [],
+                Xcap: [],
+                DeltaXcap: [],
+            },
             Tstart: 0,
             Tend: 0,
         };
@@ -135,23 +162,15 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
             this.setState({ SwitchingData: data })
         });
 
-        this.getScTrendData().then(data => {
+        this.getTrendData().then(data => {
 
             if (data == null) {
                 return;
             }
-            if (data.data.length > 0)
-                this.setState({ scTrendData: [data] });
+            this.setState({ TrendData: data });
         });
 
-        this.getSwitchingTrendData().then(data => {
-
-            if (data == null) {
-                return;
-            }
-
-            this.setState({ switchingTrendData: data.filter(item => item.data.length > 0) });
-        });
+       
     }
 
     render() {
@@ -164,18 +183,12 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                     <div className="card-body">
                         <table className="table">
                             <thead>
-                                <EventHeader/>
+                                <EventHeader />
                             </thead>
                             <tbody>
                                 {this.state.EventData.map(row => EventRow(row))}
                             </tbody>
                         </table>
-                    </div>
-                </div>
-                <div className="card">
-                    <div className="card-header">Short Circuit Power Trend</div>
-                    <div className="card-body">
-                        <TrendingCard data={this.state.scTrendData} keyString={'Sc'} allowZoom={true} height={200} yLabel={'Short Circuit Power (MVA)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                     </div>
                 </div>
                 <div className="card">
@@ -191,12 +204,99 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         </table>
                     </div>
                 </div>
+                {(this.state.TrendData.Q.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Short Circuit Power</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.Q} keyString={'SC'} allowZoom={true} height={200} yLabel={'Short Circuit Power (MVAR)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.DeltaQ.length > 0?
                 <div className="card">
-                    <div className="card-header">Switching Impedance Trend</div>
-                    <div className="card-body">
-                        <TrendingCard data={this.state.switchingTrendData} keyString={'Impedance'} allowZoom={true} height={200} yLabel={'Switching Impedance (pu)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
-                    </div>
-                </div>
+                    <div className="card-header">Change in Q</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.DeltaQ} keyString={'Q'} allowZoom={true} height={200} yLabel={'Delta Q (kVAR)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.Irms.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">RMS Current</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.Irms} keyString={'Irms'} allowZoom={true} height={200} yLabel={'I (A)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.DeltaIrms.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">RMS Current Change</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.DeltaIrms} keyString={'dIrms'} allowZoom={true} height={200} yLabel={'Delta I (A)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.Vrms.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">RMS Voltage</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.Vrms} keyString={'Vrms'} allowZoom={true} height={200} yLabel={'V (V)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.DeltaVrms.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">RMS Voltage Change</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.DeltaVrms} keyString={'dVrms'} allowZoom={true} height={200} yLabel={'Delta V (V)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.Freq.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Resonance Frequency</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.Freq} keyString={'fres'} allowZoom={true} height={200} yLabel={'Res. Freq. (Hz)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+
+                {(this.state.TrendData.PeakV.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Peak Voltage</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.PeakV} keyString={'Vp'} allowZoom={true} height={200} yLabel={'Voltage peak (pu)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.THD.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Voltage and Current THD</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.THD} keyString={'thd'} allowZoom={true} height={200} yLabel={'THD (%)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+
+                {(this.state.TrendData.DeltaTHD.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Changein Current and Voltage THD</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.DeltaTHD} keyString={'dthd'} allowZoom={true} height={200} yLabel={'Delta THD (%)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.SwitchingFreq.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Switching Frequency</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.SwitchingFreq} keyString={'swfreq'} allowZoom={true} height={200} yLabel={'Switching Freq. (Hz)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.Xcap.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Capbank Impedance</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.Xcap} keyString={'Xcap'} allowZoom={true} height={200} yLabel={'Impedance (Ohm)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.DeltaXcap.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Capbank Impedance Change</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.DeltaXcap} keyString={'dXcap'} allowZoom={true} height={200} yLabel={'Impedance (Ohm)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
             </div>)
         
     }
@@ -231,39 +331,25 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         this.setState({ Tstart: Tstart.valueOf(), Tend: Tend.valueOf()})
     }
 
-    getScTrendData() {
-        if (this.scTrendHandle !== undefined)
-            this.scTrendHandle.abort();
+    getTrendData() {
+        if (this.trendHandle !== undefined)
+            this.trendHandle.abort();
 
-        this.scTrendHandle = $.ajax({
+        this.trendHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/GetSCTrend?capBankId=${this.props.CapBankID}&date=${this.props.date}` +
-                `&time=${this.props.time}&timeWindowunits=${this.props.timeWindowUnits}&windowSize=${this.props.windowSize}`,
+            url: `${homePath}api/PQDashboard/CapBankReport/GetTrend?capBankId=${this.props.CapBankID}&date=${this.props.date}` +
+                `&time=${this.props.time}&timeWindowunits=${this.props.timeWindowUnits}&windowSize=${this.props.windowSize}` +
+                `&bankNum=${this.props.selectedBank}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,
             async: true
         });
 
-        return this.scTrendHandle;
+        return this.trendHandle;
     }
 
-    getSwitchingTrendData() {
-        if (this.switchingTrendHandle !== undefined)
-            this.switchingTrendHandle.abort();
-
-        this.switchingTrendHandle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/GetSwitchingTrend?capBankId=${this.props.CapBankID}&date=${this.props.date}` +
-                `&time=${this.props.time}&timeWindowunits=${this.props.timeWindowUnits}&windowSize=${this.props.windowSize}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: false,
-            async: true
-        });
-
-        return this.switchingTrendHandle;
-    }
+    
 }
 
 const EventRow = (row: ICBEvent) => {
