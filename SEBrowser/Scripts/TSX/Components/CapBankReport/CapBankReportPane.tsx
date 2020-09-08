@@ -44,7 +44,6 @@ interface ITrendDataSet {
 
 interface ICapBankReportPaneState {
     EventData: Array<ICBEvent>,
-    SwitchingData: Array<ICBSwitching>,
     TrendData: ITrendDataSet,
     Tstart: number,
     Tend: number,
@@ -52,17 +51,22 @@ interface ICapBankReportPaneState {
 
 
 interface ICBEvent {
-    ID: number, EventID: number, Phase: string, Status: string, DataErrorID: number, Operation: string, DeltaQ: number, MVAsc: number, IsRes: boolean, Time: string
+    ID: number,
+    Time: string
+    Status: string,
+    EventId: number,
+    Operation: string,
+    Resonance: boolean,
+    Phase: string,
+    CapBankHealth: string,
+    Restrike: string,
+    PreInsertionSwitch: string
 }
 
-interface ICBSwitching {
-    ID: number, EventID: number, Phase: string, SwitchingCondition: string, R: number, X: number, Duration: number, Time: string
-}
 
 export default class CapBankReportPane extends React.Component<CapBankReportNavBarProps, ICapBankReportPaneState> {
    
     eventTableHandle: JQuery.jqXHR;
-    switchingTableHandle: JQuery.jqXHR;
     trendHandle: JQuery.jqXHR;
 
     constructor(props, context) {
@@ -70,7 +74,6 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
 
         this.state = {
             EventData: [],
-            SwitchingData: [],
             TrendData: {
                 DeltaQ: [],
                 Irms: [],
@@ -174,23 +177,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         return this.eventTableHandle;
     }
 
-    getSwitchingTableData(): JQuery.jqXHR {
-        if (this.switchingTableHandle !== undefined)
-            this.switchingTableHandle.abort();
-
-        this.switchingTableHandle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/GetSwitchingTable?capBankId=${this.props.CapBankID}&date=${this.props.date}` +
-                `&time=${this.props.time}&timeWindowunits=${this.props.timeWindowUnits}&windowSize=${this.props.windowSize}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: false,
-            async: true
-        });
-
-        return this.switchingTableHandle;
-    }
-
+   
     getData() {
         this.getEventTableData().then(data => {
             
@@ -201,14 +188,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
             this.setState({ EventData: data })
         });
 
-        this.getSwitchingTableData().then(data => {
-
-            if (data == null) {
-                this.setState({ SwitchingData: [] })
-                return;
-            }
-            this.setState({ SwitchingData: data })
-        });
+        
 
         this.getTrendData().then(data => {
 
@@ -226,32 +206,6 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
 
         return (
             <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
-                <div className="card">
-                    <div className="card-header">Cap Bank Analytic Events</div>
-                    <div className="card-body">
-                        <table className="table">
-                            <thead>
-                                <EventHeader />
-                            </thead>
-                            <tbody>
-                                {this.state.EventData.map(row => EventRow(row))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div className="card">
-                    <div className="card-header">Pre-Insertion Switching Events</div>
-                    <div className="card-body">
-                        <table className="table">
-                            <thead>
-                                <SwitchingHeader />
-                            </thead>
-                            <tbody>
-                                {this.state.SwitchingData.map(row => SwitchingRow(row))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
                 {(this.state.TrendData.Q.length > 0 ?
                     <div className="card">
                         <div className="card-header">Short Circuit Power</div>
@@ -345,6 +299,20 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <TrendingCard data={this.state.TrendData.DeltaXcap} keyString={'dXcap'} allowZoom={true} height={200} yLabel={'Impedance (Ohm)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
                     </div> : null)}
+
+                <div className="card">
+                    <div className="card-header">CapBank Analytic Event Overview</div>
+                    <div className="card-body">
+                        <table className="table">
+                            <thead>
+                                <EventHeader />
+                            </thead>
+                            <tbody>
+                                {this.state.EventData.map(row => EventRow(row))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>)
         
     }
@@ -407,55 +375,27 @@ const EventRow = (row: ICBEvent) => {
                 href={'./eventsearch?line=true&date=' + moment(row.Time).format('MM/DD/YYYY') + '&time=' + moment(row.Time).format('HH:mm:ss.SSS') + '&windowSize=10&timeWindowUnits=2&tab=All&eventid=' + row.EventID}
             > {moment(row.Time).format('MM/DD/YY HH:mm:ss.SSSS')}</a></td>
             <td key={'Phase' + row.ID}>{row.Phase}</td>
-            <td key={'Operation' + row.ID}>{row.Operation}</td>
             <td key={'Status' + row.ID}>{row.Status}</td>
-            <td key={'DeltaQ' + row.ID}>{row.DeltaQ.toFixed(2)} kVA</td>
-            <td key={'ShortCircuit' + row.ID}>{row.MVAsc.toFixed(2)} MVA</td>
-            <td key={'Resonance' + row.ID}>{(row.IsRes? 'Yes' : 'No')}</td>
-            <td key={'openSee' + row.ID}></td>
+            <td key={'Operation' + row.ID}>{row.Operation}</td>
+            <td key={'Resonance' + row.ID}>{(row.Resonance ? 'Yes' : 'No')}</td>
+            <td key={'Health' + row.ID}>{row.CapBankHealth}</td>
+            <td key={'PIS' + row.ID}>{row.PreInsertionSwitch}</td>
+            <td key={'Restrike' + row.ID}>{row.Restrike}</td>
         </tr>
     );
 }
 
-//09 % 2F02%2F2020
-//12%3A31%3A09.616
 const EventHeader = () => {
     return (
         <tr key='Header'>
             <th key='Time'>Time</th>
             <th key='Phase'>Phase</th>
-            <th key='Operation'>Cap Bank Operation</th>
             <th key='Status'>Analysis Status</th>
-            <th key='DeltaQ'>Change in Q (kVAR)</th>
-            <th key='ShortCircuit'>SC Q (MVA)</th>
+            <th key='Operation'>CapBank Operation</th>
             <th key='Resonance'>Resonance</th>
-            <th key='openSee'></th>
-        </tr>
-    );
-}
-
-const SwitchingHeader = () => {
-    return (
-        <tr key='Header'>
-            <th key='Time'>Time</th>
-            <th key='Phase'>Phase</th>
-            <th key='Condition'>Switching Condition</th>
-            <th key='R'>Resistance</th>
-            <th key='X'>Reactance</th>
-            <th key='Duration'>Switching Duration</th>
-        </tr>
-    );
-}
-
-const SwitchingRow = (row: ICBSwitching) => {
-    return (
-        <tr key={row.ID}>
-            <td key={'Time' + row.ID}>{moment(row.Time).format('MM/DD/YY HH:mm:ss.SSSS')}</td>
-            <td key={'Phase' + row.ID}>{row.Phase}</td>
-            <td key={'Condition' + row.ID}>{row.SwitchingCondition}</td>
-            <td key={'R' + row.ID}>{row.R.toFixed(3)} pu</td>
-            <td key={'X' + row.ID}>{row.X.toFixed(3)} pu</td>
-            <td key={'Duration' + row.ID}>{row.Duration.toFixed(2)} ms</td>
+            <th key='Health'>CapBank Health</th>
+            <th key='Restrike'>Restrike</th>
+            <th key='PIS'>PreInsertionSwitching Condition</th>
         </tr>
     );
 }

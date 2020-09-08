@@ -188,6 +188,19 @@ namespace PQDashboard.Controllers.CapBankReport
             DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
             string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
             int windowSize = int.Parse(query["windowSize"]);
+            int selectedBank = int.Parse(query["bankNum"]);
+
+
+            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD({ timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}'))";
+            string capBankRestriction = $"((SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId})";
+            string bankNumRestriction = $"(CBAnalyticResult.EnergizedBanks = {selectedBank} OR CBAnalyticResult.DeEnergizedBanks = {selectedBank})";
+            string otherFilter = ProcessFilter(query);
+
+            if (string.IsNullOrEmpty(otherFilter))
+                otherFilter = "1=1";
+
+            if (selectedBank == -1)
+                bankNumRestriction = "(1=1)";
 
             using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
@@ -195,57 +208,29 @@ namespace PQDashboard.Controllers.CapBankReport
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
-                    sc.CommandText = $@" 
-                    SELECT * FROM CBReportEventTable WHERE CapBankID = {capBankId} AND
-                        Time BETWEEN DATEADD({timeWindowUnits}, {(-1 * windowSize)}, '{dateTime}') AND
-                                                DATEADD({timeWindowUnits}, {(windowSize)},  '{dateTime}') 
-                    ORDER BY Time";
-
-                    sc.CommandType = CommandType.Text;
-
-                    IDataReader rdr = sc.ExecuteReader();
-                    table.Load(rdr);
-
-                    return table;
-                }
-            }
-
-        }
-
-        [Route("GetSwitchingTable"), HttpGet]
-        public DataTable GetSwitchingTable()
-        {
-            Dictionary<string, string> query = Request.QueryParameters();
-            int capBankId = int.Parse(query["capBankId"]);
-            DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
-            string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
-            int windowSize = int.Parse(query["windowSize"]);
-
-
-            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
-            {
-                DataTable table = new DataTable();
-
-                using (IDbCommand sc = connection.Connection.CreateCommand())
-                {
-                    sc.CommandText = $@" 
-                    SELECT 
-                        CBSwitchHealthAnalytic.ID AS ID,
-	                    CBSwitchHealthAnalytic.R AS R,
-	                    CBSwitchHealthAnalytic.X AS X,
-	                    CBSwitchHealthAnalytic.Duration AS Duration,
-	                    CBAnalyticResult.EventID AS EventID,
-	                    CBAnalyticResult.Time AS Time,
-	                    Phase.Name AS Phase,
-	                    CBSwitchingCondition.Description AS SwitchingCondition
-                    FROM CBSwitchHealthAnalytic LEFT JOIN 
-	                    CBAnalyticResult ON CBAnalyticResult.ID = CBSwitchHealthAnalytic.CBResultID LEFT JOIN 
-	                    CBSwitchingCondition ON CBSwitchingCondition.ID = CBSwitchHealthAnalytic.CBSwitchingConditionID LEFT JOIN
-	                    Phase ON Phase.ID = CBAnalyticResult.PhaseID 
-                    WHERE (SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId} AND
-                        CBAnalyticResult.Time BETWEEN DATEADD({timeWindowUnits}, {(-1 * windowSize)}, '{dateTime}') AND
-                                                DATEADD({timeWindowUnits}, {(windowSize)},  '{dateTime}') 
-                    ORDER BY CBAnalyticResult.Time";
+                    sc.CommandText = $@"SELECT
+                                            CBAnalyticResult.Id AS ID,
+                                            CBAnalyticResult.Time AS Time,
+                                            CBAnalyticResult.EventID AS EventId,
+                                            CBStatus.Description AS Status,
+                                            CBOperation.Description AS Operation,
+                                            CBAnalyticResult.IsRes AS Resonance,
+                                            Phase.Name AS Phase,
+                                            CBBankHealth.Description AS CapBankHealth,
+                                            CBRestrikeType.Description AS Restrike,
+                                            CBSwitchingCondition.Description AS PreInsertionSwitch
+                                        FROM CBAnalyticResult LEFT JOIN
+                                            Phase ON Phase.ID = CBAnalyticResult.PhaseID LEFT JOIN
+	                                        CBStatus ON CBStatus.ID = CBAnalyticResult.CBStatusID  LEFT JOIN
+                                            CBOperation ON CBOperation.ID = CBAnalyticResult.CBOperationID LEFT JOIN
+	                                        CBCapBankResult ON CBCapBankResult.CBResultID = CBAnalyticResult.Id LEFT JOIN
+                                            CBBankHealth ON CBBankHealth.Id =  CBCapBankResult.CBBankHealthID LEFT JOIN
+	                                        CBRestrikeResult ON CBRestrikeResult.CBResultID = CBAnalyticResult.Id LEFT JOIN
+                                            CBRestrikeType ON CBRestrikeResult.CBRestrikeTypeID = CBRestrikeType.ID	LEFT JOIN
+                                            CBSwitchHealthAnalytic ON CBSwitchHealthAnalytic.CBResultID = CBAnalyticResult.ID LEFT JOIN
+                                            CBSwitchingCondition ON CBSwitchHealthAnalytic.CBSwitchingConditionID = CBSwitchingCondition.ID
+                                        WHERE {capBankRestriction} AND {timeRestriction} AND {bankNumRestriction} AND ({otherFilter})
+                                        ORDER BY CBAnalyticResult.Time";
 
                     sc.CommandType = CommandType.Text;
 

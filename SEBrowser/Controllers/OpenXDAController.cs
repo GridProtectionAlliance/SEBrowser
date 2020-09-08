@@ -622,19 +622,28 @@ namespace SEBrowser.Controllers
             if (eventID <= 0) return new DataTable();
             using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
             {
-                string sqlQuery = @"SELECT CBAnalyticResult.ID,
-                                        Phase.Name AS Phase,
-                                        CBStatus.Description AS Status,
-	                                    CBOperation.Description As Operation,
-                                        CBAnalyticResult.DeltaQ,
-	                                    CBAnalyticResult.MVAsc,
-	                                    CBAnalyticResult.THDpre,
-	                                    CBAnalyticResult.THDpost
-                                    FROM CBAnalyticResult LEFT JOIN Phase ON Phase.ID = CBAnalyticResult.PhaseID LEFT JOIN
-	                                    CBStatus ON CBStatus.Id = CBAnalyticResult.CBStatusID LEFT JOIN
-	                                    CBOperation ON CBOperation.ID = CBAnalyticResult.CBOperationID
-	                                    WHERE
-	                                    CBAnalyticResult.EventID = {0}";
+                string sqlQuery = @"SELECT
+                                            CBAnalyticResult.Id AS ID,
+                                            CBAnalyticResult.Time AS Time,
+                                            CBAnalyticResult.EventID AS EventId,
+                                            CBStatus.Description AS Status,
+                                            CBOperation.Description AS Operation,
+                                            CBAnalyticResult.IsRes AS Resonance,
+                                            Phase.Name AS Phase,
+                                            CBBankHealth.Description AS CapBankHealth,
+                                            CBRestrikeType.Description AS Restrike,
+                                            CBSwitchingCondition.Description AS PreInsertionSwitch
+                                        FROM CBAnalyticResult LEFT JOIN
+                                            Phase ON Phase.ID = CBAnalyticResult.PhaseID LEFT JOIN
+	                                        CBStatus ON CBStatus.ID = CBAnalyticResult.CBStatusID  LEFT JOIN
+                                            CBOperation ON CBOperation.ID = CBAnalyticResult.CBOperationID LEFT JOIN
+	                                        CBCapBankResult ON CBCapBankResult.CBResultID = CBAnalyticResult.Id LEFT JOIN
+                                            CBBankHealth ON CBBankHealth.Id =  CBCapBankResult.CBBankHealthID LEFT JOIN
+	                                        CBRestrikeResult ON CBRestrikeResult.CBResultID = CBAnalyticResult.Id LEFT JOIN
+                                            CBRestrikeType ON CBRestrikeResult.CBRestrikeTypeID = CBRestrikeType.ID	LEFT JOIN
+                                            CBSwitchHealthAnalytic ON CBSwitchHealthAnalytic.CBResultID = CBAnalyticResult.ID LEFT JOIN
+                                            CBSwitchingCondition ON CBSwitchHealthAnalytic.CBSwitchingConditionID = CBSwitchingCondition.ID
+                                        WHERE CBAnalyticResult.EventID = {0}";
 
                 return connection.RetrieveData(sqlQuery, eventID); ;
             }

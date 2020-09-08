@@ -164,6 +164,38 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
             object.showRes = obj.showRes;
         if (obj.showNonRes != undefined)
             object.showNonRes = obj.showNonRes;
+        if (obj.CBStatError != undefined)
+            object.CBStatError = obj.CBStatError;
+        if (obj.CBStat0 != undefined)
+            object.CBStat0 = obj.CBStat0;
+        if (obj.CBStat2 != undefined)
+            object.CBStat2 = obj.CBStat2;
+        if (obj.CBStat3 != undefined)
+            object.CBStat3 = obj.CBStat3;
+        if (obj.CBStat4 != undefined)
+            object.CBStat4 = obj.CBStat4;
+        if (obj.CBStat5 != undefined)
+            object.CBStat5 = obj.CBStat5;
+        if (obj.CBStat6 != undefined)
+            object.CBStat6 = obj.CBStat6;
+        if (obj.CBStat7 != undefined)
+            object.CBStat7 = obj.CBStat7;
+        if (obj.CBStat8 != undefined)
+            object.CBStat8 = obj.CBStat8;
+        if (obj.CBStat10 != undefined)
+            object.CBStat10 = obj.CBStat10;
+        if (obj.CBStat11 != undefined)
+            object.CBStat11 = obj.CBStat11;
+        if (obj.CBStat12 != undefined)
+            object.CBStat12 = obj.CBStat12;
+        if (obj.CBStat20 != undefined)
+            object.CBStat20 = obj.CBStat20;
+        if (obj.CBStat21 != undefined)
+            object.CBStat21 = obj.CBStat21;
+        if (obj.CBStat22 != undefined)
+            object.CBStat22 = obj.CBStat22;
+        if (obj.CBStatAll != undefined)
+            object.CBStatAll = obj.CBStatAll;
         this.props.stateSetter({ searchBarProps: object });
     }
 
@@ -288,14 +320,14 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
             </nav>
 
             <div className="modal" id="newFilter">
-                <div className="modal-dialog">
+                    <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
                             <h4 className="modal-title">Filter CapBank Events</h4>
                             <button type="button" className="close" data-dismiss="modal">&times;</button>
                         </div>
-                        <div className="modal-body">
-                                <div style={{ width: '30%', paddingRight: 10 }}>
+                            <div className="modal-body" style={{display: 'inline-flex'}}>
+                                <div style={{ width: '50%', paddingRight: 10 }}>
                                     <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                                         <legend className="w-auto" style={{ fontSize: 'large' }}>Resonance:</legend>
                                         <form>
@@ -310,7 +342,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                         </form>
                                     </fieldset>
                                 </div>
-                                <div style={{ width: '30%', paddingRight: 10 }}>
+                                <div style={{ width: '50%', paddingRight: 10 }}>
                                     <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                                         <legend className="w-auto" style={{ fontSize: 'large' }}>CapBank Status:</legend>
                                         <form>

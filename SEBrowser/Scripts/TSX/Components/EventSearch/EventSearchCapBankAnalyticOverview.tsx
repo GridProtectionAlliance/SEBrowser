@@ -89,11 +89,11 @@ const Row = (row) => {
         <tr key={row.ID}>
             <td key={'Phase' + row.ID}>{row.Phase}</td>
             <td key={'Status' + row.ID}>{row.Status}</td>
-            <td key={'operation' + row.ID}>{row.Operation} micros</td>
-            <td key={'dQ' + row.ID}>{row.DeltaQ} kVAR</td>
-            <td key={'scMVA' + row.ID}>{row.MVAsc.toFixed(2)} MVA</td>
-            <td key={'thdPre' + row.ID}>{row.THDpre.toFixed(2)} %</td>
-            <td key={'thdPost' + row.ID}>{row.THDpost.toFixed(2)} %</td>
+            <td key={'Operation' + row.ID}>{row.Operation}</td>
+            <td key={'Resonance' + row.ID}>{(row.Resonance ? 'Yes' : 'No')}</td>
+            <td key={'Health' + row.ID}>{row.CapBankHealth}</td>
+            <td key={'PIS' + row.ID}>{row.PreInsertionSwitch}</td>
+            <td key={'Restrike' + row.ID}>{row.Restrike}</td>
         </tr>
     );
 }
@@ -102,12 +102,12 @@ const HeaderRow = () => {
     return (
         <tr key='Header'>
             <th key='Phase'>Phase</th>
-            <th key='Status'>CapBank Status</th>
-            <th key='operation'>CapBank Operation</th>
-            <th key='dQ'>Change in Q </th>
-            <th key='scMVA'>Short Ckt Power </th>
-            <th key='thdPre'>THD Pre </th>
-            <th key='thdPost'>THD Post </th>
+            <th key='Status'>Analysis Status</th>
+            <th key='Operation'>CapBank Operation</th>
+            <th key='Resonance'>Resonance</th>
+            <th key='Health'>CapBank Health</th>
+            <th key='Restrike'>Restrike</th>
+            <th key='PIS'>PreInsertionSwitching Condition</th>
         </tr>
     );
 }
