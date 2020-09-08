@@ -46,6 +46,15 @@ interface ITrendDataSet {
     PISDuration: Array<ITrendSeries>,
     PISZ: Array<ITrendSeries>,
     PISI: Array<ITrendSeries>,
+    KFactor: Array<ITrendSeries>,
+    RelaydV: Array<ITrendSeries>,
+    RelayXLV: Array<ITrendSeries>,
+    RelayV: Array<ITrendSeries>,
+    RelayXV: Array<ITrendSeries>,
+    Ineutral: Array<ITrendSeries>,
+    BusZ: Array<ITrendSeries>,
+    BusV: Array<ITrendSeries>,
+    Unbalance: Array<ITrendSeries>,
 }
 
 interface ICapBankReportPaneState {
@@ -100,6 +109,16 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                 PISDuration: [],
                 PISZ: [],
                 PISI: [],
+                KFactor: [],
+                RelaydV: [],
+                RelayXLV: [],
+                RelayV: [],
+                RelayXV: [],
+                Ineutral: [],
+                BusZ: [],
+                BusV: [],
+                Unbalance: []
+
             },
             Tstart: 0,
             Tend: 0,
@@ -356,6 +375,71 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <TrendingCard data={this.state.TrendData.PISI} keyString={'PisI'} allowZoom={true} height={200} yLabel={'Current (kA)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
                     </div> : null)}
+
+                {(this.state.TrendData.KFactor.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Capbank K Factor</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.KFactor} keyString={'kfactor'} allowZoom={true} height={200} yLabel={'k ()'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.RelaydV.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Capbank Relay Voltage Difference</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.RelaydV} keyString={'reldV'} allowZoom={true} height={200} yLabel={'Voltage (V)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.RelayV.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Capbank Relay Voltage</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.RelayV} keyString={'relV'} allowZoom={true} height={200} yLabel={'Voltage (V)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.RelayXV.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Capbank Relay Voltage- Impedance Ratio Missmatch</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.RelayXV} keyString={'relXV'} allowZoom={true} height={200} yLabel={'ratio missmatch (%)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.RelayXLV.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Capbank Relay Impedances</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.RelayXLV} keyString={'relX'} allowZoom={true} height={200} yLabel={'Current (kA)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.Ineutral.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Capbank Neutral Current</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.Ineutral} keyString={'In'} allowZoom={true} height={200} yLabel={'Current (A)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.Unbalance.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Capbank Unbalance Factors</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.Unbalance} keyString={'ubal'} allowZoom={true} height={200} yLabel={'Unbalance (%)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.BusV.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Capbank Zero Sequence Voltage</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.BusV} keyString={'V0'} allowZoom={true} height={200} yLabel={'Voltage (V)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.BusZ.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Capbank Zero Sequence Impedance</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.BusZ} keyString={'Z0'} allowZoom={true} height={200} yLabel={'Impedance (Ohm)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+
 
                 <div className="card">
                     <div className="card-header">CapBank Analytic Event Overview</div>
