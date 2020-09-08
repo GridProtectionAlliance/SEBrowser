@@ -791,8 +791,8 @@ namespace PQDashboard.Controllers.CapBankReport
 
 
                     }
-                    DataTable table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, "", timeRestriction);
-                    List<double[]> SCmva = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Q") ?? 0 }).ToList();
+                    DataTable systable = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, "", timeRestriction);
+                    List<double[]> SCmva = systable.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Q") ?? 0 }).ToList();
                     if (SCmva.Count > 0)
                         result.Q.Add(new TrendSeries()
                         {
@@ -822,17 +822,17 @@ namespace PQDashboard.Controllers.CapBankReport
 
             if (query.TryGetValue("statFilt", out val))
             {
-                filter = filter + (filter== ""? "" : "AND ") + $"CBAnalyticResult.CBStatusID IN  ({val})";
+                filter = filter + (filter== ""? "" : " AND ") + $"CBAnalyticResult.CBStatusID IN  ({val})";
             }
 
             if (query.TryGetValue("operationFilt", out val))
             {
-                filter = filter + (filter == "" ? "" : "AND ") + $"CBAnalyticResult.CBOperationID IN  ({val})";
+                filter = filter + (filter == "" ? "" : " AND ") + $"CBAnalyticResult.CBOperationID IN  ({val})";
             }
 
             if (query.TryGetValue("restrikeFilt", out val))
             {
-                filter = filter + (filter == "" ? "" : "AND ") + $"CBRestrikeResult.CBRestrikeTypeID IN  ({val})";
+                filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBRestrikeResult.CBRestrikeTypeID,0) IN  ({val})";
             }
 
             return filter;
