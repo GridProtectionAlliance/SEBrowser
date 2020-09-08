@@ -79,6 +79,14 @@ namespace PQDashboard.Controllers.CapBankReport
             public List<TrendSeries> Xcap;
             public List<TrendSeries> DeltaXcap;
 
+            public List<TrendSeries> RestrikeDuration;
+            public List<TrendSeries> RestrikeI;
+            public List<TrendSeries> RestrikeV;
+            public List<TrendSeries> PISDuration;
+            public List<TrendSeries> PISZ;
+            public List<TrendSeries> PISI;
+
+
         }
 
         enum TimeWindowUnits
@@ -263,8 +271,6 @@ namespace PQDashboard.Controllers.CapBankReport
             string bankNumBeforeRestriction = $"(CBAnalyticResult.StepPre = {selectedBank})";
             string otherFilter = ProcessFilter(query);
 
-            if (string.IsNullOrEmpty(otherFilter))
-                otherFilter = "1=1";
 
             TrendingResponse result = new TrendingResponse()
             {
@@ -280,7 +286,15 @@ namespace PQDashboard.Controllers.CapBankReport
                 SwitchingFreq = new List<TrendSeries>(),
                 PeakV = new List<TrendSeries>(),
                 Xcap = new List<TrendSeries>(),
-                DeltaXcap = new List<TrendSeries>()
+                DeltaXcap = new List<TrendSeries>(),
+
+                RestrikeDuration = new List<TrendSeries>(),
+                RestrikeI = new List<TrendSeries>(),
+                RestrikeV = new List<TrendSeries>(),
+                PISDuration = new List<TrendSeries>(),
+                PISZ = new List<TrendSeries>(),
+                PISI = new List<TrendSeries>()
+
             };
 
             //Start with Events matching bankNumRestriction for each Phase....
@@ -298,24 +312,7 @@ namespace PQDashboard.Controllers.CapBankReport
 
                     if (selectedBank > -1)
                     {
-                        
-                        string sqlQuery = $@"SELECT
-                        CBAnalyticResult.EventID AS EventID,
-                        CBAnalyticResult.Time AS Time,
-                        CBAnalyticResult.DeltaQ AS DeltaQ,
-                        CBAnalyticResult.Ipost - CBAnalyticResult.Ipre AS DeltaI,
-                        CBAnalyticResult.Vpost - CBAnalyticResult.Vpre AS DeltaV,
-                        CBANalyticResult.ResFreq AS ResFreq,
-                        CBAnalyticResult.THDpost - CBAnalyticResult.THDpre AS DeltaITHD,
-                        CBAnalyticResult.THDVpost - CBAnalyticResult.THDVpre AS DeltaVTHD,
-                        CBAnalyticResult.SwitchingFreq AS SwitchingFreq,
-                        CBAnalyticResult.Vpeak AS Vpeak
-
-                        FROM CBAnalyticResult WHERE 
-                            {capBankRestriction} AND {timeRestriction} AND {phaseRestriction} AND {bankNumRestriction} AND ({otherFilter})
-                        ORDER BY CBAnalyticResult.Time";
-
-                        DataTable table = connection.RetrieveData(sqlQuery);
+                        DataTable table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumRestriction, timeRestriction);
 
                         // Create Arrays of Data so we can Check if there are any later.
                         List<double[]> DeltaQ = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaQ") ?? 0 }).ToList();
@@ -327,20 +324,17 @@ namespace PQDashboard.Controllers.CapBankReport
                         List<double[]> SwitchingFreq = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("SwitchingFreq") ?? 0 }).ToList();
                         List<double[]> Vpeak = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Vpeak") ?? 0 }).ToList();
 
-                        sqlQuery = $@"SELECT
-                        CBAnalyticResult.EventID AS EventID,
-                        CBAnalyticResult.Time AS Time,
-                        CBAnalyticResult.Ipre AS Ipre,
-                        CBAnalyticResult.Vpre AS Vpre,
-                        CBANalyticResult.THDpre AS THDpre,
-                        CBAnalyticResult.THDVpre AS THDVpre,
-                        CBAnalyticResult.Xpre AS Xpre
+                        List<double[]> RestDur = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RestrikeDuration") ?? 0 }).ToList();
+                        List<double[]> RestI = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RestrikeI") ?? 0 }).ToList();
+                        List<double[]> RestV = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RestrikeV") ?? 0 }).ToList();
 
-                        FROM CBAnalyticResult WHERE 
-                            {capBankRestriction} AND {timeRestriction} AND {phaseRestriction} AND {bankNumBeforeRestriction} AND ({otherFilter})
-                        ORDER BY CBAnalyticResult.Time";
+                        List<double[]> PisDur = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("PISduration") ?? 0 }).ToList();
+                        List<double[]> PisR = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("PISr") ?? 0 }).ToList();
+                        List<double[]> PisX = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("PISx") ?? 0 }).ToList();
 
-                        table = connection.RetrieveData(sqlQuery);
+
+
+                        table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumBeforeRestriction, timeRestriction);
 
                         List<double[]> Ipre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Ipre") ?? 0 }).ToList();
                         List<double[]> Vpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Vpre") ?? 0 }).ToList();
@@ -348,20 +342,7 @@ namespace PQDashboard.Controllers.CapBankReport
                         List<double[]> THDVpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDVpre") ?? 0 }).ToList();
                         List<double[]> Xpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xpre") ?? 0 }).ToList();
 
-                        sqlQuery = $@"SELECT
-                        CBAnalyticResult.EventID AS EventID,
-                        CBAnalyticResult.Time AS Time,
-                        CBAnalyticResult.Ipost AS Ipost,
-                        CBAnalyticResult.Vpost AS Vpost,
-                        CBANalyticResult.THDpost AS THDpost,
-                        CBAnalyticResult.THDVpost AS THDVPost,
-                        CBAnalyticResult.Xpost AS Xpost
-
-                        FROM CBAnalyticResult WHERE 
-                            {capBankRestriction} AND {timeRestriction} AND {phaseRestriction} AND {bankNumAfterRestriction} AND ({otherFilter})
-                        ORDER BY CBAnalyticResult.Time";
-
-                        table = connection.RetrieveData(sqlQuery);
+                        table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumAfterRestriction, timeRestriction);
 
                         List<double[]> Ipost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Ipost") ?? 0 }).ToList();
                         List<double[]> Vpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Vpost") ?? 0 }).ToList();
@@ -391,6 +372,14 @@ namespace PQDashboard.Controllers.CapBankReport
                         THDpost = THDpost.Where(pt => pt[1] != 0).ToList();
                         THDVpost = THDVpost.Where(pt => pt[1] != 0).ToList();
                         Xpost = Xpost.Where(pt => pt[1] != 0).ToList();
+
+                        RestDur = RestDur.Where(pt => pt[1] != 0).ToList();
+                        RestI = RestI.Where(pt => pt[1] != 0).ToList();
+                        RestV = RestV.Where(pt => pt[1] != 0).ToList();
+
+                        PisDur = PisDur.Where(pt => pt[1] != 0).ToList();
+                        PisR = PisR.Where(pt => pt[1] != 0).ToList();
+                        PisX = PisX.Where(pt => pt[1] != 0).ToList();
 
                         if (DeltaQ.Count > 0)
                             result.DeltaQ.Add(new TrendSeries()
@@ -583,6 +572,64 @@ namespace PQDashboard.Controllers.CapBankReport
                                 data = Vpeak
                             });
 
+                        if (RestDur.Count > 0)
+                            result.RestrikeDuration.Add(new TrendSeries()
+                            {
+                                color = phase.Value,
+                                label = "Restrike Duration Phase " + (phase.Key),
+                                lineStyle = "-",
+                                includeLegend = true,
+                                data = RestDur
+                            });
+                        if (RestI.Count > 0)
+                            result.RestrikeI.Add(new TrendSeries()
+                            {
+                                color = phase.Value,
+                                label = "Max Current Phase " + (phase.Key),
+                                lineStyle = "-",
+                                includeLegend = true,
+                                data = RestI
+                            });
+                        if (RestV.Count > 0)
+                            result.RestrikeV.Add(new TrendSeries()
+                            {
+                                color = phase.Value,
+                                label = "Max Voltage Phase " + (phase.Key),
+                                lineStyle = "-",
+                                includeLegend = true,
+                                data = RestV
+                            });
+
+                        if (PisDur.Count > 0)
+                            result.PISDuration.Add(new TrendSeries()
+                            {
+                                color = phase.Value,
+                                label = "Switching Duration Phase " + (phase.Key),
+                                lineStyle = "-",
+                                includeLegend = true,
+                                data = PisDur
+                            });
+                        if (PisR.Count > 0)
+                            result.PISZ.Add(new TrendSeries()
+                            {
+                                color = phase.Value,
+                                label = "R Phase " + (phase.Key),
+                                lineStyle = "-",
+                                includeLegend = true,
+                                data = PisR
+                            });
+                        if (PisX.Count > 0)
+                            result.PISZ.Add(new TrendSeries()
+                            {
+                                color = phase.Value,
+                                label = "X Phase " + (phase.Key),
+                                lineStyle = ":",
+                                includeLegend = true,
+                                data = PisX
+                            });
+
+
+
                     }
 
 
@@ -608,6 +655,62 @@ namespace PQDashboard.Controllers.CapBankReport
             }
 
             return filter;
+        }
+
+        private DataTable GettrendTable(string PhaseRestriction, string OtherRestriction, string CapBankRestriction, string NumRestriction, string timeRestriction)
+        {
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+            {
+                List<string> restrictions = new List<string>();
+
+                if (!string.IsNullOrWhiteSpace(PhaseRestriction))
+                    restrictions.Add("(" + PhaseRestriction + ")");
+                if (!string.IsNullOrWhiteSpace(OtherRestriction))
+                    restrictions.Add("(" + OtherRestriction + ")");
+                if (!string.IsNullOrWhiteSpace(CapBankRestriction))
+                    restrictions.Add("(" + CapBankRestriction + ")");
+                if (!string.IsNullOrWhiteSpace(NumRestriction))
+                    restrictions.Add("(" + NumRestriction + ")");
+                if (!string.IsNullOrWhiteSpace(timeRestriction))
+                    restrictions.Add("(" + timeRestriction + ")");
+
+                bool hasRestriction = restrictions.Count > 0;
+
+                string sqlQuery = $@"SELECT
+                        CBAnalyticResult.EventID AS EventID,
+                        CBAnalyticResult.Time AS Time,
+                        CBAnalyticResult.DeltaQ AS DeltaQ,
+                        CBAnalyticResult.Ipost - CBAnalyticResult.Ipre AS DeltaI,
+                        CBAnalyticResult.Vpost - CBAnalyticResult.Vpre AS DeltaV,
+                        CBANalyticResult.ResFreq AS ResFreq,
+                        CBAnalyticResult.THDpost - CBAnalyticResult.THDpre AS DeltaITHD,
+                        CBAnalyticResult.THDVpost - CBAnalyticResult.THDVpre AS DeltaVTHD,
+                        CBAnalyticResult.SwitchingFreq AS SwitchingFreq,
+                        CBAnalyticResult.Vpeak AS Vpeak,
+                        CBAnalyticResult.Ipre AS Ipre,
+                        CBAnalyticResult.Vpre AS Vpre,
+                        CBANalyticResult.THDpre AS THDpre,
+                        CBAnalyticResult.THDVpre AS THDVpre,
+                        CBAnalyticResult.Xpre AS Xpre,
+                        CBAnalyticResult.Ipost AS Ipost,
+                        CBAnalyticResult.Vpost AS Vpost,
+                        CBANalyticResult.THDpost AS THDpost,
+                        CBAnalyticResult.THDVpost AS THDVPost,
+                        CBAnalyticResult.Xpost AS Xpost,
+                        CBRestrikeResult.Drest AS RestrikeDuration,
+                        CBRestrikeResult.Imax AS RestrikeI,
+                        CBRestrikeResult.Vmax AS RestrikeV,
+                        CBSwitchHealthAnalytic.Duration AS PISduration,
+                        CBSwitchHealthAnalytic.R AS PISr,
+                        CBSwitchHealthAnalytic.X AS PISx
+                        FROM CBAnalyticResult LEFT JOIN 
+                            CBRestrikeResult ON CBRestrikeResult.CBResultID = CBAnalyticResult.ID LEFT JOIN
+                            CBSwitchHealthAnalytic ON CBSwitchHealthAnalytic.CBResultID = CBAnalyticResult.ID
+                        {(hasRestriction? ("WHERE " + string.Join(" AND ",restrictions)) : "")} 
+                        ORDER BY CBAnalyticResult.Time";
+
+                return connection.RetrieveData(sqlQuery);
+            }
         }
         #endregion 
 

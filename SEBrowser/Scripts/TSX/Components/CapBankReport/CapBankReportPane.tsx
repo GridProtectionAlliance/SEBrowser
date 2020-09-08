@@ -40,6 +40,12 @@ interface ITrendDataSet {
     PeakV: Array<ITrendSeries>,
     Xcap: Array<ITrendSeries>,
     DeltaXcap: Array<ITrendSeries>,
+    RestrikeDuration: Array<ITrendSeries>,
+    RestrikeI: Array<ITrendSeries>,
+    RestrikeV: Array<ITrendSeries>,
+    PISDuration: Array<ITrendSeries>,
+    PISZ: Array<ITrendSeries>,
+    PISI: Array<ITrendSeries>,
 }
 
 interface ICapBankReportPaneState {
@@ -88,6 +94,12 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                 PeakV: [],
                 Xcap: [],
                 DeltaXcap: [],
+                RestrikeDuration: [],
+                RestrikeI: [],
+                RestrikeV: [],
+                PISDuration: [],
+                PISZ: [],
+                PISI: [],
             },
             Tstart: 0,
             Tend: 0,
@@ -167,7 +179,8 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         this.eventTableHandle = $.ajax({
             type: "GET",
             url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${this.props.CapBankID}&date=${this.props.date}` +
-                `&time=${this.props.time}&timeWindowunits=${this.props.timeWindowUnits}&windowSize=${this.props.windowSize}`,
+                `&time=${this.props.time}&timeWindowunits=${this.props.timeWindowUnits}&windowSize=${this.props.windowSize}` +
+                `&bankNum=${this.props.selectedBank}` + this.getFilterString(),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,
@@ -300,6 +313,50 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         </div>
                     </div> : null)}
 
+                {(this.state.TrendData.RestrikeDuration.length > 0 ?
+                <div className="card">
+                    <div className="card-header">Capbank Restrike Duration</div>
+                    <div className="card-body">
+                        <TrendingCard data={this.state.TrendData.RestrikeDuration} keyString={'RestDur'} allowZoom={true} height={200} yLabel={'duration (ms)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                    </div>
+                </div> : null)}
+                {(this.state.TrendData.RestrikeI.length > 0 ?
+                <div className="card">
+                    <div className="card-header">Capbank Restrike Current</div>
+                    <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.RestrikeI} keyString={'RestI'} allowZoom={true} height={200} yLabel={'Current (kA)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                    </div>
+                </div> : null)}
+                {(this.state.TrendData.RestrikeV.length > 0 ?
+                <div className="card">
+                    <div className="card-header">Capbank Restrike Voltage</div>
+                    <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.RestrikeV} keyString={'RestV'} allowZoom={true} height={200} yLabel={'Voltage (kV)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                    </div>
+                </div> : null)}
+
+                {(this.state.TrendData.PISDuration.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Capbank Switching Duration</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.PISDuration} keyString={'PisDur'} allowZoom={true} height={200} yLabel={'Duration (ms)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.PISZ.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Capbank Switching Impedance</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.PISZ} keyString={'PisZ'} allowZoom={true} height={200} yLabel={'Impedance (Ohm)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+                {(this.state.TrendData.PISI.length > 0 ?
+                    <div className="card">
+                        <div className="card-header">Capbank Switching Current</div>
+                        <div className="card-body">
+                            <TrendingCard data={this.state.TrendData.PISI} keyString={'PisI'} allowZoom={true} height={200} yLabel={'Current (kA)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        </div>
+                    </div> : null)}
+
                 <div className="card">
                     <div className="card-header">CapBank Analytic Event Overview</div>
                     <div className="card-body">
@@ -372,7 +429,7 @@ const EventRow = (row: ICBEvent) => {
     return (
         <tr key={row.ID}>
             <td key={'Time' + row.ID}><a
-                href={'./eventsearch?line=true&date=' + moment(row.Time).format('MM/DD/YYYY') + '&time=' + moment(row.Time).format('HH:mm:ss.SSS') + '&windowSize=10&timeWindowUnits=2&tab=All&eventid=' + row.EventID}
+                href={'./eventsearch?line=true&date=' + moment(row.Time).format('MM/DD/YYYY') + '&time=' + moment(row.Time).format('HH:mm:ss.SSS') + '&windowSize=10&timeWindowUnits=2&tab=All&eventid=' + row.EventId}
             > {moment(row.Time).format('MM/DD/YY HH:mm:ss.SSSS')}</a></td>
             <td key={'Phase' + row.ID}>{row.Phase}</td>
             <td key={'Status' + row.ID}>{row.Status}</td>
