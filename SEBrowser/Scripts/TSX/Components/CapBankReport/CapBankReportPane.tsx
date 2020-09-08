@@ -188,6 +188,49 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         if (capBankStat.length > 0)
             filter = filter + `&statFilt=${capBankStat.join(',')}`
 
+        //Next Filter is Operation Filter
+        let operation = [];
+        if (this.props.CBOpAll || this.props.CBOpNoSwitch) {
+            operation.push(-200);
+            operation.push(-1);
+            operation.push(-101);
+            operation.push(-102);
+            operation.push(-103);
+        }
+        if (this.props.CBOpAll || this.props.CBOpOpen) {
+            operation.push(101);
+            operation.push(102);
+        }
+            
+        if (this.props.CBOpAll || this.props.CBOpClose)
+        {
+            operation.push(201);
+            operation.push(202);
+        }
+
+        if (operation.length > 0)
+            filter = filter + `&operationFilt=${operation.join(',')}`
+
+        //Next Filter is Restrike Filter
+        let restrike = [];
+        if (this.props.CBResAll || this.props.CBResNo) {
+            restrike.push(0);
+            restrike.push(20);
+        }
+        if (this.props.CBResAll || this.props.CBResPot)
+            restrike.push(10);
+        if (this.props.CBResAll || this.props.CBResRes)
+            restrike.push(32);
+        if (this.props.CBResAll || this.props.CBResRei)
+            restrike.push(31);
+        if (this.props.CBResAll || this.props.CBResResPol)
+            restrike.push(42);
+        if (this.props.CBResReiPol || this.props.CBResResPol)
+            restrike.push(41);
+       
+        if (restrike.length > 0)
+            filter = filter + `&restrikeFilt=${restrike.join(',')}`
+
         return filter;
     }
 

@@ -825,6 +825,16 @@ namespace PQDashboard.Controllers.CapBankReport
                 filter = filter + (filter== ""? "" : "AND ") + $"CBAnalyticResult.CBStatusID IN  ({val})";
             }
 
+            if (query.TryGetValue("operationFilt", out val))
+            {
+                filter = filter + (filter == "" ? "" : "AND ") + $"CBAnalyticResult.CBOperationID IN  ({val})";
+            }
+
+            if (query.TryGetValue("restrikeFilt", out val))
+            {
+                filter = filter + (filter == "" ? "" : "AND ") + $"CBRestrikeResult.CBRestrikeTypeID IN  ({val})";
+            }
+
             return filter;
         }
 

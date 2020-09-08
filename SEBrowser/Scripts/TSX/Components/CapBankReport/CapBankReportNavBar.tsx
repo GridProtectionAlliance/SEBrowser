@@ -52,6 +52,19 @@ export interface EventFilter {
     CBStat21: boolean,
     CBStat22: boolean,
     CBStatAll: boolean,
+
+    CBOpAll: boolean,
+    CBOpNoSwitch: boolean,
+    CBOpOpen: boolean,
+    CBOpClose: boolean,
+
+    CBResAll: boolean,
+    CBResNo: boolean,
+    CBResPot: boolean,
+    CBResRes: boolean,
+    CBResRei: boolean,
+    CBResResPol: boolean,
+    CBResReiPol: boolean,
 }
 
 export interface CapBankReportNavBarProps extends EventFilter {
@@ -196,6 +209,33 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
             object.CBStat22 = obj.CBStat22;
         if (obj.CBStatAll != undefined)
             object.CBStatAll = obj.CBStatAll;
+
+        if (obj.CBOpAll != undefined)
+            object.CBOpAll = obj.CBOpAll;
+        if (obj.CBOpNoSwitch != undefined)
+            object.CBOpNoSwitch = obj.CBOpNoSwitch;
+        if (obj.CBOpOpen != undefined)
+            object.CBOpOpen = obj.CBOpOpen;
+        if (obj.CBOpClose != undefined)
+            object.CBOpClose = obj.CBOpClose;
+
+
+        if (obj.CBResAll != undefined)
+            object.CBResAll = obj.CBResAll;
+        if (obj.CBResNo != undefined)
+            object.CBResNo = obj.CBResNo;
+        if (obj.CBResPot != undefined)
+            object.CBResPot = obj.CBResPot;
+        if (obj.CBResRes != undefined)
+            object.CBResRes = obj.CBResRes;
+        if (obj.CBResRei != undefined)
+            object.CBResRei = obj.CBResRei;
+        if (obj.CBResResPol != undefined)
+            object.CBResResPol = obj.CBResResPol;
+        if (obj.CBResReiPol != undefined)
+            object.CBResReiPol = obj.CBResReiPol;
+
+
         this.props.stateSetter({ searchBarProps: object });
     }
 
@@ -328,19 +368,103 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                         </div>
                             <div className="modal-body" style={{display: 'inline-flex'}}>
                                 <div style={{ width: '50%', paddingRight: 10 }}>
-                                    <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                        <legend className="w-auto" style={{ fontSize: 'large' }}>Resonance:</legend>
-                                        <form>
-                                            <ul style={{ listStyleType: 'none', padding: 0, width: '100%', position: 'relative', float: 'left' }}>
-                                                <li><label><input type="checkbox" onChange={() => {
-                                                    this.setFilter({ showRes: !this.props.showRes });
-                                                }} checked={this.props.showRes} /> Resonance </label></li>
-                                                <li><label><input type="checkbox" onChange={() => {
-                                                    this.setFilter({ showNonRes: !this.props.showNonRes });
-                                                }} checked={this.props.showNonRes} /> No Resonance</label></li>
-                                            </ul>
-                                        </form>
-                                    </fieldset>
+                                    <div>
+                                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                                            <legend className="w-auto" style={{ fontSize: 'large' }}>Resonance:</legend>
+                                            <form>
+                                                <ul style={{ listStyleType: 'none', padding: 0, width: '100%', position: 'relative', float: 'left' }}>
+                                                    <li><label><input type="checkbox" onChange={() => {
+                                                        this.setFilter({ showRes: !this.props.showRes });
+                                                    }} checked={this.props.showRes} /> Resonance </label></li>
+                                                    <li><label><input type="checkbox" onChange={() => {
+                                                        this.setFilter({ showNonRes: !this.props.showNonRes });
+                                                    }} checked={this.props.showNonRes} /> No Resonance</label></li>
+                                                </ul>
+                                            </form>
+                                        </fieldset>
+                                    </div>
+                                    <div>
+                                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                                            <legend className="w-auto" style={{ fontSize: 'large' }}>Operation:</legend>
+                                            <form>
+                                                <ul style={{ listStyleType: 'none', padding: 0, width: '100%', position: 'relative', float: 'left' }}>
+                                                    <li><label><input type="checkbox" onChange={() => {
+                                                        this.setFilter({ CBOpAll: !this.props.CBOpAll });
+                                                    }} checked={this.props.CBOpAll} /> All </label></li>
+
+                                                    <li><label><input type="checkbox" onChange={() => {
+                                                        let obj = { CBOpNoSwitch: !this.props.CBOpNoSwitch }
+                                                        if (this.props.CBOpAll && this.props.CBOpNoSwitch)
+                                                            obj["CBOpAll"] = false;
+                                                        this.setFilter(obj);
+                                                    }} checked={this.props.CBOpNoSwitch || this.props.CBOpAll} /> No Switching </label></li>
+                                                    <li><label><input type="checkbox" onChange={() => {
+                                                        let obj = { CBOpOpen: !this.props.CBOpOpen }
+                                                        if (this.props.CBOpAll && this.props.CBOpOpen)
+                                                            obj["CBOpAll"] = false;
+                                                        this.setFilter(obj);
+                                                    }} checked={this.props.CBOpOpen || this.props.CBOpAll} /> Opening </label></li>
+                                                    <li><label><input type="checkbox" onChange={() => {
+                                                        let obj = { CBOpClose: !this.props.CBOpClose }
+                                                        if (this.props.CBOpAll && this.props.CBOpClose)
+                                                            obj["CBOpAll"] = false;
+                                                        this.setFilter(obj);
+                                                    }} checked={this.props.CBOpClose || this.props.CBOpAll} /> Closing </label></li>
+
+                                                </ul>
+                                            </form>
+                                        </fieldset>
+                                    </div>
+                                    <div>
+                                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                                            <legend className="w-auto" style={{ fontSize: 'large' }}>Restrike:</legend>
+                                            <form>
+                                                <ul style={{ listStyleType: 'none', padding: 0, width: '100%', position: 'relative', float: 'left' }}>
+                                                    <li><label><input type="checkbox" onChange={() => {
+                                                        this.setFilter({ CBResAll: !this.props.CBResAll });
+                                                    }} checked={this.props.CBResAll} /> All </label></li>
+
+                                                    <li><label><input type="checkbox" onChange={() => {
+                                                        let obj = { CBResNo: !this.props.CBResNo }
+                                                        if (this.props.CBResAll && this.props.CBResNo)
+                                                            obj["CBResAll"] = false;
+                                                        this.setFilter(obj);
+                                                    }} checked={this.props.CBResNo || this.props.CBResAll} /> No Restrike </label></li>
+                                                    <li><label><input type="checkbox" onChange={() => {
+                                                        let obj = { CBResPot: !this.props.CBResPot }
+                                                        if (this.props.CBResAll && this.props.CBResPot)
+                                                            obj["CBResAll"] = false;
+                                                        this.setFilter(obj);
+                                                    }} checked={this.props.CBResPot || this.props.CBResAll} /> Possible Restrike </label></li>
+                                                    <li><label><input type="checkbox" onChange={() => {
+                                                        let obj = { CBResRes: !this.props.CBResRes }
+                                                        if (this.props.CBResAll && this.props.CBResRes)
+                                                            obj["CBResAll"] = false;
+                                                        this.setFilter(obj);
+                                                    }} checked={this.props.CBResRes || this.props.CBResAll} /> Restrike </label></li>
+                                                    <li><label><input type="checkbox" onChange={() => {
+                                                        let obj = { CBResResPol: !this.props.CBResResPol }
+                                                        if (this.props.CBResAll && this.props.CBResResPol)
+                                                            obj["CBResAll"] = false;
+                                                        this.setFilter(obj);
+                                                    }} checked={this.props.CBResResPol || this.props.CBResAll} /> Restrike w V polarity reversed </label></li>
+                                                    <li><label><input type="checkbox" onChange={() => {
+                                                        let obj = { CBResRei: !this.props.CBResRei }
+                                                        if (this.props.CBResAll && this.props.CBResRei)
+                                                            obj["CBResAll"] = false;
+                                                        this.setFilter(obj);
+                                                    }} checked={this.props.CBResRei || this.props.CBResAll} /> Reignition </label></li>
+                                                    <li><label><input type="checkbox" onChange={() => {
+                                                        let obj = { CBResReiPol: !this.props.CBResReiPol }
+                                                        if (this.props.CBResAll && this.props.CBResReiPol)
+                                                            obj["CBResAll"] = false;
+                                                        this.setFilter(obj);
+                                                    }} checked={this.props.CBResReiPol || this.props.CBResAll} /> Reignition w V polarity reversed </label></li>
+                                                </ul>
+                                            </form>
+                                        </fieldset>
+                                    </div>
+
                                 </div>
                                 <div style={{ width: '50%', paddingRight: 10 }}>
                                     <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
