@@ -385,7 +385,6 @@ namespace PQDashboard.Controllers.CapBankReport
                         List<double[]> THDVpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDVpost") ?? 0 }).ToList();
                         List<double[]> Xpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xpost") ?? 0 }).ToList();
 
-
                         // remove any points that are NULL or 0, Assumption is exaclty 0 means no data was computed by EPRI analytic
                         DeltaQ = DeltaQ.Where(pt => pt[1] != 0).ToList();
                         DeltaI = DeltaI.Where(pt => pt[1] != 0).ToList();
@@ -792,6 +791,17 @@ namespace PQDashboard.Controllers.CapBankReport
 
 
                     }
+                    DataTable table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, "", timeRestriction);
+                    List<double[]> SCmva = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Q") ?? 0 }).ToList();
+                    if (SCmva.Count > 0)
+                        result.Q.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Short Cirtcuit Power Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = SCmva
+                        });
 
 
                 }
@@ -840,6 +850,7 @@ namespace PQDashboard.Controllers.CapBankReport
                 string sqlQuery = $@"SELECT
                         CBAnalyticResult.EventID AS EventID,
                         CBAnalyticResult.Time AS Time,
+                        CBAnalyticResult.MVAsc AS Q,
                         CBAnalyticResult.DeltaQ AS DeltaQ,
                         CBAnalyticResult.Ipost - CBAnalyticResult.Ipre AS DeltaI,
                         CBAnalyticResult.Vpost - CBAnalyticResult.Vpre AS DeltaV,
