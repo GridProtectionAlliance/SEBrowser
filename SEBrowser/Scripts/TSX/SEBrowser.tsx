@@ -62,7 +62,7 @@ class SEBrowserMainPage extends React.Component<{}, SEBrowser.State>{
                                 <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/eventsearch"}>Event Search</NavLink>
                                 <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/meteractivity"}>Meter Activity</NavLink>
                                 <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/breakerreport"}>Breaker Report</NavLink>
-                                <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/relayreport"}>Relay Report</NavLink>
+                                <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/relayreport"}>TripCoil Report</NavLink>
                                 <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/capbankreport"}>CapBank Report</NavLink>
                             </div>
                             <div style={{ width: '100%', textAlign: 'center' }}>

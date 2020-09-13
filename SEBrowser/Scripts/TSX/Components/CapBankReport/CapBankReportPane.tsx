@@ -147,90 +147,29 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         let filter = "";
 
         //First Filter is Resonance
-        // Special case because if they are both disabled we treat them as both enabled....
-        // This case would make no sense otherwhise
-        if (this.props.showRes !== this.props.showNonRes)
-            filter = `&resFilt=${this.props.showRes ? '1' : '0'}`
+        if (this.props.ResFilt.length > 0)
+            filter = `&resFilt=${this.props.ResFilt.join(',')}`
 
         //Next Filter is CapBankStatus
-        let capBankStat = [];
-        if (this.props.CBStatAll || this.props.CBStatError)
-            capBankStat.push(-1);
-        if (this.props.CBStatAll || this.props.CBStat0)
-            capBankStat.push(0);
-        if (this.props.CBStatAll || this.props.CBStat2)
-            capBankStat.push(2);
-        if (this.props.CBStatAll || this.props.CBStat3)
-            capBankStat.push(3);
-        if (this.props.CBStatAll || this.props.CBStat4)
-            capBankStat.push(4);
-        if (this.props.CBStatAll || this.props.CBStat5)
-            capBankStat.push(5);
-        if (this.props.CBStatAll || this.props.CBStat6)
-            capBankStat.push(6);
-        if (this.props.CBStatAll || this.props.CBStat7)
-            capBankStat.push(7);
-        if (this.props.CBStatAll || this.props.CBStat8)
-            capBankStat.push(8);
-        if (this.props.CBStatAll || this.props.CBStat10)
-            capBankStat.push(10);
-        if (this.props.CBStatAll || this.props.CBStat11)
-            capBankStat.push(11);
-        if (this.props.CBStatAll || this.props.CBStat12)
-            capBankStat.push(12);
-        if (this.props.CBStatAll || this.props.CBStat20)
-            capBankStat.push(20);
-        if (this.props.CBStatAll || this.props.CBStat21)
-            capBankStat.push(21);
-        if (this.props.CBStatAll || this.props.CBStat22)
-            capBankStat.push(22);
+        if ((this.props.StatFilt.length > 0) && (!this.props.StatFilt.includes(999)))
+            filter = filter + `&statFilt=${this.props.StatFilt.join(',')}`
 
-        if (capBankStat.length > 0)
-            filter = filter + `&statFilt=${capBankStat.join(',')}`
-
-        //Next Filter is Operation Filter
-        let operation = [];
-        if (this.props.CBOpAll || this.props.CBOpNoSwitch) {
-            operation.push(-200);
-            operation.push(-1);
-            operation.push(-101);
-            operation.push(-102);
-            operation.push(-103);
-        }
-        if (this.props.CBOpAll || this.props.CBOpOpen) {
-            operation.push(101);
-            operation.push(102);
-        }
-            
-        if (this.props.CBOpAll || this.props.CBOpClose)
-        {
-            operation.push(201);
-            operation.push(202);
-        }
-
-        if (operation.length > 0)
-            filter = filter + `&operationFilt=${operation.join(',')}`
+        //Next Filter is Operation
+        if ((this.props.OpFilt.length > 0) && (!this.props.OpFilt.includes(999)))
+            filter = filter + `&operationFilt=${this.props.OpFilt.join(',')}`
 
         //Next Filter is Restrike Filter
-        let restrike = [];
-        if (this.props.CBResAll || this.props.CBResNo) {
-            restrike.push(0);
-            restrike.push(20);
-        }
-        if (this.props.CBResAll || this.props.CBResPot)
-            restrike.push(10);
-        if (this.props.CBResAll || this.props.CBResRes)
-            restrike.push(32);
-        if (this.props.CBResAll || this.props.CBResRei)
-            restrike.push(31);
-        if (this.props.CBResAll || this.props.CBResResPol)
-            restrike.push(42);
-        if (this.props.CBResReiPol || this.props.CBResResPol)
-            restrike.push(41);
-       
-        if (restrike.length > 0)
-            filter = filter + `&restrikeFilt=${restrike.join(',')}`
+        if ((this.props.RestFilt.length > 0) && (!this.props.RestFilt.includes(999)))
+            filter = filter + `&restrikeFilt=${this.props.RestFilt.join(',')}`
 
+        //Next Filter is Switching Health Filter
+        if ((this.props.PISFilt.length > 0) && (!this.props.PISFilt.includes(999)))
+            filter = filter + `&switchingHealthFilt=${this.props.PISFilt.join(',')}`
+
+        //Next Filter is CB Health Filter
+        if ((this.props.HealthFilt.length > 0) && (!this.props.HealthFilt.includes(999)))
+            filter = filter + `&healthFilt=${this.props.HealthFilt.join(',')}`
+        
         return filter;
     }
 
@@ -285,7 +224,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                     <div className="card">
                         <div className="card-header">Short Circuit Power</div>
                         <div className="card-body">
-                            <TrendingCard data={this.state.TrendData.Q} keyString={'SC'} allowZoom={true} height={200} yLabel={'Short Circuit Power (MVAR)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                            <TrendingCard data={this.state.TrendData.Q} keyString={'SC'} allowZoom={true} height={200} yLabel={'Short Circuit Power (MVA)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
                     </div> : null)}
                 {(this.state.TrendData.DeltaQ.length > 0?
@@ -299,28 +238,28 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                     <div className="card">
                         <div className="card-header">RMS Current</div>
                         <div className="card-body">
-                            <TrendingCard data={this.state.TrendData.Irms} keyString={'Irms'} allowZoom={true} height={200} yLabel={'I (A)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                            <TrendingCard data={this.state.TrendData.Irms} keyString={'Irms'} allowZoom={true} height={200} yLabel={'I RMS (A)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
                     </div> : null)}
                 {(this.state.TrendData.DeltaIrms.length > 0 ?
                     <div className="card">
                         <div className="card-header">RMS Current Change</div>
                         <div className="card-body">
-                            <TrendingCard data={this.state.TrendData.DeltaIrms} keyString={'dIrms'} allowZoom={true} height={200} yLabel={'Delta I (A)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                            <TrendingCard data={this.state.TrendData.DeltaIrms} keyString={'dIrms'} allowZoom={true} height={200} yLabel={'Delta I RMS (A)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
                     </div> : null)}
                 {(this.state.TrendData.Vrms.length > 0 ?
                     <div className="card">
                         <div className="card-header">RMS Voltage</div>
                         <div className="card-body">
-                            <TrendingCard data={this.state.TrendData.Vrms} keyString={'Vrms'} allowZoom={true} height={200} yLabel={'V (V)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                            <TrendingCard data={this.state.TrendData.Vrms} keyString={'Vrms'} allowZoom={true} height={200} yLabel={'V RMS (pu)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
                     </div> : null)}
                 {(this.state.TrendData.DeltaVrms.length > 0 ?
                     <div className="card">
                         <div className="card-header">RMS Voltage Change</div>
                         <div className="card-body">
-                            <TrendingCard data={this.state.TrendData.DeltaVrms} keyString={'dVrms'} allowZoom={true} height={200} yLabel={'Delta V (V)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                            <TrendingCard data={this.state.TrendData.DeltaVrms} keyString={'dVrms'} allowZoom={true} height={200} yLabel={'Delta V RMS (pu)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
                     </div> : null)}
                 {(this.state.TrendData.Freq.length > 0 ?
@@ -348,7 +287,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
 
                 {(this.state.TrendData.DeltaTHD.length > 0 ?
                     <div className="card">
-                        <div className="card-header">Changein Current and Voltage THD</div>
+                        <div className="card-header">Change in Voltage and Current THD</div>
                         <div className="card-body">
                             <TrendingCard data={this.state.TrendData.DeltaTHD} keyString={'dthd'} allowZoom={true} height={200} yLabel={'Delta THD (%)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
@@ -379,41 +318,41 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                 <div className="card">
                     <div className="card-header">Capbank Restrike Duration</div>
                     <div className="card-body">
-                        <TrendingCard data={this.state.TrendData.RestrikeDuration} keyString={'RestDur'} allowZoom={true} height={200} yLabel={'duration (ms)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                        <TrendingCard data={this.state.TrendData.RestrikeDuration} keyString={'RestDur'} allowZoom={true} height={200} yLabel={'Duration (cycles)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                     </div>
                 </div> : null)}
                 {(this.state.TrendData.RestrikeI.length > 0 ?
                 <div className="card">
-                    <div className="card-header">Capbank Restrike Current</div>
+                    <div className="card-header">Capbank Restrike Current Peak</div>
                     <div className="card-body">
-                            <TrendingCard data={this.state.TrendData.RestrikeI} keyString={'RestI'} allowZoom={true} height={200} yLabel={'Current (kA)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                            <TrendingCard data={this.state.TrendData.RestrikeI} keyString={'RestI'} allowZoom={true} height={200} yLabel={'Current Peak (kA)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                     </div>
                 </div> : null)}
                 {(this.state.TrendData.RestrikeV.length > 0 ?
                 <div className="card">
-                    <div className="card-header">Capbank Restrike Voltage</div>
+                    <div className="card-header">Capbank Restrike Voltage Peak</div>
                     <div className="card-body">
-                            <TrendingCard data={this.state.TrendData.RestrikeV} keyString={'RestV'} allowZoom={true} height={200} yLabel={'Voltage (kV)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                            <TrendingCard data={this.state.TrendData.RestrikeV} keyString={'RestV'} allowZoom={true} height={200} yLabel={'Voltage Peak (kV)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                     </div>
                 </div> : null)}
 
                 {(this.state.TrendData.PISDuration.length > 0 ?
                     <div className="card">
-                        <div className="card-header">Capbank Switching Duration</div>
+                        <div className="card-header">Capbank Pre-Insertion Switching Duration</div>
                         <div className="card-body">
-                            <TrendingCard data={this.state.TrendData.PISDuration} keyString={'PisDur'} allowZoom={true} height={200} yLabel={'Duration (ms)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                            <TrendingCard data={this.state.TrendData.PISDuration} keyString={'PisDur'} allowZoom={true} height={200} yLabel={'Duration (cycles)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
                     </div> : null)}
                 {(this.state.TrendData.PISZ.length > 0 ?
                     <div className="card">
-                        <div className="card-header">Capbank Switching Impedance</div>
+                        <div className="card-header">Capbank Pre-Insertion Switching Impedance</div>
                         <div className="card-body">
                             <TrendingCard data={this.state.TrendData.PISZ} keyString={'PisZ'} allowZoom={true} height={200} yLabel={'Impedance (Ohm)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
                     </div> : null)}
                 {(this.state.TrendData.PISI.length > 0 ?
                     <div className="card">
-                        <div className="card-header">Capbank Switching Current</div>
+                        <div className="card-header">Capbank Pre-Insertion Switching Current</div>
                         <div className="card-body">
                             <TrendingCard data={this.state.TrendData.PISI} keyString={'PisI'} allowZoom={true} height={200} yLabel={'Current (kA)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
@@ -423,14 +362,14 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                     <div className="card">
                         <div className="card-header">Capbank K Factor</div>
                         <div className="card-body">
-                            <TrendingCard data={this.state.TrendData.KFactor} keyString={'kfactor'} allowZoom={true} height={200} yLabel={'k ()'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                            <TrendingCard data={this.state.TrendData.KFactor} keyString={'kfactor'} allowZoom={true} height={200} yLabel={'K Factor'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
                     </div> : null)}
                 {(this.state.TrendData.RelaydV.length > 0 ?
                     <div className="card">
-                        <div className="card-header">Capbank Relay Voltage Difference</div>
+                        <div className="card-header">Capbank Relay Differential Voltage</div>
                         <div className="card-body">
-                            <TrendingCard data={this.state.TrendData.RelaydV} keyString={'reldV'} allowZoom={true} height={200} yLabel={'Voltage (V)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                            <TrendingCard data={this.state.TrendData.RelaydV} keyString={'reldV'} allowZoom={true} height={200} yLabel={'Diff. Voltage (V)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
                     </div> : null)}
                 {(this.state.TrendData.RelayV.length > 0 ?
@@ -442,16 +381,16 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                     </div> : null)}
                 {(this.state.TrendData.RelayXV.length > 0 ?
                     <div className="card">
-                        <div className="card-header">Capbank Relay Voltage- Impedance Ratio Missmatch</div>
+                        <div className="card-header">Capbank Voltage-Impedance Ratio Missmatch</div>
                         <div className="card-body">
                             <TrendingCard data={this.state.TrendData.RelayXV} keyString={'relXV'} allowZoom={true} height={200} yLabel={'ratio missmatch (%)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
                     </div> : null)}
                 {(this.state.TrendData.RelayXLV.length > 0 ?
                     <div className="card">
-                        <div className="card-header">Capbank Relay Impedances</div>
+                        <div className="card-header">Capbank LV Cap Reactance</div>
                         <div className="card-body">
-                            <TrendingCard data={this.state.TrendData.RelayXLV} keyString={'relX'} allowZoom={true} height={200} yLabel={'Current (kA)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
+                            <TrendingCard data={this.state.TrendData.RelayXLV} keyString={'relX'} allowZoom={true} height={200} yLabel={'Reactance (Ohm)'} Tstart={this.state.Tstart} Tend={this.state.Tend} />
                         </div>
                     </div> : null)}
                 {(this.state.TrendData.Ineutral.length > 0 ?

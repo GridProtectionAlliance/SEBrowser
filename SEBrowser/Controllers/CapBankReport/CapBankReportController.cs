@@ -149,7 +149,7 @@ namespace PQDashboard.Controllers.CapBankReport
 			                    AssetType ON Asset.AssetTypeID = AssetType.ID LEFT JOIN
 			                    AssetLocation ON Asset.ID = AssetLocation.AssetID 
 		                    WHERE AssetType.Name = 'CapacitorBank' AND AssetLocation.LocationID = Location.ID) > 0
-                    ORDER BY LocationKey";
+                    ORDER BY AssetName";
 
                     sc.CommandType = CommandType.Text;
 
@@ -443,7 +443,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.DeltaIrms.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Change in Irms Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = DeltaI
@@ -453,7 +453,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.DeltaVrms.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Change in Vrms Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = DeltaV
@@ -463,7 +463,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.Freq.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Resonance Frequency Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = ResFreq
@@ -473,7 +473,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.PeakV.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Peak Voltage Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = Vpeak
@@ -483,7 +483,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.DeltaTHD.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Change Voltage THD Phase " + (phase.Key),
+                                label = "V THD Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = DeltaITHD
@@ -493,8 +493,8 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.DeltaTHD.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Change in Current THD Phase " + (phase.Key),
-                                lineStyle = "-",
+                                label = "I THD Phase " + (phase.Key),
+                                lineStyle = ":",
                                 includeLegend = true,
                                 data = DeltaVTHD
                             });
@@ -503,7 +503,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.SwitchingFreq.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Switching Freq. Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = SwitchingFreq
@@ -513,7 +513,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.Xcap.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Impedance Before Phase " + (phase.Key),
+                                label = "Pre Event Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = Xpre
@@ -523,7 +523,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.Irms.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Current RMS Before Phase " + (phase.Key),
+                                label = "Pre Event Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = Ipre
@@ -533,7 +533,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.Vrms.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Voltage RMS Before Phase " + (phase.Key),
+                                label = "Pre Event Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = Vpre
@@ -543,7 +543,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.THD.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Current THD Before Phase " + (phase.Key),
+                                label = "I THD Pre Event Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = THDpre
@@ -553,7 +553,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.THD.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Voltage THD Before Phase " + (phase.Key),
+                                label = "V THD Pre Event Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = THDVpre
@@ -563,7 +563,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.Xcap.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Impedance After Phase " + (phase.Key),
+                                label = "Post Event Phase " + (phase.Key),
                                 lineStyle = ":",
                                 includeLegend = true,
                                 data = Xpost
@@ -573,7 +573,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.Irms.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Current RMS After Phase " + (phase.Key),
+                                label = "Post Event Phase " + (phase.Key),
                                 lineStyle = ":",
                                 includeLegend = true,
                                 data = Ipost
@@ -583,7 +583,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.Vrms.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Voltage RMS After Phase " + (phase.Key),
+                                label = "Post Event Phase " + (phase.Key),
                                 lineStyle = ":",
                                 includeLegend = true,
                                 data = Vpost
@@ -593,7 +593,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.THD.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Current THD After Phase " + (phase.Key),
+                                label = "I THD Post Event Phase " + (phase.Key),
                                 lineStyle = ":",
                                 includeLegend = true,
                                 data = THDpost
@@ -603,7 +603,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.THD.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Voltage THD After Phase " + (phase.Key),
+                                label = "V THD Post EVent Phase " + (phase.Key),
                                 lineStyle = ":",
                                 includeLegend = true,
                                 data = THDVpost
@@ -614,7 +614,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.DeltaXcap.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Change in CapBank Impedance Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = XcapBank
@@ -624,7 +624,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.RestrikeDuration.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Restrike Duration Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = RestDur
@@ -633,7 +633,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.RestrikeI.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Max Current Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = RestI
@@ -642,7 +642,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.RestrikeV.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Max Voltage Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = RestV
@@ -652,7 +652,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.PISDuration.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Switching Duration Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = PisDur
@@ -680,7 +680,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.KFactor.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "KFactor Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = Kfactor
@@ -689,7 +689,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.RelayXLV.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "XLV Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = Xlv
@@ -698,7 +698,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.RelayXLV.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "XLV upper Group Phase " + (phase.Key),
+                                label = "Upper Group Phase " + (phase.Key),
                                 lineStyle = ":",
                                 includeLegend = true,
                                 data = Xug
@@ -707,8 +707,8 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.RelayXLV.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "XLV lower Group Phase " + (phase.Key),
-                                lineStyle = ":",
+                                label = "Lower Group Phase " + (phase.Key),
+                                lineStyle = "-",
                                 includeLegend = true,
                                 data = Xlg
                             });
@@ -736,7 +736,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.RelayXV.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "VX missmatch Ratio Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = XVration
@@ -746,7 +746,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.RelayV.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Relay Voltage Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = RelayV
@@ -755,34 +755,34 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.RelaydV.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "Relay dV Phase " + (phase.Key),
+                                label = "Phase " + (phase.Key),
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = RelaydV
                             });
-                        if (Ineutral.Count > 0)
+                        if (Ineutral.Count > 0 && phase.Key == "AN")
                             result.Ineutral.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "neutral Current Phase " + (phase.Key),
+                                label = "",
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = Ineutral
                             });
-                        if (BusV0.Count > 0)
+                        if (BusV0.Count > 0 && phase.Key == "AN")
                             result.BusV.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "0 seq. Voltage Phase " + (phase.Key),
+                                label = "",
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = BusV0
                             });
-                        if (BusZ0.Count > 0)
+                        if (BusZ0.Count > 0 && phase.Key == "AN")
                             result.BusZ.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "0 seq. Impedance Phase " + (phase.Key),
+                                label = "",
                                 lineStyle = "-",
                                 includeLegend = true,
                                 data = BusZ0
@@ -797,7 +797,7 @@ namespace PQDashboard.Controllers.CapBankReport
                         result.Q.Add(new TrendSeries()
                         {
                             color = phase.Value,
-                            label = "Short Cirtcuit Power Phase " + (phase.Key),
+                            label = "Phase " + (phase.Key),
                             lineStyle = "-",
                             includeLegend = true,
                             data = SCmva
@@ -817,7 +817,8 @@ namespace PQDashboard.Controllers.CapBankReport
 
             if (query.TryGetValue("resFilt", out val))
             {
-                filter = $"CBAnalyticResult.IsRes = {val}";
+                if (!val.Contains(","))
+                    filter = $"CBAnalyticResult.IsRes = {val}";
             }
 
             if (query.TryGetValue("statFilt", out val))
@@ -833,6 +834,16 @@ namespace PQDashboard.Controllers.CapBankReport
             if (query.TryGetValue("restrikeFilt", out val))
             {
                 filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBRestrikeResult.CBRestrikeTypeID,0) IN  ({val})";
+            }
+
+            if (query.TryGetValue("switchingHealthFilt", out val))
+            {
+                filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBSwitchHealthAnalytic.CBSwitchingConditionID,0) IN  ({val})";
+            }
+
+            if (query.TryGetValue("healthFilt", out val))
+            {
+                filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBCapBankResult.CBBankHealthID,0) IN  ({val})";
             }
 
             return filter;
