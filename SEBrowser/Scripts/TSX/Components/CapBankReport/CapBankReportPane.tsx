@@ -135,7 +135,6 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
 
     componentDidUpdate(oldProps: CapBankReportNavBarProps) {
         let newProps = _.clone(this.props);
-
         if (!_.isEqual(newProps, oldProps) && newProps.CapBankID >= 0) {
             this.getData();
             this.getTimeLimits()

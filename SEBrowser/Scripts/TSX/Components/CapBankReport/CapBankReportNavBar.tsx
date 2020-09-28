@@ -82,6 +82,9 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
     componentDidMount() {
         this.getSubstationData();
 
+        if (this.props.StationId > -1)
+            this.getCapBankData(this.props.StationId);
+
         $('#datePicker').datetimepicker({ format: momentDateFormat });
         $('#datePicker').on('dp.change', (e) => {
             this.setDate((e.target as any).value);
@@ -94,12 +97,18 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
     }
 
     componentWillReceiveProps(nextProps: CapBankReportNavBarProps) {
+      
+        if (this.state.capBanks.length == 0)
+            this.getCapBankData(nextProps.StationId);
+
     }
 
     getCapBankData(LocationID: number) {
         
         this.seBrowserService.GetCapBankData(LocationID).done(results => {
             this.setState({ capBanks: results })
+            if (this.props.CapBankID < 0 && results.length > 0)
+                this.setCapBank(results[0].Id)
             this.setBankNumber(-1);
         });
        
@@ -152,10 +161,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         this.seBrowserService.GetCapBankSubstationData().done(results => {
             if (results == null)
                 return
-            this.setState({ subStations: results });
-           
-            if (this.props.StationId != undefined)
-                this.getCapBankData(this.props.StationId);
+            this.setState({ subStations: results })
 
             if (this.props.StationId == -1 && results.length > 0)
                 this.setStation(results[0].LocationID)
@@ -167,7 +173,6 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         var object = _.clone(this.props) as CapBankReportNavBarProps;
         object.StationId = id;
         this.props.stateSetter({ searchBarProps: object });
-        this.getCapBankData(id);
     }
    
     render() {
