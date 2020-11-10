@@ -57,6 +57,7 @@ export interface CapBankReportNavBarProps extends EventFilter {
 interface CapBank {
     Id: number,
     AssetKey: string,
+    AssetName: string,
     numBanks: number,
     fused: boolean,
     compensated: boolean
@@ -213,7 +214,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                             <select ref="Breaker" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
                                                 this.setCapBank(parseInt((e.target as any).value.toString()));
                                             }} value={this.props.CapBankID}>
-                                                {this.state.capBanks.map(item => <option key={item.Id} value={item.Id} > {item.AssetKey} </option>)}
+                                                {this.state.capBanks.map(item => <option key={item.Id} value={item.Id} > {item.AssetName} </option>)}
                                         </select>
                                     </div>
                                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Bank: </label>

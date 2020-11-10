@@ -177,6 +177,7 @@ namespace PQDashboard.Controllers.CapBankReport
                     sc.CommandText = @" 
                    SELECT CapBank.ID AS Id,
                           CapBank.AssetKey,
+                          CapBank.AssetName,  
                           CapBank.NumberOfBanks AS numBanks,
                           CapBank.Fused AS fused,
                           CapBank.Compensated AS compensated
