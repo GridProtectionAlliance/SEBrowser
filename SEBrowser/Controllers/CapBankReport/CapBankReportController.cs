@@ -175,7 +175,7 @@ namespace PQDashboard.Controllers.CapBankReport
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
                     sc.CommandText = @" 
-                   SELECT CapBank.ID AS Id,
+                   SELECT DISTINCT CapBank.ID AS Id,
                           CapBank.AssetKey,
                           CapBank.AssetName,  
                           CapBank.NumberOfBanks AS numBanks,
