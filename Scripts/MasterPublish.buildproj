@@ -380,7 +380,8 @@
   <Target Name="CoreBuildProjects">
     <!-- Build all of the specified projects. -->
     <Message Text="Compiling projects..."/>
-    <MSBuild Projects="@(ProjectsToBuild)" Properties="Configuration=$(BuildFlavor);Platform=$(BuildTarget);BuildInParallel=$(BuildInParallel);DeployOnBuild=true;PublishProfile=$(ProfileFile);"/>
+	<Message Text="$(ProfileFile)"/>
+    <MSBuild Projects="@(ProjectsToBuild)" Properties="Configuration=$(BuildFlavor);Platform=$(BuildTarget);BuildInParallel=$(BuildInParallel);DeployOnBuild=true;PublishProfile=$(ProfileFile)"/>
 
     <!-- Create list of files to be deleted from build output. -->
     <ItemGroup>
