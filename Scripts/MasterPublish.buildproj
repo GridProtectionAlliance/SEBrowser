@@ -288,7 +288,7 @@
       <GitClient Condition="'$(GitClient)' == ''">$(ProgramFiles32)\Git\cmd\git.exe</GitClient>
       <GitBranch Condition="'$(GitBranch)' == ''">master</GitBranch>
 	  <SetUpWorkspace Condition="'$(SetUpWorkspace)' == ''">True</SetUpWorkspace>
-      
+      <NuGet Condition="'$(NuGet)' == ''">$(ProgramFiles64)\NuGet\nuget.exe</NuGet>
       <ForceBuild Condition="'$(ForceBuild)' == ''">false</ForceBuild>
       <SkipVersioning Condition="'$(SkipVersioning)' == ''">false</SkipVersioning>
       <DoNotPush Condition="'$(DoNotPush)' == ''">false</DoNotPush>
