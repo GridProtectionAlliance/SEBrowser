@@ -295,7 +295,7 @@
       <BinariesArchiveFileName Condition="'$(BinariesArchiveFileName)' == ''">$(LocalFolder)\$(ProjectName).Binaries.zip</BinariesArchiveFileName>
       <BinariesArchiveWorkingDirectory Condition="'$(BinariesArchiveWorkingDirectory)' == ''">$(LocalFolder)\Archives\Binaries</BinariesArchiveWorkingDirectory>
 	  
-	  <OutputFolder>C:\Temp\Test</OutputFolder>
+	  <ProfileFile>$(LocalFolder)\Scripts\PublishProfile.pubxml</ProfileFile>
   </PropertyGroup>
   </Target>
 
@@ -380,7 +380,7 @@
   <Target Name="CoreBuildProjects">
     <!-- Build all of the specified projects. -->
     <Message Text="Compiling projects..."/>
-    <MSBuild Projects="@(ProjectsToBuild)" Properties="Configuration=$(BuildFlavor);Platform=$(BuildTarget);BuildInParallel=$(BuildInParallel);WebProjectOutputDir=$(OutputFolder);"/>
+    <MSBuild Projects="@(ProjectsToBuild)" Properties="Configuration=$(BuildFlavor);Platform=$(BuildTarget);BuildInParallel=$(BuildInParallel);DeployOnBuild=true;PublishProfile=$(ProfileFile);"/>
 
     <!-- Create list of files to be deleted from build output. -->
     <ItemGroup>
