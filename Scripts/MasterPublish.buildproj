@@ -295,7 +295,7 @@
       <BinariesArchiveFileName Condition="'$(BinariesArchiveFileName)' == ''">$(LocalFolder)\$(ProjectName).Binaries.zip</BinariesArchiveFileName>
       <BinariesArchiveWorkingDirectory Condition="'$(BinariesArchiveWorkingDirectory)' == ''">$(LocalFolder)\Archives\Binaries</BinariesArchiveWorkingDirectory>
 	  
-	  <ProfileFile>$(LocalFolder)\Scripts\PublishProfile.pubxml</ProfileFile>
+	  <ProfileFile>$(LocalFolder)\Scripts\PP.pubxml</ProfileFile>
   </PropertyGroup>
   </Target>
 
