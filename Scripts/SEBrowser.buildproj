@@ -83,7 +83,7 @@
     <PropertyGroup>
       <!--Must-override setting(s).-->
       <ProjectName>SEBrowser</ProjectName>
-      <ProjectSolution>$(LocalFolder)\Source\$(ProjectName).sln</ProjectSolution>
+      <ProjectSolution>$(LocalFolder)\$(ProjectName).sln</ProjectSolution>
       
       <VersionMajorChange>None</VersionMajorChange>
       <VersionMinorChange>None</VersionMinorChange>
@@ -99,7 +99,7 @@
     <Message Text="SkipVersioning = --$(SkipVersioning)--"/>
     <ItemGroup>
       <!--List of files to be versioned.-->
-      <FilesToVersion Include="$(LocalFolder)\Source\**\AssemblyInfo.*">
+      <FilesToVersion Include="$(LocalFolder)\**\AssemblyInfo.*">
         <VersionRegex>(?'BeforeVersion'AssemblyVersion\(%22)(?'CoreVersion'(\*|\d+)\.)+(\*|\d+)(?'AfterVersion'%22\))</VersionRegex>
         <VersionPrecision>4</VersionPrecision>
       </FilesToVersion>
