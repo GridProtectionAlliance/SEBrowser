@@ -106,9 +106,7 @@ function Build-TS {
 
 function Build-C {
 	"Building .NET"
-	
 	& "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe" $SLNFile /p:ForceBuild=true /p:DeployOnBuild=true /p:PublishProfile=$projectDir\Scripts\PublishProfile.pubXML /p:LocalFolder=$projectDir
-	
 	"Built .NET"
 	}
 function Deploy($target, $name, $source, $deployZip, $deployBinaries) {
@@ -179,16 +177,17 @@ if ($changed) {
 	#Deploy -target "$projectDir" -source "$projectDir\Build\Output\$buildConfig\dist"  -name "$repo" -DeployZip "\\gpaweb\NightlyBuilds\GrafanaPanels" -DeployBinaries "\\gpaweb\NightlyBuilds\GrafanaPanels\Binaries\$repo"
 
 	#Commit
+	$version = Get-Content .Scripts\SEBrowser.version -Raw 
 	"Committing to remote repository"
-	#Commit-Repository "." "Updated $repo version to $version"
+	Commit-Repository "." "Updated $repo version to $version"
 	
-	#Push-Repository
+	Push-Repository
 	
-	# Tag repo to mark new changes
-	#$tag = $(get-date).ToString("yyyyMMddHHmmss")
-	#"Tag Repository to $tag"
+	Tag repo to mark new changes
+	$tag = $(get-date).ToString("yyyyMMddHHmmss")
+	"Tag Repository to $tag"
 	
-    #Tag-Repository $tag
+    Tag-Repository $tag
 	
 	}
 	
