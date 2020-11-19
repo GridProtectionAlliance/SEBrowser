@@ -146,13 +146,10 @@ if ($changed) {
 	#	return
 	#}
 	
-	"Current version = $version"
-
 	# Increment version build number
 	#$version = Increment-Version $version
 
-	"Updating version to $version"
-	
+
 	#if (-not (Update-Version -target "$projectDir\$pluginFile" -newVersion $version)) {
     #            "ERROR: Failed to update version."
     #            return
