@@ -107,7 +107,7 @@ function Build-TS {
 function Build-C {
 	"Building .NET"
 	
-	& "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe" $SLNFile /p:ForceBuild=true /p:DeployOnBuild=true /p:PublishProfile=$projectDir\Scripts\PublishProfile.pubXML /pLocalFolder=$projectDir
+	& "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe" $SLNFile /p:ForceBuild=true /p:DeployOnBuild=true /p:PublishProfile=$projectDir\Scripts\PublishProfile.pubXML /p:LocalFolder=$projectDir
 	
 	"Built .NET"
 	}
