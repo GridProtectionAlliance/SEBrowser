@@ -109,29 +109,21 @@ function Build-C {
 	& "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe" $SLNFile /p:ForceBuild=true /p:DeployOnBuild=true /p:PublishProfile=$projectDir\Scripts\PublishProfile.pubXML /p:LocalFolder=$projectDir
 	"Built .NET"
 	}
-function Deploy($target, $name, $source, $deployZip, $deployBinaries) {
-	new-item -Path "$target" -Name "$name" -ItemType directory
-	"Copy $source to $target\$name"
-	ROBOCOPY "$source\" "$target\$name" /E /is
+function Deploy($target, $name, $deployZip) {
 	
 	"Compressing Binaries to $target"
-	Compress-Archive -Path "$target\$name" -DestinationPath "$projectDir\$name.zip" -Force
-	Remove-Item –path "$target\$name" –recurse
+	Compress-Archive -Path "$target" -DestinationPath "$projectDir\$name.zip" -Force
+	Remove-Item –path "$target" –recurse
 	
 	"Removing old deployed zip"
 	if (Test-Path "$deployZip\$name.zip") {
 		Remove-Item –path "$deployZip\$name.zip" –recurse
 	}
-	"Removing old deployed Binaries"
-	if (Test-Path "$deployBinaries") {
-		Remove-Item –path "$deployBinaries" –recurse
-	}
-	
+
 	"Deploy .Zip $deployZip"
 	ROBOCOPY "$projectDir"  "$deployZip" "$name.zip" /is /MOV
 	
-	"Deploy Binaries to $deployBinaries" 
-	ROBOCOPY "$source\" "$deployBinaries" /E /is
+	
 }
 # --------- Start Script ---------
 
@@ -174,16 +166,16 @@ if ($changed) {
 	Build-C
 	
 	Set-Location $projectDir
-	#Deploy -target "$projectDir" -source "$projectDir\Build\Output\$buildConfig\dist"  -name "$repo" -DeployZip "\\gpaweb\NightlyBuilds\GrafanaPanels" -DeployBinaries "\\gpaweb\NightlyBuilds\GrafanaPanels\Binaries\$repo"
+	Deploy -target "$projectDir\Publish" -name "$repo" -DeployZip "\\gpaweb\NightlyBuilds\SEBrowser" 
 
 	#Commit
-	$version = Get-Content .Scripts\SEBrowser.version -Raw 
+	$version = Get-Content "$projectDir\Scripts\SEBrowser.version" -Raw 
 	"Committing to remote repository"
 	Commit-Repository "." "Updated $repo version to $version"
 	
 	Push-Repository
 	
-	Tag repo to mark new changes
+	#Tag repo to mark new changes
 	$tag = $(get-date).ToString("yyyyMMddHHmmss")
 	"Tag Repository to $tag"
 	
