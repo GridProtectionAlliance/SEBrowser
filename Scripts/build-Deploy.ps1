@@ -11,7 +11,7 @@ param(
 )
 
 # Uncomment the following line to hardcode the project directory for testing
-$projectDir = "D:\Projects\SEBrowser"
+#$projectDir = "D:\Projects\SEBrowser"
 
 # Uncomment the following line to use WSL instead of Git for Windows
 #function git { & wsl git $args }
