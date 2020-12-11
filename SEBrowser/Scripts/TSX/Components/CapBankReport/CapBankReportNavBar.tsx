@@ -107,7 +107,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         
         this.seBrowserService.GetCapBankData(LocationID).done(results => {
             this.setState({ capBanks: results })
-            if (this.props.CapBankID < 0 && results.length > 0)
+            if (results.length > 0)
                 this.setCapBank(results[0].Id)
             this.setBankNumber(-1);
         });
