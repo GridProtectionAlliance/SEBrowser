@@ -101,7 +101,6 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
       
         if (this.state.capBanks.length == 0)
             this.getCapBankData(nextProps.StationId);
-
     }
 
     getCapBankData(LocationID: number) {
@@ -166,7 +165,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
 
             if (this.props.StationId == -1 && results.length > 0)
                 this.setStation(results[0].LocationID)
-
+           
         });
     }
 
@@ -174,6 +173,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         var object = _.clone(this.props) as CapBankReportNavBarProps;
         object.StationId = id;
         this.props.stateSetter({ searchBarProps: object });
+        this.getCapBankData(id);
     }
    
     render() {
