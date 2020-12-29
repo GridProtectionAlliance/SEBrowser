@@ -21,7 +21,7 @@ Suspendisse rhoncus, lectus quis aliquam laoreet, ex erat condimentum tortor, ut
 
 # Deployment
 
-Instructions on how to deploy openXDA can be found in the [openXDA wiki](../../wiki)
+Instructions on hosting requirements and how to install placekeeper can be found at [GPA's Website](https://www.gridprotectionalliance.org)
 
 # Contributing
 
