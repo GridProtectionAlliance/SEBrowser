@@ -1,4 +1,4 @@
-![Icon](http://www.gridprotectionalliance.org/images/products/icons%2064/logoPlacekeepper_64.png)![openXDA](http://www.gridprotectionalliance.org/images/products/placekeeper.png)
+![Icon](http://www.gridprotectionalliance.org/images/products/icons%2064/iconPlacekeepper_64.png)![openXDA](http://www.gridprotectionalliance.org/images/products/placekeeper.png)
 
 **Full Repository Name**
 
