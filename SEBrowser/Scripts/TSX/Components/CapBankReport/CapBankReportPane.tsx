@@ -62,6 +62,7 @@ interface ICapBankReportPaneState {
     TrendData: ITrendDataSet,
     Tstart: number,
     Tend: number,
+    ShowWarning: boolean,
 }
 
 
@@ -122,6 +123,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
             },
             Tstart: 0,
             Tend: 0,
+            ShowWarning: false,
         };
 
         
@@ -501,8 +503,8 @@ const EventRow = (row: ICBEvent) => {
             <td key={'Operation' + row.ID}>{row.Operation}</td>
             <td key={'Resonance' + row.ID}>{(row.Resonance ? 'Yes' : 'No')}</td>
             <td key={'Health' + row.ID}>{row.CapBankHealth}</td>
-            <td key={'PIS' + row.ID}>{row.PreInsertionSwitch}</td>
-            <td key={'Restrike' + row.ID}>{row.Restrike}</td>
+            <td key={'Restrike' + row.ID}>{(row.Restrike == undefined ? 'N/A' : row.Restrike)}</td>
+            <td key={'PIS' + row.ID}>{(row.PreInsertionSwitch == undefined ? 'N/A' : row.PreInsertionSwitch)}</td>
         </tr>
     );
 }

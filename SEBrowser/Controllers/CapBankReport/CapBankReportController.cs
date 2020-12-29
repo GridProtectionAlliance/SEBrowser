@@ -220,6 +220,11 @@ namespace PQDashboard.Controllers.CapBankReport
             if (selectedBank == -1)
                 bankNumRestriction = "(1=1)";
 
+            if (selectedBank == -2)
+            {
+                bankNumRestriction = "(CBAnalyticResult.EnergizedBanks = -1 AND CBAnalyticResult.DeEnergizedBanks = -1)";
+            }
+
             using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 DataTable table = new DataTable();
@@ -604,7 +609,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             result.THD.Add(new TrendSeries()
                             {
                                 color = phase.Value,
-                                label = "V THD Post EVent Phase " + (phase.Key),
+                                label = "V THD Post Event Phase " + (phase.Key),
                                 lineStyle = ":",
                                 includeLegend = true,
                                 data = THDVpost

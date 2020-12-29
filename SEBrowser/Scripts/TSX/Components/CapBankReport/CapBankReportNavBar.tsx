@@ -76,7 +76,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         this.seBrowserService = new SEBrowserService();
         this.state = {
             capBanks: [],
-            subStations: []
+            subStations: [],
         };
     }
 
@@ -185,11 +185,13 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
             n = this.state.capBanks.find(cB => cB.Id == this.props.CapBankID).numBanks;
 
         bankOptions.push(<option key={-1} value={-1}> {'System'} </option>)
+        
 
         for (i = 0; i < n; i++) {
             bankOptions.push(<option key={i} value={i+1}> {i+1} </option>)
         }
-        
+
+        bankOptions.push(<option key={-2} value={-2}> {'Unknown'} </option>);
 
         return (
             <>
