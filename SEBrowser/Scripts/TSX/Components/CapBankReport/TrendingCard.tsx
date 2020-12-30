@@ -122,6 +122,11 @@ export default class TrendingCard extends React.Component<IProps, IState>{
             this.setState({
                 points: this.props.data.filter(series => series.includeLegend).map((series, index) => {
                     let i = this.reduceIndex(series.data, series.data.length - 1, 0, this.state.hover)
+
+                    if (i < series.data.length - 1)
+                        //adjust i if it is closer to the upper limit
+                        i = ((Math.abs(series.data[i][0] - this.state.hover) > Math.abs(series.data[i + 1][0] - this.state.hover)) ? i + 1 : i);
+
                     return { t: series.data[i][0], y: series.data[i][1], index: index }
                 })
             })
