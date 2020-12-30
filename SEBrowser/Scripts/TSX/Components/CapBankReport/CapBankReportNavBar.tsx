@@ -51,6 +51,7 @@ export interface CapBankReportNavBarProps extends EventFilter {
     timeWindowUnits: number,
     selectedBank: number,
     StationId: number,
+    numBanks: number,
    
 }
 
@@ -119,6 +120,9 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         var object = _.clone(this.props) as CapBankReportNavBarProps;
         object.CapBankID = capBankId;
         object.selectedBank = -1;
+        if (this.state.capBanks.find(cB => cB.Id == capBankId) != null)
+            object.numBanks = this.state.capBanks.find(cB => cB.Id == capBankId).numBanks;
+
         this.props.stateSetter({ searchBarProps: object });
     }
 

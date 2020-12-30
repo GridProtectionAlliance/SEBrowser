@@ -266,6 +266,24 @@ namespace PQDashboard.Controllers.CapBankReport
 
         }
 
+        [HttpGet, Route("SetCapBank/{id:int}/{bank:int}")]
+        public IHttpActionResult GetSetCapBank(int id, int bank)
+        {
+            try
+            {
+                using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+                {
+                    connection.ExecuteNonQuery($"UPDATE CBAnalyticResult SET EnergizedBanks = {bank} WHERE ID = {id}");
+                }
+                return Ok(1);
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+
+        }
+           
         #region [ Trending Data ]
 
         [Route("GetTrend"), HttpGet]

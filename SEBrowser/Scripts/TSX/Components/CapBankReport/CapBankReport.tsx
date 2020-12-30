@@ -59,7 +59,7 @@ export default class CapBankReport extends React.Component<IProps, IState>{
                 timeWindowUnits: (query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2),          
                 selectedBank: (query['selectedBank'] != undefined ? parseInt(query['selectedBank'].toString()) : -1),
                 StationId: (query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1),
-
+                numBanks: 0,
                 ResFilt: [0,1],
                 StatFilt: [999],
                 OpFilt: [999],
