@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": { "*": [ "types/*" ] },
     "downlevelIteration": true,
     "jsx": "react",
     "lib": [ "dom", "es5", "scripthost", "es2015", "es6" ],
@@ -10,12 +9,12 @@
     "removeComments": false,
     "sourceMap": true,
     "target": "es5",
-    "typeRoots": [ "node_modules/@types" ],
     "esModuleInterop": true,
-    "module": "ESNext"
+    "module": "ESNext",
+    "moduleResolution": "Node"
   },
+  "include": [ "Scripts/**/*" ],
   "exclude": [
-    "node_modules"
-  ],
-  "include": [ "Scripts/TSX", "Scripts/TS/*" ]
+    "./node_modules/*"
+  ]
 }

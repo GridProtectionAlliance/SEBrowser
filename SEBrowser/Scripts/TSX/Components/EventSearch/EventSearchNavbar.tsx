@@ -23,6 +23,7 @@
 //
 //******************************************************************************************************
 import React from 'react';
+import 'moment';
 
 export interface EventSearchNavbarProps {
     line: boolean,

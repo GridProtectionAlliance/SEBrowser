@@ -38,10 +38,8 @@ module.exports = {
         ]
     },
     externals: {
-        jquery: 'jQuery',
         react: 'React',
         'react-dom': 'ReactDOM',
-        moment: 'moment',
         d3: 'd3',
         'react-router-dom': 'ReactRouterDOM',
         'leaflet': 'L',

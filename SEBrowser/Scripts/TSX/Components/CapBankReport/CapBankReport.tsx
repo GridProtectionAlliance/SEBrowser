@@ -28,6 +28,7 @@ import { History } from 'history';
 import CapBankReportNavBar, { CapBankReportNavBarProps } from './CapBankReportNavBar';
 import CapBankReportPane from './CapBankReportPane';
 import * as queryString from 'querystring';
+import moment from 'moment';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -53,8 +54,8 @@ export default class CapBankReport extends React.Component<IProps, IState>{
             searchBarProps: {
                 stateSetter: this.stateSetter.bind(this),
                 CapBankID: (query['capBankId'] != undefined ? parseInt(query['capBankId'] as string) : -1),
-                date: (query['date'] != undefined ? query['date'] : moment().format(momentDateFormat)),
-                time: (query['time'] != undefined ? query['time'] : moment().format(momentTimeFormat)),
+                date: (query['date'] != undefined ? query['date'] as string: moment().format(momentDateFormat)),
+                time: (query['time'] != undefined ? query['time'] as string: moment().format(momentTimeFormat)),
                 windowSize: (query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10),
                 timeWindowUnits: (query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2),          
                 selectedBank: (query['selectedBank'] != undefined ? parseInt(query['selectedBank'].toString()) : -1),

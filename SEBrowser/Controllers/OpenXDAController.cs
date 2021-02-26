@@ -187,7 +187,32 @@ namespace SEBrowser.Controllers
                 else if (postData.make != "All")
                     meterMakeRestriction = $" AND Meter.Make = '{postData.make}'  ";
 
-                string query = @" 
+                string query = $@" 
+                     ;With WorstSeverityCode as (
+                        SELECT 
+	                        EventID,
+	                        MAX(DisturbanceSeverity.SeverityCode) as SeverityCode
+                        FROM 
+	                        Disturbance INNER HASH JOIN
+	                        DisturbanceSeverity ON Disturbance.ID = DisturbanceSeverity.DisturbanceID INNER HASH JOIN
+                            Event ON Disturbance.EventID = Event.ID
+                        WHERE
+	                        PhaseID = (SELECT ID FROM Phase WHERE Name = 'Worst') AND
+	                        (CAST(Disturbance.StartTime as date) BETWEEN  DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}) OR CAST(Disturbance.EndTime as Date) BETWEEN  DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}})) 
+                        GROUP BY
+	                        EventID
+                        ), WorstSeverityRecord as (
+                        SELECT 
+	                        Disturbance.*, DisturbanceSeverity.SeverityCode, row_number() over (Partition By Disturbance.EventID Order By Disturbance.EventTypeID) as Ranking 
+                        FROM 
+	                        Disturbance INNER HASH JOIN
+	                        DisturbanceSeverity ON Disturbance.ID = DisturbanceSeverity.DisturbanceID INNER HASH JOIN
+	                        WorstSeverityCode ON Disturbance.EventID = WorstSeverityCode.EventID AND DisturbanceSeverity.SeverityCode = WorstSeverityCode.SeverityCode INNER HASH JOIN
+                            Event ON Disturbance.EventID = Event.ID
+                        WHERE
+	                        PhaseID = (SELECT ID FROM Phase WHERE Name = 'Worst') AND 
+	                        (CAST(Disturbance.StartTime as date) BETWEEN DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}) OR CAST(Disturbance.EndTime as Date) BETWEEN  DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}))
+                    )
                     SELECT
                         TOP 100
 	                    Event.ID as EventID,
@@ -196,6 +221,8 @@ namespace SEBrowser.Controllers
 	                    Asset.VoltageKV as VoltageClass,
 	                    EventType.Name as EventType,
 	                    Event.StartTime as FileStartTime,
+	                    wsr.DurationSeconds,
+	                    wsr.PerUnitMagnitude,
 	                    (SELECT COUNT(*) FROM BreakerOperation WHERE BreakerOperation.EventID = Event.ID) as BreakerOperation,
                         (SELECT COUNT(Channel.ID) FROM Channel LEFT JOIN MeasurementType ON Channel.MeasurementTypeID = MeasurementType.ID WHERE MeasurementType.Name = 'TripCoilCurrent' AND Channel.AssetID = Asset.ID ) as TripCoilCount
                     FROM
@@ -203,14 +230,14 @@ namespace SEBrowser.Controllers
 	                    EventType ON Event.EventTypeID = EventType.ID JOIN
 	                    Asset ON Event.AssetID = Asset.ID JOIN
                         Meter ON Event.MeterID = Meter.ID JOIN
-	                    AssetType ON Asset.AssetTypeID = AssetType.ID
+	                    AssetType ON Asset.AssetTypeID = AssetType.ID LEFT JOIN
+	                    WorstSeverityRecord wsr ON wsr.EventID = Event.ID 
                     WHERE
-                        Event.StartTime BETWEEN DATEADD(" + timeWindowUnits + @", " + (-1 * postData.windowSize).ToString() + @", {0}) AND
-                                                DATEADD(" + timeWindowUnits + @", " + (postData.windowSize).ToString() + @", {0}) AND
-                    " + eventTypeRestriction + @" AND
-                    " + voltageClassRestriction + @" AND
-                    " + assetTypesRestriction + @" AND
-                    " + meterTypeRestriction + meterMakeRestriction + @" 
+                        Event.StartTime BETWEEN DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}) AND
+                        {eventTypeRestriction} AND
+                        {voltageClassRestriction} AND
+                        {assetTypesRestriction} AND
+                        {meterTypeRestriction + meterMakeRestriction} 
                 ";
 
                 DataTable table = connection.RetrieveData(query, dateTime);

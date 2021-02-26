@@ -23,6 +23,7 @@
 declare var homePath: string;
 
 import * as React from 'react';
+import moment from 'moment';
 
 export default class RelayPerformanceTrend extends React.Component<{ breakerid: number, channelid: number }, {tableRows: Array<JSX.Element> }>{
     RelayTrendPerformanceHandle: JQuery.jqXHR;

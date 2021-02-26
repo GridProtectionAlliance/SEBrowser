@@ -22,6 +22,7 @@
 //******************************************************************************************************
 import * as React from 'react';
 import RelayPerformanceTrend from './RelayPerformanceTrend';
+import moment from 'moment';
 
 export default class RelayReportPane extends React.Component<{ breakerid: number, channelid: number }, {showRelayHistory: boolean}> {
     optionsUpper: object;

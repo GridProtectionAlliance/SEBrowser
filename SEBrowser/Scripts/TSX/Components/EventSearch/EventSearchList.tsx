@@ -23,165 +23,136 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import moment from 'moment';
 
 import Table from './../Table';
 import SEBrowserService from './../../../TS/Services/SEBrowser';
+import { useSelector, useDispatch } from 'react-redux';
 import { orderBy, filter, clone, isEqual } from 'lodash';
 import { EventSearchNavbarProps } from './EventSearchNavbar';
-import { OpenXDA } from 'global';
+import { OpenXDA } from '../../global';
+import { SelectEventSearchBySearchText, SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches } from './EventSearchSlice';
 
 interface IProps { eventid: number, searchText: string, stateSetter(obj): void, searchBarProps: EventSearchNavbarProps }
-export default class EventSearchList extends React.Component<IProps, { sortField: string, ascending: boolean, data: Array<any> }> {
-    seBrowserService: SEBrowserService;
-    constructor(props, context) {
-        super(props, context);
+export default function EventSearchList(props: IProps) {
+    const ref = React.useRef();
+    const dispatch = useDispatch();
 
-        this.seBrowserService = new SEBrowserService();
+    const status = useSelector(SelectEventSearchsStatus);
+    const sortField = useSelector(SelectEventSearchsSortField);
+    const ascending = useSelector(SelectEventSearchsAscending);
+    const data = useSelector(state => SelectEventSearchBySearchText(state, props.searchText));
 
-        this.state = {
-            sortField: "FileStartTime",
-            ascending: false,
-            data: []
-        };
+    React.useEffect(() => {
+        document.addEventListener("keydown", handleKeyPress, false);
 
-        this.handleKeyPress = this.handleKeyPress.bind(this);
-    }
+        return () => {
+            document.removeEventListener("keydown", handleKeyPress, false);
+        }
+    })
 
-    componentDidMount() {
-        this.getData(this.props);
-        document.addEventListener("keydown", this.handleKeyPress, false);
-    }
-    componentWillUnmount() {
-        document.removeEventListener("keydown", this.handleKeyPress, false);
-    }
+    React.useEffect(() => {
+        dispatch(FetchEventSearches(props.searchBarProps));
+    }, [props.searchBarProps]);
 
-    componentWillReceiveProps(nextProps: IProps) {
-        var props = clone(this.props.searchBarProps);
-        var nextPropsClone = clone(nextProps.searchBarProps);
+    React.useEffect(() => {
+        props.stateSetter({ searchList: data });
+    }, [data.length])
 
-        delete props.stateSetter;
-        delete nextPropsClone.stateSetter;
+    React.useEffect(() => {
+        if (status != 'unitiated' && status != 'changed') return;
+        dispatch(FetchEventSearches(props.searchBarProps));
 
-        if(this.props.searchText != nextProps.searchText || !isEqual(props, nextPropsClone))
-            this.getData(nextProps);
-    }
+        return function () {
+        }
+    }, [status]);
 
-    handleKeyPress(event) {
-        if (this.state.data.length == 0) return;
+    function handleKeyPress(event) {
+        if (data.length == 0) return;
 
-        var index = this.state.data.map(a => a.EventID.toString()).indexOf(this.props.eventid.toString());
+        var index = data.map(a => a.EventID.toString()).indexOf(props.eventid.toString());
 
         if (event.keyCode == 40) // arrow down key
         {
             event.preventDefault();
 
-            if (this.props.eventid == -1)
-                this.props.stateSetter({ eventid: this.state.data[0].EventID });
-            else if (index == this.state.data.length - 1)
-                this.props.stateSetter({ eventid: this.state.data[0].EventID });
+            if (props.eventid == -1)
+                props.stateSetter({ eventid: data[0].EventID });
+            else if (index == data.length - 1)
+                props.stateSetter({ eventid: data[0].EventID });
             else
-                this.props.stateSetter({ eventid: this.state.data[index + 1].EventID });
+                props.stateSetter({ eventid: data[index + 1].EventID });
 
         }
         else if (event.keyCode == 38)  // arrow up key
         {
             event.preventDefault();
 
-            if (this.props.eventid == -1)
-                this.props.stateSetter({ eventid: this.state.data[this.state.data.length - 1].EventID });
+            if (props.eventid == -1)
+                props.stateSetter({ eventid: data[data.length - 1].EventID });
             else if (index == 0)
-                this.props.stateSetter({ eventid: this.state.data[this.state.data.length - 1].EventID });
+                props.stateSetter({ eventid: data[data.length - 1].EventID });
             else
-                this.props.stateSetter({ eventid: this.state.data[index - 1].EventID });
+                props.stateSetter({ eventid: data[index - 1].EventID });
         }
 
-        this.setScrollBar();
+        setScrollBar();
     }
 
-    setScrollBar() {
+    function setScrollBar() {
         //var rowHeight = $(ReactDOM.findDOMNode(this)).find('tbody').children()[0].clientHeight;
-        //var index = this.state.data.map(a => a.EventID.toString()).indexOf(this.props.eventid.toString());
-        ////var rowHeight = tableHeight / this.state.data.length;
+        //var index = state.data.map(a => a.EventID.toString()).indexOf(props.eventid.toString());
+        ////var rowHeight = tableHeight / state.data.length;
         //if (index == 0)
         //    $(ReactDOM.findDOMNode(this)).find('tbody').scrollTop(0);
         //else
         //    $(ReactDOM.findDOMNode(this)).find('tbody').scrollTop(index * rowHeight - 20);
 
-        var rowHeight = $(ReactDOM.findDOMNode(this)).find('tbody').children()[0].clientHeight;
-        var index = this.state.data.map(a => a.EventID.toString()).indexOf(this.props.eventid.toString());
-        var tableHeight = this.state.data.length * rowHeight;
+        var rowHeight = $(ReactDOM.findDOMNode(ref.current)).find('tbody').children()[0].clientHeight;
+        var index = data.map(a => a.EventID.toString()).indexOf(props.eventid.toString());
+        var tableHeight = data.length * rowHeight;
         var windowHeight = window.innerHeight - 314;
         var tableSectionCount = Math.ceil(tableHeight / windowHeight);
         var tableSectionHeight = Math.ceil(tableHeight / tableSectionCount);
         var rowsPerSection = tableSectionHeight / rowHeight;
         var sectionIndex = Math.floor(index / rowsPerSection);
-        var scrollTop = $(ReactDOM.findDOMNode(this)).find('tbody').scrollTop();
+        var scrollTop = $(ReactDOM.findDOMNode(ref.current)).find('tbody').scrollTop();
 
         if(scrollTop <= sectionIndex * tableSectionHeight || scrollTop >= (sectionIndex + 1) * tableSectionHeight - tableSectionHeight/2)
-            $(ReactDOM.findDOMNode(this)).find('tbody').scrollTop(sectionIndex * tableSectionHeight);
+            $(ReactDOM.findDOMNode(ref.current)).find('tbody').scrollTop(sectionIndex * tableSectionHeight);
 
     }
 
-    getData(props) {
-        this.seBrowserService.getEventSearchData(props.searchBarProps).done(results => {
-            if (results.length > 100) alert("The query you submitted was too large ("+results.length.toString()+" records) and only the first 100 records were return.  Please refine your search if necessary.")
+    return (
+        <div ref={ref} style={{width: '100%', maxHeight: window.innerHeight - 314, overflowY: "hidden"}}>
+        <Table<OpenXDA.Event>
+            cols={[
+                { key: "FileStartTime", label: 'Time', headerStyle: { width: 'calc(20%)' }, rowStyle: { width: 'calc(20%)' }, content: (item, key) => <span>{moment(item.FileStartTime).format('MM/DD/YYYY')}<br />{moment(item.FileStartTime).format('HH:mm:ss.SSSSSSS')}</span> },
+                { key: "AssetName", label: 'Asset', headerStyle: { width: '20%' }, rowStyle: { width: '20%' } },
+                { key: "AssetType", label: 'Asset Tp', headerStyle: { width: '15%' }, rowStyle: { width: '15%' } },
+                { key: "VoltageClass", label: 'kV', headerStyle: { width: '15%' }, rowStyle: { width: '15%' }, content: (item, key, style) => item[key].toString().split('.')[1] != undefined && item[key].toString().split('.')[1].length > 3 ? (item[key] as number).toFixed(3) : item[key] },
+                { key: "EventType", label: 'Evt Cl', headerStyle: { width: '15%' }, rowStyle: { width: '15%' } },
+                { key: "BreakerOperation", label: 'Brkr Op', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' }, content: (item, key, style) => <span><i className={(item.BreakerOperation == true ? "fa fa-check" : '')}></i></span> },
+                { key: null, label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
 
-            var filtered = filter(results, obj => {
-                return obj.AssetName.toLowerCase().indexOf(props.searchText) >= 0 ||
-                    obj.AssetType.toLowerCase().indexOf(props.searchText) >= 0 ||
-                    obj.EventType.toLowerCase().indexOf(props.searchText) >= 0 ||
-                    moment(obj.FileStartTime).format('MM/DD/YYYY').toLowerCase().indexOf(props.searchText) >= 0 ||
-                    moment(obj.FileStartTime).format('HH:mm:ss.SSSSSSS').toLowerCase().indexOf(props.searchText) >= 0 ||
-                    obj.VoltageClass.toString().toLowerCase().indexOf(props.searchText) >= 0 
-
-            });
-            var ordered = orderBy(filtered, ["FileStartTime"], ["desc"]);
-            this.setState({ data: ordered });
-            this.props.stateSetter({ searchList: ordered });
-
-            if (results.length !== 0)
-                this.setScrollBar();
-        });
-    }
-
-    render() {
-        return (
-            <div style={{width: '100%', maxHeight: window.innerHeight - 314, overflowY: "hidden"}}>
-            <Table<OpenXDA.Event>
-                cols={[
-                    { key: "FileStartTime", label: 'Time', headerStyle: { width: 'calc(20%)' }, rowStyle: { width: 'calc(20%)' }, content: (item, key) => <span>{moment(item.FileStartTime).format('MM/DD/YYYY')}<br />{moment(item.FileStartTime).format('HH:mm:ss.SSSSSSS')}</span> },
-                    { key: "AssetName", label: 'Asset', headerStyle: { width: '20%' }, rowStyle: { width: '20%' } },
-                    { key: "AssetType", label: 'Asset Tp', headerStyle: { width: '15%' }, rowStyle: { width: '15%' } },
-                    { key: "VoltageClass", label: 'kV', headerStyle: { width: '15%' }, rowStyle: { width: '15%' }, content: (item, key, style) => item[key].toString().split('.')[1] != undefined && item[key].toString().split('.')[1].length > 3 ? (item[key] as number).toFixed(3) : item[key] },
-                    { key: "EventType", label: 'Evt Cl', headerStyle: { width: '15%' }, rowStyle: { width: '15%' } },
-                    { key: "BreakerOperation", label: 'Brkr Op', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' }, content: (item, key, style) => <span><i className={(item.BreakerOperation == true ? "fa fa-check" : '')}></i></span> },
-                    { key: null, label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
-
-                ]}
-                tableClass="table table-hover"
-                data={this.state.data}
-                sortField={this.state.sortField}
-                ascending={this.state.ascending}
-                onSort={(d) => {
-                    if (d.col == this.state.sortField) {
-                        var ordered = orderBy(this.state.data, [d.col], [(!this.state.ascending ? "asc" : "desc")]);
-                        this.setState({ ascending: !this.state.ascending, data: ordered });
-                    }
-                    else {
-                        var ordered = orderBy(this.state.data, [d.col], ["asc"]);
-                        this.setState({ ascending: true, data: ordered, sortField: d.col });
-                    }
-                }}
-                onClick={(item) => this.props.stateSetter({ eventid: item.row.EventID })}
-                theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 314 }}
-                rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)'}}
-                selected={(item) => {
-                    if (item.EventID == this.props.eventid) return true;
-                    else return false;
-                }}
-                />
-            </div>
-        );
-    }
+            ]}
+            tableClass="table table-hover"
+            data={data}
+            sortField={sortField}
+            ascending={ascending}
+            onSort={(d) => {
+                if (d.col == sortField) dispatch(Sort({ Ascending: ascending, SortField: sortField }));
+                else dispatch(Sort({ Ascending: true, SortField: d.col }));
+            }}
+            onClick={(item) => props.stateSetter({ eventid: item.row.EventID })}
+            theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+            tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 314 }}
+            rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)'}}
+            selected={(item) => {
+                if (item.EventID == props.eventid) return true;
+                else return false;
+            }}
+            />
+        </div>
+    );
 }

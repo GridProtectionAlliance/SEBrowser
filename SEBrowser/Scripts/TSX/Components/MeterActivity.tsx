@@ -24,6 +24,7 @@
 import React from 'react';
 import Table from './Table';
 import SEBrowserService from './../../TS/Services/SEBrowser';
+import moment from 'moment';
 
 declare var xdaInstance: string;
 declare var homePath: string;

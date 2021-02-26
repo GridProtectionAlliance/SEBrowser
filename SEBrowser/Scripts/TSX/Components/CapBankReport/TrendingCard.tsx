@@ -22,6 +22,7 @@
 
 import * as React from 'react';
 import { clone, isEqual } from 'lodash';
+import moment from 'moment';
 
 import createHistory from "history/createBrowserHistory"
 import { History } from 'history';

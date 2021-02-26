@@ -25,15 +25,17 @@
 
 import React from 'react';
 import { clone, isEqual } from 'lodash';
+import moment from 'moment';
 
 import createHistory from "history/createBrowserHistory"
 import { History } from 'history';
 import EventSearchList from './EventSearchList';
 import EventSearchNavbar, { EventSearchNavbarProps } from './EventSearchNavbar';
-import EventPreviewPane from './EventSearchPreviewPane';
+import EventPreviewPane from './EventSearchPreview/EventSearchPreviewPane';
 import EventSearchListedEventsNoteWindow from './EventSearchListedEventsNoteWindow';
 import { OpenXDA } from '../../global';
 import queryString from 'querystring';
+import EventSearchMagDur from './EventSearchMagDur';
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 const momentDateFormat = "MM/DD/YYYY";
@@ -44,7 +46,8 @@ interface IState extends EventSearchNavbarProps {
     eventid: number,
     searchText: string,
     searchList: Array<OpenXDA.Event>,
-    initialTab?: string,
+    initialTab?: 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All',
+    magDur: boolean
 }
 
 export default class EventSearch extends React.Component<IProps, IState>{
@@ -78,8 +81,8 @@ export default class EventSearch extends React.Component<IProps, IState>{
             transients: (query['transients'] != undefined ? query['transients'] == 'true' : true),
             relayTCE: (query['relayTCE'] != undefined ? query['realyTCE'] == 'true' : true),
             others: (query['others'] != undefined ? query['others'] == 'true' : true),
-            date: (query['date'] != undefined ? query['date'] : moment().format(momentDateFormat)),
-            time: (query['time'] != undefined ? query['time'] : moment().format(momentTimeFormat)),
+            date: (query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat)),
+            time: (query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat)),
             windowSize: (query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10),
             timeWindowUnits: (query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2),
             eventid: (query['eventid'] != undefined ? parseInt(query['eventid'].toString()) : -1),
@@ -88,7 +91,8 @@ export default class EventSearch extends React.Component<IProps, IState>{
             model: (query['model'] != undefined ? query['model'].toString() : 'All'),
             searchList: [],
             stateSetter: this.stateSetter.bind(this),
-            initialTab: (query['tab'] != undefined ? query['tab'].toString() : undefined),
+            initialTab: (query['tab'] != undefined ? query['tab'].toString() as any : undefined),
+            magDur: (query['magDur'] != undefined ? query['magDur'] == 'true' : false)
         };
     }
 
@@ -107,17 +111,22 @@ export default class EventSearch extends React.Component<IProps, IState>{
                 <EventSearchNavbar {...this.state}/>
                 <div style={{ width: '100%', height: 'calc( 100% - 210px)' }}>
                     <div style={{ width: '50%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
-                        <div style={{width: 'calc(100% - 120px)', padding: 10, float: 'left'}}>
+                        <div style={{width: 'calc(100% - 300px)', padding: 10, float: 'left'}}>
                             <input className='form-control' type='text' placeholder='Search...' value={this.state.searchText} onChange={(evt) => this.setState({searchText: evt.target.value})}/>
                         </div>
                         <div style={{ width: 120, float: 'right', padding: 10 }}>
                             <EventSearchListedEventsNoteWindow searchList={this.state.searchList} />
-                        </div>
-                        <EventSearchList eventid={this.state.eventid} searchText={this.state.searchText} searchBarProps={this.state} stateSetter={this.stateSetter.bind(this)} />
+                        </div>                   
+                        <div style={{ width: 160, float: 'right', padding: 10 }}>
+                            <button className='btn btn-danger' onClick={() => this.setState({magDur: !this.state.magDur}) }>View As { this.state.magDur ? 'List' : 'Mag/Dur' }</button>
+                        </div>                            
+                        {this.state.magDur ?
+                            <EventSearchMagDur Width={(window.innerWidth - 300)/2 } Height={window.innerHeight - 300 } EventID={this.state.eventid} SearchText={this.state.searchText} SearchBarProps={this.state} OnSelect={(evt, point) => this.stateSetter({eventid: point.EventID})}/> :
+                            <EventSearchList eventid={this.state.eventid} searchText={this.state.searchText} searchBarProps={this.state} stateSetter={this.stateSetter.bind(this)} />
+                        }
                     </div>
-                    <div style={{ width: '50%', height: '100%', position: 'relative', float: 'right', overflowY: 'none' }}>{
-                        this.state.searchList.length > 0 && this.state.searchList.find(x => x.EventID == this.state.eventid) != undefined ? <EventPreviewPane EventID={this.state.eventid} AssetType={this.state.searchList.find(x => x.EventID == this.state.eventid).AssetType} EventType={this.state.searchList.find(x => x.EventID == this.state.eventid).EventType} StartTime={this.state.searchList.find(x => x.EventID == this.state.eventid).FileStartTime} InitialTab={this.state.initialTab as ('Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All')} /> : null
-                    }
+                    <div style={{ width: '50%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
+                        <EventPreviewPane EventID={this.state.eventid} InitialTab={this.state.initialTab} />
                     </div>
 
                 </div>

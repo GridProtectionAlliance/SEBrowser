@@ -25,6 +25,7 @@ import React from 'react';
 import SEBrowserService from './../../../TS/Services/SEBrowser';
 import { orderBy, filter, clone } from 'lodash';
 import { OpenXDA } from '../../global';
+import moment from 'moment';
 
 interface IState {
     show: boolean,
@@ -59,22 +60,6 @@ export default class EventSearchListedEventsNoteWindow extends React.Component<{
     componentWillReceiveProps(nextProps) {
         if (this.state.ids != nextProps.searchList.map(a => a.EventID).sort())
             this.setState({ ids: nextProps.searchList.map(a => a.EventID).sort()});
-    }
-
-    getData(props) {
-        //this.seBrowserService.getEventSearchData().done(results => {
-        //    var filtered = filter(results, obj => {
-        //        return obj.AssetName.toLowerCase().indexOf(props.searchText) >= 0 ||
-        //            obj.AssetType.toLowerCase().indexOf(props.searchText) >= 0 ||
-        //            obj.EventType.toLowerCase().indexOf(props.searchText) >= 0 ||
-        //            moment(obj.FileStartTime).format('MM/DD/YYYY').toLowerCase().indexOf(props.searchText) >= 0 ||
-        //            moment(obj.FileStartTime).format('HH:mm:ss.SSSSSSS').toLowerCase().indexOf(props.searchText) >= 0 ||
-        //            obj.VoltageClass.toString().toLowerCase().indexOf(props.searchText) >= 0
-
-        //    });
-        //    var ordered = orderBy(filtered, ["FileStartTime"], ["desc"]);
-        //});
-
     }
 
     render() {

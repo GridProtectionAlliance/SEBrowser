@@ -29,6 +29,7 @@ import { History } from 'history';
 import { clone, isEqual } from 'lodash';
 import * as queryString from 'querystring';
 const momentDateFormat = "MM/DD/YYYY";
+import moment from 'moment';
 declare var homePath: string;
 
 export default class BreakerReport extends React.Component<{}, State>{
@@ -41,16 +42,16 @@ export default class BreakerReport extends React.Component<{}, State>{
         var query = queryString.parse(this.history['location'].search);
 
         this.state = {
-            fromDate: (query['fromDate'] != undefined ? query['fromDate'] : moment().subtract(30, 'days').format(momentDateFormat)),
-            toDate: (query['toDate'] != undefined ? query['toDate'] : moment().format(momentDateFormat)),
+            fromDate: (query['fromDate'] != undefined ? query['fromDate'] as string : moment().subtract(30, 'days').format(momentDateFormat)),
+            toDate: (query['toDate'] != undefined ? query['toDate'] as string : moment().format(momentDateFormat)),
             breaker: (query['breaker'] != undefined ? query['breaker'] as string : '0'),
         }
 
         this.history['listen']((location, action) => {
             var query = queryString.parse(this.history['location'].search);
             this.setState({
-                fromDate: (query['fromDate'] != undefined ? query['fromDate'] : moment().subtract(30, 'days').format(momentDateFormat)),
-                toDate: (query['toDate'] != undefined ? query['toDate'] : moment().format(momentDateFormat)),
+                fromDate: (query['fromDate'] != undefined ? query['fromDate'] as string : moment().subtract(30, 'days').format(momentDateFormat)),
+                toDate: (query['toDate'] != undefined ? query['toDate'] as string : moment().format(momentDateFormat)),
                 breaker: (query['breaker'] != undefined ? query['breaker'] as string : '0'),
             });
         });

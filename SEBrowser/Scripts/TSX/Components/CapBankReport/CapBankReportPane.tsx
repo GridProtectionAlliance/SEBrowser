@@ -21,6 +21,8 @@
 //
 //******************************************************************************************************
 import * as React from 'react';
+import moment from 'moment';
+
 import { CapBankReportNavBarProps } from './CapBankReportNavBar';
 import _, { cloneDeep } from 'lodash';
 import TrendingCard, { ITrendSeries } from './TrendingCard';
@@ -491,7 +493,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
     getTimeLimits() {
         let dT = this.props.windowSize;
         let Tcenter = moment(this.props.date + " " + this.props.time,"MM/dd/yyyy HH:mm:ss.SSSS");
-        let dUnit = "";
+        let dUnit: moment.unitOfTime.DurationConstructor;
 
         if (this.props.timeWindowUnits == 0)
             dUnit = "ms";

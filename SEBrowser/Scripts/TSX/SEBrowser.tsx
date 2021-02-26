@@ -21,6 +21,8 @@
 //
 //******************************************************************************************************
 
+import { Provider } from 'react-redux';
+import store from './Store';
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -33,7 +35,7 @@ import BreakerReport from './Components/BreakerReport/BreakerReport';
 import RelayReport from './Components/RelayReport/RelayReport';
 import CapBankReport from './Components/CapBankReport/CapBankReport';
 
-import { SEBrowser } from 'global';
+import { SEBrowser } from './global';
 
 
 declare var homePath: string;
@@ -86,4 +88,5 @@ class SEBrowserMainPage extends React.Component<{}, SEBrowser.State>{
     }
 }
 
-ReactDOM.render(<SEBrowserMainPage />, document.getElementById('pageBody'));
+ReactDOM.render(<Provider store={store}><SEBrowserMainPage /></Provider>, document.getElementById('pageBody'));
+

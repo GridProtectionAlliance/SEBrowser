@@ -37,6 +37,19 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptJSXEmit>React</TypeScriptJSXEmit>
+    <TypeScriptModuleKind />
+    <TypeScriptCompileOnSaveEnabled>False</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>True</TypeScriptNoImplicitAny>
+    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
+    <TypeScriptOutFile />
+    <TypeScriptOutDir />
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptSourceMap>True</TypeScriptSourceMap>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -46,6 +59,19 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptJSXEmit>React</TypeScriptJSXEmit>
+    <TypeScriptModuleKind>System</TypeScriptModuleKind>
+    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
+    <TypeScriptOutFile />
+    <TypeScriptOutDir />
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptSourceMap>False</TypeScriptSourceMap>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AjaxMin, Version=5.14.5506.26196, Culture=neutral, PublicKeyToken=21ef50ce11b5d80f, processorArchitecture=MSIL">
@@ -302,7 +328,7 @@
     <None Include="packages.config" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Web.config" />
-    <None Include="tsconfig.json" />
+    <Content Include="tsconfig.json" />
     <Content Include="Scripts\Lib\react-router-dom.min.js.map" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
   </ItemGroup>
@@ -315,17 +341,9 @@
     <None Include="Scripts\TSX\Components\BreakerReport\BreakerReport.tsx" />
     <None Include="Scripts\TSX\Components\BreakerReport\BreakerReportNavbar.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearch.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchAssetFaultSegments.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchAssetHistory.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchAssetVoltageDisturbances.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchCorrelatedSags.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchEsriMap.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchList.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchListedEventsNoteWindow.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchNavbar.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchNoteWindow.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewPane.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchRelayPerformance.tsx" />
     <None Include="Scripts\TSX\Components\MeterActivity.tsx" />
     <None Include="Scripts\TSX\Components\SEDashboardNavbar.tsx" />
     <None Include="Scripts\TSX\Components\RelayReport\RelayPerformanceTrend.tsx" />
@@ -343,42 +361,6 @@
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchBreakerPerformance.tsx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchFileInfo.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewD3ChartAxis.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreviewD3Chart.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\TVA\ESRIMap.tsx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchOpenSEE.tsx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Scripts\TSX\Components\EventSearch\TVA\Lightning.tsx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Scripts\TSX\Components\EventSearch\TVA\FaultInfo.tsx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Scripts\TSX\Components\EventSearch\LineParameters.tsx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Scripts\TSX\Components\EventSearch\TVA\StructureInfo.tsx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Scripts\TSX\Components\EventSearch\TVA\SIDA.tsx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Scripts\TSX\Components\EventSearch\TVA\SOE.tsx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Scripts\TSX\Components\EventSearch\TVA\LSC.tsx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Scripts\TSX\Components\EventSearch\TVA\PQWeb.tsx" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Scripts\TSX\Components\CapBankReport\CapBankReport.tsx" />
   </ItemGroup>
   <ItemGroup>
@@ -391,13 +373,38 @@
     <Content Include="Scripts\TSX\Components\CapBankReport\TrendingCard.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchCapBankAnalyticOverview.tsx" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Scripts\TSX\Components\Modal.tsx" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Scripts\TSX\Components\Warning.tsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\ESRIMap.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\FaultInfo.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\Lightning.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\LSC.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\PQWeb.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\SIDA.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\SOE.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\StructureInfo.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchRelayPerformance.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchAssetFaultSegments.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchAssetHistory.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchAssetVoltageDisturbances.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchBreakerPerformance.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchCapBankAnalyticOverview.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchCorrelatedSags.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchEsriMap.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchFileInfo.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchNoteWindow.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchOpenSEE.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewD3Chart.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewD3ChartAxis.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewPane.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\LineParameters.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
+    <TypeScriptCompile Include="Scripts\TSX\Store.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -415,7 +422,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>58744</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:44367/</IISUrl>
+          <IISUrl>http://localhost:44368/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

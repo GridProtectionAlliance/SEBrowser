@@ -28,13 +28,6 @@ declare global {
     var openSEEInstance: string;
     var faultLocationInstance: string;
 
-    namespace moment {
-        function utc(timestamp: string): any;
-        function unix(timestamp: number): any;
-    }
-    function moment(inp?: any, format?: any, strict?: boolean): any;
-    function moment(inp?: any, format?: any, language?: string, strict?: boolean): any;
-
     namespace queryString {
         function parse(str: string, opts?: object): object
         function stringify(obj: object, opts?: object): object
@@ -43,13 +36,32 @@ declare global {
 }
 
 
+
+export namespace Redux {
+    interface StoreState {
+        EventSearch: State<OpenXDA.Event>,
+    }
+    interface State<T> {
+        Status: SEBrowser.Status,
+        Data: T[],
+        Error: null | string,
+        SortField: keyof T,
+        Ascending: boolean,
+        Record?: T,
+        SearchText?: string
+    }
+
+
+}
+
 export namespace SEBrowser {
+    type Status = 'loading' | 'idle' | 'error' | 'changed' | 'unitiated';
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
     interface EventPreviewPaneSetting { ID:number, Name: string, Show: boolean, OrderBy: number }
 }
 
 export namespace OpenXDA {
-    interface Event { EventID: number, FileStartTime: string, AssetName: string, AssetType: AssetTypeName, VoltageClass: string, EventType: EventTypeName, BreakerOperation: boolean }
+    interface Event { EventID: number, FileStartTime: string, AssetName: string, AssetType: AssetTypeName, VoltageClass: string, BreakerOperation: boolean, DurationSeconds:number, PerUnitMagnitude: number, EventType: string }
 
     type AssetTypeName = 'Line' | 'Breaker' | 'Transformer' | 'CapacitorBank' | 'Bus';
     type EventTypeName = 'Fault' | 'RecloseIntoFault' | 'BreakerOpen' | 'Interruption' | 'Sag' | 'Swell' | 'Transient' | 'Other' | 'Test' | 'Breaker' | 'Snapshot';

@@ -23,7 +23,8 @@
 
 import React from 'react';
 import BreakerReportService from './../../../TS/Services/BreakerReport'
-declare var homePath: string;
+import moment from 'moment';
+
 
 export interface BreakerReportNavbarProps {
     fromDate: string,
