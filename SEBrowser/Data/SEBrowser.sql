@@ -294,7 +294,9 @@ INSERT MagDurCurvePoint (VoltageCurveID, PerUnitMagnitude, DurationSeconds, Load
 GO
 INSERT MagDurCurvePoint (VoltageCurveID, PerUnitMagnitude, DurationSeconds, LoadOrder) VALUES ((SELECT ID FROM MagDurCurve WHERE Name = 'SEMI F47'), 0.7, 0.5, 4)
 GO
-INSERT MagDurCurvePoint (VoltageCurveID, PerUnitMagnitude, DurationSeconds, LoadOrder) VALUES ((SELECT ID FROM MagDurCurve WHERE Name = 'SEMI F47'), 0.7, 1, 5)
+INSERT MagDurCurvePoint (VoltageCurveID, PerUnitMagnitude, DurationSeconds, LoadOrder) VALUES ((SELECT ID FROM MagDurCurve WHERE Name = 'SEMI F47'), 0.8, 0.5, 5)
+GO
+INSERT MagDurCurvePoint (VoltageCurveID, PerUnitMagnitude, DurationSeconds, LoadOrder) VALUES ((SELECT ID FROM MagDurCurve WHERE Name = 'SEMI F47'), 0.8, 1, 6)
 GO
 
 INSERT MagDurCurvePoint (VoltageCurveID, PerUnitMagnitude, DurationSeconds, LoadOrder) VALUES ((SELECT ID FROM MagDurCurve WHERE Name = 'IEEE 1668 Recommended Type I & II'), 0.5, 0.01, 1)

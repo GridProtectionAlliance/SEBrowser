@@ -216,6 +216,7 @@ namespace SEBrowser.Controllers
                     SELECT
                         TOP 100
 	                    Event.ID as EventID,
+                        Meter.AssetKey as MeterName,
 	                    Asset.AssetKey as AssetName,
 	                    AssetType.Name as AssetType,
 	                    Asset.VoltageKV as VoltageClass,
