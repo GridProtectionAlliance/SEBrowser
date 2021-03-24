@@ -14,7 +14,7 @@
     "webpack-cli": "4.4.0"
   },
   "dependencies": {
-    "@gpa-gemstone/react-graph": "0.0.5",
+    "@gpa-gemstone/react-graph": "^1.0.0",
     "@gpa-gemstone/react-interactive": "^1.0.1",
     "@reduxjs/toolkit": "1.5.0",
     "@types/d3": "^4.13.2",
