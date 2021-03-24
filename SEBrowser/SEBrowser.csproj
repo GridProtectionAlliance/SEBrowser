@@ -26,7 +26,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <WebGreaseLibPath>..\packages\WebGrease.1.5.2\lib</WebGreaseLibPath>
-    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>4.2</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -368,9 +368,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Scripts\TSX\Components\CapBankReport\CapBankReportPane.tsx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Scripts\TSX\Components\CapBankReport\TrendingCard.tsx" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Scripts\TSX\Components\Modal.tsx" />
