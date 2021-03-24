@@ -357,7 +357,7 @@ namespace PQDashboard.Controllers.CapBankReport
                         DataTable table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumRestriction, timeRestriction);
 
                         // Create Arrays of Data so we can Check if there are any later.
-                        List<double[]> DeltaQ = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaQ") ?? 0 }).ToList();
+                        List<double[]> DeltaQ = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, Math.Abs(row.Field<double?>("DeltaQ") ?? 0) }).ToList();
                         List<double[]> DeltaI = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaI") ?? 0 }).ToList();
                         List<double[]> DeltaV = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaV") ?? 0 }).ToList();
                         List<double[]> ResFreq = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaV") ?? 0 }).ToList();
@@ -816,7 +816,7 @@ namespace PQDashboard.Controllers.CapBankReport
 
                     }
                     DataTable systable = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, "", timeRestriction);
-                    List<double[]> SCmva = systable.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Q") ?? 0 }).ToList();
+                    List<double[]> SCmva = systable.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, Math.Abs(row.Field<double?>("Q") ?? 0) }).ToList();
                     if (SCmva.Count > 0)
                         result.Q.Add(new TrendSeries()
                         {
