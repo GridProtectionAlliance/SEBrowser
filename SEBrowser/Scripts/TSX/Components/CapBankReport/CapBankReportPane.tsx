@@ -281,7 +281,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Short Circuit Power</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Short Circuit Power (MVA)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Short Circuit Power (MVA)'} showMouse={true}>
                                     {this.state.TrendData.Q.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -291,7 +291,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                     <div className="card">
                         <div className="card-header">Change in Q</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Delta Q (kVAR)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Delta Q (kVAR)'} showMouse={true}>
                                     {this.state.TrendData.DeltaQ.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -302,7 +302,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">RMS Current</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'I RMS (A)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'I RMS (A)'} showMouse={true}>
                                     {this.state.TrendData.Irms.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -311,7 +311,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">RMS Current Change</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Delta I RMS (A)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Delta I RMS (A)'} showMouse={true}>
                                     {this.state.TrendData.DeltaIrms.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -320,7 +320,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">RMS Voltage</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'V RMS (pu)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'V RMS (pu)'} showMouse={true}>
                                     {this.state.TrendData.Vrms.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -329,7 +329,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">RMS Voltage Change</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Delta V RMS (pu)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Delta V RMS (pu)'} showMouse={true}>
                                     {this.state.TrendData.DeltaVrms.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -338,7 +338,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Resonance Frequency</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Res. Freq. (Hz)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Res. Freq. (Hz)'} showMouse={true}>
                                     {this.state.TrendData.Freq.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -348,7 +348,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Peak Voltage</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Voltage peak (pu)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Voltage peak (pu)'} showMouse={true}>
                                     {this.state.TrendData.PeakV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -357,7 +357,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Voltage and Current THD</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'THD (%)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'THD (%)'} showMouse={true}>
                                     {this.state.TrendData.THD.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -367,7 +367,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Change in Voltage and Current THD</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Delta THD (%)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Delta THD (%)'} showMouse={true}>
                                     {this.state.TrendData.DeltaTHD.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -376,7 +376,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Switching Frequency</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Switching Freq. (Hz)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Switching Freq. (Hz)'} showMouse={true}>
                                     {this.state.TrendData.SwitchingFreq.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -385,7 +385,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Impedance</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Impedance (Ohm)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Impedance (Ohm)'} showMouse={true}>
                                     {this.state.TrendData.Xcap.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -394,7 +394,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Impedance Change</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Impedance (Ohm)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Impedance (Ohm)'} showMouse={true}>
                                     {this.state.TrendData.DeltaXcap.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -404,7 +404,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Restrike Duration</div>
                                 <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Duration (cycles)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Duration (cycles)'} showMouse={true}>
                                     {this.state.TrendData.RestrikeDuration.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -413,7 +413,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Restrike Current Peak</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Current Peak (kA)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Current Peak (kA)'} showMouse={true}>
                                     {this.state.TrendData.RestrikeI.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -422,7 +422,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Restrike Voltage Peak</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Voltage Peak (kV)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Voltage Peak (kV)'} showMouse={true}>
                                     {this.state.TrendData.RestrikeV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                           </div>
@@ -432,7 +432,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Pre-Insertion Switching Duration</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Duration (cycles)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Duration (cycles)'} showMouse={true}>
                                     {this.state.TrendData.PISDuration.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -441,7 +441,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Pre-Insertion Switching Impedance</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Impedance (Ohm)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Impedance (Ohm)'} showMouse={true}>
                                     {this.state.TrendData.PISZ.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -450,7 +450,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Pre-Insertion Switching Current</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Current (kA)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Current (kA)'} showMouse={true}>
                                     {this.state.TrendData.PISI.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -460,7 +460,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank K Factor</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'K Factor'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'K Factor'} showMouse={true}>
                                     {this.state.TrendData.KFactor.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -469,7 +469,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Relay Differential Voltage</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Diff. Voltage (V)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Diff. Voltage (V)'} showMouse={true}>
                                     {this.state.TrendData.RelaydV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -478,7 +478,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Relay Voltage</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Voltage (V)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Voltage (V)'} showMouse={true}>
                                     {this.state.TrendData.RelayV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -487,7 +487,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Voltage-Impedance Ratio Missmatch</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'ratio missmatch (%)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'ratio missmatch (%)'} showMouse={true}>
                                     {this.state.TrendData.RelayXV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -496,7 +496,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank LV Cap Reactance</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Reactance (Ohm)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Reactance (Ohm)'} showMouse={true}>
                                     {this.state.TrendData.RelayXLV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -505,7 +505,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Neutral Current</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Current (A)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Current (A)'} showMouse={true}>
                                     {this.state.TrendData.Ineutral.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -514,7 +514,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Unbalance Factors</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Unbalance (%)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Unbalance (%)'} showMouse={true}>
                                     {this.state.TrendData.Unbalance.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -523,7 +523,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Zero Sequence Voltage</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Voltage (V)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Voltage (V)'} showMouse={true}>
                                     {this.state.TrendData.BusV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -532,7 +532,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card">
                             <div className="card-header">Capbank Zero Sequence Impedance</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 340} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Impedance (Ohm)'} showMouse={true}>
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Impedance (Ohm)'} showMouse={true}>
                                     {this.state.TrendData.BusZ.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -560,7 +560,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
 
     getTimeLimits() {
         let dT = this.props.windowSize;
-        let Tcenter = moment(this.props.date + " " + this.props.time,"MM/dd/yyyy HH:mm:ss.SSSS");
+        let Tcenter = moment.utc(this.props.date + " " + this.props.time,"MM/DD/YYYY HH:mm:ss.SSSS");
         let dUnit: moment.unitOfTime.DurationConstructor;
 
         if (this.props.timeWindowUnits == 0)
@@ -614,8 +614,8 @@ const EventRow = (row: ICBEvent, showEdit: boolean, stateSetter: (obj: any) => v
         <tr key={row.ID}>
             {showEdit ? <td key={'Edit' + row.ID}> <i className='fa fa-edit fa-2x' onClick={() => stateSetter({ ShowCapBankEdit: true, SelectedEvent: row.ID, SelectedCapBank: 1})}></i></td> : null}
             <td key={'Time' + row.ID}><a
-                href={'./eventsearch?line=true&date=' + moment(row.Time).format('MM/DD/YYYY') + '&time=' + moment(row.Time).format('HH:mm:ss.SSS') + '&windowSize=10&timeWindowUnits=2&tab=All&eventid=' + row.EventId}
-            > {moment(row.Time).format('MM/DD/YY HH:mm:ss.SSS')}</a></td>
+                href={'./eventsearch?line=true&date=' + moment.utc(row.Time).format('MM/DD/YYYY') + '&time=' + moment.utc(row.Time).format('HH:mm:ss.SSS') + '&windowSize=10&timeWindowUnits=2&tab=All&eventid=' + row.EventId}
+            > {moment.utc(row.Time).format('MM/DD/YY HH:mm:ss.SSS')}</a></td>
             <td key={'Phase' + row.ID}>{row.Phase}</td>
             <td key={'Status' + row.ID}>{row.Status}</td>
             <td key={'Operation' + row.ID}>{row.Operation}</td>
