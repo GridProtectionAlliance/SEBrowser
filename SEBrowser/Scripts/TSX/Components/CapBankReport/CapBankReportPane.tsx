@@ -26,7 +26,7 @@ import moment from 'moment';
 import { CapBankReportNavBarProps } from './CapBankReportNavBar';
 import _, { cloneDeep } from 'lodash';
 import Modal from '../Modal';
-import Warning from '../Warning';
+import { Warning } from '@gpa-gemstone/react-interactive';
 import { Plot, Line } from '@gpa-gemstone/react-graph'
 
 interface ITrendSeries {

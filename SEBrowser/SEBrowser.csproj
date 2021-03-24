@@ -373,9 +373,6 @@
     <Content Include="Scripts\TSX\Components\Modal.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\Warning.tsx" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\ESRIMap.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\FaultInfo.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\Lightning.tsx" />
