@@ -827,8 +827,33 @@ namespace PQDashboard.Controllers.CapBankReport
                             data = SCmva
                         });
 
+                }
+
+                if (result.Q.Count > 0)
+                {
+                    result.Q.Add(new TrendSeries()
+                    {
+                        color = "#ffA500",
+                        label = "Total",
+                        lineStyle = "-",
+                        includeLegend = true,
+                        data = result.Q.SelectMany(i => i.data).GroupBy(pt => pt[0]).Select(groupping => new double[] { groupping.Key, groupping.AsEnumerable().Sum( pt => Math.Abs(pt[1])) }).OrderBy(r => r[0]).ToList()
+                    });
+                    
+                }
+                if (result.DeltaQ.Count > 0)
+                {
+                    result.DeltaQ.Add(new TrendSeries()
+                    {
+                        color = "#ffA500",
+                        label = "Total",
+                        lineStyle = "-",
+                        includeLegend = true,
+                        data = result.DeltaQ.SelectMany(i => i.data).GroupBy(pt => pt[0]).Select(groupping => new double[] { groupping.Key, groupping.AsEnumerable().Sum(pt => Math.Abs(pt[1])) }).OrderBy(r => r[0]).ToList()
+                    });
 
                 }
+
             }
 
             return result;
