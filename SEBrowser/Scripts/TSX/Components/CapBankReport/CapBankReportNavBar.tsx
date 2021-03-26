@@ -25,6 +25,7 @@ import _ from 'lodash';
 import moment from 'moment';
 
 import SEBrowserService from './../../../TS/Services/SEBrowser';
+import { Modal } from '@gpa-gemstone/react-interactive';
 
 
 const momentDateFormat = "MM/DD/YYYY";
@@ -42,6 +43,7 @@ export interface EventFilter {
     RestFilt: Array<number>,
     PISFilt: Array<number>,
     HealthFilt: Array<number>,
+    PhaseFilter: Array<number>
 }
 
 export interface CapBankReportNavBarProps extends EventFilter {
@@ -69,6 +71,7 @@ interface CapBank {
 interface Istate {
     capBanks: Array<CapBank>,
     subStations: Array<Substation>,
+    showFilter: boolean,
 }
 
 export default class CapBankReportNavBar extends React.Component<CapBankReportNavBarProps, Istate>{
@@ -80,6 +83,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         this.state = {
             capBanks: [],
             subStations: [],
+            showFilter: false,
         };
     }
 
@@ -279,107 +283,117 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                         </li>
                         <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Additional Filter:</legend>
-                                    <button className="btn btn-primary" data-toggle='modal' data-target='#newFilter' onClick={(evt) => evt.preventDefault()} >Edit Filter</button>
+                                    <legend className="w-auto" style={{ fontSize: 'large' }}>Additional Filter:</legend>
+                                    <button className="btn btn-primary" onClick={() => this.setState({ showFilter: true })} >Edit Filter</button>
                             </fieldset>
                         </li>
                     </ul>
                 </div>
             </nav>
 
-            <div className="modal" id="newFilter">
-                    <div className="modal-dialog">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h4 className="modal-title">Filter CapBank Events</h4>
-                            <button type="button" className="close" data-dismiss="modal">&times;</button>
+                <Modal Show={this.state.showFilter} ShowX={true} ShowCancel={false} Size={'xlg'} Title={'Filter CapBank Events'} ConfirmText={'Close'} CallBack={() => this.setState({ showFilter: false })}>
+                    <div style={{ width: '100%', display: 'inline-flex' }}>
+                        <div style={{ width: '10%', paddingRight: 10 }}>
+                            <CBEventFilter activeFilter={this.props.PhaseFilter} showAll={true} Label={'Phase'} setter={(result) => {
+                                var object = _.clone(this.props) as CapBankReportNavBarProps;
+                                object.PhaseFilter = result;
+                                this.props.stateSetter({ searchBarProps: object });
+                            }}
+                                filters={[
+                                    { Label: 'AN', Values: [1] },
+                                    { Label: 'BN', Values: [2] },
+                                    { Label: 'CN', Values: [3] },
+                                ]} />
                         </div>
-                            <div className="modal-body" style={{display: 'inline-flex'}}>
-                                <div style={{ width: '50%', paddingRight: 10 }}>
-                                    <CBEventFilter activeFilter={this.props.ResFilt} showAll={false} Label={'Resonance'} setter={(result) => {
-                                        var object = _.clone(this.props) as CapBankReportNavBarProps;
-                                        object.ResFilt = result;
-                                        this.props.stateSetter({ searchBarProps: object });
-                                    }}
-                                        filters={[
-                                            { Label: 'Resonance', Values: [1] },
-                                            { Label: 'No Resonance', Values: [0] }
-                                        ]} />                                   
-
-                                    <CBEventFilter activeFilter={this.props.OpFilt} showAll={true} Label={'Operation'} setter={(result) => {
-                                        var object = _.clone(this.props) as CapBankReportNavBarProps;
-                                        object.OpFilt = result;
-                                        this.props.stateSetter({ searchBarProps: object });
-                                    }}
-                                        filters={[
-                                            { Label: 'Sag/Swell', Values: [-200] },
-                                            { Label: 'No Switching', Values: [-103, -102, -101] },
-                                            { Label: 'Not Determined', Values: [-1] },
-                                            { Label: 'Opening', Values: [101, 102] },
-                                            { Label: 'Closing', Values: [201, 202] }
-                                        ]} />
-
-                                    <CBEventFilter activeFilter={this.props.RestFilt} showAll={true} Label={'Restrike'} setter={(result) => {
-                                        var object = _.clone(this.props) as CapBankReportNavBarProps;
-                                        object.RestFilt = result;
-                                        this.props.stateSetter({ searchBarProps: object });
-                                    }}
-                                        filters={[
-                                            { Label: 'No Restrike', Values: [0,20] },
-                                            { Label: 'Possible Restrike', Values: [10] },
-                                            { Label: 'Restrike', Values: [32, 42] },
-                                            { Label: 'Reignition', Values: [31, 41] },
-                                            { Label: 'Reversed Polarity', Values: [41, 42] }
-                                        ]} />
-                                </div>
-                                <div style={{ width: '50%', paddingRight: 10 }}>
-                                    <CBEventFilter activeFilter={this.props.StatFilt} showAll={true} Label={'Status'} setter={(result) => {
-                                        var object = _.clone(this.props) as CapBankReportNavBarProps;
-                                        object.StatFilt = result;
-                                        this.props.stateSetter({ searchBarProps: object });
-                                    }}
-                                        filters={[
-                                            { Label: 'Error', Values: [-1] },
-                                            { Label: 'Normal', Values: [0] },
-                                            { Label: '>2 cyc Between Poles', Values: [12] },
-                                            { Label: 'Abnormal Health', Values: [2] },
-                                            { Label: 'Failed Opening', Values: [3,4] },
-                                            { Label: 'Failed Closing', Values: [10, 5] },
-                                            { Label: 'Restrike/ Reignition', Values: [4,5] },
-                                            { Label: 'Abnormal PreInsertion Switching', Values: [8] },
-                                            { Label: 'Missing Pole', Values: [11] },
-                                            { Label: 'Shorted Units', Values: [20] },
-                                            { Label: 'Blown Fuse', Values: [21] },
-                                            { Label: 'Other', Values: [6,22,7] }
-                                        ]} />
-                                    <CBEventFilter activeFilter={this.props.PISFilt} showAll={true} Label={'Switching Health'} setter={(result) => {
-                                        var object = _.clone(this.props) as CapBankReportNavBarProps;
-                                        object.PISFilt = result;
-                                        this.props.stateSetter({ searchBarProps: object });
-                                    }}
-                                        filters={[
-                                            { Label: 'Normal', Values: [0] },
-                                            { Label: 'Transient', Values: [1] },
-                                            { Label: 'Too Short', Values: [2] },
-                                            { Label: 'Unknown', Values: [3] },
-                                        ]} />
-                                    <CBEventFilter activeFilter={this.props.HealthFilt} showAll={true} Label={'CapBank Health'} setter={(result) => {
-                                        var object = _.clone(this.props) as CapBankReportNavBarProps;
-                                        object.HealthFilt = result;
-                                        this.props.stateSetter({ searchBarProps: object });
-                                    }}
-                                        filters={[
-                                            { Label: 'Normal', Values: [0] },
-                                            { Label: 'Shorted Units', Values: [1] },
-                                            { Label: 'Blown Fuses', Values: [2] },
-                                            { Label: 'Tap Voltages Missing', Values: [3] },
-                                        ]} />
-                                </div>
+                        <div style={{ width: '15%', paddingRight: 10 }}>
+                            <CBEventFilter activeFilter={this.props.StatFilt} showAll={true} Label={'Status'} setter={(result) => {
+                                var object = _.clone(this.props) as CapBankReportNavBarProps;
+                                object.StatFilt = result;
+                                this.props.stateSetter({ searchBarProps: object });
+                            }}
+                                filters={[
+                                    { Label: 'Error', Values: [-1] },
+                                    { Label: 'Normal', Values: [0] },
+                                    { Label: '>2 cyc Between Poles', Values: [12] },
+                                    { Label: 'Abnormal Health', Values: [2] },
+                                    { Label: 'Failed Opening', Values: [3, 4] },
+                                    { Label: 'Failed Closing', Values: [10, 5] },
+                                    { Label: 'Restrike/ Reignition', Values: [4, 5] },
+                                    { Label: 'Abnormal PreInsertion Switching', Values: [8] },
+                                    { Label: 'Missing Pole', Values: [11] },
+                                    { Label: 'Shorted Units', Values: [20] },
+                                    { Label: 'Blown Fuse', Values: [21] },
+                                    { Label: 'Other', Values: [6, 22, 7] }
+                                ]} />
                         </div>
+                        <div style={{ width: '15%', paddingRight: 10 }}>
+                            <CBEventFilter activeFilter={this.props.OpFilt} showAll={true} Label={'Operation'} setter={(result) => {
+                                var object = _.clone(this.props) as CapBankReportNavBarProps;
+                                object.OpFilt = result;
+                                this.props.stateSetter({ searchBarProps: object });
+                            }}
+                                filters={[
+                                    { Label: 'Sag/Swell', Values: [-200] },
+                                    { Label: 'No Switching', Values: [-103, -102, -101] },
+                                    { Label: 'Not Determined', Values: [-1] },
+                                    { Label: 'Opening', Values: [101, 102] },
+                                    { Label: 'Closing', Values: [201, 202] }
+                                ]} />
+                        </div>
+                        <div style={{ width: '15%', paddingRight: 10 }}>
+                            <CBEventFilter activeFilter={this.props.ResFilt} showAll={false} Label={'Resonance'} setter={(result) => {
+                                var object = _.clone(this.props) as CapBankReportNavBarProps;
+                                object.ResFilt = result;
+                                this.props.stateSetter({ searchBarProps: object });
+                            }}
+                                filters={[
+                                    { Label: 'Resonance', Values: [1] },
+                                    { Label: 'No Resonance', Values: [0] }
+                                ]} />
+                        </div>
+                        <div style={{ width: '15%', paddingRight: 10 }}>
+                            <CBEventFilter activeFilter={this.props.HealthFilt} showAll={true} Label={'CapBank Health'} setter={(result) => {
+                                var object = _.clone(this.props) as CapBankReportNavBarProps;
+                                object.HealthFilt = result;
+                                this.props.stateSetter({ searchBarProps: object });
+                            }}
+                                filters={[
+                                    { Label: 'Normal', Values: [0] },
+                                    { Label: 'Shorted Units', Values: [1] },
+                                    { Label: 'Blown Fuses', Values: [2] },
+                                    { Label: 'Tap Voltages Missing', Values: [3] },
+                                ]} />
+                        </div>
+                        <div style={{ width: '15%', paddingRight: 10 }}>
+                            <CBEventFilter activeFilter={this.props.RestFilt} showAll={true} Label={'Restrike'} setter={(result) => {
+                                var object = _.clone(this.props) as CapBankReportNavBarProps;
+                                object.RestFilt = result;
+                                this.props.stateSetter({ searchBarProps: object });
+                            }}
+                                filters={[
+                                    { Label: 'No Restrike', Values: [0, 20] },
+                                    { Label: 'Possible Restrike', Values: [10] },
+                                    { Label: 'Restrike', Values: [32, 42] },
+                                    { Label: 'Reignition', Values: [31, 41] },
+                                    { Label: 'Reversed Polarity', Values: [41, 42] }
+                                ]} />
+                        </div>
+                        <div style={{ width: '15%', paddingRight: 10 }}>
+                            <CBEventFilter activeFilter={this.props.PISFilt} showAll={true} Label={'Switching Health'} setter={(result) => {
+                                var object = _.clone(this.props) as CapBankReportNavBarProps;
+                                object.PISFilt = result;
+                                this.props.stateSetter({ searchBarProps: object });
+                            }}
+                                filters={[
+                                    { Label: 'Normal', Values: [0] },
+                                    { Label: 'Transient', Values: [1] },
+                                    { Label: 'Too Short', Values: [2] },
+                                    { Label: 'Unknown', Values: [3] },
+                                ]} />
+                        </div>
+                    
                     </div>
-                </div>
-
-            </div>
+                </Modal>
             </>
         );
     }

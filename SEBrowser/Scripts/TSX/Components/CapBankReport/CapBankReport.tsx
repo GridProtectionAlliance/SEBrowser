@@ -66,7 +66,8 @@ export default class CapBankReport extends React.Component<IProps, IState>{
                 OpFilt: [999],
                 RestFilt: [999],
                 PISFilt: [999],
-                HealthFilt: [999]
+                HealthFilt: [999],
+                PhaseFilter: [999]
             },
         };
     }

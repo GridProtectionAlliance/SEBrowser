@@ -189,6 +189,10 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         //Next Filter is CB Health Filter
         if ((this.props.HealthFilt.length > 0) && (!this.props.HealthFilt.includes(999)))
             filter = filter + `&healthFilt=${this.props.HealthFilt.join(',')}`
+
+        //Next Filter is Phase Filter
+        if ((this.props.PhaseFilter.length > 0) && (!this.props.PhaseFilter.includes(999)))
+            filter = filter + `&phaseFilt=${this.props.PhaseFilter.join(',')}`
         
         return filter;
     }

@@ -829,7 +829,9 @@ namespace PQDashboard.Controllers.CapBankReport
 
                 }
 
-                if (result.Q.Count > 0)
+                DataTable totalTable = GettrendTable("", otherFilter, capBankRestriction, "", timeRestriction);
+
+                if (totalTable.Rows.Count > 0)
                 {
                     result.Q.Add(new TrendSeries()
                     {
@@ -837,11 +839,13 @@ namespace PQDashboard.Controllers.CapBankReport
                         label = "Total",
                         lineStyle = "-",
                         includeLegend = true,
-                        data = result.Q.SelectMany(i => i.data).GroupBy(pt => pt[0]).Select(groupping => new double[] { groupping.Key, groupping.AsEnumerable().Sum( pt => Math.Abs(pt[1])) }).OrderBy(r => r[0]).ToList()
+                        data = totalTable.AsEnumerable().GroupBy(row => row.Field<int>("EventID")).Select(group => new double[2] { group.First().Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, Math.Abs(group.First().Field<double?>("TotalQ") ?? 0) }).ToList()
                     });
-                    
                 }
-                if (result.DeltaQ.Count > 0)
+
+                totalTable = GettrendTable("", otherFilter, capBankRestriction, bankNumRestriction, timeRestriction);
+
+                if (totalTable.Rows.Count > 0)
                 {
                     result.DeltaQ.Add(new TrendSeries()
                     {
@@ -849,9 +853,9 @@ namespace PQDashboard.Controllers.CapBankReport
                         label = "Total",
                         lineStyle = "-",
                         includeLegend = true,
-                        data = result.DeltaQ.SelectMany(i => i.data).GroupBy(pt => pt[0]).Select(groupping => new double[] { groupping.Key, groupping.AsEnumerable().Sum(pt => Math.Abs(pt[1])) }).OrderBy(r => r[0]).ToList()
+                        data = totalTable.AsEnumerable().GroupBy(row => row.Field<int>("EventID")).Select(group => new double[2] { group.First().Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, Math.Abs(group.First().Field<double?>("TotalDeltaQ") ?? 0) }).ToList()
                     });
-
+                
                 }
 
             }
@@ -893,6 +897,13 @@ namespace PQDashboard.Controllers.CapBankReport
             if (query.TryGetValue("healthFilt", out val))
             {
                 filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBCapBankResult.CBBankHealthID,0) IN  ({val})";
+            }
+            if (query.TryGetValue("phaseFilt", out val))
+            {
+                List<string> PhaseName = val.Trim('[').Trim(']').Split(',').Where(s => s == "1" || s == "2" || s == "3").Select(n => { if (n == "1") return "'AN'"; if (n == "2") return "'BN'"; return "'CN'"; }).ToList();
+                if (PhaseName.Count == 0)
+                    PhaseName = new List<string>() { "'AN'","'BN'","'CN'" };
+                filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBAnalyticResult.PhaseID,0) IN  (SELECT ID FROM Phase WHERE Name IN ({String.Join(",", PhaseName)}))";
             }
 
             return filter;
@@ -957,7 +968,9 @@ namespace PQDashboard.Controllers.CapBankReport
 						CBCapBankResult.Vrelay AS RelayV,
 						CBCapBankResult.Ineutral AS Ineutral,
 						CBCapBankResult.Z0 AS BusZ0,
-						CBCapBankResult.V0 AS BusV0
+						CBCapBankResult.V0 AS BusV0,
+                        (SELECT SUM(CBR.MVAsc) FROM CBAnalyticResult CBR WHERE CBR.EventID = CBAnalyticResult.EventID) AS TotalQ,
+                        (SELECT SUM(CBR.DeltaQ) FROM CBAnalyticResult CBR WHERE CBR.EventID = CBAnalyticResult.EventID) AS TotalDeltaQ
                     FROM CBAnalyticResult LEFT JOIN 
                         CBRestrikeResult ON CBRestrikeResult.CBResultID = CBAnalyticResult.ID LEFT JOIN
                         CBSwitchHealthAnalytic ON CBSwitchHealthAnalytic.CBResultID = CBAnalyticResult.ID LEFT JOIN
