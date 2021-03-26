@@ -21,7 +21,7 @@
 //******************************************************************************************************
 
 import * as React from 'react';
-import { clone, isEqual } from 'lodash';
+import { clone, cloneDeep, isEqual } from 'lodash';
 
 import createHistory from "history/createBrowserHistory"
 import { History } from 'history';
@@ -87,7 +87,7 @@ export default class CapBankReport extends React.Component<IProps, IState>{
     stateSetter(obj) {
         function toQueryString(state: IState) {
             var dataTypes = ["boolean", "number", "string"]
-            var stateObject: IState = clone(state);
+            var stateObject: IState = cloneDeep(state);
             $.each(Object.keys(stateObject.searchBarProps), (index, key) => {
                 if (dataTypes.indexOf(typeof (stateObject.searchBarProps[key])) < 0)
                     delete stateObject.searchBarProps[key];
