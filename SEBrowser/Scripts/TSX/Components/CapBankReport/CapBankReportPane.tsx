@@ -640,7 +640,7 @@ const EventRow = (row: ICBEvent, showEdit: boolean, stateSetter: (obj: any) => v
     return (
         <tr key={row.ID}>
             {showEdit ? <td key={'Edit' + row.ID}> <i className='fa fa-edit fa-2x' onClick={() => stateSetter({ ShowCapBankEdit: true, SelectedEvent: row.ID, SelectedCapBank: 1})}></i></td> : null}
-            <td key={'Time' + row.ID}><a
+            <td key={'Time' + row.ID}><a target="_blank"
                 href={'./eventsearch?line=true&date=' + moment.utc(row.Time).format('MM/DD/YYYY') + '&time=' + moment.utc(row.Time).format('HH:mm:ss.SSS') + '&windowSize=10&timeWindowUnits=2&tab=All&eventid=' + row.EventId}
             > {moment.utc(row.Time).format('MM/DD/YY HH:mm:ss.SSS')}</a></td>
             <td key={'Phase' + row.ID}>{row.Phase}</td>
