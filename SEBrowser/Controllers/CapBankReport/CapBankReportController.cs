@@ -72,8 +72,10 @@ namespace PQDashboard.Controllers.CapBankReport
             public List<TrendSeries> DeltaVrms;
             public List<TrendSeries> Q;
             public List<TrendSeries> Freq;
-            public List<TrendSeries> THD;
-            public List<TrendSeries> DeltaTHD;
+            public List<TrendSeries> THDV;
+            public List<TrendSeries> THDI;
+            public List<TrendSeries> DeltaTHDV;
+            public List<TrendSeries> DeltaTHDI;
             public List<TrendSeries> SwitchingFreq;
             public List<TrendSeries> PeakV;
             public List<TrendSeries> Xcap;
@@ -314,8 +316,10 @@ namespace PQDashboard.Controllers.CapBankReport
                 DeltaVrms = new List<TrendSeries>(),
                 Q = new List<TrendSeries>(),
                 Freq = new List<TrendSeries>(),
-                THD = new List<TrendSeries>(),
-                DeltaTHD = new List<TrendSeries>(),
+                THDI = new List<TrendSeries>(),
+                DeltaTHDI = new List<TrendSeries>(),
+                THDV = new List<TrendSeries>(),
+                DeltaTHDV = new List<TrendSeries>(),
                 SwitchingFreq = new List<TrendSeries>(),
                 PeakV = new List<TrendSeries>(),
                 Xcap = new List<TrendSeries>(),
@@ -504,7 +508,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             });
 
                         if (DeltaITHD.Count > 0)
-                            result.DeltaTHD.Add(new TrendSeries()
+                            result.DeltaTHDV.Add(new TrendSeries()
                             {
                                 color = phase.Value,
                                 label = "V THD Phase " + (phase.Key),
@@ -514,7 +518,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             });
 
                         if (DeltaVTHD.Count > 0)
-                            result.DeltaTHD.Add(new TrendSeries()
+                            result.DeltaTHDI.Add(new TrendSeries()
                             {
                                 color = phase.Value,
                                 label = "I THD Phase " + (phase.Key),
@@ -564,7 +568,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             });
 
                         if (THDpre.Count > 0)
-                            result.THD.Add(new TrendSeries()
+                            result.THDI.Add(new TrendSeries()
                             {
                                 color = phase.Value,
                                 label = "I THD Pre Event Phase " + (phase.Key),
@@ -574,7 +578,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             });
 
                         if (THDVpre.Count > 0)
-                            result.THD.Add(new TrendSeries()
+                            result.THDV.Add(new TrendSeries()
                             {
                                 color = phase.Value,
                                 label = "V THD Pre Event Phase " + (phase.Key),
@@ -614,7 +618,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             });
 
                         if (THDpost.Count > 0)
-                            result.THD.Add(new TrendSeries()
+                            result.THDI.Add(new TrendSeries()
                             {
                                 color = phase.Value,
                                 label = "I THD Post Event Phase " + (phase.Key),
@@ -624,7 +628,7 @@ namespace PQDashboard.Controllers.CapBankReport
                             });
 
                         if (THDVpost.Count > 0)
-                            result.THD.Add(new TrendSeries()
+                            result.THDV.Add(new TrendSeries()
                             {
                                 color = phase.Value,
                                 label = "V THD Post Event Phase " + (phase.Key),

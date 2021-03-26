@@ -47,8 +47,10 @@ interface ITrendDataSet {
     DeltaVrms: Array<ITrendSeries>,
     Q: Array<ITrendSeries>,
     Freq: Array<ITrendSeries>,
-    THD: Array<ITrendSeries>,
-    DeltaTHD: Array<ITrendSeries>,
+    THDI: Array<ITrendSeries>,
+    DeltaTHDI: Array<ITrendSeries>,
+    THDV: Array<ITrendSeries>,
+    DeltaTHDV: Array<ITrendSeries>,
     SwitchingFreq: Array<ITrendSeries>,
     PeakV: Array<ITrendSeries>,
     Xcap: Array<ITrendSeries>,
@@ -114,8 +116,10 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                 DeltaVrms: [],
                 Q: [],
                 Freq: [],
-                THD: [],
-                DeltaTHD: [],
+                THDI: [],
+                DeltaTHDI: [],
+                THDV: [],
+                DeltaTHDV: [],
                 SwitchingFreq: [],
                 PeakV: [],
                 Xcap: [],
@@ -357,22 +361,41 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.THD.length > 0 ?
+                    {(this.state.TrendData.THDV.length > 0 ?
                         <div className="card">
-                            <div className="card-header">Voltage and Current THD</div>
+                            <div className="card-header">Voltage THD</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'THD (%)'} showMouse={true}>
-                                    {this.state.TrendData.THD.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                    {this.state.TrendData.THDV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
                         </div> : null)}
 
-                    {(this.state.TrendData.DeltaTHD.length > 0 ?
+                    {(this.state.TrendData.DeltaTHDV.length > 0 ?
                         <div className="card">
-                            <div className="card-header">Change in Voltage and Current THD</div>
+                            <div className="card-header">Change in Voltage THD</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Delta THD (%)'} showMouse={true}>
-                                    {this.state.TrendData.DeltaTHD.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                    {this.state.TrendData.DeltaTHDV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                </Plot>
+                            </div>
+                        </div> : null)}
+                    {(this.state.TrendData.THDI.length > 0 ?
+                        <div className="card">
+                            <div className="card-header">Current THD</div>
+                            <div className="card-body">
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'THD (%)'} showMouse={true}>
+                                    {this.state.TrendData.THDI.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                </Plot>
+                            </div>
+                        </div> : null)}
+
+                    {(this.state.TrendData.DeltaTHDI.length > 0 ?
+                        <div className="card">
+                            <div className="card-header">Change in Current THD</div>
+                            <div className="card-body">
+                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Delta THD (%)'} showMouse={true}>
+                                    {this.state.TrendData.DeltaTHDI.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
                         </div> : null)}
