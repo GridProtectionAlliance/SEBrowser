@@ -363,12 +363,12 @@ namespace PQDashboard.Controllers.CapBankReport
                         // Create Arrays of Data so we can Check if there are any later.
                         List<double[]> DeltaQ = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, Math.Abs(row.Field<double?>("DeltaQ") ?? 0) }).ToList();
                         List<double[]> DeltaI = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaI") ?? 0 }).ToList();
-                        List<double[]> DeltaV = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaV") ?? 0 }).ToList();
+                        List<double[]> DeltaV = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("DeltaV") ?? 0) * 100.0D }).ToList();
                         List<double[]> ResFreq = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaV") ?? 0 }).ToList();
                         List<double[]> DeltaITHD = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaITHD") ?? 0 }).ToList();
                         List<double[]> DeltaVTHD = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaVTHD") ?? 0 }).ToList();
                         List<double[]> SwitchingFreq = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("SwitchingFreq") ?? 0 }).ToList();
-                        List<double[]> Vpeak = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Vpeak") ?? 0 }).ToList();
+                        List<double[]> Vpeak = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpeak") ?? 0)*100.0D }).ToList();
 
                         List<double[]> RestDur = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RestrikeDuration") ?? 0 }).ToList();
                         List<double[]> RestI = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RestrikeI") ?? 0 }).ToList();
@@ -400,7 +400,7 @@ namespace PQDashboard.Controllers.CapBankReport
                         table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumBeforeRestriction, timeRestriction);
 
                         List<double[]> Ipre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Ipre") ?? 0 }).ToList();
-                        List<double[]> Vpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Vpre") ?? 0 }).ToList();
+                        List<double[]> Vpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpre") ?? 0)*100.0D }).ToList();
                         List<double[]> THDpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDpre") ?? 0 }).ToList();
                         List<double[]> THDVpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDVpre") ?? 0 }).ToList();
                         List<double[]> Xpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xpre") ?? 0 }).ToList();
@@ -408,7 +408,7 @@ namespace PQDashboard.Controllers.CapBankReport
                         table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumAfterRestriction, timeRestriction);
 
                         List<double[]> Ipost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Ipost") ?? 0 }).ToList();
-                        List<double[]> Vpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Vpost") ?? 0 }).ToList();
+                        List<double[]> Vpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpost") ?? 0)*100.0 }).ToList();
                         List<double[]> THDpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDpost") ?? 0 }).ToList();
                         List<double[]> THDVpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDVpost") ?? 0 }).ToList();
                         List<double[]> Xpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xpost") ?? 0 }).ToList();
@@ -849,7 +849,7 @@ namespace PQDashboard.Controllers.CapBankReport
 
                 totalTable = GettrendTable("", otherFilter, capBankRestriction, bankNumRestriction, timeRestriction);
 
-                if (totalTable.Rows.Count > 0)
+                if (totalTable.Rows.Count > 0 && selectedBank > -1)
                 {
                     result.DeltaQ.Add(new TrendSeries()
                     {
