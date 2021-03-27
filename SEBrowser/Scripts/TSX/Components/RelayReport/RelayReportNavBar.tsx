@@ -22,157 +22,271 @@
 //******************************************************************************************************
 import * as React from 'react';
 import _ from 'lodash';
-import SEBrowserService from './../../../TS/Services/SEBrowser';
 
-export interface Substation {
+const momentDateFormat = "MM/DD/YYYY";
+const momentTimeFormat = "HH:mm:ss.SSS";
+
+
+interface Substation {
     LocationID: number, AssetKey: string, AssetName: string
+}
+
+interface Breaker {
+    AssetId: number,
+    AssetKey: string,
+    AssetName: string
+}
+
+interface Channel {
+    ID: number,
+    Name: string
 }
 
 export interface RelayReportNavBarProps {
     stateSetter(state): void,
     BreakerID: number,
-    ChannelID: number
+    ChannelID: number,
+    StationId: number,
+    date: string,
+    time: string,
+    windowSize: number,
+    timeWindowUnits: number,
+
 }
 
-export default class RelayReportNavBar extends React.Component<RelayReportNavBarProps, { BreakerID: number, LocationID: number, showCoilSelection: boolean }>{
-    seBrowserService: SEBrowserService;
+const RelayReportNavBar = (props: RelayReportNavBarProps) => {
+    const [breakers, setBreakers] = React.useState<Breaker[]>([]);
+    const [substations, setSubstations] = React.useState<Substation[]>([]);
+    const [channels, setChannels] = React.useState<Channel[]>([]);
 
-    constructor(props, context) {
-        super(props, context);
-
-        this.seBrowserService = new SEBrowserService();
-        this.state = {
-            LocationID: -1,
-            BreakerID: -1,
-            showCoilSelection: false
-        };
-    }
-
-    componentDidMount() {
-        this.getSubstationData();
-    }
-
-    componentWillReceiveProps(nextProps: RelayReportNavBarProps) {
-    }
-
-    getLineData(LocationID: number) {
-        
-        this.setState({ LocationID: LocationID });
-        this.seBrowserService.GetBreakerData(LocationID).done(results => {
-            $(this.refs.Breaker).children().remove();
-            for (var breaker of results) {
-                $(this.refs.Breaker).append(new Option(breaker.AssetKey, breaker.AssetId.toString()));
-            };
-
-            if ($(this.refs.Breaker).children("option:selected").val()) {
-                var object = _.clone(this.props) as RelayReportNavBarProps;
-                object.BreakerID = parseInt($(this.refs.Breaker).children("option:selected").val().toString());
-                this.props.stateSetter({ searchBarProps: object });
-                this.getCoilData(parseInt($(this.refs.Breaker).children("option:selected").val().toString()))
-            }
-            
+    React.useEffect(() => {
+        $('#datePicker').datetimepicker({ format: momentDateFormat });
+        $('#datePicker').on('dp.change', (e) => {
+            setDate((e.target as any).value);
         });
+
+        $('#timePicker').datetimepicker({ format: momentTimeFormat });
+        $('#timePicker').on('dp.change', (e) => {
+            setTime((e.target as any).value);
+        });
+    
+    }, [])
+
+    React.useEffect(() => {
+        let handle = getSubstationData();
+        return () => { if (handle != null && handle.abort != null) handle.abort(); }
+    }, [])
+
+    React.useEffect(() => {
+        let handle = getBreakerData();
+        return () => { if (handle != null && handle.abort != null) handle.abort(); }
+    }, [props.StationId]);
+
+    React.useEffect(() => {
+        if (substations.length == 0)
+            return;
+        if (substations.findIndex(s => s.LocationID == props.StationId) == -1)
+            setStation(substations[0].LocationID);
+    }, [substations, props.StationId])
+   
+    React.useEffect(() => {
+        if (breakers.length == 0)
+            return;
+        if (breakers.findIndex(s => s.AssetId == props.BreakerID) == -1)
+            setBreaker(breakers[0].AssetId)
+    }, [breakers, props.BreakerID])
+
+    React.useEffect(() => {
+        let handle = getCoilData();
+        return () => { if (handle != null && handle.abort != null) handle.abort(); }
+    }, [props.BreakerID]);
+
+    React.useEffect(() => {
+        if (channels.length == 0)
+            return;
+        if (channels.findIndex(s => s.ID == props.ChannelID) == -1)
+            setChannel(channels[0].ID)
+    }, [channels, props.ChannelID])
+
+    function getBreakerData(): JQuery.jqXHR<Breaker[] >{
+        let h = $.ajax({
+            type: "GET",
+            url: `${homePath}api/PQDashboard/RelayReport/GetBreakerData?locationID=${props.StationId}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+
+        h.done((d: Breaker[]) => {
+            if (d != null)
+                setBreakers(d);
+        })
+
+        return h;
        
     }
 
-    getSubstationData() {
-        this.seBrowserService.GetSubStationData().done(results => {
-            $(this.refs.SubStation).children().remove();
-            for (var station of results) {
-                $(this.refs.SubStation).append(new Option(station.AssetName, station.LocationID.toString()));
-                if ($(this.refs.SubStation).children("option:selected").val()) {
-                    var selected = parseInt($(this.refs.SubStation).children("option:selected").val().toString());
-                    this.setState({ LocationID: selected });
-                    this.getLineData(selected);
-                }};
-        });
-    }
-
-    getCoilData(BreakerID: number ) {
-
-        this.seBrowserService.GetCoilData(BreakerID).done(results => {
-            if (results.length < 2) {
-                this.setState({ showCoilSelection: false });
-                var object = _.clone(this.props) as RelayReportNavBarProps;
-                object.ChannelID = -1;
-                object.BreakerID = parseInt($(this.refs.Breaker).children("option:selected").val().toString());
-                this.props.stateSetter({ searchBarProps: object });
-                return;
-
-            };
-           
-            this.setState({ showCoilSelection: true });
-
-            $(this.refs.Coil).children().remove();
-            for (var coil of results) {
-                $(this.refs.Coil).append(new Option(coil.Name, coil.ChannelID.toString()));
-            };
-
-            if ($(this.refs.Coil).children("option:selected").val()) {
-                var object = _.clone(this.props) as RelayReportNavBarProps;
-                object.ChannelID = parseInt($(this.refs.Coil).children("option:selected").val().toString());
-                object.BreakerID = parseInt($(this.refs.Breaker).children("option:selected").val().toString());
-                this.props.stateSetter({ searchBarProps: object });
-            }
-
+    function getSubstationData(): JQuery.jqXHR<Substation[]> {
+        let h =  $.ajax({
+            type: "GET",
+            url: `${homePath}api/PQDashboard/RelayReport/GetSubstationData`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
         });
 
+        h.done((d: Substation[]) => {
+            if (d != null)
+                setSubstations(d);
+        })
+        return h;
+       
     }
 
-    render() {
-        const showCoilSelection = this.state.showCoilSelection;
+    
+    function getCoilData(): JQuery.jqXHR<Channel[]> {
+        let h = $.ajax({
+            type: "GET",
+            url: `${homePath}api/PQDashboard/RelayReport/GetCoilData?lineID=${props.BreakerID}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+
+        h.done((d: Channel[]) => {
+            if (d != null)
+                setChannels(d);
+        })
+        return h;
+    }
+
+    function setStation(id: number) {
+        var object = _.clone(props) as RelayReportNavBarProps;
+        object.StationId = id;
+        props.stateSetter({ searchBarProps: object });
+    }
+
+
+    function setBreaker(id: number) {
+        var object = _.clone(props) as RelayReportNavBarProps;
+        object.BreakerID = id;
+        props.stateSetter({ searchBarProps: object });
+    }
+
+
+    function setChannel(id: number) {
+        var object = _.clone(props) as RelayReportNavBarProps;
+        object.ChannelID = id;
+        props.stateSetter({ searchBarProps: object });
+    }
+
+    function setDate(date: string) {
+
+        var object = _.clone(props) as RelayReportNavBarProps;
+        object.date = date;
+        props.stateSetter({ searchBarProps: object });
+    }
+
+    function setTime(time: string) {
+
+        var object = _.clone(props) as RelayReportNavBarProps;
+        object.time = time;
+        props.stateSetter({ searchBarProps: object });
+    }
+
+    function setTimeWindowUnits(timeWindowUnits: number) {
+
+        var object = _.clone(props) as RelayReportNavBarProps;
+        object.timeWindowUnits = timeWindowUnits;
+        props.stateSetter({ searchBarProps: object });
+    }
+
+    function setWindowSize(windowSize: number) {
+
+        var object = _.clone(this.props) as RelayReportNavBarProps;
+        object.windowSize = windowSize;
+        props.stateSetter({ searchBarProps: object });
+    }
+
 
         return (
             <nav className="navbar navbar-expand-lg navbar-light bg-light">
 
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
-                        <li className="nav-item" style={{ width: showCoilSelection ? '33%' : '50%', paddingRight: 10 }}>
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Substation:</legend>
-                                <form>
-                                    <div className="form-group" style={{ height: 30 }}>
-                                        <label style={{ width: 200, position: 'relative', float: "left" }}>Substation: </label>
-                                        <select ref="SubStation" style={{ width: 'calc(100% - 200px)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            this.getLineData((e.target as any).value);
-                                        }} >
-                                        </select>
-                                    </div>
-
-                                </form>
-                            </fieldset>
-                        </li>
-                        <li className="nav-item" style={{ width: showCoilSelection ? '33%' : '50%' , paddingRight: 10 }}>
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Breaker:</legend>
-                                <form>
-                                    <div className="form-group" style={{ height: 30 }}>
-                                        <label style={{ width: 200, position: 'relative', float: "left" }}>Breaker: </label>
-                                        <select ref="Breaker" style={{ width: 'calc(100% - 200px)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            this.getCoilData((e.target as any).value);
-                                        }} >
-                                        </select>
-                                    </div>
-
-                                </form>
-                            </fieldset>
-                        </li>
-
-                        <li className="nav-item" style={{ width: '33%', paddingRight: 10, display: showCoilSelection ? 'block' : 'none' }}>
+                        <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>Trip Coil:</legend>
                                 <form>
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Substation: </label>
                                     <div className="form-group" style={{ height: 30 }}>
-                                        <label style={{ width: 200, position: 'relative', float: "left" }}>Breaker: </label>
-                                        <select ref="Coil" style={{ width: 'calc(100% - 200px)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            var object = _.clone(this.props) as RelayReportNavBarProps;
-                                            object.ChannelID = (e.target as any).value;
-                                            object.BreakerID = parseInt($(this.refs.Breaker).children("option:selected").val().toString());
-                                            this.props.stateSetter({ searchBarProps: object });
-                                        }} >
+                                        <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
+                                            setStation((e.target as any).value);
+                                        }} value={props.StationId}>
+                                            {substations.map((item,index) => <option key={index} value={item.LocationID} > {item.AssetName} </option>)}
                                         </select>
                                     </div>
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Breaker Group: </label>
+                                    <div className="form-group" style={{ height: 30 }}>
+                                        <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
+                                            setBreaker(parseInt((e.target as any).value.toString()));
+                                        }} value={props.BreakerID}>
+                                            {breakers.map((item,index) => <option key={index} value={item.AssetId} > {item.AssetName} </option>)}
+                                        </select>
+                                    </div>
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Bank: </label>
+                                    <div className="form-group" style={{ height: 30 }}>
+                                        <select  style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
+                                            setChannel(parseInt((e.target as any).value.toString()));
+                                        }} value={props.ChannelID}>
+                                            {channels.map((item,index) => <option key={index} value={item.ID} > {item.Name} </option>)}
+                                        </select>
+                                    </div>
+                                </form>
+                            </fieldset>
+                        </li>
+                        
+                        <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
+                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                                <legend className="w-auto" style={{ fontSize: 'large' }}>Time Window:</legend>
+                                <form>
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }} >Date: </label>
+                                    <div className="form-group" style={{ height: 30 }}>
+                                        <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
+                                            <input id="timePicker" className='form-control' value={props.time} onChange={(e) => {
+                                                setTime((e.target as any).value);
+                                            }} />
+                                        </div>
 
+                                        <div className='input-group date' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
+                                            <input className='form-control' id='datePicker' value={props.date} onChange={(e) => {
+                                                setDate((e.target as any).value);
+                                            }} />
+                                        </div>
+
+                                    </div>
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
+                                    <div className="form-group" style={{ height: 30 }}>
+                                        <input style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} value={props.windowSize} onChange={(e) => {
+                                            setWindowSize((e.target as any).value);
+                                        }} type="number" />
+                                        <select style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} value={props.timeWindowUnits} onChange={(e) => {
+                                            setTimeWindowUnits((e.target as any).value);
+                                        }} >
+                                            <option value="7">Year</option>
+                                            <option value="6">Month</option>
+                                            <option value="5">Week</option>
+                                            <option value="4">Day</option>
+                                            <option value="3">Hour</option>
+                                            <option value="2">Minute</option>
+                                            <option value="1">Second</option>
+                                            <option value="0">Millisecond</option>
+                                        </select>
+
+                                    </div>
                                 </form>
                             </fieldset>
                         </li>
@@ -182,5 +296,7 @@ export default class RelayReportNavBar extends React.Component<RelayReportNavBar
                 </div>
             </nav>
         );
-    }
+    
 }
+
+export default RelayReportNavBar;

@@ -29,7 +29,10 @@ import RelayReportNavBar, { RelayReportNavBarProps } from './RelayReportNavBar';
 import RelayReportPane from './RelayReportPane';
 
 import * as queryString from 'querystring';
+import moment from 'moment';
 
+const momentDateFormat = "MM/DD/YYYY";
+const momentTimeFormat = "HH:mm:ss.SSS";
 
 interface IProps { }
 interface IState {
@@ -51,7 +54,12 @@ export default class RelayReport extends React.Component<IProps, IState>{
             searchBarProps: {
                 stateSetter: this.stateSetter.bind(this),
                 BreakerID: (query['breakerid'] != undefined ? parseInt(query['breakerid'] as string) : -1),
-                ChannelID: (query['channelid'] != undefined ? parseInt( query['channelid'] as string) : -1),
+                ChannelID: (query['channelid'] != undefined ? parseInt(query['channelid'] as string) : -1),
+                date: (query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat)),
+                time: (query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat)),
+                windowSize: (query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10),
+                timeWindowUnits: (query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2),
+                StationId: (query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1),
             },
             
         };
@@ -74,7 +82,7 @@ export default class RelayReport extends React.Component<IProps, IState>{
                 <RelayReportNavBar {...this.state.searchBarProps}/>
                 <div style={{ width: '100%', height: 'calc( 100% - 118px)' }}>
                     <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
-                        <RelayReportPane breakerid={this.state.searchBarProps.BreakerID} channelid={this.state.searchBarProps.ChannelID} />
+                        <RelayReportPane {...this.state.searchBarProps} />
                     </div>
 
                 </div>

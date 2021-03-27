@@ -45,10 +45,6 @@ export default class SEBrowserdService {
         this.getEventSearchAsssetVoltageDisturbancesData = this.getEventSearchAsssetVoltageDisturbancesData.bind(this);
         this.getEventSearchAsssetFaultSegmentsData = this.getEventSearchAsssetFaultSegmentsData.bind(this);
 
-        this.GetSubStationData = this.GetSubStationData.bind(this);
-        this.GetBreakerData = this.GetBreakerData.bind(this);
-        this.GetCoilData = this.GetCoilData.bind(this);
-
         this.GetCapBankSubstationData = this.GetCapBankSubstationData.bind(this);
         this.GetCapBankData = this.GetCapBankData.bind(this);
     }
@@ -100,51 +96,6 @@ export default class SEBrowserdService {
         return this.capBankCapBankReportHandle;
     }
 
-    GetSubStationData(): JQuery.jqXHR {
-        if (this.subStationRelayReportHandle !== undefined)
-            this.subStationRelayReportHandle.abort();
-
-        this.subStationRelayReportHandle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/PQDashboard/RelayReport/GetSubstationData`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: true,
-            async: true
-        });
-        return this.subStationRelayReportHandle;
-    }
-
-
-    GetCoilData(lineid: number): JQuery.jqXHR {
-        if (this.channelRelayReportHandle !== undefined)
-            this.channelRelayReportHandle.abort();
-
-        this.channelRelayReportHandle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/PQDashboard/RelayReport/GetCoilData?lineID=${lineid}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: true,
-            async: true
-        });
-        return this.channelRelayReportHandle;
-    }
-
-    GetBreakerData(substationID: number): JQuery.jqXHR {
-        if (this.BreakerRelayReportHandle !== undefined)
-            this.BreakerRelayReportHandle.abort();
-
-        this.BreakerRelayReportHandle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/PQDashboard/RelayReport/GetBreakerData?locationID=${substationID}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: true,
-            async: true
-        });
-        return this.BreakerRelayReportHandle;
-    }
 
     getLeastActiveMeterActivityData(numresults: number, column: string): JQuery.jqXHR {
         if (this.leastActiveMeterHandle !== undefined)

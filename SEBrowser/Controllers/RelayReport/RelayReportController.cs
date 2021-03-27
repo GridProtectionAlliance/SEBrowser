@@ -75,6 +75,19 @@ namespace PQDashboard.Controllers.BreakerReport
             public double CalculationEnd;
             public List<FlotSeries> Data;
         }
+
+        enum TimeWindowUnits
+        {
+            Millisecond,
+            Second,
+            Minute,
+            Hour,
+            Day,
+            Week,
+            Month,
+            Year
+        }
+
         #endregion
 
         #region [ Constructors ]
@@ -139,13 +152,15 @@ namespace PQDashboard.Controllers.BreakerReport
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
-                    sc.CommandText = @" SELECT Breaker.ID AS AssetId,
-                Breaker.AssetKey
+                    sc.CommandText = @" SELECT
+                        Breaker.ID AS AssetId,
+                        Breaker.AssetKey,
+                        Breaker.AssetName
                     FROM	
 	                    Breaker LEFT JOIN AssetLocation ON Breaker.ID = AssetLocation.AssetID
                     WHERE
                         AssetLocation.LocationID = " + locationID + @"
-                    ORDER BY Breaker.AssetKey";
+                    ORDER BY Breaker.AssetName";
 
                     sc.CommandType = CommandType.Text;
 
@@ -191,125 +206,21 @@ namespace PQDashboard.Controllers.BreakerReport
 
         }
 
-        [Route("GetTrend"), HttpGet]
-        public JsonReturn GetData()
-        {
-            Dictionary<string, FlotSeries> temp;
-            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
-            {
-                Dictionary<string, string> query = Request.QueryParameters();
-                int breakerID;
-                int channelID;
-                try { channelID = int.Parse(query["channelid"]); }
-                catch { channelID = -1; }
-
-                try { breakerID = int.Parse(query["breakerid"]); }
-                catch { breakerID = -1; }
-
-               
-                Breaker breaker = new TableOperations<Breaker>(connection).QueryRecordWhere("ID = {0}", breakerID);
-
-                temp = GetStatisticsLookup(breaker.ID,channelID);
-
-            }
-
-            Dictionary<string, FlotSeries> dict = new Dictionary<string, FlotSeries>();
-
-            foreach (string key in temp.Keys)
-            {
-                if (temp[key].DataPoints.Count() > 0)
-                {
-                    if (dict.ContainsKey(key))
-                        dict[key].DataPoints = dict[key].DataPoints.Concat(temp[key].DataPoints).ToList();
-                    else
-                        dict.Add(key, temp[key]);
-                }
-            }
-            if (dict.Count == 0) return null;
-
-            JsonReturn returnDict = new JsonReturn();
-            List<FlotSeries> returnList = new List<FlotSeries>();
-
-            foreach (string key in dict.Keys)
-            {
-                FlotSeries series = new FlotSeries();
-                series = dict[key];
-
-                series.DataPoints = dict[key].DataPoints.OrderBy(x => x[0]).ToList();
-
-                returnList.Add(series);
-            }
-
-            //returnDict.StartDate = evt.StartTime;
-            //returnDict.EndDate = evt.EndTime;
-            returnDict.Data = null;
-            returnDict.CalculationTime = 0;
-            returnDict.CalculationEnd = 0;
-
-            return returnDict;
-        }
-
-        private Dictionary<string, FlotSeries> GetStatisticsLookup(int LineID, int channelID = -1)
-        {
-            Dictionary<string, FlotSeries> result = new Dictionary<string, FlotSeries>();
-
-            DataTable relayHistory = RelayHistoryTable(LineID, channelID);
-
-            DataRow[] dr = relayHistory.Select();
-
-            List<String> RelayParamters = new List<string>()
-            {
-                "TripTime",
-                "PickupTime",
-                "TripCoilCondition",
-                "Imax1",
-                "Imax2",
-                "TripTimeAlert",
-                "PickupTimeAlert",
-                "TripCoilConditionAlert",
-            };
-
-            foreach (String param in RelayParamters)
-            {
-                double scaling = 1.0;
-                if ((param == "PickupTime") || (param == "TripTime"))
-                {
-                    scaling = 0.1d;
-
-                }
-                List<double[]> dataPoints = dr.Select(dataPoint => new double[] { dataPoint.ConvertField<DateTime>("TripInitiate").Subtract(m_epoch).TotalMilliseconds, dataPoint.ConvertField<double>(param) * scaling }).ToList();
-                result.Add(param, new FlotSeries()
-                {
-                    ChannelID = 0,
-                    ChannelName = param,
-                    ChannelDescription = "Relay " + param,
-                    MeasurementCharacteristic = param,
-                    MeasurementType = param,
-                    Phase = "",
-                    SeriesType = "",
-                    DataPoints = dataPoints,
-                    ChartLabel = param
-                });
-
-            }
-
-            return result;
-
-        }
-
-        private DataTable RelayHistoryTable(int relayID, int channelID=-1)
+        private DataTable RelayHistoryTable( DateTime dateTime, int windowSize, string timeWindowUnits, int relayID, int channelID = -1)
         {
             DataTable dataTable;
+
+            string timeRestriction = $"TripInitiate Between DATEADD({timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}')";
 
             using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 if (channelID > 0)
                 {
-                    dataTable = connection.RetrieveData("SELECT * FROM BreakerHistory WHERE BreakerId = {0} AND TripCoilChannelID = {1}", relayID, channelID);
+                    dataTable = connection.RetrieveData($"SELECT * FROM BreakerHistory WHERE BreakerId = {{0}} AND TripCoilChannelID = {{1}} AND {timeRestriction}", relayID, channelID);
                 }
                 else
                 {
-                    dataTable = connection.RetrieveData("SELECT * FROM BreakerHistory WHERE BreakerId = {0}", relayID);
+                    dataTable = connection.RetrieveData($"SELECT * FROM BreakerHistory WHERE BreakerId = {{0}} AND {timeRestriction}", relayID);
                 }
             }
             return dataTable;
@@ -322,6 +233,11 @@ namespace PQDashboard.Controllers.BreakerReport
             int lineID;
             int channelID;
 
+            DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+            string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
+            int windowSize = int.Parse(query["windowSize"]);
+
+
             try { channelID = int.Parse(query["channelID"]); }
             catch { channelID = -1; }
 
@@ -330,7 +246,7 @@ namespace PQDashboard.Controllers.BreakerReport
             
             if (lineID <= 0) return new DataTable();
             
-            return RelayHistoryTable(lineID, channelID);
+            return RelayHistoryTable(dateTime,windowSize,timeWindowUnits,lineID, channelID);
             
         }
 

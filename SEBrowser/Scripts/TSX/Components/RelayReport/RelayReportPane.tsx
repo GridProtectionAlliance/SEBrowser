@@ -23,345 +23,159 @@
 import * as React from 'react';
 import RelayPerformanceTrend from './RelayPerformanceTrend';
 import moment from 'moment';
+import { RelayReportNavBarProps } from './RelayReportNavBar';
+import { Line, LineWithThreshold, Plot } from '@gpa-gemstone/react-graph';
+import { RandomColor } from '@gpa-gemstone/helper-functions';
+import { cloneDeep } from 'lodash';
 
-export default class RelayReportPane extends React.Component<{ breakerid: number, channelid: number }, {showRelayHistory: boolean}> {
-    optionsUpper: object;
-    optionsLower: object;
+interface IRelayPerformance {
+    EventID: number,
+    TripInitiate: string,
+    TripTime: number,
+    PickupTime: number,
+    TripCoilCondition: number,
+    Imax1: number,
+    Imax2: number,
+    TripTimeAlert: number,
+    TripcoilConditionAlert: number,
+    PickupTimeAlert: number,
+}
 
-    optionsTripTime: object;
-    optionsPickupTime: object;
-    optionsTripCoilCondition: object;
-    optionsImax1: object;
-    optionsImax2: object;
-    relayTrendHandle: JQuery.jqXHR;
-    constructor(props, context) {
-        super(props, context);
+const RelayReportPane = (props: RelayReportNavBarProps) => {
+    const [realyPerformance, setRelayPerformance] = React.useState<IRelayPerformance[]>([]);
+    const [Tstart, setTstart] = React.useState<number>(0);
+    const [Tend, setTend] = React.useState<number>(0);
 
-        this.state = {
-            showRelayHistory: false
-        };
+    React.useEffect(() => {
+        let h = getRelayPerformance()
 
-        this.optionsTripTime = {
-            canvas: true,
-            legend: { show: false },
-            axisLabels: { show: true } ,
-            grid: {
-                autoHighlight: false,
-                clickable: true,
-                hoverable: true,
-                markings: [],
-            },
-            xaxis: { show: false },
-            yaxis: {
-                show: true,
-                axisLabel: 'Trip (micros)',
-                labelWidth: 50,
-            },
-            points: {
-                show: true,
-                fill: true,
-                fillColor: "#000000"
-                },
-            lines: {
-                show: true,
-            },
-            series:
-            {
-                dashes:
-                {
-                    show: true,
-                    dashLength: 5
-                },
-                shadowSize: 0
-            }
-        }
-                
-        this.optionsPickupTime = {
-            canvas: true,
-            legend: { show: false },
-            axisLabels: { show: true },
-            grid: {
-                autoHighlight: false,
-                clickable: true,
-                hoverable: true,
-                markings: [],
-            },
-            xaxis: { show: false },
-            yaxis: {
-                show: true,
-                axisLabel: 'Pickup (micros)',
-                labelWidth: 50,
-            },
-            points: {
-                show: true,
-                fill: true,
-                fillColor: "#000000"
-            },
-            lines: {
-                show: true,
-            },
-            series:
-            {
-                dashes: {
-                    show: true,
-                    dashLength: 5
-                },
-                shadowSize: 0
-            }
-        }
+        return () => { if (h != null && h.abort != null) h.abort(); };
+        
+    }, [props]);
 
-        this.optionsTripCoilCondition = {
-            canvas: true,
-            legend: { show: false },
-            axisLabels: { show: true },
-            grid: {
-                autoHighlight: false,
-                clickable: true,
-                hoverable: true,
-                markings: [],
-            },
-            xaxis: { show: false },
-            yaxis: {
-                show: true,
-                axisLabel: 'TCC (A/s)',
-                labelWidth: 50,
-            },
-            points: {
-                show: true,
-                fill: true,
-                fillColor: "#000000"
-            },
-            lines: {
-                show: true,
-            },
-            series:
-            {
-                dashes: {
-                    show: true,
-                    dashLength: 5
-                },
-                shadowSize: 0
-            }
-        }
+    React.useEffect(() => {
+        getTimeLimits()
+    }, [props.windowSize, props.timeWindowUnits, props.time, props.date])
 
-        this.optionsImax1 = {
-            canvas: true,
-            legend: { show: false },
-            axisLabels: { show: true },
-            grid: {
-                autoHighlight: false,
-                clickable: true,
-                hoverable: true,
-                markings: [],
-            },
-            xaxis: { show: false },
-            yaxis: {
-                show: true,
-                axisLabel: 'Imax 1 (A)',
-                labelWidth: 50,
-            },
-            points: {
-                show: true,
-                fill: true,
-                fillColor: "#000000"
-            },
-            lines: {
-                show: true,
-            }
-        }
 
-        this.optionsImax2 = {
-            canvas: true,
-            legend: { show: false },
-            axisLabels: { show: true },
-            grid: {
-                autoHighlight: false,
-                clickable: true,
-                hoverable: true,
-                markings: [],
-            },
-            xaxis: {
-                mode: "time",
-                reserveSpace: false,
-                ticks: (axis) => {
-                    var ticks = [],
-                        delta = (axis.max - axis.min) / 11,
-                        start = this.floorInBase(axis.min, axis.delta),
-                        i = 0,
-                        v = Number.NaN,
-                        prev;
+    function getTimeLimits() {
+        let dT = props.windowSize;
+        let Tcenter = moment.utc(props.date + " " + props.time, "MM/DD/YYYY HH:mm:ss.SSSS");
+        let dUnit: moment.unitOfTime.DurationConstructor;
 
-                    for (var i = 1; i < 11; ++i) {
-                        ticks.push(axis.min + i * delta);
-                    }
+        if (props.timeWindowUnits == 0)
+            dUnit = "ms";
+        else if (props.timeWindowUnits == 1)
+            dUnit = "s"
+        else if (props.timeWindowUnits == 2)
+            dUnit = "m"
+        else if (props.timeWindowUnits == 3)
+            dUnit = "h"
+        else if (props.timeWindowUnits == 4)
+            dUnit = "d"
+        else if (props.timeWindowUnits == 5)
+            dUnit = "w"
+        else if (props.timeWindowUnits == 6)
+            dUnit = "M"
+        else if (props.timeWindowUnits == 7)
+            dUnit = "y"
 
-                    return ticks;
-                },
-                tickFormatter: (value, axis) => {
-                    if (axis.delta < 1) {
-                        return (moment(value).format("mm:ss.SS") + "<br>" + "Test");
-                        // var trunc = value - this.floorInBase(value, 1000);
-                        // return this.defaultTickFormatter(trunc, axis) + " ms";
-                    }
-
-                    if (axis.delta < 1000) {
-                        return (moment(value).format("mm:ss.SS") + "<br>" + "Test");
-                    }
-                    else {
-                        return moment(value).format("MM/DD/YY");
-                    }
-                },
-                tickLength: 5
-            },
-            yaxis: {
-                show: true,
-                axisLabel: 'Imax 2 (A)',
-                labelWidth: 50,
-            },
-            points: {
-                show: true,
-                fill: true,
-                fillColor: "#000000"
-            },
-            lines: { show: true }
-        }
+        let Start = cloneDeep(Tcenter);
+        Start.subtract(dT, dUnit);
+        let End = cloneDeep(Tcenter);
+        End.add(dT, dUnit);
+        setTend(End.valueOf());
+        setTstart(Start.valueOf())
+        
     }
 
-    defaultTickFormatter(value, axis) {
+  
 
-        var factor = axis.tickDecimals ? Math.pow(10, axis.tickDecimals) : 1;
-        var formatted = "" + Math.round(value * factor) / factor;
-
-        // If tickDecimals was specified, ensure that we have exactly that
-        // much precision; otherwise default to the value's own precision.
-
-        if (axis.tickDecimals != null) {
-            var decimal = formatted.indexOf(".");
-            var precision = decimal == -1 ? 0 : formatted.length - decimal - 1;
-            if (precision < axis.tickDecimals) {
-                return (precision ? formatted : formatted + ".") + ("" + factor).substr(1, axis.tickDecimals - precision);
-            }
-        }
-
-        return formatted;
-    };
-    // round to nearby lower multiple of base
-    floorInBase(n, base) {
-        return base * Math.floor(n / base);
-    }
-
-
-    componentDidMount() {
-        if (this.props.breakerid >= 0)
-            this.getData(this.props);
-    }
-    componentWillReceiveProps(nextProps) {
-
-        if (nextProps.breakerid >= 0)
-            this.getData(nextProps);
-    }
-
-    getColor(label) {
-        if (label.indexOf('VA') >= 0) return '#A30000';
-        if (label.indexOf('VB') >= 0) return '#0029A3';
-        if (label.indexOf('VC') >= 0) return '#007A29';
-        if (label.indexOf('VN') >= 0) return '#c3c3c3';
-        if (label.indexOf('IA') >= 0) return '#FF0000';
-        if (label.indexOf('IB') >= 0) return '#0066CC';
-        if (label.indexOf('IC') >= 0) return '#33CC33';
-        if (label.indexOf('IR') >= 0) return '#c3c3c3';
-
-        else {
-            var ranNumOne = Math.floor(Math.random() * 256).toString(16);
-            var ranNumTwo = Math.floor(Math.random() * 256).toString(16);
-            var ranNumThree = Math.floor(Math.random() * 256).toString(16);
-
-            return `#${(ranNumOne.length > 1 ? ranNumOne : "0" + ranNumOne)}${(ranNumTwo.length > 1 ? ranNumTwo : "0" + ranNumTwo)}${(ranNumThree.length > 1 ? ranNumThree : "0" + ranNumThree)}`;
-        }
-    }
-
-    getRelayTrendData(lineID: number, channelID: number): JQuery.jqXHR {
-        if (this.relayTrendHandle !== undefined)
-            this.relayTrendHandle.abort();
-
-        this.relayTrendHandle = $.ajax({
+    function getRelayPerformance(): JQuery.jqXHR<IRelayPerformance[]> {
+        let h = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/RelayReport/GetTrend?breakerid=${lineID}&channelid=${channelID}`,
+            url: `${homePath}api/PQDashboard/RelayReport/getRelayPerformance?lineID=${props.BreakerID}&channelID=${props.ChannelID}}&date=${props.date}` +
+                `&time=${props.time}&timeWindowunits=${props.timeWindowUnits}&windowSize=${props.windowSize}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
-        return this.relayTrendHandle;
+        h.done((d: IRelayPerformance[]) => { if (d != null) setRelayPerformance(d); })
+        return h;
     }
 
-    getData(props) {
+   
 
-        $(this.refs.TTwindow).children().remove();
-        $(this.refs.PTwindow).children().remove();
-        $(this.refs.TCCwindow).children().remove();
-        $(this.refs.L1window).children().remove();
-        $(this.refs.L2window).children().remove();
+    return ( <>
+        <div className="card">
+            <div className="card-header">Breaker Performance:</div>
+            <div className="card-body">
+                <table className="table">
+                    <thead>
+                        <tr>
+                            <th>Event ID</th>
+                            <th >Trip Initiation Time</th>
+                            <th>Trip Time</th>
+                            <th>Pickup Time</th>
+                            <th>Extinction Time</th>
+                            <th>Trip Coil Condition</th>
+                            <th>L1</th>
+                            <th>L2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {realyPerformance.map((item, index) => <tr style={{ background: 'default' }} key={index}>
+                            <td><a id="eventLink" target="_blank" href={homePath + 'Main/OpenSEE?eventid=' + item.EventID} ><div style={{ width: '100%', height: '100%' }}>{item.EventID}</div></a></td>
+                            <td>{moment(item.TripInitiate).format('MM/DD/YY HH:mm:ss.SSSS')}</td>
+                            <td>{item.TripTime * 0.1} micros</td>
+                            <td>{item.PickupTime * 0.1} micros</td>
+                            <td> micros</td>
+                            <td>{item.TripCoilCondition.toFixed(2)} A/s</td>
+                            <td>{item.Imax1.toFixed(3)} A</td>
+                            <td>{item.Imax2.toFixed(3)} A</td>
+                            </tr>)}
+                    </tbody>
 
+                </table>
 
-        this.getRelayTrendData(props.breakerid,props.channelid).then(data => {
-            
-            if (data == null) {
-                this.setState((state, props) => { return { showRelayHistory: false }; })
-                return;
-            }
-            this.setState((state, props) => { return { showRelayHistory: true }; })
-
-            var tripTimeVessel = [];
-            var pickupTimeVessel = [];
-            var tripCoilConditionVessel = [];
-            var l1Vessel = [];
-            var l2Vessel = [];
-
-            $.each(data.Data, (index, value) => {
-                if (value.MeasurementType == "TripTime") { tripTimeVessel.push({ label: value.ChartLabel, data: value.DataPoints, color: this.getColor(value.ChartLabel) }) }
-                else if (value.MeasurementType == "PickupTime") { pickupTimeVessel.push({ label: value.ChartLabel, data: value.DataPoints, color: this.getColor(value.ChartLabel) }) }
-                else if (value.MeasurementType == "TripCoilCondition") { tripCoilConditionVessel.push({ label: value.ChartLabel, data: value.DataPoints, color: this.getColor(value.ChartLabel) }) }
-                else if (value.MeasurementType == "Imax1") { l1Vessel.push({ label: value.ChartLabel, data: value.DataPoints, color: this.getColor(value.ChartLabel) }) }
-                else if (value.MeasurementType == "Imax2") { l2Vessel.push({ label: value.ChartLabel, data: value.DataPoints, color: this.getColor(value.ChartLabel) }) }
-
-                else if (value.MeasurementType == "TripTimeAlert") { tripTimeVessel.push({ label: value.ChartLabel, data: value.DataPoints, color: '#FF0000', lines: { show: false }, points: { show: false }}) }
-                else if (value.MeasurementType == "PickupTimeAlert") { pickupTimeVessel.push({ label: value.ChartLabel, data: value.DataPoints, color: '#FF0000', lines: { show: false }, points: { show: false } }) }
-                else if (value.MeasurementType == "TripCoilConditionAlert") { tripCoilConditionVessel.push({ label: value.ChartLabel, data: value.DataPoints, color: '#FF0000', lines: { show: false }, points: { show: false } }) }
-            });
-
-            $.plot($(this.refs.TTwindow), tripTimeVessel, this.optionsTripTime);
-            $.plot($(this.refs.PTwindow), pickupTimeVessel, this.optionsPickupTime);
-            $.plot($(this.refs.TCCwindow), tripCoilConditionVessel, this.optionsTripCoilCondition);
-            $.plot($(this.refs.L1window), l1Vessel, this.optionsImax1);
-            $.plot($(this.refs.L2window), l2Vessel, this.optionsImax2);
-        });
-
-
-    }
-
-    render() {
-        if (this.props.breakerid == -1) return <div></div>;
-
-        const showRelayHistory = this.state.showRelayHistory;
-
-        return (
-            <div>
-                <RelayPerformanceTrend {...this.props} />
-
-                <div className="card">
-                    <div className="card-header">Historic Breaker Performance</div>
-                    <div className="card-body">
-                        <div ref="TTwindow" style={{ height: 150, width: 'calc(100%)', /*, margin: '0x', padding: '0px'*/  display: showRelayHistory ? 'block' : 'none' }}></div>
-                        <div ref="PTwindow" style={{ height: 150, width: 'calc(100%)', /*, margin: '0x', padding: '0px'*/  display: showRelayHistory ? 'block' : 'none' }}></div>
-                        <div ref="TCCwindow" style={{ height: 150, width: 'calc(100%)', /*, margin: '0x', padding: '0px'*/  display: showRelayHistory ? 'block' : 'none' }}></div>
-                        <div ref="L1window" style={{ height: 150, width: 'calc(100%)', /*, margin: '0x', padding: '0px'*/  display: showRelayHistory ? 'block' : 'none' }}></div>
-                        <div ref="L2window" style={{ height: 150, width: 'calc(100%)', /*, margin: '0x', padding: '0px'*/  display: showRelayHistory ? 'block' : 'none' }}></div>
-                    </div>
-                </div>
             </div>
-        );
-    }
+        </div>
+        {realyPerformance.length > 0 ? < div className="card">
+            <div className="card-header">Historic Breaker Performance</div>
+            <div className="card-body">
+                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
+                    Ylabel={'Trip (micros)'} showMouse={true} useMetricFactors={false}>
+                    <LineWithThreshold highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TripTime * 0.1])}
+                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].TripTimeAlert != 0 ? [{ Value: realyPerformance[0].TripTimeAlert, Color: '#ff0000' }] : []} legend={'Trip Time'}/>
+                </Plot>
+                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
+                    Ylabel={'Pickup (micros)'} showMouse={true} useMetricFactors={false}>
+                    <LineWithThreshold highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.PickupTime * 0.1])}
+                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].PickupTimeAlert != 0 ? [{ Value: realyPerformance[0].PickupTimeAlert, Color: '#ff0000' }] : []} legend={'Pickup Time'}/>
+                </Plot>
+                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
+                    Ylabel={'TCC (A/s)'} showMouse={true} useMetricFactors={false}>
+                    <LineWithThreshold highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TripCoilCondition])}
+                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].TripcoilConditionAlert != 0 ? [{ Value: realyPerformance[0].TripcoilConditionAlert, Color: '#ff0000' }] : []} legend={'Trip Coil condition'}/>
+                </Plot>
+
+                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
+                    Ylabel={'Imax 1 (A)'} showMouse={true} useMetricFactors={false}>
+                    <Line highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Imax1])} legend={'Imax 1'} />
+                </Plot>
+                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
+                    Ylabel={'Imax 2 (A)'} showMouse={true} useMetricFactors={false}>
+                    <Line highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Imax2])} legend={'Imax 2'}/>
+                </Plot>
+            </div>
+        </div> : null}
+        </>
+
+    )
+
 }
+
+export default RelayReportPane;
 
