@@ -229,7 +229,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                                             {substations.map((item,index) => <option key={index} value={item.LocationID} > {item.AssetName} </option>)}
                                         </select>
                                     </div>
-                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Breaker Group: </label>
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Breaker: </label>
                                     <div className="form-group" style={{ height: 30 }}>
                                         <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
                                             setBreaker(parseInt((e.target as any).value.toString()));
@@ -237,7 +237,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                                             {breakers.map((item,index) => <option key={index} value={item.AssetId} > {item.AssetName} </option>)}
                                         </select>
                                     </div>
-                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Bank: </label>
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Trip Coil: </label>
                                     <div className="form-group" style={{ height: 30 }}>
                                         <select  style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
                                             setChannel(parseInt((e.target as any).value.toString()));

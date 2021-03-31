@@ -147,27 +147,27 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
             <div className="card-body">
                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
                     Ylabel={'Trip (micros)'} showMouse={true} useMetricFactors={false}>
-                    <LineWithThreshold highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TripTime * 0.1])}
-                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].TripTimeAlert != 0 ? [{ Value: realyPerformance[0].TripTimeAlert, Color: '#ff0000' }] : []} legend={'Trip Time'}/>
+                    <LineWithThreshold highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TripTime * 0.1] as [number,number]).reverse()}
+                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].TripTimeAlert != 0 && realyPerformance[0].TripTimeAlert != undefined ? [{ Value: realyPerformance[0].TripTimeAlert, Color: '#ff0000' }] : []} legend={'Trip Time'}/>
                 </Plot>
                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
                     Ylabel={'Pickup (micros)'} showMouse={true} useMetricFactors={false}>
-                    <LineWithThreshold highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.PickupTime * 0.1])}
-                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].PickupTimeAlert != 0 ? [{ Value: realyPerformance[0].PickupTimeAlert, Color: '#ff0000' }] : []} legend={'Pickup Time'}/>
+                    <LineWithThreshold highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.PickupTime * 0.1] as [number, number]).reverse()}
+                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].PickupTimeAlert != 0 && realyPerformance[0].PickupTimeAlert != undefined ? [{ Value: realyPerformance[0].PickupTimeAlert, Color: '#ff0000' }] : []} legend={'Pickup Time'}/>
                 </Plot>
                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
                     Ylabel={'TCC (A/s)'} showMouse={true} useMetricFactors={false}>
-                    <LineWithThreshold highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TripCoilCondition])}
-                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].TripcoilConditionAlert != 0 ? [{ Value: realyPerformance[0].TripcoilConditionAlert, Color: '#ff0000' }] : []} legend={'Trip Coil condition'}/>
+                    <LineWithThreshold highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TripCoilCondition] as [number, number]).reverse()}
+                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].TripcoilConditionAlert != 0 && realyPerformance[0].TripcoilConditionAlert != undefined ? [{ Value: realyPerformance[0].TripcoilConditionAlert, Color: '#ff0000' }] : []} legend={'Trip Coil condition'} />
                 </Plot>
 
                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
                     Ylabel={'Imax 1 (A)'} showMouse={true} useMetricFactors={false}>
-                    <Line highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Imax1])} legend={'Imax 1'} />
+                    <Line highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Imax1] as [number, number]).reverse()} legend={'Imax 1'} />
                 </Plot>
                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
                     Ylabel={'Imax 2 (A)'} showMouse={true} useMetricFactors={false}>
-                    <Line highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Imax2])} legend={'Imax 2'}/>
+                    <Line highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Imax2] as [number, number]).reverse()} legend={'Imax 2'}/>
                 </Plot>
             </div>
         </div> : null}
