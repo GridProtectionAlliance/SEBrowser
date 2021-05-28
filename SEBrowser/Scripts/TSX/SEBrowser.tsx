@@ -40,6 +40,7 @@ import { SEBrowser } from './global';
 
 declare var homePath: string;
 declare var controllerViewPath: string;
+declare var version: string;
 
 class SEBrowserMainPage extends React.Component<{}, SEBrowser.State>{
     history: object;
@@ -69,7 +70,7 @@ class SEBrowserMainPage extends React.Component<{}, SEBrowser.State>{
                             </div>
                             <div style={{ width: '100%', textAlign: 'center' }}>
 
-                                <span>Version 1.0</span>
+                                <span>Version {version}</span>
                                 <br />
                                 <span><About /></span>
                             </div>
