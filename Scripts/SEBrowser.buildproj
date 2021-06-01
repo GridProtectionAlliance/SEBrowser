@@ -69,6 +69,8 @@
 **       the official NuGet.org packages feed.
 **  12/02/2014 - J. Ritchie Carroll
 **       Fixed NuGet version naming for pre-release roll-outs.
+**  06/01/2021 - C. Lackner
+**       Added ability to Publish.
 **
 *******************************************************************************************************
 -->
@@ -90,6 +92,7 @@
 
       <!-- Override default settings. -->
       <GitServer Condition="'$(GitServer)' == ''">git@github.com:GridProtectionAlliance/SEBrowser.git</GitServer>
+	  <PublishApp>true</PublishApp>
     </PropertyGroup>
   </Target>
 
@@ -112,7 +115,7 @@
 	 <PropertyGroup>
 		<PowerShellExe Condition=" '$(PowerShellExe)'=='' ">%WINDIR%\System32\WindowsPowerShell\v1.0\powershell.exe</PowerShellExe>
 	</PropertyGroup>
-	<Exec Command="$(PowerShellExe) -NonInteractive -executionpolicy Unrestricted -command &quot;&amp; { &amp;&apos;$(LocalFolder)\Build\Scripts\BuildTSX.ps1&apos; &apos;$(LocalFolder)\Source\Applications\SystemCenter&apos; } &quot;" />
+	<Exec Command="$(PowerShellExe) -NonInteractive -executionpolicy Unrestricted -command &quot;&amp; { &amp;&apos;$(LocalFolder)\Scripts\BuildTSX.ps1&apos; &apos;$(LocalFolder)\SEBrowser&apos; } &quot;" />
     <ItemGroup>
       <!--List of projects to build.-->
       <ProjectsToBuild Include="$(ProjectSolution)"/>

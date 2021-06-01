@@ -61,6 +61,8 @@
 **       Allowed for customization of versioning scheme by consuming script.
 **  08/26/2013 - J. Ritchie Carroll
 **       Added flag "SkipVersioning" to allow bypass of versioning steps.
+**  06/01/2021 - C. Lackner
+**       Added ability to Publish.
 **
 *******************************************************************************************************
 -->
@@ -135,6 +137,8 @@
     <ScriptsArchiveWorkingDirectory></ScriptsArchiveWorkingDirectory>
     <!-- Working directory for creating source code archive file. -->
     <SourceArchiveWorkingDirectory></SourceArchiveWorkingDirectory>
+	<!--Publish Application when done building.-->
+    <PublishApp>$(PublishApp)</PublishApp>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -303,6 +307,7 @@
       <!-- <SandcastleBuilder Condition="'$(SandcastleBuilder)' == ''">$(SHFBROOT)\SandcastleBuilderGUI.exe</SandcastleBuilder> -->
       <ForceBuild Condition="'$(ForceBuild)' == ''">false</ForceBuild>
       <SkipVersioning Condition="'$(SkipVersioning)' == ''">false</SkipVersioning>
+	  <PublishApp Condition="'$(PublishApp)' == ''">false</PublishApp>
       <DoNotPush Condition="'$(DoNotPush)' == ''">false</DoNotPush>
       <BinariesArchiveFileName Condition="'$(BinariesArchiveFileName)' == ''">$(LocalFolder)\$(ProjectName).Binaries.zip</BinariesArchiveFileName>
       <InstallsArchiveFileName Condition="'$(InstallsArchiveFileName)' == ''">$(LocalFolder)\$(ProjectName).Installs.zip</InstallsArchiveFileName>
@@ -398,7 +403,7 @@
   <Target Name="CoreBuildProjects">
     <!-- Build all of the specified projects. -->
     <Message Text="Compiling projects..."/>
-    <MSBuild Projects="@(ProjectsToBuild)" Properties="Configuration=$(BuildFlavor);Platform=$(BuildTarget);BuildInParallel=$(BuildInParallel)"/>
+    <MSBuild Projects="@(ProjectsToBuild)" Properties="Configuration=$(BuildFlavor);Platform=$(BuildTarget);BuildInParallel=$(BuildInParallel);DeployOnBuild=$(PublishApp);PublishProfile=PublishProfile.pubxml"/>
 
     <!-- Create list of files to be deleted from build output. -->
     <ItemGroup>
