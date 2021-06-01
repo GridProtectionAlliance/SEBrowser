@@ -139,6 +139,8 @@
     <SourceArchiveWorkingDirectory></SourceArchiveWorkingDirectory>
 	<!--Publish Application when done building.-->
     <PublishApp>$(PublishApp)</PublishApp>
+	<!--Publish Profile.-->
+    <PublishProfile>$(PublishProfile)</PublishProfile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -403,7 +405,7 @@
   <Target Name="CoreBuildProjects">
     <!-- Build all of the specified projects. -->
     <Message Text="Compiling projects..."/>
-    <MSBuild Projects="@(ProjectsToBuild)" Properties="Configuration=$(BuildFlavor);Platform=$(BuildTarget);BuildInParallel=$(BuildInParallel);DeployOnBuild=$(PublishApp);PublishProfile=PublishProfile.pubxml"/>
+    <MSBuild Projects="@(ProjectsToBuild)" Properties="Configuration=$(BuildFlavor);Platform=$(BuildTarget);BuildInParallel=$(BuildInParallel);DeployOnBuild=$(PublishApp);PublishProfile=$(PublishProfile)"/>
 
     <!-- Create list of files to be deleted from build output. -->
     <ItemGroup>

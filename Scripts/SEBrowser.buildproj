@@ -93,6 +93,7 @@
       <!-- Override default settings. -->
       <GitServer Condition="'$(GitServer)' == ''">git@github.com:GridProtectionAlliance/SEBrowser.git</GitServer>
 	  <PublishApp>true</PublishApp>
+	  <PublishProfile>$(LocalFolder)\Scripts\PublishProfile.pubxml</PublishProfile>
     </PropertyGroup>
   </Target>
 
