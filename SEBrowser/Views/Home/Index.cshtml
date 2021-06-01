@@ -57,9 +57,7 @@
     <link rel="shortcut icon" type="image/ico" href="~/Images/icon.png" />
     <link href="@Url.Content("~/@GSF/Web/Shared/Content/bootstrap4.css")" rel="stylesheet">
     <link href="@Url.Content("~/@GSF/Web/Shared/Content/font-awesome.css")" rel="stylesheet">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.15/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.15/esri/css/esri.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+
     <link href="~/Content/bootstrap4-datetimepicker.css" rel="stylesheet" />
     <style>
         body {
@@ -98,7 +96,7 @@
         var scInstance = '@Html.Raw(ViewBag.scInstance)';
         var openSEEInstance = '@Html.Raw(ViewBag.openSEEInstance)';
         var faultLocationInstance = '@Html.Raw(ViewBag.faultLocationInstance)';
-        var version = '@version';
+        var version = '@applicationVersion';
         var homePath = '@Html.Raw(Url.Content("~/"))';
         var controllerViewPath = homePath + '@Html.Raw(this.ViewContext.RouteData.GetRequiredString("controller"))/@Html.Raw(this.ViewContext.RouteData.GetRequiredString("action"))';
     </script>
@@ -119,8 +117,7 @@
     <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.axislabels.min.js")"></script>
 
     <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/flot/jquery.flot.dashes.js")"></script>
-    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/esri-leaflet@2.3.3/dist/esri-leaflet.js"></script>
+
     <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/popper.js")"></script>
     <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/bootstrap4.js")"></script>
     <script src="~/Scripts/Lib/bootstrap4-datetimepicker.min.js"></script>
