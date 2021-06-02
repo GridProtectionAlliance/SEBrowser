@@ -87,9 +87,9 @@
       
       <VersionMajorChange>None</VersionMajorChange>
       <VersionMinorChange>None</VersionMinorChange>
-      <VersionBuildChange>Increment</VersionBuildChange>
-      <VersionRevisionChange>None</VersionRevisionChange>
-
+      <VersionBuildChange>None</VersionBuildChange>
+      <VersionRevisionChange>Increment</VersionRevisionChange>
+	  <VersionFile Condition="'$(VersionFile)' == ''">$(LocalFolder)\Scripts\$(ProjectName).version</VersionFile>
       <!-- Override default settings. -->
       <GitServer Condition="'$(GitServer)' == ''">git@github.com:GridProtectionAlliance/SEBrowser.git</GitServer>
 	  <PublishApp>true</PublishApp>
@@ -101,11 +101,11 @@
     <Message Text="SkipVersioning = --$(SkipVersioning)--"/>
     <ItemGroup>
       <!--List of files to be versioned.-->
-      <FilesToVersion Include="$(LocalFolder)\Source\**\AssemblyInfo.*">
+      <FilesToVersion Include="$(LocalFolder)\**\AssemblyInfo.*">
         <VersionRegex>(?'BeforeVersion'AssemblyVersion\(%22)(?'CoreVersion'(\*|\d+)\.)+(\*|\d+)(?'AfterVersion'%22\))</VersionRegex>
         <VersionPrecision>4</VersionPrecision>
       </FilesToVersion>
-      <FilesToVersion Include="$(LocalFolder)\Source\**\AssemblyInfo.*">
+      <FilesToVersion Include="$(LocalFolder)\**\AssemblyInfo.*">
         <VersionRegex>(?'BeforeVersion'AssemblyFileVersion\(%22)(?'CoreVersion'(\*|\d+)\.)+(\*|\d+)(?'AfterVersion'%22\))</VersionRegex>
         <VersionPrecision>4</VersionPrecision>
       </FilesToVersion>
@@ -135,14 +135,17 @@
     
     <ItemGroup>
       <!--List of source code files to archive.-->
-      <SourcesToArchive Include="$(LocalFolder)\Source\**\*.*" Exclude="$(LocalFolder)\Source\**\obj\**\*.*"/>
-    
+      <SourcesToArchive Include="$(LocalFolder)\**\*.*" Exclude="$(LocalFolder)\**\obj\**\*.*"/>
+      <SourcesToArchive Remove="$(LocalFolder)\Scripts\**\*.*"/>
+	  
       <!--List of binaries to archive.-->
-      
+      <BinariesToArchive Remove="@(BinariesToArchive)"/>
+      <BinariesToArchive  Include="$(LocalFolder)\SEBrowser\Publish\**\*.*"/>
+	  
       <!-- List of installs to archive. -->
 	  
       <!--Destinations of archive files (*.zip).-->
-	  
+	  <ArchiveDestinations Include="$(BuildDeployFolder)"/>
     </ItemGroup>
   </Target>
 </Project>
