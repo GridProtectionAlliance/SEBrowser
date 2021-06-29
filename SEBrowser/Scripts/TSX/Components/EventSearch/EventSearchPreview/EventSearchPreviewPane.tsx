@@ -29,7 +29,7 @@ import EventSearchFaultSegments from './EventSearchAssetFaultSegments';
 import EventSearchHistory from './EventSearchAssetHistory';
 import EventSearchCorrelatedSags from './EventSearchCorrelatedSags';
 import EventSearchRelayPerformance from './EventSearchRelayPerformance';
-import { OpenXDA, SEBrowser } from '../../../global'
+import { OpenXDA, Redux, SEBrowser } from '../../../global'
 import EventSearchBreakerPerformance from './EventSearchBreakerPerformance';
 import EventSearchFileInfo from './EventSearchFileInfo';
 import TVAESRIMap from './TVA/ESRIMap';
@@ -53,7 +53,7 @@ export default function EventPreviewPane(props: { EventID: number, InitialTab?: 
 
     const [settings, setSettings] = React.useState<SEBrowser.EventPreviewPaneSetting[]>([]);
     const [tab, setTab] = React.useState<'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All'>(props.InitialTab == null ? 'Waveform' : props.InitialTab);
-    const event: OpenXDA.Event = useSelector(state => SelectEventSearchByID(state,props.EventID));
+    const event: OpenXDA.Event = useSelector((state: Redux.StoreState) => SelectEventSearchByID(state,props.EventID));
     React.useEffect(() => {
         GetSettings();
     }, []);

@@ -27,6 +27,8 @@ declare global {
     var scInstance: string;
     var openSEEInstance: string;
     var faultLocationInstance: string;
+    var controllerViewPath: string;
+    var version: string;
 
     namespace queryString {
         function parse(str: string, opts?: object): object

@@ -28,8 +28,8 @@ import {  ajax } from 'jquery';
 import moment from 'moment';
 
 // #region [ Thunks ]
-export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', (params: object, { dispatch }) => {
-    return  GetEventSearchs(params);
+export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (params: object, { dispatch }) => {
+    return await GetEventSearchs(params);
 });
 
 // #endregion

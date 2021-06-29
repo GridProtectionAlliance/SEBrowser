@@ -23,7 +23,7 @@
 
 import React from 'react';
 import leaflet from 'leaflet';
-import 'esri-leaflet';
+import { basemapLayer, dynamicMapLayer } from 'esri-leaflet';
 import proj4 from 'proj4';
 import 'proj4leaflet';
 import moment from 'moment';
@@ -71,24 +71,24 @@ export default class ESRIMap extends React.Component<{ EventID: number }, { Resu
         const lightningInfo = await this.GetLightningInfo();
         this.setState({ Results: lightningInfo });
         this.map = leaflet.map('map', { center: [35, -85], zoom: 7 });
-        leaflet.esri.basemapLayer('Gray').addTo(this.map);
+        basemapLayer('Gray').addTo(this.map);
 
-        let transmissionLayer = leaflet.esri.dynamicMapLayer({ url:'', opacity: 0.3, f: 'image' });
+        let transmissionLayer = dynamicMapLayer({ url:'', opacity: 0.3, f: 'image' });
         transmissionLayer.options['url'] = `http://pq/arcgisproxynew/proxy.ashx?https://gis.tva.gov/arcgis/rest/services/EGIS_Transmission/Transmission_Grid_Restricted_2/MapServer/`;
         transmissionLayer.options['f'] = 'image';
         transmissionLayer.bindPopup((err, featureCollection, response) => console.log(featureCollection)).addTo(this.map);
             
-        let safetyLayer = leaflet.esri.dynamicMapLayer({ url: ``, opacity: 1, f: 'image' });
+        let safetyLayer = dynamicMapLayer({ url: ``, opacity: 1, f: 'image' });
         safetyLayer.options['url'] = `http://pq/arcgisproxynew/proxy.ashx?https://gis.tva.gov/arcgis/rest/services/EGIS_Edit/safetyHazards/MapServer/`;
         safetyLayer.options['f'] = 'image';
         safetyLayer.addTo(this.map);
 
-        let lscLayer = leaflet.esri.dynamicMapLayer({ url: ``, opacity: 0.3, f: 'image' });
+        let lscLayer = dynamicMapLayer({ url: ``, opacity: 0.3, f: 'image' });
         lscLayer.options['url'] = `http://pq/arcgisproxynew/proxy.ashx?https://gis.tva.gov/arcgis/rest/services/EGIS_Transmission/Transmission_Station_Assets/MapServer/`;
         lscLayer.options['f'] = 'image';
         lscLayer.addTo(this.map);
 
-        let time = moment(faultInfo[0].Inception);
+        let time = moment(faultInfo[0]?.Inception);
         let timestring = time.utc().format('YYYY-MM-DDTHH') + ':' + (time.minutes() - time.minutes() % 5).toString();
 
         var radar_current = leaflet.tileLayer.wms("https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r-t.cgi?time=" + timestring + '&', {
@@ -114,12 +114,12 @@ export default class ESRIMap extends React.Component<{ EventID: number }, { Resu
 
 
         if (faultInfo.length > 0) {
-            leaflet.marker([faultInfo[0].Latitude, faultInfo[0].Longitude]).addTo(this.map);
+            leaflet.marker([faultInfo[0]?.Latitude, faultInfo[0]?.Longitude]).addTo(this.map);
         }
 
         $.ajax({
             type: 'GET',
-            url: `http://pq/arcgisproxynew/proxy.ashx?https://gis.tva.gov/arcgis/rest/services/EGIS_Transmission/Transmission_Grid_Restricted_2/MapServer/6/query?`+ encodeURI(`f=json&where=UPPER(LINENAME) like '%${this.state.FaultInfo[0].AssetName.toUpperCase()}%'&returnGeometry=true&outfiels=LINENAME`),
+            url: `http://pq/arcgisproxynew/proxy.ashx?https://gis.tva.gov/arcgis/rest/services/EGIS_Transmission/Transmission_Grid_Restricted_2/MapServer/6/query?`+ encodeURI(`f=json&where=UPPER(LINENAME) like '%${this.state.FaultInfo[0]?.AssetName.toUpperCase()}%'&returnGeometry=true&outfiels=LINENAME`),
             contentType: "application/json; charset=utf-8",
             cache: false,
             async: true

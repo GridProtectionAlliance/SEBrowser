@@ -30,7 +30,7 @@ import SEBrowserService from './../../../TS/Services/SEBrowser';
 import { useSelector, useDispatch } from 'react-redux';
 import { orderBy, filter, clone, isEqual } from 'lodash';
 import { EventSearchNavbarProps } from './EventSearchNavbar';
-import { OpenXDA } from '../../global';
+import { OpenXDA, Redux } from '../../global';
 import { SelectEventSearchBySearchText, SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches } from './EventSearchSlice';
 
 interface IProps { eventid: number, searchText: string, stateSetter(obj): void, searchBarProps: EventSearchNavbarProps }
@@ -41,7 +41,7 @@ export default function EventSearchList(props: IProps) {
     const status = useSelector(SelectEventSearchsStatus);
     const sortField = useSelector(SelectEventSearchsSortField);
     const ascending = useSelector(SelectEventSearchsAscending);
-    const data = useSelector(state => SelectEventSearchBySearchText(state, props.searchText));
+    const data = useSelector((state: Redux.StoreState) => SelectEventSearchBySearchText(state, props.searchText));
 
     React.useEffect(() => {
         document.addEventListener("keydown", handleKeyPress, false);
