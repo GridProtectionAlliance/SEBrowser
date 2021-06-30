@@ -149,13 +149,14 @@ class MostActiveMeters extends React.Component<{}, { meterTable: Array<MostActiv
                         cols={[
                             { key: 'AssetKey', label: 'Name', headerStyle: { width: 'calc(40%)' } },
                             { key: '24Hours', label: 'Files(Evts) 24H', headerStyle: { width: '20%' }, content: (item, key, style) => this.createContent(item, key) },
-                            { key: '7Days', label: 'Files(Evts) 7D', headerStyle: { width: '20%' }, content: (item, key, style) => this.createContent(item, key)  },
-                            { key: '30Days', label: 'Files(Evts) 30D', headerStyle: { width: '20%' }, content: (item, key, style) => this.createContent(item, key)  },
+                            { key: '7Days', label: 'Files(Evts) 7D', headerStyle: { width: '20%' }, content: (item, key, style) => this.createContent(item, key) },
+                            { key: '30Days', label: 'Files(Evts) 30D', headerStyle: { width: '20%' }, content: (item, key, style) => this.createContent(item, key) },
                         ]}
                         tableClass="table"
                         data={this.state.meterTable}
                         sortField={this.state.sortField}
                         ascending={true}
+                        selected={(data) => false }
                         onSort={(data) => { this.setState({ sortField: data.col }, () => this.createTableRows()) }}
                         onClick={() => { }}
                         theadStyle={{ fontSize: 'smaller' }}
@@ -262,6 +263,7 @@ class LeastActiveMeters extends React.Component<{}, { meterTable: Array<LeastAct
                         tableClass="table"
                         data={this.state.meterTable}
                         sortField={this.state.sortField}
+                        selected={(data) => false}
                         ascending={true}
                         onSort={(data) => { this.setState({ sortField: data.col }, () => this.createTableRows()) }}
                         onClick={() => { }}

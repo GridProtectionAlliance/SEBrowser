@@ -219,6 +219,14 @@ CREATE TABLE [dbo].[ValueList](
 )
 GO
 
+insert into ValueListGroup (Name, Description, Enabled) VALUES('CustomReports', 'Custom Reports to list on nav bar', 1)
+GO
+insert into ValueList (GroupID, [Key], Text, Flag, IsDefault, Hidden, Enabled, CreatedOn) VALUES((SELECT ID FROM ValueListGroup WHERE name = 'CustomReports'), 1, 'BreakerReport', 0,1,0,0,GETDATE())
+GO
+insert into ValueList (GroupID, [Key], Text, Flag, IsDefault, Hidden, Enabled, CreatedOn) VALUES((SELECT ID FROM ValueListGroup WHERE name = 'CustomReports'), 2, 'TripCoilReport', 0,1,0,0,GETDATE())
+GO
+insert into ValueList (GroupID, [Key], Text, Flag, IsDefault, Hidden, Enabled, CreatedOn) VALUES((SELECT ID FROM ValueListGroup WHERE name = 'CustomReports'), 3, 'CapBankReport', 0,1,0, 0,GETDATE())
+GO
 
 CREATE TABLE MagDurCurve(
 	ID int IDENTITY(1,1) NOT NULL PRIMARY KEY,

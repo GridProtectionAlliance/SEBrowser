@@ -293,11 +293,11 @@ export default class EventSearchBreakerPerformance extends React.Component<{ Eve
                 else if (value.MeasurementType == "TripCoilConditionAlert") { tripCoilConditionVessel.push({ label: value.ChartLabel, data: value.DataPoints, color: '#FF0000', lines: { show: false }, points: { show: false } }) }
             });
 
-            $.plot($(this.refs.TTwindow), tripTimeVessel, this.optionsTripTime);
-            $.plot($(this.refs.PTwindow), pickupTimeVessel, this.optionsPickupTime);
-            $.plot($(this.refs.TCCwindow), tripCoilConditionVessel, this.optionsTripCoilCondition);
-            $.plot($(this.refs.L1window), l1Vessel, this.optionsImax1);
-            $.plot($(this.refs.L2window), l2Vessel, this.optionsImax2);
+            //$.plot($(this.refs.TTwindow), tripTimeVessel, this.optionsTripTime);
+            //$.plot($(this.refs.PTwindow), pickupTimeVessel, this.optionsPickupTime);
+            //$.plot($(this.refs.TCCwindow), tripCoilConditionVessel, this.optionsTripCoilCondition);
+            //$.plot($(this.refs.L1window), l1Vessel, this.optionsImax1);
+            //$.plot($(this.refs.L2window), l2Vessel, this.optionsImax2);
         });
 
 

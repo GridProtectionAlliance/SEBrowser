@@ -47,7 +47,7 @@ using System.Web.Http;
 
 namespace PQDashboard.Controllers.BreakerReport
 {
-    [RoutePrefix("api/PQDashboard/MeterActivity")]
+    [RoutePrefix("api/OpenXDA/MeterActivity")]
     public class MeterActivityController : ApiController
     {
         #region [ Members ]
@@ -71,7 +71,7 @@ namespace PQDashboard.Controllers.BreakerReport
         [Route("GetMostActiveMeterActivityData"), HttpGet]
         public DataTable GetMostActiveMeterActivityData()
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 Dictionary<string, string> query = Request.QueryParameters();
                 int numberOfResults = int.Parse(query["numresults"]);
@@ -126,7 +126,7 @@ namespace PQDashboard.Controllers.BreakerReport
         [Route("GetLeastActiveMeterActivityData"), HttpGet]
         public DataTable GetLeastActiveMeterActivityData()
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 Dictionary<string, string> query = Request.QueryParameters();
                 int numberOfResults = int.Parse(query["numresults"]);
@@ -185,7 +185,7 @@ namespace PQDashboard.Controllers.BreakerReport
         [Route("GetFilesProcessedLast24Hrs"), HttpGet]
         public DataTable GetFilesProcessedLast24Hrs()
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 Dictionary<string, string> query = Request.QueryParameters();
                 //string column = query["column"];
@@ -241,7 +241,7 @@ namespace PQDashboard.Controllers.BreakerReport
             Dictionary<string, string> query = Request.QueryParameters();
             int fileGroupID = int.Parse(query["FileGroupID"]);
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
             {
                 return connection.RetrieveData("SELECT * FROM EventView WHERE FileGroupID = {0}", fileGroupID);
             }

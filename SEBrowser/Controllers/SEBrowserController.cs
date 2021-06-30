@@ -94,8 +94,24 @@ namespace SEBrowser.Controllers
             }
         }
 
+        [Route("GetCustomReports"), HttpGet]
+        public IHttpActionResult GetCustomReports()
+        {
+            try
+            {
+                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                {
+                    return Ok(connection.RetrieveData("SELECT * FROM ValueList WHERE GroupID = (SELECT ID FROM ValueListGroup WHERE Name = 'CustomReports') AND Enabled = 1"));
+                }
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+        }
 
         #endregion
 
     }
+
 }

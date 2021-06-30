@@ -22,10 +22,10 @@
 //******************************************************************************************************
 
 using GSF.Web.Security;
-using Microsoft.AspNet.SignalR;
 using Microsoft.Owin;
 using Owin;
 using System.Web.Http;
+using SEBrowser.Controllers;
 
 [assembly: OwinStartupAttribute(typeof(SEBrowser.Startup))]
 namespace SEBrowser
@@ -46,9 +46,7 @@ namespace SEBrowser
             // Set configuration to use reflection to setup routes
             config.MapHttpAttributeRoutes();
 
-
             app.UseWebApi(config);
-
         }
     }
 }
