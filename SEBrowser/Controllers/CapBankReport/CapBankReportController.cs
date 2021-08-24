@@ -880,7 +880,8 @@ namespace PQDashboard.Controllers.CapBankReport
 
             if (query.TryGetValue("statFilt", out val))
             {
-                filter = filter + (filter== ""? "" : " AND ") + $"CBAnalyticResult.CBStatusID IN  ({val})";
+                filter = filter + (filter== ""? "" : " AND ") + $" ( (CBAnalyticResult.CBStatusID%100) IN  ({val}) OR ";
+                filter = filter + $"((CBAnalyticResult.CBStatusID/100)%100) IN  ({val}) OR (CBAnalyticResult.CBStatusID/10000)  IN  ({val}))";
             }
 
             if (query.TryGetValue("operationFilt", out val))
