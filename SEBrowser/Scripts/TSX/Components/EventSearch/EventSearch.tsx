@@ -47,7 +47,7 @@ interface IState extends EventSearchNavbarProps {
     searchText: string,
     searchList: Array<OpenXDA.Event>,
     initialTab?: 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All',
-    magDur: boolean
+    magDur: boolean,
 }
 
 export default class EventSearch extends React.Component<IProps, IState>{
@@ -92,7 +92,8 @@ export default class EventSearch extends React.Component<IProps, IState>{
             searchList: [],
             stateSetter: this.stateSetter.bind(this),
             initialTab: (query['tab'] != undefined ? query['tab'].toString() as any : undefined),
-            magDur: (query['magDur'] != undefined ? query['magDur'] == 'true' : false)
+            magDur: (query['magDur'] != undefined ? query['magDur'] == 'true' : false),
+            showNav: true
         };
     }
 
@@ -105,10 +106,14 @@ export default class EventSearch extends React.Component<IProps, IState>{
     componentWillReceiveProps(nextProps: IProps) {
     }
 
+    toogleNavigation() {
+        this.stateSetter((obj) => ({ showNav: !obj.showNav}))
+    }
+
     render() {
         return (
             <div style={{ width: '100%', height: '100%' }}>
-                <EventSearchNavbar {...this.state}/>
+                <EventSearchNavbar {...this.state} toggleVis={this.toogleNavigation}/>
                 <div style={{ width: '100%', height: 'calc( 100% - 210px)' }}>
                     <div style={{ width: '50%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
                         <div style={{width: 'calc(100% - 300px)', padding: 10, float: 'left'}}>
