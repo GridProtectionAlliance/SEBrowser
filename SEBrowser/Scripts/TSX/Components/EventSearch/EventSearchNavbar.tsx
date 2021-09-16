@@ -25,6 +25,8 @@
 import React from 'react';
 import 'moment';
 import _ from 'lodash';
+import ReportTimeFilter from '../ReportTimeFilter';
+import { SEBrowser } from '../../global';
 
 export interface EventSearchNavbarProps {
     line: boolean,
@@ -47,14 +49,11 @@ export interface EventSearchNavbarProps {
     transients: boolean,
     relayTCE: boolean,
     others: boolean,
-    date: string,
-    time: string,
-    windowSize: number,
-    timeWindowUnits: number,
     make: string,
     model: string,
     stateSetter(obj: any): void,
     showNav: boolean,
+    timeFilter: SEBrowser.IReportTimeFilter
 }
 
 interface IProps extends EventSearchNavbarProps {
@@ -104,7 +103,7 @@ const EventSearchNavbar = (props: IProps) => {
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <div className="navbar-nav mr-auto">
                         <span className="navbar-text">
-                            {props.date} {props.time} +/- {props.windowSize} {formatWindowUnit(props.timeWindowUnits)}
+                            {props.timeFilter.date} {props.timeFilter.time} +/- {props.timeFilter.windowSize} {formatWindowUnit(props.timeFilter.timeWindowUnits)}
                         </span>
                     </div>
                     <div className="navbar-nav ml-auto" >
@@ -120,45 +119,7 @@ const EventSearchNavbar = (props: IProps) => {
             <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                 <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                     <li className="nav-item" style={{ width: '35%', paddingRight: 10 }}>
-                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                            <legend className="w-auto" style={{ fontSize: 'large' }}>Time Window:</legend>
-                            <form>
-                                <label style={{ width: '100%', position: 'relative', float: "left" }} >Date: </label>
-                                <div className="form-group" style={{ height: 30 }}>
-                                    <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
-                                        <input id="timePicker" className='form-control' value={props.time} onChange={(e) => {
-                                            props.stateSetter({ time: (e.target as any).value });
-                                        }} />
-                                    </div>
-
-                                    <div className='input-group date' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
-                                        <input className='form-control' id='datePicker' value={props.date} onChange={(e) => {
-                                            props.stateSetter({ date: (e.target as any).value });
-                                        }} />
-                                    </div>
-
-                                </div>
-                                <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
-                                <div className="form-group" style={{ height: 30 }}>
-                                    <input style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} value={props.windowSize} onChange={(e) => {
-                                        props.stateSetter({ windowSize: (e.target as any).value });
-                                    }} type="number" />
-                                    <select style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} value={props.timeWindowUnits} onChange={(e) => {
-                                        props.stateSetter({ timeWindowUnits: (e.target as any).value });
-                                    }} >
-                                        <option value="7">Year</option>
-                                        <option value="6">Month</option>
-                                        <option value="5">Week</option>
-                                        <option value="4">Day</option>
-                                        <option value="3">Hour</option>
-                                        <option value="2">Minute</option>
-                                        <option value="1">Second</option>
-                                        <option value="0">Millisecond</option>
-                                    </select>
-
-                                </div>
-                            </form>
-                        </fieldset>
+                        <ReportTimeFilter filter={props.timeFilter} setFilter={(f) => props.stateSetter({timeFilter: f})} />
                     </li>
                     <li className="nav-item" style={{ width: '25%', paddingRight: 10 }}>
                         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>

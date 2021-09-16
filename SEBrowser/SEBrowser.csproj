@@ -395,6 +395,7 @@
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\LineParameters.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
+    <Content Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Store.ts" />
   </ItemGroup>
   <PropertyGroup>

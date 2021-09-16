@@ -59,7 +59,8 @@ export namespace Redux {
 export namespace SEBrowser {
     type Status = 'loading' | 'idle' | 'error' | 'changed' | 'unitiated';
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
-    interface EventPreviewPaneSetting { ID:number, Name: string, Show: boolean, OrderBy: number }
+    interface EventPreviewPaneSetting { ID: number, Name: string, Show: boolean, OrderBy: number }
+    interface IReportTimeFilter { date: string, time: string, windowSize: number, timeWindowUnits: number }
 }
 
 export namespace OpenXDA {

@@ -27,7 +27,7 @@ import * as _ from 'lodash';
 import { EventSearchNavbarProps } from './EventSearchNavbar';
 import { SelectEventSearchBySearchText, SelectEventSearchsStatus, FetchEventSearches } from './EventSearchSlice';
 import { useSelector, useDispatch } from 'react-redux';
-import { OpenXDA } from '../../global';
+import { OpenXDA, SEBrowser } from '../../global';
 
 interface iCurve {
     ID: number,
@@ -43,8 +43,16 @@ interface iCurve {
     LoadOrder: number
 }
 
-
-const MagDurChart = (props: { Width: number, Height: number, EventID: number, SearchText: string, SearchBarProps: EventSearchNavbarProps, OnSelect: (evt: any, point: OpenXDA.Event) => void }) => {
+interface IProps {
+    Width: number,
+    Height: number,
+    EventID: number,
+    SearchText: string,
+    SearchBarProps: EventSearchNavbarProps,
+    Time: SEBrowser.IReportTimeFilter,
+    OnSelect: (evt: any, point: OpenXDA.Event) => void
+}
+const MagDurChart = (props: IProps) => {
 
     const margin = { top: 15, right: 20, bottom: 60, left: 40 };
     const svgWidth = props.Width - margin.left - margin.right;
@@ -58,7 +66,7 @@ const MagDurChart = (props: { Width: number, Height: number, EventID: number, Se
 
     React.useEffect(() => {
         if (status != 'unitiated' && status != 'changed') return;
-        dispatch(FetchEventSearches(props.SearchBarProps));
+        dispatch(FetchEventSearches({ time: props.Time, filter: props.SearchBarProps }));
 
         return function () {
         }

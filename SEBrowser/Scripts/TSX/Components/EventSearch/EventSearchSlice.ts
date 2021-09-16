@@ -28,8 +28,8 @@ import {  ajax } from 'jquery';
 import moment from 'moment';
 
 // #region [ Thunks ]
-export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (params: object, { dispatch }) => {
-    return await GetEventSearchs(params);
+export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (params: { time: SEBrowser.IReportTimeFilter, filter: object }, { dispatch }) => {
+    return await GetEventSearchs(params.time, params.filter);
 });
 
 // #endregion
@@ -105,12 +105,13 @@ export const SelectEventSearchBySearchText = (state: Redux.StoreState, searchTex
 // #endregion
 
 // #region [ Async Functions ]
-function GetEventSearchs(params): JQuery.jqXHR<OpenXDA.Event[]> {
+function GetEventSearchs(time: SEBrowser.IReportTimeFilter, params): JQuery.jqXHR<OpenXDA.Event[]> {
+    const p = { ...time, ...params };
     return ajax({
         type: "POST",
         url: `${homePath}api/OpenXDA/GetEventSearchData`,
         contentType: "application/json; charset=utf-8",
-        data: JSON.stringify(params),
+        data: JSON.stringify(p),
         dataType: 'json',
         cache: true,
         async: true

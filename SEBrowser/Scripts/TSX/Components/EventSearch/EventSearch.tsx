@@ -81,10 +81,12 @@ export default class EventSearch extends React.Component<IProps, IState>{
             transients: (query['transients'] != undefined ? query['transients'] == 'true' : true),
             relayTCE: (query['relayTCE'] != undefined ? query['realyTCE'] == 'true' : true),
             others: (query['others'] != undefined ? query['others'] == 'true' : true),
-            date: (query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat)),
-            time: (query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat)),
-            windowSize: (query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10),
-            timeWindowUnits: (query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2),
+            timeFilter: {
+                date: (query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat)),
+                time: (query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat)),
+                windowSize: (query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10),
+                timeWindowUnits: (query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2)
+            },
             eventid: (query['eventid'] != undefined ? parseInt(query['eventid'].toString()) : -1),
             searchText: (query['searchText'] != undefined ? query['searchText'].toString() : ''),
             make: (query['make'] != undefined ? query['make'].toString() : 'All'),
@@ -126,8 +128,8 @@ export default class EventSearch extends React.Component<IProps, IState>{
                             <button className='btn btn-danger' onClick={() => this.setState({magDur: !this.state.magDur}) }>View As { this.state.magDur ? 'List' : 'Mag/Dur' }</button>
                         </div>                            
                         {this.state.magDur ?
-                            <EventSearchMagDur Width={(window.innerWidth - 300)/2 } Height={window.innerHeight - 300 } EventID={this.state.eventid} SearchText={this.state.searchText} SearchBarProps={this.state} OnSelect={(evt, point) => this.stateSetter({eventid: point.EventID})}/> :
-                            <EventSearchList eventid={this.state.eventid} searchText={this.state.searchText} searchBarProps={this.state} stateSetter={this.stateSetter.bind(this)} />
+                            <EventSearchMagDur Width={(window.innerWidth - 300) / 2} Height={window.innerHeight - 300} EventID={this.state.eventid} SearchText={this.state.searchText} SearchBarProps={this.state} OnSelect={(evt, point) => this.stateSetter({ eventid: point.EventID })} Time={this.state.timeFilter} /> :
+                            <EventSearchList eventid={this.state.eventid} searchText={this.state.searchText} searchBarProps={this.state} stateSetter={this.stateSetter.bind(this)} time={this.state.timeFilter} />
                         }
                     </div>
                     <div style={{ width: '50%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>

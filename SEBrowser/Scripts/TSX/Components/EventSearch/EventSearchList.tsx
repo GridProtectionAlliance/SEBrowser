@@ -30,10 +30,10 @@ import SEBrowserService from './../../../TS/Services/SEBrowser';
 import { useSelector, useDispatch } from 'react-redux';
 import { orderBy, filter, clone, isEqual } from 'lodash';
 import { EventSearchNavbarProps } from './EventSearchNavbar';
-import { OpenXDA, Redux } from '../../global';
+import { OpenXDA, Redux, SEBrowser } from '../../global';
 import { SelectEventSearchBySearchText, SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches } from './EventSearchSlice';
 
-interface IProps { eventid: number, searchText: string, stateSetter(obj): void, searchBarProps: EventSearchNavbarProps }
+interface IProps { eventid: number, searchText: string, stateSetter(obj): void, searchBarProps: EventSearchNavbarProps, time: SEBrowser.IReportTimeFilter }
 export default function EventSearchList(props: IProps) {
     const ref = React.useRef();
     const dispatch = useDispatch();
@@ -52,8 +52,8 @@ export default function EventSearchList(props: IProps) {
     })
 
     React.useEffect(() => {
-        dispatch(FetchEventSearches(props.searchBarProps));
-    }, [props.searchBarProps]);
+        dispatch(FetchEventSearches({ time: props.time, filter: props.searchBarProps }));
+    }, [props.searchBarProps, props.time]);
 
     React.useEffect(() => {
         props.stateSetter({ searchList: data });
@@ -61,7 +61,7 @@ export default function EventSearchList(props: IProps) {
 
     React.useEffect(() => {
         if (status != 'unitiated' && status != 'changed') return;
-        dispatch(FetchEventSearches(props.searchBarProps));
+        dispatch(FetchEventSearches({ time: props.time, filter: props.searchBarProps }));
 
         return function () {
         }
