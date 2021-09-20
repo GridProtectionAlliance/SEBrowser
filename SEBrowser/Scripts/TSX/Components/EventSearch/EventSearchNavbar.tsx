@@ -119,7 +119,7 @@ const EventSearchNavbar = (props: IProps) => {
             <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                 <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                     <li className="nav-item" style={{ width: '35%', paddingRight: 10 }}>
-                        <ReportTimeFilter filter={props.timeFilter} setFilter={(f) => props.stateSetter({timeFilter: f})} />
+                        <ReportTimeFilter filter={props.timeFilter} setFilter={(f) => props.stateSetter({ timeFilter: f })} showQuickSelect={true} />
                     </li>
                     <li className="nav-item" style={{ width: '25%', paddingRight: 10 }}>
                         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
