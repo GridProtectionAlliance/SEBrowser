@@ -21,15 +21,18 @@
 //
 //******************************************************************************************************
 
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { SEBrowser, OpenXDA, Redux } from '../../global';
 import * as _ from 'lodash';
 import {  ajax } from 'jquery';
 import moment from 'moment';
 
+
 // #region [ Thunks ]
-export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (params: { time: SEBrowser.IReportTimeFilter, filter: object }, { dispatch }) => {
-    return await GetEventSearchs(params.time, params.filter);
+export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (_, { dispatch, getState }) => {
+    const time = (getState() as any).EventSearch.TimeRange as SEBrowser.IReportTimeFilter;
+    const filter = { date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits }
+    return await GetEventSearchs(filter);
 });
 
 // #endregion
@@ -43,8 +46,13 @@ export const EventSearchsSlice = createSlice({
         Error: null,
         SortField: 'FileStartTime',
         Ascending: true,
-        SearchText: ''
-    } as Redux.State<OpenXDA.Event>,
+        SearchText: '',
+        EventCharacteristic: {
+            durationMax: 0, durationMin: 0, Phase: { A: true, B: true, C: true }
+        },
+        TimeRange: { date: '01/01/2000', time: '12:00:00.000', windowSize: 1, timeWindowUnits: 2 },
+        EventType: { breakerOps: true, faults: true, interruptions: true, others: true, relayTCE: true, swells: true, sags: true, transients: true }
+    } as Redux.EventSearchState,
     reducers: {
         Sort: (state, action) => {
             if (state.SortField === action.payload.SortField)
@@ -57,6 +65,12 @@ export const EventSearchsSlice = createSlice({
         },
         SetSearchText: (state, action) => {
             state.SearchText = action.payload;
+        },
+        SetFilters: (state, action: PayloadAction<{ characteristics: SEBrowser.IEventCharacteristicFilters, types: SEBrowser.IEventTypeFilters, time: SEBrowser.IReportTimeFilter }>) => {
+            state.Status = 'changed';
+            state.TimeRange = action.payload.time;
+            state.EventType = action.payload.types;
+            state.EventCharacteristic = action.payload.characteristics;
         }
     },
     extraReducers: (builder) => {
@@ -83,7 +97,7 @@ export const EventSearchsSlice = createSlice({
 // #endregion
 
 // #region [ Selectors ]
-export const { Sort } = EventSearchsSlice.actions;
+export const { Sort, SetFilters } = EventSearchsSlice.actions;
 export default EventSearchsSlice.reducer;
 export const SelectEventSearchs = (state: Redux.StoreState) => state.EventSearch.Data;
 export const SelectEventSearchByID = (state: Redux.StoreState, id: number) => state.EventSearch.Data.find(ds => ds.EventID === id);
@@ -101,17 +115,18 @@ export const SelectEventSearchBySearchText = (state: Redux.StoreState, searchTex
         d.VoltageClass.toString().toLowerCase().indexOf(searchText) >= 0
 
 });
-
+export const SelectTimeFilter = (state: Redux.StoreState) => state.EventSearch.TimeRange;
+export const SelectTypeFilter = (state: Redux.StoreState) => state.EventSearch.EventType;
+export const SelectCharacteristicFilter = (state: Redux.StoreState) => state.EventSearch.EventCharacteristic;
 // #endregion
 
 // #region [ Async Functions ]
-function GetEventSearchs(time: SEBrowser.IReportTimeFilter, params): JQuery.jqXHR<OpenXDA.Event[]> {
-    const p = { ...time, ...params };
+function GetEventSearchs(params): JQuery.jqXHR<OpenXDA.Event[]> {
     return ajax({
         type: "POST",
         url: `${homePath}api/OpenXDA/GetEventSearchData`,
         contentType: "application/json; charset=utf-8",
-        data: JSON.stringify(p),
+        data: JSON.stringify(params),
         dataType: 'json',
         cache: true,
         async: true

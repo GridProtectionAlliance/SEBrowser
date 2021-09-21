@@ -240,6 +240,20 @@ if (AvailableQuickSelects.length % 3 > 0)
     nRows++;
 const ReportTimeFilter = (props: IProps) => {
 
+    React.useEffect(() => {
+        $('#datePicker').datetimepicker({ format: momentDateFormat });
+        $('#datePicker').on('dp.change', (e) => {
+            props.setFilter({ ...props.filter, date: (e.target as any).value });
+        });
+
+        $('#timePicker').datetimepicker({ format: momentTimeFormat });
+        $('#timePicker').on('dp.change', (e) => {
+            props.setFilter({ ...props.filter, time: (e.target as any).value });
+        });
+
+    });
+
+
     return (
         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
             <legend className="w-auto" style={{ fontSize: 'large' }}>Time Window:</legend>

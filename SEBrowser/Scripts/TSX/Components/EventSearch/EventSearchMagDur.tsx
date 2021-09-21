@@ -24,7 +24,6 @@
 import * as React from 'react';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
-import { EventSearchNavbarProps } from './EventSearchNavbar';
 import { SelectEventSearchBySearchText, SelectEventSearchsStatus, FetchEventSearches } from './EventSearchSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { OpenXDA, SEBrowser } from '../../global';
@@ -48,8 +47,6 @@ interface IProps {
     Height: number,
     EventID: number,
     SearchText: string,
-    SearchBarProps: EventSearchNavbarProps,
-    Time: SEBrowser.IReportTimeFilter,
     OnSelect: (evt: any, point: OpenXDA.Event) => void
 }
 const MagDurChart = (props: IProps) => {
@@ -66,7 +63,7 @@ const MagDurChart = (props: IProps) => {
 
     React.useEffect(() => {
         if (status != 'unitiated' && status != 'changed') return;
-        dispatch(FetchEventSearches({ time: props.Time, filter: props.SearchBarProps }));
+        dispatch(FetchEventSearches());
 
         return function () {
         }

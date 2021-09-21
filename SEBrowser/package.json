@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@gpa-gemstone/react-graph": "1.0.1",
-    "@gpa-gemstone/react-interactive": "1.0.7",
+    "@gpa-gemstone/react-interactive": "1.0.21",
     "@reduxjs/toolkit": "1.6.0",
     "@types/d3": "^4.13.2",
     "@types/eonasdan-bootstrap-datetimepicker": "4.17.26",

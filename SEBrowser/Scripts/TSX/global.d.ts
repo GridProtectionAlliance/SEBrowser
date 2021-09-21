@@ -41,7 +41,7 @@ declare global {
 
 export namespace Redux {
     interface StoreState {
-        EventSearch: State<OpenXDA.Event>,
+        EventSearch: EventSearchState,
     }
     interface State<T> {
         Status: SEBrowser.Status,
@@ -53,14 +53,20 @@ export namespace Redux {
         SearchText?: string
     }
 
+    interface EventSearchState extends Redux.State<OpenXDA.Event> {
+        TimeRange: SEBrowser.IReportTimeFilter,
+        EventType: SEBrowser.IEventTypeFilters,
+        EventCharacteristic: SEBrowser.IEventCharacteristicFilters
+    }
 
-}
-
+} 
 export namespace SEBrowser {
     type Status = 'loading' | 'idle' | 'error' | 'changed' | 'unitiated';
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
     interface EventPreviewPaneSetting { ID: number, Name: string, Show: boolean, OrderBy: number }
     interface IReportTimeFilter { date: string, time: string, windowSize: number, timeWindowUnits: number }
+    interface IEventCharacteristicFilters { durationMin: number, durationMax: number, Phase: { A: boolean, B: boolean, C: boolean } }
+    interface IEventTypeFilters { faults: boolean, sags: boolean, swells: boolean, interruptions: boolean, breakerOps: boolean, transients: boolean, relayTCE: boolean, others: boolean}
 }
 
 export namespace OpenXDA {

@@ -27,37 +27,13 @@ import 'moment';
 import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { SEBrowser } from '../../global';
+import { useDispatch, useSelector } from 'react-redux';
+import { SelectCharacteristicFilter, SelectTimeFilter, SelectTypeFilter, SetFilters } from './EventSearchSlice';
 
-export interface EventSearchNavbarProps {
-    line: boolean,
-    bus: boolean,
-    breaker: boolean,
-    capacitorBank: boolean,
-    transformer: boolean
-    dfr: boolean,
-    pqMeter: boolean,
-    g200: boolean,
-    one00to200: boolean,
-    thirty5to100: boolean,
-    oneTo35: boolean,
-    l1: boolean,
-    faults: boolean,
-    sags: boolean,
-    swells: boolean,
-    interruptions: boolean,
-    breakerOps: boolean,
-    transients: boolean,
-    relayTCE: boolean,
-    others: boolean,
-    make: string,
-    model: string,
-    stateSetter(obj: any): void,
-    showNav: boolean,
-    timeFilter: SEBrowser.IReportTimeFilter
-}
 
-interface IProps extends EventSearchNavbarProps {
+interface IProps {
     toggleVis: () => void,
+    showNav: boolean,
 }
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
@@ -65,20 +41,12 @@ const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
 
 const EventSearchNavbar = (props: IProps) => {
+    const dispatch = useDispatch();
+    const timeFilter = useSelector(SelectTimeFilter);
+    const eventTypeFilter = useSelector(SelectTypeFilter);
+    const eventCharacteristicFilter = useSelector(SelectCharacteristicFilter);
 
-    React.useEffect(() => {
-        $('#datePicker').datetimepicker({ format: momentDateFormat });
-        $('#datePicker').on('dp.change', (e) => {
-            props.stateSetter({ date: (e.target as any).value });
-        });
-
-        $('#timePicker').datetimepicker({ format: momentTimeFormat });
-        $('#timePicker').on('dp.change', (e) => {
-            props.stateSetter({ time: (e.target as any).value });
-        });
-
-    });
-
+   
     function formatWindowUnit(i: number) {
         if (i == 7)
             return "Years";
@@ -103,7 +71,7 @@ const EventSearchNavbar = (props: IProps) => {
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <div className="navbar-nav mr-auto">
                         <span className="navbar-text">
-                            {props.timeFilter.date} {props.timeFilter.time} +/- {props.timeFilter.windowSize} {formatWindowUnit(props.timeFilter.timeWindowUnits)}
+                            {timeFilter.date} {timeFilter.time} +/- {timeFilter.windowSize} {formatWindowUnit(timeFilter.timeWindowUnits)}
                         </span>
                     </div>
                     <div className="navbar-nav ml-auto" >
@@ -119,127 +87,300 @@ const EventSearchNavbar = (props: IProps) => {
             <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                 <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                     <li className="nav-item" style={{ width: '35%', paddingRight: 10 }}>
-                        <ReportTimeFilter filter={props.timeFilter} setFilter={(f) => props.stateSetter({ timeFilter: f })} showQuickSelect={true} />
+                        <ReportTimeFilter filter={timeFilter} setFilter={(f) =>
+                            dispatch(SetFilters({
+                                characteristics: eventCharacteristicFilter,
+                                time: f,
+                                types: eventTypeFilter
+                            }))} showQuickSelect={true} />
                     </li>
-                    <li className="nav-item" style={{ width: '25%', paddingRight: 10 }}>
+                    <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
                         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                             <legend className="w-auto" style={{ fontSize: 'large' }}>Event Types:</legend>
                             <form>
                                 <ul style={{ listStyleType: 'none', padding: 0, width: '50%', position: 'relative', float: 'left' }}>
                                     <li><label><input type="checkbox" onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                         var value = e.target.checked;
-                                        props.stateSetter({
-                                            faults: value,
-                                            sags: value,
-                                            swells: value,
-                                            interruptions: value,
-                                            breakerOps: value,
-                                            transients: value,
-                                            relayTCE: value,
-                                            others: value
-                                        });
+                                        dispatch(SetFilters({
+                                            characteristics: eventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                faults: value,
+                                                sags: value,
+                                                swells: value,
+                                                interruptions: value,
+                                                breakerOps: value,
+                                                transients: value,
+                                                relayTCE: value,
+                                                others: value
+                                            }
+                                        }))
                                     }} defaultChecked={true} />  Select All </label></li>
                                     <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ faults: !props.faults });
-                                    }} checked={props.faults} />  Faults </label></li>
+                                        dispatch(SetFilters({
+                                            characteristics: eventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                faults: !eventTypeFilter.faults,
+                                            }
+                                        }));
+                                    }} checked={eventTypeFilter.faults} />  Faults </label></li>
                                     <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ sags: !props.sags });
-                                    }} checked={props.sags} />  Sags</label></li>
+                                        dispatch(SetFilters({
+                                            characteristics: eventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                sags: !eventTypeFilter.sags,
+                                            }
+                                        }));
+                                    }} checked={eventTypeFilter.sags} />  Sags</label></li>
                                     <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ swells: !props.swells });
-                                    }} checked={props.swells} />  Swells</label></li>
+                                        dispatch(SetFilters({
+                                            characteristics: eventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                swells: !eventTypeFilter.swells,
+                                            }
+                                        }));
+                                    }} checked={eventTypeFilter.swells} />  Swells</label></li>
                                     <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ interruptions: !props.interruptions });
-                                    }} checked={props.interruptions} />  Interruptions</label></li>
+                                        dispatch(SetFilters({
+                                            characteristics: eventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                interruptions: !eventTypeFilter.interruptions,
+                                            }
+                                        }));
+                                    }} checked={eventTypeFilter.interruptions} />  Interruptions</label></li>
                                 </ul>
                                 <ul style={{
                                     listStyleType: 'none', padding: 0, width: '50%', position: 'relative', float: 'right'
                                 }}>
                                     <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ breakerOps: !props.breakerOps });
-                                    }} checked={props.breakerOps} />  Breaker Ops</label></li>
+                                        dispatch(SetFilters({
+                                            characteristics: eventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                breakerOps: !eventTypeFilter.breakerOps,
+                                            }
+                                        }));
+                                    }} checked={eventTypeFilter.breakerOps} />  Breaker Ops</label></li>
                                     <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ transients: !props.transients });
-                                    }} checked={props.transients} />  Transients</label></li>
+                                        dispatch(SetFilters({
+                                            characteristics: eventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                transients: !eventTypeFilter.transients,
+                                            }
+                                        }));
+                                    }} checked={eventTypeFilter.transients} />  Transients</label></li>
                                     <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ relayTCE: !props.relayTCE });
-                                    }} checked={props.relayTCE} />  Breaker TCE</label></li>
+                                        dispatch(SetFilters({
+                                            characteristics: eventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                relayTCE: !eventTypeFilter.relayTCE,
+                                            }
+                                        }));
+                                    }} checked={eventTypeFilter.relayTCE} />  Breaker TCE</label></li>
                                     <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ others: !props.others });
-                                    }} checked={props.others} />  Others</label></li>
+                                        dispatch(SetFilters({
+                                            characteristics: eventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                others: !eventTypeFilter.others,
+                                            }
+                                        }));
+                                    }} checked={eventTypeFilter.others} />  Others</label></li>
                                 </ul>
                             </form>
                         </fieldset>
                     </li>
-                    <li className="nav-item" style={{ width: '25%', paddingRight: 10 }}>
+                    <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
                         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                            <legend className="w-auto" style={{ fontSize: 'large' }}>Asset Types:</legend>
-                            <form>
-                                <ul style={{ listStyleType: 'none', padding: 0, width: '100%', position: 'relative', float: 'left' }}>
-                                    <li><label><input type="checkbox" onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                        var value = e.target.checked;
-                                        props.stateSetter({
-                                            line: value,
-                                            bus: value,
-                                            breaker: value,
-                                            transformer: value,
-                                            capacitorBank: value
-                                        });
-                                    }} defaultChecked={true} />  Select All </label></li>
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ line: !props.line });
-                                    }} checked={props.line} />  Lines </label></li>
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ bus: !props.bus });
-                                    }} checked={props.bus} />  Buses</label></li>
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ breaker: !props.breaker });
-                                    }} checked={props.breaker} />  Breakers</label></li>
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ transformer: !props.transformer });
-                                    }} checked={props.transformer} /> Transformers </label></li>
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ capacitorBank: !props.capacitorBank });
-                                    }} checked={props.capacitorBank} /> Cap Banks </label></li>
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>Event Characteristics:</legend>
+                            <div className="row">
+                                <div className={"col-4"}>
+                                    <form>
+                                        <label style={{ margin: 0 }}>Duration:</label>
+                                        <div className="form-group">
+                                            <div className='input-group input-group-sm'>
+                                                <input className='form-control' value={eventCharacteristicFilter.durationMin} onChange={(e) => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: { ...eventCharacteristicFilter, durationMin: parseFloat((e.target as any).value) },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                }} />
+                                                    <div className="input-group-append">
+                                                        <span className="input-group-text"> to </span>
+                                                    </div>
+                                                <input className='form-control' value={eventCharacteristicFilter.durationMax} onChange={(e) => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: { ...eventCharacteristicFilter, durationMax: parseFloat((e.target as any).value) },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                }} />
+                                                    <div className="input-group-append">
+                                                        <span className="input-group-text">cycles</span>
+                                                    </div>
+                                            </div>
+                                        </div>
+                                        <label style={{ margin: 0 }}>Phase:</label>
+                                        <div className="form-group">
+                                            <div className='form-check form-check-inline'>
+                                                <input className="form-check-input" type="checkbox" onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                    var value = e.target.checked;
+                                                    dispatch(SetFilters({
+                                                        characteristics: {
+                                                            ...eventCharacteristicFilter, Phase: { A: value, B: value, C: value }
+                                                        },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter
+                                                    }))
+                                                }} defaultChecked={true} />
+                                                <label className="form-check-label">Select All</label>
+                                            </div>
+                                            <div className='form-check form-check-inline'>
+                                                <input className="form-check-input" type="checkbox" onChange={() => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: {
+                                                            ...eventCharacteristicFilter, Phase: { ...eventCharacteristicFilter.Phase, A: !eventCharacteristicFilter.Phase.A }
+                                                        },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                }} checked={eventCharacteristicFilter.Phase.A} />
+                                                <label className="form-check-label">A</label>
+                                            </div>
+                                            <div className='form-check form-check-inline'>
+                                                <input className="form-check-input" type="checkbox" onChange={() => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: {
+                                                            ...eventCharacteristicFilter, Phase: { ...eventCharacteristicFilter.Phase, B: !eventCharacteristicFilter.Phase.B }
+                                                        },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                }} checked={eventCharacteristicFilter.Phase.B} />
+                                                <label className="form-check-label">B</label>
+                                            </div>
+                                            <div className='form-check form-check-inline'>
+                                                <input className="form-check-input" type="checkbox" onChange={() => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: {
+                                                            ...eventCharacteristicFilter, Phase: { ...eventCharacteristicFilter.Phase, C: !eventCharacteristicFilter.Phase.C }
+                                                        },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                }} checked={eventCharacteristicFilter.Phase.C} />
+                                                <label className="form-check-label">C</label>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div className={"col-4"}>
+                                    <form>
+                                        <label style={{ margin: 0 }}>Mag-Dur:</label>
+                                        <div className="form-group">
+                                            <div className='input-group input-group-sm'>
+                                                <select className="custom-select">
+                                                    <option selected>ITIC</option>
+                                                    <option value="1">One</option>
+                                                    <option value="2">Two</option>
+                                                    <option value="3">Three</option>
+                                                </select>
+                                            </div>
+                                            <div className='form-check form-check-inline'>
+                                                <input className="form-check-input" type="checkbox" />
+                                                <label className="form-check-label">Inside</label>
+                                            </div>
+                                            <div className='form-check form-check-inline'>
+                                                <input className="form-check-input" type="checkbox" />
+                                                <label className="form-check-label">Outside</label>
+                                            </div>
+                                        </div>
+                                   
+                                        <label style={{ margin: 0 }}>Transients:</label>
+                                        <div className="form-group">
+                                            <div className='input-group input-group-sm'>
+                                                <input className='form-control' value={0} onChange={(e) => { }} />
+                                                <div className="input-group-append">
+                                                    <span className="input-group-text"> to </span>
+                                                </div>
+                                                <input className='form-control' value={0} onChange={(e) => { }} />
+                                                <div className="input-group-append">
+                                                    <span className="input-group-text">p.u.</span>
+                                                </div>
+                                                <select className="custom-select">
+                                                    <option selected>LL</option>
+                                                    <option value="1">LN</option>
+                                                    <option value="2">LN/LL</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div className="col-4">
+                                    <form>
+                                        <label style={{ margin: 0 }}>Sags:</label>
+                                        <div className="form-group">
+                                            <div className='input-group input-group-sm'>
+                                                <input className='form-control' value={0} onChange={(e) => { }} />
+                                                <div className="input-group-append">
+                                                    <span className="input-group-text"> to </span>
+                                                </div>
+                                                <input className='form-control' value={0} onChange={(e) => { }} />
+                                                <div className="input-group-append">
+                                                    <span className="input-group-text">p.u.</span>
+                                                </div>
+                                                <select className="custom-select">
+                                                    <option selected>LL</option>
+                                                    <option value="1">LN</option>
+                                                    <option value="2">LN/LL</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <label style={{ margin: 0 }}>Swells:</label>
+                                        <div className="form-group">
+                                            <div className='input-group input-group-sm'>
+                                                <input className='form-control' value={0} onChange={(e) => { }} />
+                                                <div className="input-group-append">
+                                                    <span className="input-group-text"> to </span>
+                                                </div>
+                                                <input className='form-control' value={0} onChange={(e) => { }} />
+                                                <div className="input-group-append">
+                                                    <span className="input-group-text">p.u.</span>
+                                                </div>
+                                                <select className="custom-select">
+                                                    <option selected>LL</option>
+                                                    <option value="1">LN</option>
+                                                    <option value="2">LN/LL</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                        </div>
 
-                                </ul>
-                            </form>
+                         
                         </fieldset>
                     </li>
 
-                    <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
+                    <li className="nav-item" style={{ width: '15%', paddingRight: 10 }}>
                         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                             <legend className="w-auto" style={{ fontSize: 'large' }}>Voltage Class:</legend>
-                            <form>
-                                <ul style={{ listStyleType: 'none', padding: 0 }}>
-                                    <li><label><input type="checkbox" onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                        var value = e.target.checked;
-                                        props.stateSetter({
-                                            g200: value,
-                                            one00to200: value,
-                                            thirty5to100: value,
-                                            oneTo35: value,
-                                            l1: value,
-                                        });
-                                    }} defaultChecked={true} />  Select All </label></li>
-
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ g200: !props.g200 });
-                                    }} checked={props.g200} />{'EHV/Trans - >200kV'}</label></li>
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ one00to200: !props.one00to200 });
-                                    }} checked={props.one00to200} />{'HV/Trans - >100kV & <=200kV'}</label></li>
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ thirty5to100: !props.thirty5to100 });
-                                    }} checked={props.thirty5to100} />{'MV/Subtrans - >35kV & <=100kV'}</label></li>
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ oneTo35: !props.oneTo35 });
-                                    }} checked={props.oneTo35} />{'MV/Dist - >1kV & <=35kV'}</label></li>
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        props.stateSetter({ l1: !props.l1 });
-                                    }} checked={props.l1} />{'LV - <=1kV'}</label></li>
-                                </ul>
-                            </form>
+                           
                         </fieldset>
                     </li>
                  
