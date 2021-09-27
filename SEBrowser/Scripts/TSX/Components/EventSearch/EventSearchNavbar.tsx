@@ -36,6 +36,8 @@ interface IProps {
     showNav: boolean,
 }
 
+interface ISize { min: number, max: number, mode: string };
+
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -46,7 +48,12 @@ const EventSearchNavbar = (props: IProps) => {
     const eventTypeFilter = useSelector(SelectTypeFilter);
     const eventCharacteristicFilter = useSelector(SelectCharacteristicFilter);
 
-   
+    const [sagSize, setSagSize] = React.useState<string>('L-N');
+    const [swellSize, setSwellSize] = React.useState<string>('L-N');
+    const [transientSize, setTransientSize] = React.useState<string>('L-N');
+
+
+
     function formatWindowUnit(i: number) {
         if (i == 7)
             return "Years";
@@ -247,7 +254,7 @@ const EventSearchNavbar = (props: IProps) => {
                                                         time: timeFilter,
                                                         types: eventTypeFilter
                                                     }))
-                                                }} defaultChecked={true} />
+                                                }} checked={eventCharacteristicFilter.Phase.A && eventCharacteristicFilter.Phase.B && eventCharacteristicFilter.Phase.C} />
                                                 <label className="form-check-label">Select All</label>
                                             </div>
                                             <div className='form-check form-check-inline'>
@@ -314,18 +321,31 @@ const EventSearchNavbar = (props: IProps) => {
                                         <label style={{ margin: 0 }}>Transients:</label>
                                         <div className="form-group">
                                             <div className='input-group input-group-sm'>
-                                                <input className='form-control' value={0} onChange={(e) => { }} />
+                                                <input className='form-control' value={eventTypeFilter.transients? eventCharacteristicFilter.transientMin : ''} onChange={(e) => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: { ...eventCharacteristicFilter, transientMin: parseFloat((e.target as any).value) },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                }} disabled={!eventTypeFilter.transients} />
                                                 <div className="input-group-append">
                                                     <span className="input-group-text"> to </span>
                                                 </div>
-                                                <input className='form-control' value={0} onChange={(e) => { }} />
+                                                <input className='form-control' value={eventTypeFilter.transients? eventCharacteristicFilter.transientMax : ''} onChange={(e) => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: { ...eventCharacteristicFilter, transientMax: parseFloat((e.target as any).value) },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                }} disabled={!eventTypeFilter.transients} />
                                                 <div className="input-group-append">
                                                     <span className="input-group-text">p.u.</span>
                                                 </div>
-                                                <select className="custom-select">
-                                                    <option selected>LL</option>
-                                                    <option value="1">LN</option>
-                                                    <option value="2">LN/LL</option>
+                                                <select className="custom-select" disabled={!eventTypeFilter.transients}
+                                                    value={transientSize} onChange={(e) => setTransientSize((e.target as any).value)}>
+                                                    <option value='L-L'>LL</option>
+                                                    <option value="L-N">LN</option>
+                                                    <option value="both">LN/LL</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -336,36 +356,62 @@ const EventSearchNavbar = (props: IProps) => {
                                         <label style={{ margin: 0 }}>Sags:</label>
                                         <div className="form-group">
                                             <div className='input-group input-group-sm'>
-                                                <input className='form-control' value={0} onChange={(e) => { }} />
+                                                <input className='form-control' value={eventTypeFilter.sags? eventCharacteristicFilter.sagMin : ''} onChange={(e) => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: { ...eventCharacteristicFilter, sagMin: parseFloat((e.target as any).value) },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                }} disabled={!eventTypeFilter.sags}/>
                                                 <div className="input-group-append">
                                                     <span className="input-group-text"> to </span>
                                                 </div>
-                                                <input className='form-control' value={0} onChange={(e) => { }} />
+                                                <input className='form-control' value={eventTypeFilter.sags? eventCharacteristicFilter.sagMax : ''} onChange={(e) => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: { ...eventCharacteristicFilter, sagMax: parseFloat((e.target as any).value) },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                }} disabled={!eventTypeFilter.sags}/>
                                                 <div className="input-group-append">
                                                     <span className="input-group-text">p.u.</span>
                                                 </div>
-                                                <select className="custom-select">
-                                                    <option selected>LL</option>
-                                                    <option value="1">LN</option>
-                                                    <option value="2">LN/LL</option>
+                                                <select className="custom-select" disabled={!eventTypeFilter.sags}
+                                                    value={sagSize} onChange={(e) => setSagSize((e.target as any).value)}>
+                                                    <option value='L-L'>LL</option>
+                                                    <option value="L-N">LN</option>
+                                                    <option value="both">LN/LL</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <label style={{ margin: 0 }}>Swells:</label>
                                         <div className="form-group">
                                             <div className='input-group input-group-sm'>
-                                                <input className='form-control' value={0} onChange={(e) => { }} />
+                                                <input className='form-control' value={eventTypeFilter.swells ? eventCharacteristicFilter.swellMin : ''} onChange={(e) => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: { ...eventCharacteristicFilter, swellMin: parseFloat((e.target as any).value) },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                }} disabled={!eventTypeFilter.swells}/>
                                                 <div className="input-group-append">
                                                     <span className="input-group-text"> to </span>
                                                 </div>
-                                                <input className='form-control' value={0} onChange={(e) => { }} />
+                                                <input className='form-control' value={eventCharacteristicFilter.swellMax} onChange={(e) => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: { ...eventCharacteristicFilter, swellMax: parseFloat((e.target as any).value) },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                }} disabled={!eventTypeFilter.swells}/>
                                                 <div className="input-group-append">
                                                     <span className="input-group-text">p.u.</span>
                                                 </div>
-                                                <select className="custom-select">
-                                                    <option selected>LL</option>
-                                                    <option value="1">LN</option>
-                                                    <option value="2">LN/LL</option>
+                                                <select className="custom-select" disabled={!eventTypeFilter.swells}
+                                                    value={swellSize} onChange={(e) => setSwellSize((e.target as any).value)}>
+                                                    <option value='L-L'>LL</option>
+                                                    <option value="L-N">LN</option>
+                                                    <option value="both">LN/LL</option>
                                                 </select>
                                             </div>
                                         </div>

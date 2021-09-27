@@ -31,7 +31,19 @@ import moment from 'moment';
 // #region [ Thunks ]
 export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (_, { dispatch, getState }) => {
     const time = (getState() as any).EventSearch.TimeRange as SEBrowser.IReportTimeFilter;
-    const filter = { date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits }
+    const types = (getState() as any).EventSearch.EventType as SEBrowser.IEventTypeFilters;
+    const characteristics = (getState() as any).EventSearch.EventCharacteristic as SEBrowser.IEventCharacteristicFilters;
+
+    const filter = {
+        date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,
+        faults: types.faults, sags: types.sags, swells: types.swells, interruptions: types.interruptions, breakerOps: types.breakerOps, transients: types.transients, relayTCE: types.relayTCE, others: types.others,
+        durationMin: characteristics.durationMin, durationMax: characteristics.durationMax,
+        PhaseA: characteristics.Phase.A, PhaseB: characteristics.Phase.B, PhaseC: characteristics.Phase.C,
+        transientMin: characteristics.transientMin, transientMax: characteristics.transientMax,
+        sagMin: characteristics.sagMin, sagMax: characteristics.sagMax,
+        swellMin: characteristics.swellMin, swellMax: characteristics.swellMax
+
+    }
     return await GetEventSearchs(filter);
 });
 
@@ -48,7 +60,7 @@ export const EventSearchsSlice = createSlice({
         Ascending: true,
         SearchText: '',
         EventCharacteristic: {
-            durationMax: 0, durationMin: 0, Phase: { A: true, B: true, C: true }
+            durationMax: 0, durationMin: 0, Phase: { A: true, B: true, C: true }, transientMin: 0, transientMax: 0, sagMin: 0, sagMax: 0, swellMin: 0, swellMax: 0
         },
         TimeRange: { date: '01/01/2000', time: '12:00:00.000', windowSize: 1, timeWindowUnits: 2 },
         EventType: { breakerOps: true, faults: true, interruptions: true, others: true, relayTCE: true, swells: true, sags: true, transients: true }

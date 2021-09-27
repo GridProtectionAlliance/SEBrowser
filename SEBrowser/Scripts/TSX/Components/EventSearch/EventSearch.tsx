@@ -82,7 +82,13 @@ const EventSearch = (props: IProps) => {
         const characteristics = {
             durationMax: 0,
             durationMin: 0,
-            Phase: { A: true, B: true, C: true }
+            Phase: { A: true, B: true, C: true },
+            transientMin: 0,
+            transientMax: 0,
+            sagMin: 0,
+            sagMax: 0,
+            swellMin: 0,
+            swellMax: 0
         }
 
 

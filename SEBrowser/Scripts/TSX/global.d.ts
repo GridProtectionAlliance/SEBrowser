@@ -65,7 +65,13 @@ export namespace SEBrowser {
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
     interface EventPreviewPaneSetting { ID: number, Name: string, Show: boolean, OrderBy: number }
     interface IReportTimeFilter { date: string, time: string, windowSize: number, timeWindowUnits: number }
-    interface IEventCharacteristicFilters { durationMin: number, durationMax: number, Phase: { A: boolean, B: boolean, C: boolean } }
+    interface IEventCharacteristicFilters {
+        durationMin: number, durationMax: number,
+        Phase: { A: boolean, B: boolean, C: boolean },
+        transientMin: number, transientMax: number,
+        sagMin: number, sagMax: number,
+        swellMin: number, swellMax: number
+    }
     interface IEventTypeFilters { faults: boolean, sags: boolean, swells: boolean, interruptions: boolean, breakerOps: boolean, transients: boolean, relayTCE: boolean, others: boolean}
 }
 

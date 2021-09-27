@@ -66,18 +66,6 @@ namespace SEBrowser.Controllers
 
         public class EventSearchPostData
         {
-            public bool line { get; set; }
-            public bool bus { get; set; }
-            public bool breaker { get; set; }
-            public bool transformer { get; set; }
-            public bool capacitorBank { get; set; }
-            public bool dfr { get; set; }
-            public bool pqMeter { get; set; }
-            public bool g200 { get; set; }
-            public bool one00to200 { get; set; }
-            public bool thirty5to100 { get; set; }
-            public bool oneTo35 { get; set; }
-            public bool l1 { get; set; }
             public bool faults { get; set; }
             public bool sags { get; set; }
             public bool swells { get; set; }
@@ -90,8 +78,18 @@ namespace SEBrowser.Controllers
             public string time { get; set; }
             public int windowSize { get; set; }
             public int timeWindowUnits { get; set; }
-            public string make { get; set; }
-            public string model { get; set; }
+            public double durationMin { get; set; }
+            public double durationMax { get; set; }
+            public bool PhaseA {get; set;}
+            public bool PhaseB { get; set; }
+            public bool PhaseC { get; set; }
+            public double transientMin { get; set; }
+            public double transientMax { get; set; }
+            public double sagMin { get; set; }
+            public double sagMax { get; set; }
+            public double swellMax { get; set; }
+            public double swellMin { get; set; }
+           
         }
 
         enum TimeWindowUnits
@@ -136,56 +134,41 @@ namespace SEBrowser.Controllers
 
                 string eventTypeRestriction = $"({string.Join(" OR ", eventTypes)})";
 
-                List<string> voltageClasses = new List<string>();
+                List<string> phase = new List<string>();
 
-                if (postData.g200)
-                    voltageClasses.Add(" Asset.VoltageKV > 200 ");
-                if (postData.one00to200)
-                    voltageClasses.Add(" (Asset.VoltageKV > 100 AND Asset.VoltageKV <= 200) ");
-                if (postData.thirty5to100)
-                    voltageClasses.Add(" (Asset.VoltageKV > 35 AND Asset.VoltageKV <= 100) ");
-                if (postData.oneTo35)
-                    voltageClasses.Add(" (Asset.VoltageKV > 1 AND Asset.VoltageKV <= 35) ");
-                if (postData.l1)
-                    voltageClasses.Add(" Asset.VoltageKV <= 1 ");
-                if (!voltageClasses.Any())
-                    voltageClasses.Add(" Asset.VoltageKV = -1234567 ");
+                if (postData.PhaseA)
+                    phase.Add("Phase.Name IN ('AN','AB','CA')");
+                if (postData.PhaseB)
+                    phase.Add("Phase.Name IN ('BN','AB','BC')");
+                if (postData.PhaseC)
+                    phase.Add("Phase.Name IN ('CN','BC','CA')");
+                if (!phase.Any() || phase.Count == 3)
+                    phase.Add("1=1");
 
-                string voltageClassRestriction = $"({string.Join(" OR ", voltageClasses)})";
+                string eventCharacteristicsRestricitons = $"(({string.Join(" OR ", phase)})";
 
-                List<string> assetTypes = new List<string>();
+                if (postData.durationMin > 0)
+                    eventCharacteristicsRestricitons += $" AND (wsr.DurationCycles > {postData.durationMin})";
+                if (postData.durationMax > 0)
+                    eventCharacteristicsRestricitons += $" AND (wsr.DurationCycles < {postData.durationMax})";
 
-                if (postData.line)
-                    assetTypes.Add(" AssetType.Name = 'Line'");
-                if (postData.bus)
-                    assetTypes.Add(" AssetType.Name = 'Bus'");
-                if (postData.transformer)
-                    assetTypes.Add(" AssetType.Name = 'Transformer'");
-                if (postData.breaker)
-                    assetTypes.Add(" AssetType.Name = 'Breaker'");
-                if (postData.capacitorBank)
-                    assetTypes.Add(" AssetType.Name = 'CapacitorBank'");
-                if (!assetTypes.Any())
-                    assetTypes.Add(" AssetType.Name = 'None'");
+                if (postData.sagMin > 0)
+                    eventCharacteristicsRestricitons += $" AND (wsr.PerUnitMagnitude > {postData.sagMin} OR EventType.Name <> 'Sag')";
+                if (postData.sagMax > 0)
+                    eventCharacteristicsRestricitons += $" AND (wsr.PerUnitMagnitude < {postData.sagMax} OR EventType.Name <> 'Sag')";
 
-                string assetTypesRestriction = $"({string.Join(" OR ", assetTypes)})";
+                if (postData.swellMin > 0)
+                    eventCharacteristicsRestricitons += $" AND (wsr.PerUnitMagnitude > {postData.swellMin} OR EventType.Name <> 'Swell')";
+                if (postData.swellMax > 0)
+                    eventCharacteristicsRestricitons += $" AND (wsr.PerUnitMagnitude < {postData.swellMax} OR EventType.Name <> 'Swell')";
 
-                List<string> meterType = new List<string>();
+                if (postData.transientMin > 0)
+                    eventCharacteristicsRestricitons += $" AND (wsr.PerUnitMagnitude > {postData.transientMin} OR EventType.Name <> 'Transient')";
+                if (postData.transientMax > 0)
+                    eventCharacteristicsRestricitons += $" AND (wsr.PerUnitMagnitude < {postData.transientMax} OR EventType.Name <> 'Transient')";
 
-                if (postData.dfr)
-                    meterType.Add(" (SELECT COUNT(AssetID) FROM MeterAsset as ml WHERE event.MeterID = ml.MeterID) > 1 ");
-                if (postData.pqMeter)
-                    meterType.Add(" (SELECT COUNT(AssetID) FROM MeterAsset as ml WHERE event.MeterID = ml.MeterID) = 1 ");
-                if (!meterType.Any())
-                    meterType.Add(" (SELECT COUNT(AssetID) FROM MeterAsset as ml WHERE event.MeterID = ml.MeterID) < 1 ");
 
-                string meterTypeRestriction = $"({string.Join(" OR ", meterType)})";
-
-                string meterMakeRestriction = $"";
-                if (postData.make != "All" && postData.model != "All")
-                    meterMakeRestriction = $" AND Meter.Make = '{postData.make}' AND Meter.Model = '{postData.model}' ";
-                else if (postData.make != "All")
-                    meterMakeRestriction = $" AND Meter.Make = '{postData.make}'  ";
+                eventCharacteristicsRestricitons += ")";
 
                 string query = $@" 
                      ;With WorstSeverityCode as (
@@ -203,14 +186,18 @@ namespace SEBrowser.Controllers
 	                        EventID
                         ), WorstSeverityRecord as (
                         SELECT 
-	                        Disturbance.*, DisturbanceSeverity.SeverityCode, row_number() over (Partition By Disturbance.EventID Order By Disturbance.EventTypeID) as Ranking 
+	                        Disturbance.*,
+                            DisturbanceSeverity.SeverityCode,
+                            row_number() over (Partition By Disturbance.EventID Order By Disturbance.EventTypeID) as Ranking,
+                            Dist.PhaseID AS OriginalPhaseId
                         FROM 
 	                        Disturbance INNER HASH JOIN
 	                        DisturbanceSeverity ON Disturbance.ID = DisturbanceSeverity.DisturbanceID INNER HASH JOIN
 	                        WorstSeverityCode ON Disturbance.EventID = WorstSeverityCode.EventID AND DisturbanceSeverity.SeverityCode = WorstSeverityCode.SeverityCode INNER HASH JOIN
-                            Event ON Disturbance.EventID = Event.ID
+                            Event ON Disturbance.EventID = Event.ID LEFT JOIN
+                            Disturbance DIST ON Disturbance.EventID = DIST.EventID AND Disturbance.Magnitude = DIST.Magnitude AND Disturbance.DurationCycles = DIST.DurationCycles AND DIST.PhaseID <> (SELECT ID FROM Phase WHERE Name = 'Worst')
                         WHERE
-	                        PhaseID = (SELECT ID FROM Phase WHERE Name = 'Worst') AND 
+	                        Disturbance.PhaseID = (SELECT ID FROM Phase WHERE Name = 'Worst') AND 
 	                        (CAST(Disturbance.StartTime as date) BETWEEN DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}) OR CAST(Disturbance.EndTime as Date) BETWEEN  DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}))
                     )
                     SELECT
@@ -224,6 +211,7 @@ namespace SEBrowser.Controllers
 	                    Event.StartTime as FileStartTime,
 	                    wsr.DurationSeconds,
 	                    wsr.PerUnitMagnitude,
+                        wsr.DurationCycles,
 	                    (SELECT COUNT(*) FROM BreakerOperation WHERE BreakerOperation.EventID = Event.ID) as BreakerOperation,
                         (SELECT COUNT(Channel.ID) FROM Channel LEFT JOIN MeasurementType ON Channel.MeasurementTypeID = MeasurementType.ID WHERE MeasurementType.Name = 'TripCoilCurrent' AND Channel.AssetID = Asset.ID ) as TripCoilCount
                     FROM
@@ -232,13 +220,12 @@ namespace SEBrowser.Controllers
 	                    Asset ON Event.AssetID = Asset.ID JOIN
                         Meter ON Event.MeterID = Meter.ID JOIN
 	                    AssetType ON Asset.AssetTypeID = AssetType.ID LEFT JOIN
-	                    WorstSeverityRecord wsr ON wsr.EventID = Event.ID 
+	                    WorstSeverityRecord wsr ON wsr.EventID = Event.ID LEFT JOIN
+                        Phase ON Phase.ID = wsr.OriginalPhaseId
                     WHERE
                         Event.StartTime BETWEEN DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}) AND
                         {eventTypeRestriction} AND
-                        {voltageClassRestriction} AND
-                        {assetTypesRestriction} AND
-                        {meterTypeRestriction + meterMakeRestriction} 
+                        {eventCharacteristicsRestricitons}
                 ";
 
                 DataTable table = connection.RetrieveData(query, dateTime);
