@@ -20,6 +20,7 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
+import { IGenericSliceState } from '@gpa-gemstone/react-interactive';
 
 declare global {
     var homePath: string;
@@ -42,7 +43,9 @@ declare global {
 export namespace Redux {
     interface StoreState {
         EventSearch: EventSearchState,
+        MagDurCurve: IGenericSliceState<SEBrowser.MagDurCurve>
     }
+
     interface State<T> {
         Status: SEBrowser.Status,
         Data: T[],
@@ -70,9 +73,11 @@ export namespace SEBrowser {
         Phase: { A: boolean, B: boolean, C: boolean },
         transientMin: number, transientMax: number,
         sagMin: number, sagMax: number,
-        swellMin: number, swellMax: number
+        swellMin: number, swellMax: number,
+        curveID: number, curveInside: boolean, curveOutside: boolean
     }
     interface IEventTypeFilters { faults: boolean, sags: boolean, swells: boolean, interruptions: boolean, breakerOps: boolean, transients: boolean, relayTCE: boolean, others: boolean}
+    interface MagDurCurve { ID: number, Name: string, XHigh: number, XLow: number, YHigh: number, YLow: number, UpperCurve: string, LowerCurve: string, Area: string }
 }
 
 export namespace OpenXDA {

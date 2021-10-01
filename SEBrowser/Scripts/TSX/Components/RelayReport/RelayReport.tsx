@@ -80,7 +80,7 @@ export default class RelayReport extends React.Component<IProps, IState>{
         return (
             <div style={{ width: '100%', height: '100%' }}>
                 <RelayReportNavBar {...this.state.searchBarProps}/>
-                <div style={{ width: '100%', height: 'calc( 100% - 118px)' }}>
+                <div style={{ width: '100%', height: 'calc( 100% - 250px)' }}>
                     <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
                         <RelayReportPane {...this.state.searchBarProps} />
                     </div>

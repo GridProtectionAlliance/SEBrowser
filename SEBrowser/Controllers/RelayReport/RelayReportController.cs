@@ -160,6 +160,8 @@ namespace PQDashboard.Controllers.BreakerReport
 	                    Breaker LEFT JOIN AssetLocation ON Breaker.ID = AssetLocation.AssetID
                     WHERE
                         AssetLocation.LocationID = " + locationID + @"
+                        AND (SELECT COUNT(RP.ID) FROM RelayPerformance RP LEFT JOIN Event E ON RP.EventID = E.ID 
+							WHERE E.AssetID = Breaker.ID ) > 0
                     ORDER BY Breaker.AssetName";
 
                     sc.CommandType = CommandType.Text;
