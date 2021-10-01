@@ -26,6 +26,9 @@ using Microsoft.Owin;
 using Owin;
 using System.Web.Http;
 using SEBrowser.Controllers;
+using System.Web.Http.Routing;
+using System.Collections.Generic;
+using System.Web.Http.Controllers;
 
 [assembly: OwinStartupAttribute(typeof(SEBrowser.Startup))]
 namespace SEBrowser
@@ -44,9 +47,18 @@ namespace SEBrowser
             // Configure Web API for self-host. 
             HttpConfiguration config = new HttpConfiguration();
             // Set configuration to use reflection to setup routes
-            config.MapHttpAttributeRoutes();
+            config.MapHttpAttributeRoutes(new CustomDirectRouteProvider());
 
             app.UseWebApi(config);
+        }
+
+        public class CustomDirectRouteProvider : DefaultDirectRouteProvider
+        {
+            protected override IReadOnlyList<IDirectRouteFactory>
+            GetActionRouteFactories(HttpActionDescriptor actionDescriptor)
+            {
+                return actionDescriptor.GetCustomAttributes<IDirectRouteFactory>(inherit: true);
+            }
         }
     }
 }

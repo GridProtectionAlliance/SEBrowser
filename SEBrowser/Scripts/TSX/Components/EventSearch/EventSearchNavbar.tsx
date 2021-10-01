@@ -29,6 +29,7 @@ import ReportTimeFilter from '../ReportTimeFilter';
 import { SEBrowser } from '../../global';
 import { useDispatch, useSelector } from 'react-redux';
 import { SelectCharacteristicFilter, SelectTimeFilter, SelectTypeFilter, SetFilters } from './EventSearchSlice';
+import { MagDurCurveSlice } from '../../Store';
 
 
 interface IProps {
@@ -47,12 +48,17 @@ const EventSearchNavbar = (props: IProps) => {
     const timeFilter = useSelector(SelectTimeFilter);
     const eventTypeFilter = useSelector(SelectTypeFilter);
     const eventCharacteristicFilter = useSelector(SelectCharacteristicFilter);
-
+    const magDurStatus = useSelector(MagDurCurveSlice.Status);
+    const magDurCurves = useSelector(MagDurCurveSlice.Data);
     const [sagSize, setSagSize] = React.useState<string>('L-N');
     const [swellSize, setSwellSize] = React.useState<string>('L-N');
     const [transientSize, setTransientSize] = React.useState<string>('L-N');
 
 
+    React.useEffect(() => {
+        if (magDurStatus == 'changed' || magDurStatus == 'unintiated')
+            dispatch(MagDurCurveSlice.Fetch());
+    }, [magDurStatus]);
 
     function formatWindowUnit(i: number) {
         if (i == 7)
@@ -301,19 +307,36 @@ const EventSearchNavbar = (props: IProps) => {
                                         <label style={{ margin: 0 }}>Mag-Dur:</label>
                                         <div className="form-group">
                                             <div className='input-group input-group-sm'>
-                                                <select className="custom-select">
-                                                    <option selected>ITIC</option>
-                                                    <option value="1">One</option>
-                                                    <option value="2">Two</option>
-                                                    <option value="3">Three</option>
+                                                <select className="custom-select" value={eventCharacteristicFilter.curveID} onChange={(e) => dispatch(SetFilters({
+                                                    characteristics: { ...eventCharacteristicFilter, curveID: parseInt((e.target as any).value) },
+                                                    time: timeFilter,
+                                                    types: eventTypeFilter,
+                                                }))}>
+                                                    {magDurCurves.map((v) => (v.Area != undefined && v.Area.length > 0 ? <option key={v.ID} value={v.ID}> {v.Name}</option> : null))}
                                                 </select>
                                             </div>
                                             <div className='form-check form-check-inline'>
-                                                <input className="form-check-input" type="checkbox" />
+                                                <input className="form-check-input" disabled={!eventCharacteristicFilter.curveOutside} type="checkbox" onChange={() => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: {
+                                                            ...eventCharacteristicFilter, curveInside: !eventCharacteristicFilter.curveInside
+                                                        },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                }} checked={eventCharacteristicFilter.curveInside}/>
                                                 <label className="form-check-label">Inside</label>
                                             </div>
                                             <div className='form-check form-check-inline'>
-                                                <input className="form-check-input" type="checkbox" />
+                                                <input className="form-check-input" disabled={!eventCharacteristicFilter.curveInside} type="checkbox" onChange={() => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: {
+                                                            ...eventCharacteristicFilter, curveOutside: !eventCharacteristicFilter.curveOutside
+                                                        },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                }} checked={eventCharacteristicFilter.curveOutside} />
                                                 <label className="form-check-label">Outside</label>
                                             </div>
                                         </div>

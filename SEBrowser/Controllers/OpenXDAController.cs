@@ -89,7 +89,10 @@ namespace SEBrowser.Controllers
             public double sagMax { get; set; }
             public double swellMax { get; set; }
             public double swellMin { get; set; }
-           
+            public int curveID { get; set; }
+            public bool curveInside { get; set; }
+            public bool curveOutside { get; set; }
+
         }
 
         enum TimeWindowUnits
@@ -167,7 +170,11 @@ namespace SEBrowser.Controllers
                 if (postData.transientMax > 0)
                     eventCharacteristicsRestricitons += $" AND (wsr.PerUnitMagnitude < {postData.transientMax} OR EventType.Name <> 'Transient')";
 
-
+                if (!postData.curveOutside || !postData.curveInside)
+                {
+                    eventCharacteristicsRestricitons += $" AND ( wsr.DurationSeconds IS NOT NULL AND wsr.PerUnitMagnitude IS NOT NULL AND (SELECT TOP 1 Area FROM StandardMagDurCurve WHERE ID = {postData.curveID})";
+                    eventCharacteristicsRestricitons += $".STContains(geometry::Point(wsr.DurationSeconds,wsr.PerUnitMagnitude,0)) = {(postData.curveInside ? 1 : 0)})";
+                }
                 eventCharacteristicsRestricitons += ")";
 
                 string query = $@" 

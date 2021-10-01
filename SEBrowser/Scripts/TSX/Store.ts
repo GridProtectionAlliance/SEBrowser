@@ -21,11 +21,18 @@
 //
 //******************************************************************************************************
 
+import { GenericSlice } from '@gpa-gemstone/react-interactive';
 import { configureStore } from '@reduxjs/toolkit';
 import EventSearchReducer from './Components/EventSearch/EventSearchSlice';
+import { SEBrowser } from './global';
+
+declare var homePath: string;
+
+export const MagDurCurveSlice = new GenericSlice<SEBrowser.MagDurCurve>('MagDurCurve', `${homePath}api/StandardMagDurCurve`, 'Name');
 
 const reducer = {
-    EventSearch: EventSearchReducer
+    EventSearch: EventSearchReducer,
+    MagDurCurve: MagDurCurveSlice.Reducer
 }
 
 const store = configureStore({ reducer });
