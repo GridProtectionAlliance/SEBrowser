@@ -22,6 +22,7 @@
 //******************************************************************************************************
 import * as React from 'react';
 import _ from 'lodash';
+import ReportTimeFilter from '../ReportTimeFilter';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -250,45 +251,12 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                         </li>
                         
                         <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Time Window:</legend>
-                                <form>
-                                    <label style={{ width: '100%', position: 'relative', float: "left" }} >Date: </label>
-                                    <div className="form-group" style={{ height: 30 }}>
-                                        <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
-                                            <input id="timePicker" className='form-control' value={props.time} onChange={(e) => {
-                                                setTime((e.target as any).value);
-                                            }} />
-                                        </div>
-
-                                        <div className='input-group date' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
-                                            <input className='form-control' id='datePicker' value={props.date} onChange={(e) => {
-                                                setDate((e.target as any).value);
-                                            }} />
-                                        </div>
-
-                                    </div>
-                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
-                                    <div className="form-group" style={{ height: 30 }}>
-                                        <input style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} value={props.windowSize} onChange={(e) => {
-                                            setWindowSize((e.target as any).value);
-                                        }} type="number" />
-                                        <select style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} value={props.timeWindowUnits} onChange={(e) => {
-                                            setTimeWindowUnits((e.target as any).value);
-                                        }} >
-                                            <option value="7">Year</option>
-                                            <option value="6">Month</option>
-                                            <option value="5">Week</option>
-                                            <option value="4">Day</option>
-                                            <option value="3">Hour</option>
-                                            <option value="2">Minute</option>
-                                            <option value="1">Second</option>
-                                            <option value="0">Millisecond</option>
-                                        </select>
-
-                                    </div>
-                                </form>
-                            </fieldset>
+                            <ReportTimeFilter filter={{ date: props.date, time: props.time, windowSize: props.windowSize, timeWindowUnits: props.timeWindowUnits }} setFilter={(f) => {
+                                setDate(f.date);
+                                setTime(f.time);
+                                setTimeWindowUnits(f.timeWindowUnits);
+                                setWindowSize(f.windowSize);
+                            }} showQuickSelect={false} />
                         </li>
 
 
