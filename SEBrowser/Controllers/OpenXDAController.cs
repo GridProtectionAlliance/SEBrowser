@@ -92,7 +92,9 @@ namespace SEBrowser.Controllers
             public int curveID { get; set; }
             public bool curveInside { get; set; }
             public bool curveOutside { get; set; }
-
+            public string transientType { get; set; }
+            public string sagType { get; set; }
+            public string swellType { get; set; }
         }
 
         enum TimeWindowUnits
@@ -117,23 +119,23 @@ namespace SEBrowser.Controllers
                 List<string> eventTypes = new List<string>();
 
                 if (postData.faults)
-                    eventTypes.Add(" ((EventType.Name  = 'Fault' AND (SELECT COUNT(*) FROM BreakerOperation WHERE BreakerOperation.EventID = Event.ID) = 0)  OR (EventType.Name  = 'RecloseIntoFault'))");
+                    eventTypes.Add(" ((wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name = 'Fault') AND (SELECT COUNT(*) FROM BreakerOperation WHERE BreakerOperation.EventID = Event.ID) = 0)  OR (wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name = 'RecloseIntoFault')))");
                 if (postData.breakerOps)
-                    eventTypes.Add("((EventType.Name  = 'Fault' AND (SELECT COUNT(*) FROM BreakerOperation WHERE BreakerOperation.EventID = Event.ID) > 0) OR (EventType.Name  = 'BreakerOpen'))");
+                    eventTypes.Add("((wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name = 'Fault') AND (SELECT COUNT(*) FROM BreakerOperation WHERE BreakerOperation.EventID = Event.ID) > 0) OR (wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name = 'BreakerOpen')))");
                 if (postData.sags)
-                    eventTypes.Add("EventType.Name  = 'Sag'");
+                    eventTypes.Add("wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name = 'Sag')");
                 if (postData.swells)
-                    eventTypes.Add("EventType.Name  = 'Swell'");
+                    eventTypes.Add("wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name  = 'Swell')");
                 if (postData.interruptions)
-                    eventTypes.Add("EventType.Name  = 'Interruption'");
+                    eventTypes.Add("wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name  = 'Interruption')");
                 if (postData.transients)
-                    eventTypes.Add("EventType.Name  = 'Transient'");
+                    eventTypes.Add("wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name  = 'Transient')");
                 if (postData.others)
-                    eventTypes.Add("EventType.Name  = 'Other'");
+                    eventTypes.Add("wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name  = 'Other')");
                 if (postData.relayTCE)
                     eventTypes.Add("(SELECT COUNT(RelayPerformance.ID) FROM RelayPerformance WHERE RelayPerformance.EventID = Event.ID) > 0");
                 if (!eventTypes.Any())
-                    eventTypes.Add("EventType.Name  = ''");
+                    eventTypes.Add("wsr.EventTypeID IN (0)");
 
                 string eventTypeRestriction = $"({string.Join(" OR ", eventTypes)})";
 
@@ -175,40 +177,27 @@ namespace SEBrowser.Controllers
                     eventCharacteristicsRestricitons += $" AND ( wsr.DurationSeconds IS NOT NULL AND wsr.PerUnitMagnitude IS NOT NULL AND (SELECT TOP 1 Area FROM StandardMagDurCurve WHERE ID = {postData.curveID})";
                     eventCharacteristicsRestricitons += $".STContains(geometry::Point(wsr.DurationSeconds,wsr.PerUnitMagnitude,0)) = {(postData.curveInside ? 1 : 0)})";
                 }
+
+
                 eventCharacteristicsRestricitons += ")";
 
+                // #ToDo: Move openXDA from using Phase=worst to add a Flag to Disturbance for worst - This will speed up 
+
                 string query = $@" 
-                     ;With WorstSeverityCode as (
-                        SELECT 
-	                        EventID,
-	                        MAX(DisturbanceSeverity.SeverityCode) as SeverityCode
-                        FROM 
-	                        Disturbance INNER HASH JOIN
-	                        DisturbanceSeverity ON Disturbance.ID = DisturbanceSeverity.DisturbanceID INNER HASH JOIN
-                            Event ON Disturbance.EventID = Event.ID
-                        WHERE
-	                        PhaseID = (SELECT ID FROM Phase WHERE Name = 'Worst') AND
-	                        (CAST(Disturbance.StartTime as date) BETWEEN  DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}) OR CAST(Disturbance.EndTime as Date) BETWEEN  DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}})) 
-                        GROUP BY
-	                        EventID
-                        ), WorstSeverityRecord as (
+                      ;With WorstDisturbanceRecord as (
                         SELECT 
 	                        Disturbance.*,
-                            DisturbanceSeverity.SeverityCode,
-                            row_number() over (Partition By Disturbance.EventID Order By Disturbance.EventTypeID) as Ranking,
-                            Dist.PhaseID AS OriginalPhaseId
+                            Dist.PhaseID AS OriginalPhaseId,
+                            ROW_NUMBER() OVER(PARTITION BY Disturbance.EventID ORDER BY DisturbanceSeverity.SeverityCode, Disturbance.PerUnitMagnitude DESC) AS row_number
                         FROM 
-	                        Disturbance INNER HASH JOIN
-	                        DisturbanceSeverity ON Disturbance.ID = DisturbanceSeverity.DisturbanceID INNER HASH JOIN
-	                        WorstSeverityCode ON Disturbance.EventID = WorstSeverityCode.EventID AND DisturbanceSeverity.SeverityCode = WorstSeverityCode.SeverityCode INNER HASH JOIN
-                            Event ON Disturbance.EventID = Event.ID LEFT JOIN
+	                        Disturbance LEFT JOIN
+                            DisturbanceSeverity ON DisturbanceSeverity.DisturbanceID = Disturbance.ID LEFT JOIN
                             Disturbance DIST ON Disturbance.EventID = DIST.EventID AND Disturbance.Magnitude = DIST.Magnitude AND Disturbance.DurationCycles = DIST.DurationCycles AND DIST.PhaseID <> (SELECT ID FROM Phase WHERE Name = 'Worst')
                         WHERE
 	                        Disturbance.PhaseID = (SELECT ID FROM Phase WHERE Name = 'Worst') AND 
 	                        (CAST(Disturbance.StartTime as date) BETWEEN DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}) OR CAST(Disturbance.EndTime as Date) BETWEEN  DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}))
                     )
-                    SELECT
-                        TOP 100
+	                SELECT TOP 100
 	                    Event.ID as EventID,
                         Meter.AssetKey as MeterName,
 	                    Asset.AssetKey as AssetName,
@@ -216,23 +205,25 @@ namespace SEBrowser.Controllers
 	                    Asset.VoltageKV as VoltageClass,
 	                    EventType.Name as EventType,
 	                    Event.StartTime as FileStartTime,
-	                    wsr.DurationSeconds,
-	                    wsr.PerUnitMagnitude,
-                        wsr.DurationCycles,
+	                    (SELECT WDR.DurationSeconds FROM WorstDisturbanceRecord WDR WHERE WDR.row_number = MIN(wsr.row_number) AND WDR.EventID = Event.ID) AS DurationSeconds,
+	                    (SELECT WDR.PerUnitMagnitude FROM WorstDisturbanceRecord WDR WHERE WDR.row_number = MIN(wsr.row_number) AND WDR.EventID = Event.ID) AS PerUnitMagnitude,
+                        (SELECT WDR.DurationCycles FROM WorstDisturbanceRecord WDR WHERE WDR.row_number = MIN(wsr.row_number) AND WDR.EventID = Event.ID) AS DurationCycles,
 	                    (SELECT COUNT(*) FROM BreakerOperation WHERE BreakerOperation.EventID = Event.ID) as BreakerOperation,
                         (SELECT COUNT(Channel.ID) FROM Channel LEFT JOIN MeasurementType ON Channel.MeasurementTypeID = MeasurementType.ID WHERE MeasurementType.Name = 'TripCoilCurrent' AND Channel.AssetID = Asset.ID ) as TripCoilCount
-                    FROM
-	                    Event JOIN
-	                    EventType ON Event.EventTypeID = EventType.ID JOIN
-	                    Asset ON Event.AssetID = Asset.ID JOIN
-                        Meter ON Event.MeterID = Meter.ID JOIN
-	                    AssetType ON Asset.AssetTypeID = AssetType.ID LEFT JOIN
-	                    WorstSeverityRecord wsr ON wsr.EventID = Event.ID LEFT JOIN
+	                FROM
+	                    Event LEFT JOIN
+	                    EventType ON Event.EventTypeID = EventType.ID LEFT JOIN
+	                    Asset ON Event.AssetID = Asset.ID LEFT JOIN
+                        Meter ON Event.MeterID = Meter.ID LEFT JOIN
+	                    AssetType ON Asset.AssetTypeID = AssetType.ID JOIN
+	                    WorstDisturbanceRecord wsr ON wsr.EventID = Event.ID LEFT JOIN
                         Phase ON Phase.ID = wsr.OriginalPhaseId
                     WHERE
                         Event.StartTime BETWEEN DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}) AND
-                        {eventTypeRestriction} AND
-                        {eventCharacteristicsRestricitons}
+                        {eventTypeRestriction} AND {eventCharacteristicsRestricitons}
+                    GROUP BY 
+                       Event.ID, Meter.AssetKey, Asset.AssetKey, AssetType.Name, Asset.VoltageKV, EventType.Name,
+	                   Event.StartTime, Asset.ID                        
                 ";
 
                 DataTable table = connection.RetrieveData(query, dateTime);
