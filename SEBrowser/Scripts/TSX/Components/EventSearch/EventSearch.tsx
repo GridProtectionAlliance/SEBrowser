@@ -89,7 +89,8 @@ const EventSearch = (props: IProps) => {
             sagMax: 0,
             swellMin: 0,
             swellMax: 0,
-            curveID: 1, curveInside: true, curveOutside: true
+            curveID: 1, curveInside: true, curveOutside: true,
+            sagType: 'both' as ('LL' | 'LN' | 'both'), swellType: 'both' as ('LL' | 'LN' | 'both'), transientType: 'both' as ('LL' | 'LN' | 'both')
         }
 
 

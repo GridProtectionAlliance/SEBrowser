@@ -158,19 +158,64 @@ namespace SEBrowser.Controllers
                     eventCharacteristicsRestricitons += $" AND (wsr.DurationCycles < {postData.durationMax})";
 
                 if (postData.sagMin > 0)
-                    eventCharacteristicsRestricitons += $" AND (wsr.PerUnitMagnitude > {postData.sagMin} OR EventType.Name <> 'Sag')";
+                {
+                    if (postData.sagType == "LL")
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit > {postData.sagMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
+                    else if (postData.sagType == "LL")
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLNPerUnit > {postData.sagMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
+                    else
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit > {postData.sagMin} OR wsr.WorstLNPerUnit > {postData.sagMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
+                }
+                    
                 if (postData.sagMax > 0)
-                    eventCharacteristicsRestricitons += $" AND (wsr.PerUnitMagnitude < {postData.sagMax} OR EventType.Name <> 'Sag')";
+                {
+                    if (postData.sagType == "LL")
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit < {postData.sagMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
+                    else if (postData.sagType == "LL")
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLNPerUnit < {postData.sagMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
+                    else
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit < {postData.sagMax} OR wsr.WorstLNPerUnit < {postData.sagMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
+                }
 
                 if (postData.swellMin > 0)
-                    eventCharacteristicsRestricitons += $" AND (wsr.PerUnitMagnitude > {postData.swellMin} OR EventType.Name <> 'Swell')";
+                {
+                    if (postData.swellType == "LL")
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit > {postData.swellMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
+                    else if (postData.swellType == "LL")
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLNPerUnit > {postData.swellMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
+                    else
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit > {postData.swellMin} OR wsr.WorstLNPerUnit > {postData.swellMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
+                }
+
                 if (postData.swellMax > 0)
-                    eventCharacteristicsRestricitons += $" AND (wsr.PerUnitMagnitude < {postData.swellMax} OR EventType.Name <> 'Swell')";
+                {
+                    if (postData.swellType == "LL")
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit < {postData.swellMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
+                    else if (postData.swellType == "LL")
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLNPerUnit < {postData.swellMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
+                    else
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit < {postData.swellMax} OR wsr.WorstLNPerUnit < {postData.swellMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
+                }
 
                 if (postData.transientMin > 0)
-                    eventCharacteristicsRestricitons += $" AND (wsr.PerUnitMagnitude > {postData.transientMin} OR EventType.Name <> 'Transient')";
+                {
+                    if (postData.transientType == "LL")
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit > {postData.transientMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
+                    else if (postData.transientType == "LL")
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLNPerUnit > {postData.transientMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
+                    else
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit > {postData.transientMin} OR wsr.WorstLNPerUnit > {postData.transientMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
+                }
+
                 if (postData.transientMax > 0)
-                    eventCharacteristicsRestricitons += $" AND (wsr.PerUnitMagnitude < {postData.transientMax} OR EventType.Name <> 'Transient')";
+                {
+                    if (postData.transientType == "LL")
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit < {postData.transientMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
+                    else if (postData.transientType == "LL")
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLNPerUnit < {postData.transientMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
+                    else
+                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit < {postData.transientMax} OR wsr.WorstLNPerUnit < {postData.transientMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
+                }
 
                 if (!postData.curveOutside || !postData.curveInside)
                 {
@@ -184,13 +229,40 @@ namespace SEBrowser.Controllers
                 // #ToDo: Move openXDA from using Phase=worst to add a Flag to Disturbance for worst - This will speed up 
 
                 string query = $@" 
-                      ;With WorstDisturbanceRecord as (
+                      ;With WorstLL AS (
+					    SELECT 
+	                            Disturbance.EventID AS EventID,
+							    Disturbance.EventTypeID AS EventTypeID,
+							    MAX(Disturbance.PerUnitMagnitude) AS MaxMag,
+							    MIN(Disturbance.PerUnitMagnitude) AS MinMag
+                            FROM 
+	                            Disturbance
+						    WHERE
+	                            Disturbance.PhaseID IN (SELECT ID FROM Phase WHERE Name IN ('AB','BC','CA'))	
+						    GROUP BY Disturbance.EventID, Disturbance.EventTypeID
+					), WorstLN AS (
+					SELECT 
+	                        Disturbance.EventID AS EventID,
+							Disturbance.EventTypeID AS EventTypeID,
+							MAX(Disturbance.PerUnitMagnitude) AS MaxMag,
+							MIN(Disturbance.PerUnitMagnitude) AS MinMag
+                        FROM 
+	                        Disturbance
+						WHERE
+	                        Disturbance.PhaseID IN (SELECT ID FROM Phase WHERE Name IN ('AN','BN','CN'))	
+						GROUP BY Disturbance.EventID, Disturbance.EventTypeID
+					),
+                    WorstDisturbanceRecord as (
                         SELECT 
 	                        Disturbance.*,
                             Dist.PhaseID AS OriginalPhaseId,
+                            ( SELECT CASE WHEN Disturbance.PerUnitMagnitude > 1 THEN WorstLL.MinMag ELSE WorstLL.MaxMag END) AS WorstLLPerUnit,
+                            ( SELECT CASE WHEN Disturbance.PerUnitMagnitude > 1 THEN WorstLN.MinMag ELSE WorstLN.MaxMag END) AS WorstLNPerUnit,
                             ROW_NUMBER() OVER(PARTITION BY Disturbance.EventID ORDER BY DisturbanceSeverity.SeverityCode, Disturbance.PerUnitMagnitude DESC) AS row_number
                         FROM 
 	                        Disturbance LEFT JOIN
+                            WorstLL ON Disturbance.EventID = WorstLL.EventID AND Disturbance.EventTypeID = WorstLL.EventTypeID LEFT JOIN
+                            WorstLN ON Disturbance.EventID = WorstLN.EventID AND Disturbance.EventTypeID = WorstLN.EventTypeID LEFT JOIN
                             DisturbanceSeverity ON DisturbanceSeverity.DisturbanceID = Disturbance.ID LEFT JOIN
                             Disturbance DIST ON Disturbance.EventID = DIST.EventID AND Disturbance.Magnitude = DIST.Magnitude AND Disturbance.DurationCycles = DIST.DurationCycles AND DIST.PhaseID <> (SELECT ID FROM Phase WHERE Name = 'Worst')
                         WHERE

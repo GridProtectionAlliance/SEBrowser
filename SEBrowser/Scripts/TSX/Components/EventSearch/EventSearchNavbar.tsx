@@ -50,10 +50,6 @@ const EventSearchNavbar = (props: IProps) => {
     const eventCharacteristicFilter = useSelector(SelectCharacteristicFilter);
     const magDurStatus = useSelector(MagDurCurveSlice.Status);
     const magDurCurves = useSelector(MagDurCurveSlice.Data);
-    const [sagSize, setSagSize] = React.useState<string>('L-N');
-    const [swellSize, setSwellSize] = React.useState<string>('L-N');
-    const [transientSize, setTransientSize] = React.useState<string>('L-N');
-
 
     React.useEffect(() => {
         if (magDurStatus == 'changed' || magDurStatus == 'unintiated')
@@ -365,9 +361,15 @@ const EventSearchNavbar = (props: IProps) => {
                                                     <span className="input-group-text">p.u.</span>
                                                 </div>
                                                 <select className="custom-select" disabled={!eventTypeFilter.transients}
-                                                    value={transientSize} onChange={(e) => setTransientSize((e.target as any).value)}>
-                                                    <option value='L-L'>LL</option>
-                                                    <option value="L-N">LN</option>
+                                                    value={eventCharacteristicFilter.transientType} onChange={(e) => {
+                                                        dispatch(SetFilters({
+                                                            characteristics: { ...eventCharacteristicFilter, transientType: (e.target as any).value },
+                                                            time: timeFilter,
+                                                            types: eventTypeFilter,
+                                                        }));
+                                                    }}>
+                                                    <option value='LL'>LL</option>
+                                                    <option value="LN">LN</option>
                                                     <option value="both">LN/LL</option>
                                                 </select>
                                             </div>
@@ -400,9 +402,15 @@ const EventSearchNavbar = (props: IProps) => {
                                                     <span className="input-group-text">p.u.</span>
                                                 </div>
                                                 <select className="custom-select" disabled={!eventTypeFilter.sags}
-                                                    value={sagSize} onChange={(e) => setSagSize((e.target as any).value)}>
-                                                    <option value='L-L'>LL</option>
-                                                    <option value="L-N">LN</option>
+                                                    value={eventCharacteristicFilter.sagType} onChange={(e) => {
+                                                        dispatch(SetFilters({
+                                                            characteristics: { ...eventCharacteristicFilter, sagType: (e.target as any).value },
+                                                            time: timeFilter,
+                                                            types: eventTypeFilter,
+                                                        }));
+                                                    }}>
+                                                    <option value='LL'>LL</option>
+                                                    <option value="LN">LN</option>
                                                     <option value="both">LN/LL</option>
                                                 </select>
                                             </div>
@@ -431,9 +439,15 @@ const EventSearchNavbar = (props: IProps) => {
                                                     <span className="input-group-text">p.u.</span>
                                                 </div>
                                                 <select className="custom-select" disabled={!eventTypeFilter.swells}
-                                                    value={swellSize} onChange={(e) => setSwellSize((e.target as any).value)}>
-                                                    <option value='L-L'>LL</option>
-                                                    <option value="L-N">LN</option>
+                                                    value={eventCharacteristicFilter.swellType} onChange={(e) => {
+                                                        dispatch(SetFilters({
+                                                            characteristics: { ...eventCharacteristicFilter, swellType: (e.target as any).value },
+                                                            time: timeFilter,
+                                                            types: eventTypeFilter,
+                                                        }));
+                                                    }}>
+                                                    <option value='LL'>LL</option>
+                                                    <option value="LN">LN</option>
                                                     <option value="both">LN/LL</option>
                                                 </select>
                                             </div>

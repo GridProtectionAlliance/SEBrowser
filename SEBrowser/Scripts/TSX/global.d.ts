@@ -71,9 +71,9 @@ export namespace SEBrowser {
     interface IEventCharacteristicFilters {
         durationMin: number, durationMax: number,
         Phase: { A: boolean, B: boolean, C: boolean },
-        transientMin: number, transientMax: number,
-        sagMin: number, sagMax: number,
-        swellMin: number, swellMax: number,
+        transientMin: number, transientMax: number, transientType: ('LL'|'LN'|'both'),            
+        sagMin: number, sagMax: number, sagType: ('LL' | 'LN' | 'both'),
+        swellMin: number, swellMax: number, swellType: ('LL' | 'LN' | 'both'),
         curveID: number, curveInside: boolean, curveOutside: boolean
     }
     interface IEventTypeFilters { faults: boolean, sags: boolean, swells: boolean, interruptions: boolean, breakerOps: boolean, transients: boolean, relayTCE: boolean, others: boolean}
