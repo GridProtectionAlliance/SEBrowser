@@ -226,7 +226,7 @@ namespace SEBrowser.Controllers
 
                 eventCharacteristicsRestricitons += ")";
 
-                // #ToDo: Move openXDA from using Phase=worst to add a Flag to Disturbance for worst - This will speed up 
+                // #ToDo: Move openXDA from using Phase=worst to add a Flag to Disturbance for worst - This will speed up the query and remove the need for self-joining
 
                 string query = $@" 
                       ;With WorstLL AS (
