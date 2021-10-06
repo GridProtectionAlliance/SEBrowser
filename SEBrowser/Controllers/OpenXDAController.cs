@@ -822,11 +822,9 @@ namespace SEBrowser.Controllers
           
                 Task<DataGroup> dataGroupTask = new Task<DataGroup>(() =>
                 {
-                    using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
-                    {
-                        List<byte[]> data = ChannelData.DataFromEvent(eventID, SettingsCategory);
-                        return ToDataGroup(meter, data);
-                    }
+                     List<byte[]> data = ChannelData.DataFromEvent(eventID, () => new AdoDataConnection(SettingsCategory));
+                    return ToDataGroup(meter, data);
+                    
                 });
 
                 if (s_memoryCache.Add(target, dataGroupTask, new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(10.0D) }))
