@@ -24,15 +24,24 @@
 import { GenericSlice } from '@gpa-gemstone/react-interactive';
 import { configureStore } from '@reduxjs/toolkit';
 import EventSearchReducer from './Components/EventSearch/EventSearchSlice';
-import { SEBrowser } from './global';
+import { SEBrowser, OpenXDA } from './global';
 
 declare var homePath: string;
 
 export const MagDurCurveSlice = new GenericSlice<SEBrowser.MagDurCurve>('MagDurCurve', `${homePath}api/StandardMagDurCurve`, 'Name');
+export const MeterSlice = new GenericSlice<OpenXDA.Meter>('Meter', `${homePath}api/openXDA/Meter`, 'Name');
+export const AssetSlice = new GenericSlice<OpenXDA.Asset>('Asset', `${homePath}api/openXDA/Asset`, 'AssetName');
+export const AssetGroupSlice = new GenericSlice<OpenXDA.AssetGroup>('AssetGroup', `${homePath}api/openXDA/AssetGroup`, 'Name');
+export const LocationSlice = new GenericSlice<OpenXDA.Location>('Location', `${homePath}api/openXDA/Location`, 'Name');
+
 
 const reducer = {
     EventSearch: EventSearchReducer,
-    MagDurCurve: MagDurCurveSlice.Reducer
+    MagDurCurve: MagDurCurveSlice.Reducer,
+    Meter: MeterSlice.Reducer,
+    Asset: AssetSlice.Reducer,
+    AssetGroup: AssetGroupSlice.Reducer,
+    Location: LocationSlice.Reducer
 }
 
 const store = configureStore({ reducer });

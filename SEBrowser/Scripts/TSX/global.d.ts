@@ -43,7 +43,11 @@ declare global {
 export namespace Redux {
     interface StoreState {
         EventSearch: EventSearchState,
-        MagDurCurve: IGenericSliceState<SEBrowser.MagDurCurve>
+        MagDurCurve: IGenericSliceState<SEBrowser.MagDurCurve>,
+        Meter: IGenericSliceState<OpenXDA.Meter>,
+        Asset: IGenericSliceState<OpenXDA.Asset>,
+        AssetGroup: IGenericSliceState<OpenXDA.AssetGroup>,
+        Location: IGenericSliceState<OpenXDA.Location>
     }
 
     interface State<T> {
@@ -85,6 +89,9 @@ export namespace OpenXDA {
 
     type AssetTypeName = 'Line' | 'Breaker' | 'Transformer' | 'CapacitorBank' | 'Bus';
     type EventTypeName = 'Fault' | 'RecloseIntoFault' | 'BreakerOpen' | 'Interruption' | 'Sag' | 'Swell' | 'Transient' | 'Other' | 'Test' | 'Breaker' | 'Snapshot';
-
+    interface Asset { ID: number, AssetKey: string, AssetName: string, AssetType: string, VoltageKV: number, Meters: number, Locations: string }
+    interface Meter { ID: number, AssetKey: string, Name: string, Location: string, MappedAssets: number, Make: string, Model: string }
+    interface AssetGroup { ID: number, Name: string, DisplayDashboard: boolean, AssetGroups: number, Meters: number, Assets: number, Users: number }
+    interface Location { ID: number, LocationKey: string, Name: string, Assets: number, Meters: number }
 }
 

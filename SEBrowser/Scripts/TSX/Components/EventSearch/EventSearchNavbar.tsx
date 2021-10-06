@@ -26,18 +26,19 @@ import React from 'react';
 import 'moment';
 import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
-import { SEBrowser } from '../../global';
+import { OpenXDA } from '../../global';
 import { useDispatch, useSelector } from 'react-redux';
 import { SelectCharacteristicFilter, SelectTimeFilter, SelectTypeFilter, SetFilters } from './EventSearchSlice';
 import { MagDurCurveSlice } from '../../Store';
+import { Modal } from '@gpa-gemstone/react-interactive';
+import EventSearchFilterButton from './EventSearchbarFilterButton';
+import EventSearchbarFilterModal from './EventSearchbarFilterModal';
 
 
 interface IProps {
     toggleVis: () => void,
     showNav: boolean,
 }
-
-interface ISize { min: number, max: number, mode: string };
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 const momentDateFormat = "MM/DD/YYYY";
@@ -50,6 +51,8 @@ const EventSearchNavbar = (props: IProps) => {
     const eventCharacteristicFilter = useSelector(SelectCharacteristicFilter);
     const magDurStatus = useSelector(MagDurCurveSlice.Status);
     const magDurCurves = useSelector(MagDurCurveSlice.Data);
+
+    const [showFilter, setFilter] = React.useState<('None' | 'Meter' | 'Asset' | 'AssetGroup' | 'Station')>('None');
 
     React.useEffect(() => {
         if (magDurStatus == 'changed' || magDurStatus == 'unintiated')
@@ -91,6 +94,7 @@ const EventSearchNavbar = (props: IProps) => {
             );
 
     return (
+        <>
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
 
             <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
@@ -462,8 +466,28 @@ const EventSearchNavbar = (props: IProps) => {
 
                     <li className="nav-item" style={{ width: '15%', paddingRight: 10 }}>
                         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                            <legend className="w-auto" style={{ fontSize: 'large' }}>Voltage Class:</legend>
-                           
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>Other Filters:</legend>
+                                <div className={"row"}>
+                                    <div className={'col'}>
+                                        <EventSearchFilterButton<any> Type={'Meter'} OnClick={() => setFilter('Meter')} Data={[]} />
+                                    </div>
+                                </div>
+                                <div className={"row"}>
+                                    <div className={'col'}>
+                                        <EventSearchFilterButton<any> Type={'Asset'} OnClick={() => setFilter('Asset')} Data={[]} />
+                                    </div>
+                                </div>
+                                <div className={"row"}>
+                                    <div className={'col'}>
+                                        <EventSearchFilterButton<any> Type={'AssetGroup'} OnClick={() => setFilter('AssetGroup')} Data={[]} />
+                                    </div>
+                                </div>
+                                <div className={"row"}>
+                                    <div className={'col'}>
+                                        <EventSearchFilterButton<any> Type={'Station'} OnClick={() => setFilter('Station')} Data={[]} />
+                                    </div>
+                                </div>
+
                         </fieldset>
                     </li>
                  
@@ -472,7 +496,14 @@ const EventSearchNavbar = (props: IProps) => {
                     <button type="button" className="btn btn-primary btn-sm" onClick={() => props.toggleVis()}>Hide Filters</button>
                 </div>
             </div>
-        </nav>
+            </nav>
+            <Modal Show={showFilter != 'None'} Size={'xlg'} ShowX={true} ShowCancel={false} ConfirmBtnClass={'btn-danger'} ConfirmText={'Remove all ' + showFilter + ' filters'} Title={"Filter By " + showFilter} CallBack={() => { setFilter('None'); }}>
+                {showFilter == 'Meter' ? <EventSearchbarFilterModal< OpenXDA.Meter> Type={'Meter'} Data={[]} SetData={(d) => { }} /> : null}
+                {showFilter == 'Asset' ? <EventSearchbarFilterModal< OpenXDA.Asset> Type={'Asset'} Data={[]} SetData={(d) => { }} /> : null}
+                {showFilter == 'AssetGroup' ? <EventSearchbarFilterModal< OpenXDA.AssetGroup> Type={'AssetGroup'} Data={[]} SetData={(d) => { }} /> : null}
+                {showFilter == 'Station' ? <EventSearchbarFilterModal< OpenXDA.Location> Type={'Station'} Data={[]} SetData={(d) => { }} /> : null}
+            </Modal>
+            </>
     );
 }
 

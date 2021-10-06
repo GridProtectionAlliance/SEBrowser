@@ -301,6 +301,7 @@
     <Compile Include="Controllers\CapBankReport\CapBankReportController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MeterActivity\MeterActivityController.cs" />
+    <Compile Include="Controllers\OpenXDA\ModelControlers.cs" />
     <Compile Include="Model\StandardMagDurCurve.cs" />
     <Compile Include="Controllers\OpenXDA\NoteController.cs" />
     <Compile Include="Controllers\OpenXDA\FaultInfoController.cs" />
@@ -398,8 +399,10 @@
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewPane.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\LineParameters.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchbarFilterModal.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
     <Content Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchbarFilterButton.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Store.ts" />
   </ItemGroup>
   <PropertyGroup>
