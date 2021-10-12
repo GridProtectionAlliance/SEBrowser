@@ -65,7 +65,12 @@ export const EventSearchsSlice = createSlice({
             curveID: 1, curveInside: true, curveOutside: true
         },
         TimeRange: { date: '01/01/2000', time: '12:00:00.000', windowSize: 1, timeWindowUnits: 2 },
-        EventType: { breakerOps: true, faults: true, interruptions: true, others: true, relayTCE: true, swells: true, sags: true, transients: true }
+        EventType: { breakerOps: true, faults: true, interruptions: true, others: true, relayTCE: true, swells: true, sags: true, transients: true },
+        isReset: true,
+        SelectedAssets: [],
+        SelectedGroups: [],
+        SelectedMeters: [],
+        SelectedStations: []
     } as Redux.EventSearchState,
     reducers: {
         Sort: (state, action) => {
@@ -85,6 +90,21 @@ export const EventSearchsSlice = createSlice({
             state.TimeRange = action.payload.time;
             state.EventType = action.payload.types;
             state.EventCharacteristic = action.payload.characteristics;
+            state.isReset = false;
+        },
+        ResetFilters: (state, action: PayloadAction<void>) => {
+            state.EventCharacteristic = {
+                durationMax: 0, durationMin: 0, Phase: { A: true, B: true, C: true }, transientMin: 0, transientMax: 0, sagMin: 0, sagMax: 0, swellMin: 0, swellMax: 0, sagType: 'both', swellType: 'both', transientType: 'both',
+                    curveID: 1, curveInside: true, curveOutside: true
+            };
+
+            state.EventType = { breakerOps: true, faults: true, interruptions: true, others: true, relayTCE: true, swells: true, sags: true, transients: true };
+            state.SelectedStations = [];
+            state.SelectedMeters = [];
+            state.SelectedGroups = [];
+            state.SelectedAssets = [];
+            state.isReset = true;
+            state.Status = 'changed';
         }
     },
     extraReducers: (builder) => {
@@ -111,7 +131,7 @@ export const EventSearchsSlice = createSlice({
 // #endregion
 
 // #region [ Selectors ]
-export const { Sort, SetFilters } = EventSearchsSlice.actions;
+export const { Sort, SetFilters, ResetFilters } = EventSearchsSlice.actions;
 export default EventSearchsSlice.reducer;
 export const SelectEventSearchs = (state: Redux.StoreState) => state.EventSearch.Data;
 export const SelectEventSearchByID = (state: Redux.StoreState, id: number) => state.EventSearch.Data.find(ds => ds.EventID === id);
@@ -132,6 +152,11 @@ export const SelectEventSearchBySearchText = (state: Redux.StoreState, searchTex
 export const SelectTimeFilter = (state: Redux.StoreState) => state.EventSearch.TimeRange;
 export const SelectTypeFilter = (state: Redux.StoreState) => state.EventSearch.EventType;
 export const SelectCharacteristicFilter = (state: Redux.StoreState) => state.EventSearch.EventCharacteristic;
+export const SelectReset = (state: Redux.StoreState) => state.EventSearch.isReset;
+export const SelectMeterList = (state: Redux.StoreState) => state.EventSearch.SelectedMeters;
+export const SelectAssetList = (state: Redux.StoreState) => state.EventSearch.SelectedAssets;
+export const SelectAssetGroupList = (state: Redux.StoreState) => state.EventSearch.SelectedGroups;
+export const StationList = (state: Redux.StoreState) => state.EventSearch.SelectedStations;
 // #endregion
 
 // #region [ Async Functions ]

@@ -28,7 +28,7 @@ import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { OpenXDA } from '../../global';
 import { useDispatch, useSelector } from 'react-redux';
-import { SelectCharacteristicFilter, SelectTimeFilter, SelectTypeFilter, SetFilters } from './EventSearchSlice';
+import { ResetFilters, SelectCharacteristicFilter, SelectReset, SelectTimeFilter, SelectTypeFilter, SetFilters } from './EventSearchSlice';
 import { MagDurCurveSlice } from '../../Store';
 import { Modal } from '@gpa-gemstone/react-interactive';
 import EventSearchFilterButton from './EventSearchbarFilterButton';
@@ -51,6 +51,7 @@ const EventSearchNavbar = (props: IProps) => {
     const eventCharacteristicFilter = useSelector(SelectCharacteristicFilter);
     const magDurStatus = useSelector(MagDurCurveSlice.Status);
     const magDurCurves = useSelector(MagDurCurveSlice.Data);
+    const reset = useSelector(SelectReset);
 
     const [showFilter, setFilter] = React.useState<('None' | 'Meter' | 'Asset' | 'AssetGroup' | 'Station')>('None');
 
@@ -87,7 +88,7 @@ const EventSearchNavbar = (props: IProps) => {
                         </span>
                     </div>
                     <div className="navbar-nav ml-auto" >
-                        <button type="button" className="btn btn-primary btn-sm" onClick={() => props.toggleVis()}>Show Filters</button>
+                        <button type="button" className={`btn btn-${(!reset ? 'primary' : 'info')} btn-sm`} onClick={() => props.toggleVis()}>Show Filters</button>
                     </div>
                 </div>
             </nav>
@@ -493,7 +494,8 @@ const EventSearchNavbar = (props: IProps) => {
                  
                 </ul>
                 <div className="btn-group float-right" data-toggle="buttons">
-                    <button type="button" className="btn btn-primary btn-sm" onClick={() => props.toggleVis()}>Hide Filters</button>
+                        <button type="button" className={`btn btn-${(reset? 'primary' : 'info')} btn-sm`} onClick={() => props.toggleVis()}>Hide Filters</button>
+                        <button type="button" className="btn btn-danger btn-sm" disabled={reset} onClick={() => dispatch(ResetFilters())}>Reset Filters</button>
                 </div>
             </div>
             </nav>

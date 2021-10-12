@@ -63,7 +63,12 @@ export namespace Redux {
     interface EventSearchState extends Redux.State<OpenXDA.Event> {
         TimeRange: SEBrowser.IReportTimeFilter,
         EventType: SEBrowser.IEventTypeFilters,
-        EventCharacteristic: SEBrowser.IEventCharacteristicFilters
+        EventCharacteristic: SEBrowser.IEventCharacteristicFilters,
+        SelectedMeters: OpenXDA.Meter[],
+        SelectedAssets: OpenXDA.Asset[],
+        SelectedStations: OpenXDA.Location[],
+        SelectedGroups: OpenXDA.AssetGroup[],
+        isReset: boolean
     }
 
 } 
