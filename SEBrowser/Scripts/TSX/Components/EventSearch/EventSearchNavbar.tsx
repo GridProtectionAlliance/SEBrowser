@@ -502,8 +502,8 @@ const EventSearchNavbar = (props: IProps) => {
                     </li>
                  
                 </ul>
-                <div className="btn-group float-right" data-toggle="buttons">
-                        <button type="button" className={`btn btn-${(reset? 'primary' : 'info')} btn-sm`} onClick={() => props.toggleVis()}>Hide Filters</button>
+                    <div className="btn-group-vertical float-right" data-toggle="buttons">
+                        <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${(!reset ? 'primary' : 'info')} btn-sm`} onClick={() => props.toggleVis()}>Hide Filters</button>
                         <button type="button" className="btn btn-danger btn-sm" disabled={reset} onClick={() => dispatch(ResetFilters())}>Reset Filters</button>
                 </div>
             </div>
