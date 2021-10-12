@@ -80,9 +80,36 @@ function EventSearchbarFilterModal<T>(props: IProps<T>) {
 
     // #ToDo: Move default Fields into gpa-gemstone to match SystemCenter and SEBrowser
     React.useEffect(() => {
-        let handle = getAdditionalFields();
+        let handle = null;
+        let handleLine = null;
+        let handleBreaker = null;
+        let handleCapBank = null;
+        let handleTransformer = null;
+        let handleBus = null;
+
+        if (props.Type == 'Meter')
+            handle = getAdditionalFields('Meter');
+        if (props.Type == 'Station')
+            handle = getAdditionalFields('Location');
+        if (props.Type == 'Asset') {
+            handleLine = getAdditionalFields('Line');
+            handleBreaker = getAdditionalFields('Breaker');
+            handleCapBank = getAdditionalFields('CapBank');
+            handleTransformer = getAdditionalFields('Transformer');
+            handleBus = getAdditionalFields('Bus');
+        }
 
         setFilterableList(getDefaultFilterList() as Search.IField<T>[]);
+
+        if (props.Type == 'Asset') {
+            return () => {
+                if (handleLine.abort != null) handleLine.abort();
+                if (handleBreaker.abort != null) handleBreaker.abort();
+                if (handleCapBank.abort != null) handleCapBank.abort();
+                if (handleTransformer.abort != null) handleTransformer.abort();
+                if (handleBus.abort != null) handleBus.abort();
+            }
+        }
 
         return () => { if (handle != null && handle.abort != null) handle.abort(); }
 
@@ -114,7 +141,6 @@ function EventSearchbarFilterModal<T>(props: IProps<T>) {
                 { label: 'Number of Transmission Assets', key: 'Assets', type: 'integer', isPivotField: false },
                 { label: 'Number of Users', key: 'Users', type: 'integer', isPivotField: false },
                 { label: 'Show in PQ Dashboard', key: 'DisplayDashboard', type: 'boolean', isPivotField: false },
-
             ];
         if (props.Type == 'Station')
             return [
@@ -127,32 +153,47 @@ function EventSearchbarFilterModal<T>(props: IProps<T>) {
             ];
     }
 
-    function getAdditionalFields(): JQuery.jqXHR<SystemCenter.Types.AdditionalField[]> {
-        let handle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/SystemCenter/AdditionalField/ParentTable/Meter/FieldName/0`,
-            contentType: "application/json; charset=utf-8",
-            cache: false,
-            async: true
-        });
+    function getAdditionalFields(table: string): JQuery.jqXHR<SystemCenter.Types.AdditionalField[]> {
         function ConvertType(type: string) {
             if (type == 'string' || type == 'integer' || type == 'number' || type == 'datetime' || type == 'boolean')
                 return { type: type }
             return {
                 type: 'enum', enum: [{ Label: type, Value: type }]
             }
-        }
-
-        handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
-            setFilterableList(defaults => {
-                return _.orderBy(defaults.concat(d.filter(item => item.Searchable).map(item => (
-                    { label: `[AF${item.ExternalDB != undefined ? " " + item.ExternalDB : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type) } as Search.IField<OpenXDA.Meter>
-                ))), ['label'], ["asc"]);
-            })
+        };
+        let handle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/SystemCenter/AdditionalField/ParentTable/${table}/FieldName/0`,
+            contentType: "application/json; charset=utf-8",
+            cache: false,
+            async: true
         });
+            
+            handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
+                setFilterableList(defaults => {
+                    return _.orderBy(defaults.concat(d.filter(item => item.Searchable).map(item => (
+                        { label: `[AF${item.ExternalDB != undefined ? " " + item.ExternalDB : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type) } as Search.IField<OpenXDA.Meter>
+                    ))), ['label'], ["asc"]);
+                })
+            });
         return handle;
     }
 
+    function GetAdditionalAssetFields() {
+        let handleLine = getAdditionalFields('Line');
+        let handleBreaker = getAdditionalFields('Breaker');
+        let handleCapBank = getAdditionalFields('CapBank');
+        let handleTransformer = getAdditionalFields('Transformer');
+        let handleBus = getAdditionalFields('Bus');
+
+        return () => {
+            if (handleLine.abort != null) handleLine.abort();
+            if (handleBreaker.abort != null) handleBreaker.abort();
+            if (handleCapBank.abort != null) handleCapBank.abort();
+            if (handleTransformer.abort != null) handleTransformer.abort();
+            if (handleBus.abort != null) handleBus.abort();
+        }
+    }
     React.useEffect(() => {
        
         if (props.Type == 'Meter')
