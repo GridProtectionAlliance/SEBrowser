@@ -30,6 +30,7 @@ import { AssetGroupSlice, AssetSlice, LocationSlice, MagDurCurveSlice, MeterSlic
 import { Modal, Search, SearchBar } from '@gpa-gemstone/react-interactive';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import Table, { Column } from '@gpa-gemstone/react-table';
+import { ascending } from 'd3';
 
 interface IProps<T> {
     Data: T[],
@@ -55,9 +56,14 @@ function EventSearchbarFilterModal<T>(props: IProps<T>) {
     const assetGroupList = useSelector(AssetGroupSlice.SearchResults);
     const locationList = useSelector(LocationSlice.SearchResults);
 
+    const meterFilters = useSelector(MeterSlice.SearchFilters);
+    const assetFilters = useSelector(AssetSlice.SearchFilters);
+    const assetGroupFilters = useSelector(AssetGroupSlice.SearchFilters);
+    const locationFilters = useSelector(LocationSlice.SearchFilters);
+
     const [asc, setAsc] = React.useState<boolean>(false);
     const [sortKey, setSortKey] = React.useState<keyof T>(null);
-    
+
     React.useEffect(() => {
         if (meterStatus == 'changed' || meterStatus == 'unintiated')
             dispatch(MeterSlice.Fetch());
@@ -114,6 +120,7 @@ function EventSearchbarFilterModal<T>(props: IProps<T>) {
         return () => { if (handle != null && handle.abort != null) handle.abort(); }
 
     }, [props.Type]);
+
 
     function getDefaultFilterList() {
         if (props.Type == 'Meter')
@@ -179,21 +186,6 @@ function EventSearchbarFilterModal<T>(props: IProps<T>) {
         return handle;
     }
 
-    function GetAdditionalAssetFields() {
-        let handleLine = getAdditionalFields('Line');
-        let handleBreaker = getAdditionalFields('Breaker');
-        let handleCapBank = getAdditionalFields('CapBank');
-        let handleTransformer = getAdditionalFields('Transformer');
-        let handleBus = getAdditionalFields('Bus');
-
-        return () => {
-            if (handleLine.abort != null) handleLine.abort();
-            if (handleBreaker.abort != null) handleBreaker.abort();
-            if (handleCapBank.abort != null) handleCapBank.abort();
-            if (handleTransformer.abort != null) handleTransformer.abort();
-            if (handleBus.abort != null) handleBus.abort();
-        }
-    }
     React.useEffect(() => {
        
         if (props.Type == 'Meter')
@@ -221,6 +213,19 @@ function EventSearchbarFilterModal<T>(props: IProps<T>) {
 
     }, [props.Type]);
 
+    React.useEffect(() => {
+        if (props.Type == 'Meter')
+            Search(meterFilters)
+        if (props.Type == 'Asset')
+            Search(assetFilters);
+        if (props.Type == 'AssetGroup')
+            Search(assetGroupFilters);
+        if (props.Type == 'Station')
+            Search(locationFilters);
+
+        props.SetData(props.Data);
+
+    }, [sortKey, ascending]);
 
     React.useEffect(() => {
       
@@ -265,13 +270,13 @@ function EventSearchbarFilterModal<T>(props: IProps<T>) {
 
     function Search(flds: Search.IFilter<T>[]) {
         if (props.Type == 'Meter')
-            dispatch(MeterSlice.DBSearch({ filter: flds, sortField: 'Name', ascending: true }));
+            dispatch(MeterSlice.DBSearch({ filter: flds, sortField: sortKey as keyof OpenXDA.Meter, ascending: asc }));
         if (props.Type == 'Asset')
-            dispatch(AssetSlice.DBSearch({ filter: flds, sortField: 'AssetKey', ascending: true }));
+            dispatch(AssetSlice.DBSearch({ filter: flds, sortField: sortKey as keyof OpenXDA.Asset, ascending: asc }));
         if (props.Type == 'AssetGroup')
-            dispatch(AssetGroupSlice.DBSearch({ filter: flds, sortField: 'Name', ascending: true }));
+            dispatch(AssetGroupSlice.DBSearch({ filter: flds, sortField: sortKey as keyof OpenXDA.AssetGroup, ascending: asc }));
         if (props.Type == 'Station')
-            dispatch(LocationSlice.DBSearch({ filter: flds, sortField: 'Name', ascending: true }));
+            dispatch(LocationSlice.DBSearch({ filter: flds, sortField: sortKey as keyof OpenXDA.Location, ascending: asc }));
 
     }
 
@@ -335,6 +340,12 @@ function EventSearchbarFilterModal<T>(props: IProps<T>) {
                             onSort={(d) => {
                                 if (d.colKey === "Scroll")
                                     return;
+                                if (d.colKey === sortKey)
+                                    setAsc(!asc);
+                                else {
+                                    setAsc(true);
+                                    setSortKey(d.colField);
+                                }
                             }}
                             onClick={() => { }}
                             theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
