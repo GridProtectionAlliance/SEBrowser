@@ -32,7 +32,9 @@ import { SystemCenter } from '@gpa-gemstone/application-typings';
 import Table, { Column } from '@gpa-gemstone/react-table';
 import { ascending } from 'd3';
 
-interface IProps<T> {
+interface S {ID: number}
+
+interface IProps<T extends S> {
     Data: T[],
     Type: ('Meter' | 'Asset' | 'AssetGroup' | 'Station'),
     SetData: (d: T[]) => void
@@ -42,7 +44,7 @@ const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
 
-function EventSearchbarFilterModal<T>(props: IProps<T>) {
+function EventSearchbarFilterModal<T extends S>(props: IProps<T>) {
     const dispatch = useDispatch();
     const meterStatus = useSelector(MeterSlice.Status);
     const assetStatus = useSelector(AssetSlice.Status);
@@ -347,7 +349,31 @@ function EventSearchbarFilterModal<T>(props: IProps<T>) {
                                     setSortKey(d.colField);
                                 }
                             }}
-                            onClick={() => { }}
+                            onClick={(d) => props.SetData([...props.Data.filter(item => item.ID != d.row.ID), d.row])}
+                            theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                            tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 300, width: '100%' }}
+                            rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                            selected={(item) => false}
+                        />
+                    </div>
+                    <div className='col-6'>
+                        <Table<T>
+                            cols={tableColumns}
+                            tableClass="table table-hover"
+                            data={props.Data}
+                            sortKey={sortKey as string}
+                            ascending={asc}
+                            onSort={(d) => {
+                                if (d.colKey === "Scroll")
+                                    return;
+                                if (d.colKey === sortKey)
+                                    setAsc(!asc);
+                                else {
+                                    setAsc(true);
+                                    setSortKey(d.colField);
+                                }
+                            }}
+                            onClick={(d) => props.SetData(props.Data.filter(item => item.ID != d.row.ID))}
                             theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                             tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 300, width: '100%' }}
                             rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}

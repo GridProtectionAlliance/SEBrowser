@@ -105,6 +105,15 @@ export const EventSearchsSlice = createSlice({
             state.SelectedAssets = [];
             state.isReset = true;
             state.Status = 'changed';
+        },
+        SetFilterLists: (state, action: PayloadAction<{ Meters: OpenXDA.Meter[], Assets: OpenXDA.Asset[], Groups: OpenXDA.AssetGroup[], Stations: OpenXDA.Location[] }>) => {
+            state.SelectedStations = action.payload.Stations;
+            state.SelectedMeters = action.payload.Meters;
+            state.SelectedGroups = action.payload.Groups;
+            state.SelectedAssets = action.payload.Assets;
+
+            state.isReset = false;
+            state.Status = 'changed';
         }
     },
     extraReducers: (builder) => {
@@ -131,7 +140,7 @@ export const EventSearchsSlice = createSlice({
 // #endregion
 
 // #region [ Selectors ]
-export const { Sort, SetFilters, ResetFilters } = EventSearchsSlice.actions;
+export const { Sort, SetFilters, ResetFilters, SetFilterLists } = EventSearchsSlice.actions;
 export default EventSearchsSlice.reducer;
 export const SelectEventSearchs = (state: Redux.StoreState) => state.EventSearch.Data;
 export const SelectEventSearchByID = (state: Redux.StoreState, id: number) => state.EventSearch.Data.find(ds => ds.EventID === id);
@@ -156,7 +165,8 @@ export const SelectReset = (state: Redux.StoreState) => state.EventSearch.isRese
 export const SelectMeterList = (state: Redux.StoreState) => state.EventSearch.SelectedMeters;
 export const SelectAssetList = (state: Redux.StoreState) => state.EventSearch.SelectedAssets;
 export const SelectAssetGroupList = (state: Redux.StoreState) => state.EventSearch.SelectedGroups;
-export const StationList = (state: Redux.StoreState) => state.EventSearch.SelectedStations;
+export const SelectStationList = (state: Redux.StoreState) => state.EventSearch.SelectedStations;
+
 // #endregion
 
 // #region [ Async Functions ]
@@ -172,5 +182,7 @@ function GetEventSearchs(params): JQuery.jqXHR<OpenXDA.Event[]> {
     });
 }
 
-
+function computeReset(state: Redux.EventSearchState): boolean {
+    return false;
+}
 // #endregion

@@ -28,7 +28,8 @@ import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { OpenXDA } from '../../global';
 import { useDispatch, useSelector } from 'react-redux';
-import { ResetFilters, SelectCharacteristicFilter, SelectReset, SelectTimeFilter, SelectTypeFilter, SetFilters } from './EventSearchSlice';
+import { SelectAssetGroupList, SelectAssetList, SelectCharacteristicFilter, SelectMeterList, SelectReset, SelectStationList, SelectTimeFilter, SelectTypeFilter, SetFilterLists } from './EventSearchSlice';
+import { ResetFilters,  SetFilters } from './EventSearchSlice';
 import { MagDurCurveSlice } from '../../Store';
 import { Modal } from '@gpa-gemstone/react-interactive';
 import EventSearchFilterButton from './EventSearchbarFilterButton';
@@ -51,7 +52,15 @@ const EventSearchNavbar = (props: IProps) => {
     const eventCharacteristicFilter = useSelector(SelectCharacteristicFilter);
     const magDurStatus = useSelector(MagDurCurveSlice.Status);
     const magDurCurves = useSelector(MagDurCurveSlice.Data);
+
+    const meterList = useSelector(SelectMeterList);
+    const assetList = useSelector(SelectAssetList);
+    const assetGroupList = useSelector(SelectAssetGroupList);
+    const stationList = useSelector(SelectStationList)
+
     const reset = useSelector(SelectReset);
+
+
 
     const [showFilter, setFilter] = React.useState<('None' | 'Meter' | 'Asset' | 'AssetGroup' | 'Station')>('None');
 
@@ -470,22 +479,22 @@ const EventSearchNavbar = (props: IProps) => {
                             <legend className="w-auto" style={{ fontSize: 'large' }}>Other Filters:</legend>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<any> Type={'Meter'} OnClick={() => setFilter('Meter')} Data={[]} />
+                                        <EventSearchFilterButton<OpenXDA.Meter> Type={'Meter'} OnClick={() => setFilter('Meter')} Data={meterList} />
                                     </div>
                                 </div>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<any> Type={'Asset'} OnClick={() => setFilter('Asset')} Data={[]} />
+                                        <EventSearchFilterButton<OpenXDA.Asset> Type={'Asset'} OnClick={() => setFilter('Asset')} Data={assetList} />
                                     </div>
                                 </div>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<any> Type={'AssetGroup'} OnClick={() => setFilter('AssetGroup')} Data={[]} />
+                                        <EventSearchFilterButton<OpenXDA.AssetGroup> Type={'AssetGroup'} OnClick={() => setFilter('AssetGroup')} Data={assetGroupList} />
                                     </div>
                                 </div>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<any> Type={'Station'} OnClick={() => setFilter('Station')} Data={[]} />
+                                        <EventSearchFilterButton<OpenXDA.Location> Type={'Station'} OnClick={() => setFilter('Station')} Data={stationList} />
                                     </div>
                                 </div>
 
@@ -500,10 +509,10 @@ const EventSearchNavbar = (props: IProps) => {
             </div>
             </nav>
             <Modal Show={showFilter != 'None'} Size={'xlg'} ShowX={true} ShowCancel={false} ConfirmBtnClass={'btn-danger'} ConfirmText={'Remove all ' + showFilter + ' filters'} Title={"Filter By " + showFilter} CallBack={() => { setFilter('None'); }}>
-                {showFilter == 'Meter' ? <EventSearchbarFilterModal< OpenXDA.Meter> Type={'Meter'} Data={[]} SetData={(d) => { }} /> : null}
-                {showFilter == 'Asset' ? <EventSearchbarFilterModal< OpenXDA.Asset> Type={'Asset'} Data={[]} SetData={(d) => { }} /> : null}
-                {showFilter == 'AssetGroup' ? <EventSearchbarFilterModal< OpenXDA.AssetGroup> Type={'AssetGroup'} Data={[]} SetData={(d) => { }} /> : null}
-                {showFilter == 'Station' ? <EventSearchbarFilterModal< OpenXDA.Location> Type={'Station'} Data={[]} SetData={(d) => { }} /> : null}
+                {showFilter == 'Meter' ? <EventSearchbarFilterModal< OpenXDA.Meter> Type={'Meter'} Data={meterList} SetData={(d) => dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: d, Stations: stationList }))} /> : null}
+                {showFilter == 'Asset' ? <EventSearchbarFilterModal< OpenXDA.Asset> Type={'Asset'} Data={assetList} SetData={(d) => dispatch(SetFilterLists({ Assets: d, Groups: assetGroupList, Meters: meterList, Stations: stationList }))} /> : null}
+                {showFilter == 'AssetGroup' ? <EventSearchbarFilterModal< OpenXDA.AssetGroup> Type={'AssetGroup'} Data={assetGroupList} SetData={(d) => dispatch(SetFilterLists({ Assets: assetList, Groups: d, Meters: meterList, Stations: stationList }))} /> : null}
+                {showFilter == 'Station' ? <EventSearchbarFilterModal< OpenXDA.Location> Type={'Station'} Data={stationList} SetData={(d) => dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: meterList, Stations: d }))} /> : null}
             </Modal>
             </>
     );
