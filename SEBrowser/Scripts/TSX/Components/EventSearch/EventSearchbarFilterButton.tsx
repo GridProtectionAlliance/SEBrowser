@@ -27,15 +27,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { SelectCharacteristicFilter, SelectTimeFilter, SelectTypeFilter, SetFilters } from './EventSearchSlice';
 import { Modal } from '@gpa-gemstone/react-interactive';
 
-
-interface IProps<T> {
+interface S { ID: number }
+interface IProps<T extends S> {
     Data: T[],
     Type: ('Meter' | 'Asset' | 'AssetGroup' | 'Station'),
     OnClick: () => void
 }
 
 
-function EventSearchFilterButton<T>(props: IProps<T>) {
+function EventSearchFilterButton<T extends S>(props: IProps<T>) {
     const [hover, setHover] = React.useState<boolean>(false);
     const [rows, setRows] = React.useState<JSX.Element[]>([]);
     const [header, setHeader] = React.useState<JSX.Element>(null);
@@ -54,7 +54,7 @@ function EventSearchFilterButton<T>(props: IProps<T>) {
     }, [props.Type]);
 
     React.useEffect(() => {
-        setRows(props.Data.filter((v, i) => i < 40).map(d => <tr> </tr>));
+        setRows(props.Data.filter((v, i) => i < 40).map(d => <tr key={d.ID}> </tr>));
     }, [props.Data, props.Type])
     
     return (
