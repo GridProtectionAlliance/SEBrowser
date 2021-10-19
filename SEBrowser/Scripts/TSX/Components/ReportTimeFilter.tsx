@@ -23,6 +23,7 @@
 import * as React from 'react';
 import { SEBrowser } from '../global';
 import moment from 'moment';
+import { quickselect } from 'd3';
 
 interface IProps {
     filter: SEBrowser.IReportTimeFilter;
@@ -138,7 +139,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
-                timeWindowUnits: 5,
+                timeWindowUnits: 3,
                 windowSize: 3.5*24
             }
         }
@@ -180,10 +181,35 @@ const AvailableQuickSelects: IQuickSelect[] = [
         }
     },
     {
-        label: 'This Quarter', createFilter: () => ({ date: '', time: '', timeWindowUnits: 1, windowSize: 0.5 })
+        label: 'This Quarter', createFilter: () => {
+            const t = moment.utc().startOf('quarter');
+            const tend = moment.utc().startOf('quarter');
+            tend.add(1, 'quarter')
+            const h = moment.duration(tend.diff(t)).asHours();
+            t.subtract(h * 0.5);
+            return {
+                date: t.format(momentDateFormat),
+                time: t.format(momentTimeFormat),
+                timeWindowUnits: 4,
+                windowSize: h * 0.5
+            }
+        }
     },
     {
-        label: 'Last Quarter', createFilter: () => ({ date: '', time: '', timeWindowUnits: 1, windowSize: 0.5 })
+        label: 'Last Quarter', createFilter: () => {
+            const t = moment.utc().startOf('quarter');
+            const tend = moment.utc().startOf('quarter');
+            t.subtract(1, 'quarter');
+            tend.subtract(2, 'quarter')
+            const h = moment.duration(tend.diff(t)).asHours();
+            t.subtract(h * 0.5);
+            return {
+                date: t.format(momentDateFormat),
+                time: t.format(momentTimeFormat),
+                timeWindowUnits: 4,
+                windowSize: h * 0.5
+            }
+        }
     },
     {
         label: 'Last 90 Days', createFilter: () => {
@@ -235,9 +261,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     }
 ];
 
-let nRows = AvailableQuickSelects.length / 3;
-if (AvailableQuickSelects.length % 3 > 0)
-    nRows++;
+
 const ReportTimeFilter = (props: IProps) => {
 
     React.useEffect(() => {
@@ -258,18 +282,18 @@ const ReportTimeFilter = (props: IProps) => {
         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
             <legend className="w-auto" style={{ fontSize: 'large' }}>Time Window:</legend>
             <div className="row">
-                <div className={"col-" + (props.showQuickSelect? "6" : "12")}>
+                <div className={"col-12"}>
                     <form>
                         <label style={{ width: '100%', position: 'relative', float: "left" }} >Date: </label>
                         <div className="form-group" style={{ height: 30 }}>
                             <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
-                                <input id="timePicker" className='form-control' value={props.filter.time} onChange={(e) => {
+                                <input id="timePicker" className='form-control form-control-sm' value={props.filter.time} onChange={(e) => {
                                     props.setFilter({ ...props.filter, time: (e.target as any).value });
                                 }} />
                             </div>
 
                             <div className='input-group date' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
-                                <input className='form-control' id='datePicker' value={props.filter.date} onChange={(e) => {
+                                <input className='form-control form-control-sm' id='datePicker' value={props.filter.date} onChange={(e) => {
                                     props.setFilter({ ...props.filter, date: (e.target as any).value });
                                 }} />
                             </div>
@@ -277,43 +301,54 @@ const ReportTimeFilter = (props: IProps) => {
                         </div>
                         <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
                         <div className="form-group" style={{ height: 30 }}>
-                            <input style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} value={props.filter.windowSize} onChange={(e) => {
-                                props.setFilter({ ...props.filter, windowSize: (e.target as any).value });
-                            }} type="number" />
-                            <select style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} value={props.filter.timeWindowUnits} onChange={(e) => {
+                            <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
+                                <input className={'form-control form-control-sm'} onChange={(e) => {
+                                    props.setFilter({ ...props.filter, windowSize: (e.target as any).value });
+                                }} type="number" value={props.filter.windowSize} />
+                            </div>
+                            <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
+                                <select className={'form-control form-control-sm'} value={props.filter.timeWindowUnits} onChange={(e) => {
                                 props.setFilter({ ...props.filter, timeWindowUnits: (e.target as any).value });
-                            }} >
-                                <option value="7">Year</option>
-                                <option value="6">Month</option>
-                                <option value="5">Week</option>
-                                <option value="4">Day</option>
-                                <option value="3">Hour</option>
-                                <option value="2">Minute</option>
-                                <option value="1">Second</option>
-                                <option value="0">Millisecond</option>
-                            </select>
-
+                                }} >
+                                    <option value="7">Year</option>
+                                    <option value="6">Month</option>
+                                    <option value="5">Week</option>
+                                    <option value="4">Day</option>
+                                    <option value="3">Hour</option>
+                                    <option value="2">Minute</option>
+                                    <option value="1">Second</option>
+                                    <option value="0">Millisecond</option>
+                                </select>
+                            </div>
                         </div>
                     </form>
                 </div>
-                {props.showQuickSelect ?
-                    <div className={"col-6"}>
-                        {Array.from({ length: nRows }, (_, i) => i).map(i => (
-                            <ul className="list-inline list-inline-horizontal" key={i}>
-                                <li onClick={() => props.setFilter(AvailableQuickSelects[i * 3].createFilter())}
-                                    className="list-inline-item badge badge-secondary">{AvailableQuickSelects[i * 3].label}</li>
-                                {i * 3 + 1 < AvailableQuickSelects.length ?
-                                    <li className="list-inline-item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i * 3 + 1].createFilter())}>
-                                            {AvailableQuickSelects[i * 3 + 1].label}
+                </div>
+            {props.showQuickSelect ?
+                <div className="row">
+                    
+                        {AvailableQuickSelects.map((qs, i) => {
+                            if (i % 3 !== 0)
+                                return null;
+                            return (
+                                <div className={"col-3"} style={{ paddingLeft: (i %12 == 0 ? 15 : 0), paddingRight: (i % 12 == 9 ? 15 : 2), marginTop: 10 }}>
+                                    <ul className="list-group" key={i}>
+                                        <li onClick={() => props.setFilter(AvailableQuickSelects[i].createFilter())}
+                                            className="item badge badge-secondary">{AvailableQuickSelects[i].label}</li>
+                                        {i +1 < AvailableQuickSelects.length ?
+                                            <li style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i+1].createFilter())}>
+                                            {AvailableQuickSelects[i+ 1].label}
                                         </li> : null}
-                                {i * 3 + 2 < AvailableQuickSelects.length ?
-                                    <li className="list-inline-item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i * 3 + 2].createFilter())}>
-                                        {AvailableQuickSelects[i * 3 + 2].label}
-                                    </li> : null}
-                            </ul>)
-                            )}
-                    </div> : null}
-            </div>
+                                        {i+ 2 < AvailableQuickSelects.length ?
+                                            <li style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i+ 2].createFilter())}>
+                                            {AvailableQuickSelects[i+ 2].label}
+                                        </li> : null}
+                                    </ul>
+                                </div>
+                            )
+                        })}
+                </div>
+                : null}
         </fieldset>
     );
 }
