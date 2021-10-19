@@ -23,9 +23,7 @@
 import React from 'react';
 import 'moment';
 import _ from 'lodash';
-import { useDispatch, useSelector } from 'react-redux';
-import { SelectCharacteristicFilter, SelectTimeFilter, SelectTypeFilter, SetFilters } from './EventSearchSlice';
-import { Modal } from '@gpa-gemstone/react-interactive';
+
 
 interface S { ID: number }
 interface IProps<T extends S> {
@@ -43,23 +41,59 @@ function EventSearchFilterButton<T extends S>(props: IProps<T>) {
     React.useEffect(() => {
         switch (props.Type) {
             case ('Meter'):
-                setHeader(< tr ><th>Name</th><th>Key</th><th>Substation</th><th>Assets</th><th>Make</th><th>Model</th></tr >);
+                setHeader(< tr ><th>Name</th><th>Key</th><th>Substation</th><th>Make</th><th>Model</th></tr >);
+                break;
             case ('Asset'):
-                setHeader(<tr><th>Column</th><th>Operator</th><th>Search Text</th><th>Edit</th><th>Remove</th></tr>);
+                setHeader(<tr><th>Key</th><th>Name</th><th>Asset Type</th><th>Voltage (kV)</th></tr>);
+                break;
             case ('AssetGroup'):
-                setHeader(<tr><th>Column</th><th>Operator</th><th>Search Text</th><th>Edit</th><th>Remove</th></tr>);
+                setHeader(<tr><th>Name</th><th>Assets</th><th>Meters</th></tr>);
+                break;
             default:
-                setHeader(<tr><th>Column</th><th>Operator</th><th>Search Text</th><th>Edit</th><th>Remove</th></tr>);
+                setHeader(<tr><th>Name</th><th>Key</th><th>Meters</th><th>Assets</th></tr>);
         }
     }, [props.Type]);
 
     React.useEffect(() => {
-        setRows(props.Data.filter((v, i) => i < 40).map(d => <tr key={d.ID}> </tr>));
+        switch (props.Type) {
+            case ('Meter'):
+                setRows(props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
+                    <td>{d['Name']}</td>
+                    <td>{d['AssetKey']}</td>
+                    <td>{d['Location']}</td>
+                    <td>{d['Make']}</td>
+                    <td>{d['Model']}</td>
+                </tr>));
+                break;
+            case ('Asset'):
+                setRows(props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
+                    <td>{d['AssetKey']}</td>
+                    <td>{d['AssetName']}</td>
+                    <td>{d['AssetType']}</td>
+                    <td>{d['VoltageKV']}</td>
+                </tr>));
+                break;
+            case ('AssetGroup'):
+                setRows(props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
+                    <td>{d['Name']}</td>
+                    <td>{d['Assets']}</td>
+                    <td>{d['Meters']}</td>
+                </tr>));
+                break;
+            default:
+                setRows(props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
+                    <td>{d['Name']}</td>
+                    <td>{d['LocationKey']}</td>
+                    <td>{d['Meters']}</td>
+                    <td>{d['Assets']}</td>
+                </tr>));
+        }
+        
     }, [props.Data, props.Type])
     
     return (
         <>
-            <button className={"btn btn-block btn-" + (props.Data.length > 0 ? "warning" : "primary")} style={{ marginBottom: 5 }} onClick={(evt) => { evt.preventDefault(); props.OnClick(); }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+            <button className={"btn btn-block btn-sm btn-" + (props.Data.length > 0 ? "warning" : "primary")} style={{ marginBottom: 5 }} onClick={(evt) => { evt.preventDefault(); props.OnClick(); }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
                 {props.Type} {props.Data.length > 0 ? ('(' + props.Data.length + ')') : ''}
             </button>
             <div style={{ width: window.innerWidth / 3, display: hover ? 'block' : 'none', position: 'absolute', backgroundColor: '#f1f1f1', boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)', zIndex: 1, right: 0 }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>

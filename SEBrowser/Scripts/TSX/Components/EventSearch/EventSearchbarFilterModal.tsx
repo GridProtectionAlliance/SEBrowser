@@ -295,7 +295,22 @@ function EventSearchbarFilterModal<T extends S>(props: IProps<T>) {
 
         }
     }
-   
+
+    function AddCurrentList() {
+        let updatedData: any[];
+
+        if (props.Type == 'Meter')
+            updatedData = (props.Data as any[]).concat(meterList);
+        if (props.Type == 'Asset')
+            updatedData = (props.Data as any[]).concat(assetList);
+        if (props.Type == 'AssetGroup')
+            updatedData = (props.Data as any[]).concat(assetGroupList);
+        if (props.Type == 'Station')
+            updatedData = (props.Data as any[]).concat(locationList);
+
+        props.SetData(_.uniqBy((updatedData as T[]), (d) => d.ID));
+    }
+
     return (
         <>
             <div className='row'>
@@ -329,6 +344,16 @@ function EventSearchbarFilterModal<T extends S>(props: IProps<T>) {
                         }}
 
                     >
+                        <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
+                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                                <legend className="w-auto" style={{ fontSize: 'large' }}>Quick Selects:</legend>
+                                <form>
+                                    <div className="form-group">
+                                        <div className="btn btn-primary" onClick={(event) => { event.preventDefault(); AddCurrentList(); }}>Add Current List to Filter</div>
+                                    </div>
+                                </form>
+                            </fieldset>
+                        </li>
                     </SearchBar>
                 </div>
                 <div className='row'>
@@ -351,7 +376,7 @@ function EventSearchbarFilterModal<T extends S>(props: IProps<T>) {
                             }}
                             onClick={(d) => props.SetData([...props.Data.filter(item => item.ID != d.row.ID), d.row])}
                             theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                            tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 300, width: '100%' }}
+                            tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 450, width: '100%' }}
                             rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                             selected={(item) => false}
                         />
@@ -375,7 +400,7 @@ function EventSearchbarFilterModal<T extends S>(props: IProps<T>) {
                             }}
                             onClick={(d) => props.SetData(props.Data.filter(item => item.ID != d.row.ID))}
                             theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                            tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 300, width: '100%' }}
+                            tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 450, width: '100%' }}
                             rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                             selected={(item) => false}
                         />

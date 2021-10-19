@@ -299,15 +299,15 @@ const ReportTimeFilter = (props: IProps) => {
                 {props.showQuickSelect ?
                     <div className={"col-6"}>
                         {Array.from({ length: nRows }, (_, i) => i).map(i => (
-                            <ul className="list-inline list-inline-horizontal">
-                                <li key={i} onClick={() => props.setFilter(AvailableQuickSelects[i * 3].createFilter())}
+                            <ul className="list-inline list-inline-horizontal" key={i}>
+                                <li onClick={() => props.setFilter(AvailableQuickSelects[i * 3].createFilter())}
                                     className="list-inline-item badge badge-secondary">{AvailableQuickSelects[i * 3].label}</li>
                                 {i * 3 + 1 < AvailableQuickSelects.length ?
-                                    <li key={i} className="list-inline-item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i * 3 + 1].createFilter())}>
+                                    <li className="list-inline-item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i * 3 + 1].createFilter())}>
                                             {AvailableQuickSelects[i * 3 + 1].label}
                                         </li> : null}
                                 {i * 3 + 2 < AvailableQuickSelects.length ?
-                                    <li key={i} className="list-inline-item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i * 3 + 2].createFilter())}>
+                                    <li className="list-inline-item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i * 3 + 2].createFilter())}>
                                         {AvailableQuickSelects[i * 3 + 2].label}
                                     </li> : null}
                             </ul>)

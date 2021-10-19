@@ -508,7 +508,19 @@ const EventSearchNavbar = (props: IProps) => {
                 </div>
             </div>
             </nav>
-            <Modal Show={showFilter != 'None'} Size={'xlg'} ShowX={true} ShowCancel={false} ConfirmBtnClass={'btn-danger'} ConfirmText={'Remove all ' + showFilter + ' filters'} Title={"Filter By " + showFilter} CallBack={() => { setFilter('None'); }}>
+            <Modal Show={showFilter != 'None'} Size={'xlg'} ShowX={true} ShowCancel={false} ConfirmBtnClass={'btn-danger'} ConfirmText={'Remove all ' + showFilter + ' filters'} Title={"Filter By " + showFilter} CallBack={(conf,btn) => {
+
+                if (btn && showFilter == 'Meter')
+                    dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: [], Stations: stationList }));
+                if (btn && showFilter == 'Asset')
+                    dispatch(SetFilterLists({ Assets: [], Groups: assetGroupList, Meters: meterList, Stations: stationList }));
+                if (btn && showFilter == 'AssetGroup')
+                    dispatch(SetFilterLists({ Assets: assetList, Groups: [], Meters: meterList, Stations: stationList }));
+                if (btn && showFilter == 'Station')
+                    dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: meterList, Stations: [] }));
+            
+                setFilter('None');
+            }}>
                 {showFilter == 'Meter' ? <EventSearchbarFilterModal< OpenXDA.Meter> Type={'Meter'} Data={meterList} SetData={(d) => dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: d, Stations: stationList }))} /> : null}
                 {showFilter == 'Asset' ? <EventSearchbarFilterModal< OpenXDA.Asset> Type={'Asset'} Data={assetList} SetData={(d) => dispatch(SetFilterLists({ Assets: d, Groups: assetGroupList, Meters: meterList, Stations: stationList }))} /> : null}
                 {showFilter == 'AssetGroup' ? <EventSearchbarFilterModal< OpenXDA.AssetGroup> Type={'AssetGroup'} Data={assetGroupList} SetData={(d) => dispatch(SetFilterLists({ Assets: assetList, Groups: d, Meters: meterList, Stations: stationList }))} /> : null}
