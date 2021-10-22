@@ -27,12 +27,15 @@ import * as _ from 'lodash';
 import {  ajax } from 'jquery';
 import moment from 'moment';
 
-
 // #region [ Thunks ]
 export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (_, { dispatch, getState }) => {
     const time = (getState() as any).EventSearch.TimeRange as SEBrowser.IReportTimeFilter;
     const types = (getState() as any).EventSearch.EventType as SEBrowser.IEventTypeFilters;
     const characteristics = (getState() as any).EventSearch.EventCharacteristic as SEBrowser.IEventCharacteristicFilters;
+    const meterList = (getState() as any).EventSearch.SelectedMeters as OpenXDA.Meter[];
+    const assetList = (getState() as any).EventSearch.SelectedAssets as OpenXDA.Asset[];
+    const locationList = (getState() as any).EventSearch.SelectedStations as OpenXDA.Location[];
+    const groupList = (getState() as any).EventSearch.SelectedGroups as OpenXDA.AssetGroup[];
 
     const filter = {
         date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,
@@ -42,8 +45,9 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
         transientMin: characteristics.transientMin, transientMax: characteristics.transientMax, transientType: characteristics.transientType,
         sagMin: characteristics.sagMin, sagMax: characteristics.sagMax, sagType: characteristics.sagType,
         swellMin: characteristics.swellMin, swellMax: characteristics.swellMax, swellType: characteristics.swellType,
-        curveID: characteristics.curveID, curveInside: characteristics.curveInside, curveOutside: characteristics.curveOutside
-
+        curveID: characteristics.curveID, curveInside: characteristics.curveInside, curveOutside: characteristics.curveOutside,
+        meterIDs: meterList.map(item => item.ID), assetIDs: assetList.map(item => item.ID),
+        groupIDs: groupList.map(item => item.ID), locationIDs: locationList.map(item => item.ID)
     }
     return await GetEventSearchs(filter);
 });

@@ -95,6 +95,10 @@ namespace SEBrowser.Controllers
             public string transientType { get; set; }
             public string sagType { get; set; }
             public string swellType { get; set; }
+            public List<int> meterIDs { get; set; }
+            public List<int> assetIDs { get; set; }
+            public List<int> groupIDs { get; set; }
+            public List<int> locationIDs { get; set; }
         }
 
         enum TimeWindowUnits
@@ -226,6 +230,39 @@ namespace SEBrowser.Controllers
 
                 eventCharacteristicsRestricitons += ")";
 
+                string otherRestrictions = "";
+
+                if (postData.meterIDs.Count() > 0)
+                {
+                    otherRestrictions = $"Event.MeterID IN ({string.Join(",",postData.meterIDs)})";
+                }
+
+                if (postData.assetIDs.Count() > 0)
+                {
+                    if (!string.IsNullOrEmpty(otherRestrictions))
+                        otherRestrictions = otherRestrictions + " AND ";
+                    otherRestrictions = $"Event.AssetID IN ({string.Join(",", postData.assetIDs)})";
+                }
+
+                if (postData.locationIDs.Count() > 0)
+                {
+                    if (!string.IsNullOrEmpty(otherRestrictions))
+                        otherRestrictions = otherRestrictions + " AND ";
+
+                    otherRestrictions += $"(Event.AssetID IN (SELECT AssetLocation.AssetID FROM AssetLocation WHERE AssetLocation.LocationID IN ({string.Join(",", postData.locationIDs)}))";
+                    otherRestrictions += $" OR Event.MeterID IN (SELECT Meter.ID FROM Meter WHERE Meter.LocationID IN ({string.Join(",", postData.locationIDs)})))";
+                }
+
+
+                if (postData.groupIDs.Count() > 0)
+                {
+                    if (!string.IsNullOrEmpty(otherRestrictions))
+                        otherRestrictions = otherRestrictions + " AND ";
+
+                    otherRestrictions += $"(Event.AssetID IN (SELECT AssetAssetGroup.AssetID FROM AssetAssetGroup WHERE AssetAssetGroup.AssetGroupID IN ({string.Join(",", postData.groupIDs)}))";
+                    otherRestrictions += $" OR Event.MeterID IN (SELECT MeterAssetGroup.MeterID FROM MeterAssetGroup WHERE MeterAssetGroup.AssetGroupID IN ({string.Join(",", postData.groupIDs)})))";
+                }
+
                 // #ToDo: Move openXDA from using Phase=worst to add a Flag to Disturbance for worst - This will speed up the query and remove the need for self-joining
 
                 string query = $@" 
@@ -292,7 +329,8 @@ namespace SEBrowser.Controllers
                         Phase ON Phase.ID = wsr.OriginalPhaseId
                     WHERE
                         Event.StartTime BETWEEN DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}) AND
-                        {eventTypeRestriction} AND {eventCharacteristicsRestricitons}
+                        {eventTypeRestriction} AND {eventCharacteristicsRestricitons} 
+                        {(string.IsNullOrEmpty(otherRestrictions)? "" : ("AND " + otherRestrictions))}
                     GROUP BY 
                        Event.ID, Meter.AssetKey, Asset.AssetKey, AssetType.Name, Asset.VoltageKV, EventType.Name,
 	                   Event.StartTime, Asset.ID                        
