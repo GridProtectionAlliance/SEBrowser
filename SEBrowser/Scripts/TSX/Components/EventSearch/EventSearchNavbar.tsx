@@ -225,8 +225,7 @@ const EventSearchNavbar = (props: IProps) => {
                                                     others: value
                                                 }
                                             }))
-                                        }} value={
-                                            eventTypeFilter.breakerOps && eventTypeFilter.faults && eventTypeFilter.interruptions && eventTypeFilter.others &&
+                                        }} checked={eventTypeFilter.breakerOps && eventTypeFilter.faults && eventTypeFilter.interruptions && eventTypeFilter.others &&
                                             eventTypeFilter.relayTCE && eventTypeFilter.sags && eventTypeFilter.swells && eventTypeFilter.transients
                                             } />  Select All </label></li>
                                 </ul>
