@@ -172,7 +172,7 @@ function EventSearchbarFilterModal<T extends S>(props: IProps<T>) {
         };
         let handle = $.ajax({
             type: "GET",
-            url: `${homePath}api/SystemCenter/AdditionalField/ParentTable/${table}/FieldName/0`,
+            url: `${homePath}api/openXDA/AdditionalField/ParentTable/${table}/FieldName/0`,
             contentType: "application/json; charset=utf-8",
             cache: false,
             async: true
