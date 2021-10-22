@@ -82,7 +82,7 @@ namespace SEBrowser.Controllers.OpenXDA
                 if (sort != null && sort != string.Empty)
                     orderByExpression = $"{sort} {(ascending == 1 ? "ASC" : "DESC")}";
 
-                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+                using (AdoDataConnection connection = new AdoDataConnection(Connection))
                 {
                     IEnumerable<AdditionalField> records = new TableOperations<AdditionalField>(connection).QueryRecords(orderByExpression, new RecordRestriction("ParentTable = {0}", openXDAParentTable));
                     if (!User.IsInRole("Administrator"))
