@@ -23,7 +23,6 @@
 import * as React from 'react';
 import { SEBrowser } from '../global';
 import moment from 'moment';
-import { quickselect } from 'd3';
 
 interface IProps {
     filter: SEBrowser.IReportTimeFilter;
@@ -301,7 +300,7 @@ const ReportTimeFilter = (props: IProps) => {
                         </div>
                         <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
                         <div className="form-group" style={{ height: 30 }}>
-                            <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
+                            <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
                                 <input className={'form-control form-control-sm'} onChange={(e) => {
                                     props.setFilter({ ...props.filter, windowSize: (e.target as any).value });
                                 }} type="number" value={props.filter.windowSize} />
