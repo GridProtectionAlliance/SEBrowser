@@ -110,7 +110,7 @@ const EventSearch = (props: IProps) => {
                 toggleVis={() => setShowNav((c) => !c)}
                 showNav={showNav}
             />
-            <div style={{ width: '100%', height: 'calc( 100% - 210px)' }}>
+            <div style={{ width: '100%', height: (showNav ? 'calc( 100% - 303px)' : 'calc( 100% - 52px)')}}>
                 <div style={{ width: '50%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
                     <div style={{ width: 'calc(100% - 300px)', padding: 10, float: 'left' }}>
                         <input className='form-control' type='text' placeholder='Search...' value={searchText} onChange={(evt) => setSearchText(evt.target.value)} />
@@ -123,11 +123,11 @@ const EventSearch = (props: IProps) => {
                     </div>
                     {showMagDur ?
                         <EventSearchMagDur Width={(window.innerWidth - 300) / 2}
-                            Height={window.innerHeight - 300}
+                            Height={window.innerHeight - ((showNav? 303 : 52) + 58)}
                             EventID={eventId} SearchText={searchText}
                             OnSelect={(evt, point) => setEventId(point.EventID)}
                         /> :
-                        <EventSearchList eventid={eventId} searchText={searchText} selectEvent={setEventId} />
+                        <EventSearchList eventid={eventId} searchText={searchText} selectEvent={setEventId} height={window.innerHeight - ((showNav ? 303 : 52) + 58)}/>
                     }
                 </div>
                 <div style={{ width: '50%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>

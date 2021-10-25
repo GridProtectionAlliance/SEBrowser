@@ -33,6 +33,7 @@ interface IProps {
     eventid: number,
     searchText: string,
     selectEvent: (id: number) => void,
+    height: number
 
 }
 
@@ -111,7 +112,7 @@ export default function EventSearchList(props: IProps) {
     }
 
     return (
-        <div ref={ref} style={{width: '100%', maxHeight: window.innerHeight - 314, overflowY: "hidden"}}>
+        <div ref={ref} style={{width: '100%', maxHeight: props.height, overflowY: "hidden"}}>
             <ConfigurableTable<OpenXDA.Event>
                 cols={[
                     { key: "FileStartTime", label: 'Time', headerStyle: { width: 'calc(20%)' }, rowStyle: { width: 'calc(20%)' }, content: (item, key) => <span>{moment(item.FileStartTime).format('MM/DD/YYYY')}<br />{moment(item.FileStartTime).format('HH:mm:ss.SSSSSSS')}</span> },
@@ -131,7 +132,7 @@ export default function EventSearchList(props: IProps) {
                 }}
                 onClick={(item) => props.selectEvent(item.row.EventID)}
                 theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 314 }}
+                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - 100 }}
                 rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
                 selected={(item) => {
                     if (item.EventID == props.eventid) return true;
