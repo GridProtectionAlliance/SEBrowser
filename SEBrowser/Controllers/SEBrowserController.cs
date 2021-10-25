@@ -49,7 +49,7 @@ namespace SEBrowser.Controllers
             {
                 using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
                 {
-                    return Ok(connection.RetrieveData("SELECT * FROM Links WHERE Name LIKE {0} + '%'", category));
+                    return Ok(connection.RetrieveData("SELECT * FROM [SEBrowser.Links] WHERE Name LIKE {0} + '%'", category));
                 }
             }
             catch (Exception ex)
@@ -101,7 +101,7 @@ namespace SEBrowser.Controllers
             {
                 using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
                 {
-                    return Ok(connection.RetrieveData("SELECT * FROM ValueList WHERE GroupID = (SELECT ID FROM ValueListGroup WHERE Name = 'CustomReports') AND Enabled = 1"));
+                    return Ok(connection.RetrieveData("SELECT * FROM ValueList WHERE GroupID = (SELECT ID FROM ValueListGroup WHERE Name = 'CustomReports')"));
                 }
             }
             catch (Exception ex)

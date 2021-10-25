@@ -27,10 +27,10 @@
     Layout = "";
     using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
     {
-        ViewBag.xdaInstance = connection.ExecuteScalar<string>("SELECT Value FROM Settings WHERE Name = 'XDAInstance'");
-        ViewBag.scInstance = connection.ExecuteScalar<string>("SELECT Value FROM Settings WHERE Name = 'SCInstance'");
-        ViewBag.openSEEInstance = connection.ExecuteScalar<string>("SELECT Value FROM Settings WHERE Name = 'OpenSEEInstance'");
-        ViewBag.faultLocationInstance = connection.ExecuteScalar<string>("SELECT Value FROM Settings WHERE Name = 'FaultLocationInstance'");
+        ViewBag.xdaInstance = connection.ExecuteScalar<string>("SELECT Value FROM [SEBrowser.Setting] WHERE Name = 'XDAInstance'");
+        ViewBag.scInstance = connection.ExecuteScalar<string>("SELECT Value FROM [SEBrowser.Setting] WHERE Name = 'SCInstance'");
+        ViewBag.openSEEInstance = connection.ExecuteScalar<string>("SELECT Value FROM [SEBrowser.Setting] WHERE Name = 'OpenSEEInstance'");
+        ViewBag.faultLocationInstance = connection.ExecuteScalar<string>("SELECT Value FROM [SEBrowser.Setting] WHERE Name = 'FaultLocationInstance'");
 
     }
 

@@ -26,6 +26,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SEBrowser.Model.System
 {
+    [TableName("SEBrowser.Setting"),UseEscapedName]
     public class Settings
     {
         [PrimaryKey(true)]

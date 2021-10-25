@@ -36,34 +36,18 @@ using System.Linq;
 
 namespace SEBrowser.Controllers.OpenXDA
 {
-    [SettingsCategory("dbOpenXDA")]
-    public class AssetGroupView : openXDA.Model.AssetGroupView { }
     [RoutePrefix("api/openXDA/AssetGroup")]
     public class OpenXDAAssetGroupController : ModelController<AssetGroupView> { }
 
-    [SettingsCategory("dbOpenXDA")]
-    [ViewOnly]
-    public class Asset : openXDA.Model.Asset { }
-
     [RoutePrefix("api/openXDA/Asset")]
-    public class OpenXDAAssetController : ModelController<Asset> { }
-
-    [SettingsCategory("dbOpenXDA")]
-    [ViewOnly]
-    public class Meter : openXDA.Model.Meter { }
+    public class OpenXDAAssetController : ModelController<DetailedAsset> { }
 
     [RoutePrefix("api/openXDA/Meter")]
-    public class OpenXDAMeterController : ModelController<Meter> { }
+    public class OpenXDAMeterController : ModelController<DetailedMeter> { }
 
-    [SettingsCategory("dbOpenXDA")]
-    [ViewOnly]
-    public class Location : openXDA.Model.Location { }
     [RoutePrefix("api/openXDA/Location")]
-    public class OpenXDALocationController : ModelController<Location> { }
+    public class OpenXDALocationController : ModelController<DetailedLocation> { }
 
-    [SettingsCategory("dbOpenXDA")]
-    [ViewOnly]
-    public class AdditionalField : SystemCenter.Model.AdditionalField { }
     [RoutePrefix("api/openXDA/AdditionalField")]
     public class AdditionalFieldController : ModelController<AdditionalField>
     {
@@ -101,9 +85,6 @@ namespace SEBrowser.Controllers.OpenXDA
 
     }
 
-    [SettingsCategory("dbOpenXDA")]
-    [ViewOnly]
-    public class ValueList : SystemCenter.Model.ValueList { }
     [RoutePrefix("api/ValueList")]
     public class ValueListController : ModelController<ValueList>
     {

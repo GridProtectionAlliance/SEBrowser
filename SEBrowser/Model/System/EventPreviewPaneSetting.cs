@@ -29,6 +29,7 @@ using System.Web;
 
 namespace SEBrowser.Model.System
 {
+    [TableName("SEBrowser.EventPreviewPaneSetting"),UseEscapedName]
     public class EventPreviewPaneSetting
     {
         [PrimaryKey(true)]

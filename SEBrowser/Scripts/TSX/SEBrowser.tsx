@@ -33,14 +33,15 @@ import EventSearch from './Components/EventSearch/EventSearch';
 import BreakerReport from './Components/BreakerReport/BreakerReport';
 import RelayReport from './Components/RelayReport/RelayReport';
 import CapBankReport from './Components/CapBankReport/CapBankReport';
+import { SystemCenter } from '@gpa-gemstone/application-typings';
 
 const SEBrowserMainPage = (props: {}) => {
-    const [links, setLinks] = React.useState<{Text: string}[]>([]);
+    const [links, setLinks] = React.useState<SystemCenter.Types.ValueListItem[]>([]);
 
     React.useEffect(() => {
         let handle = $.ajax({
             type: "GET",
-            url: `${homePath}api/SEBrowser/GetCustomReports`,
+            url: `${homePath}api/ValueList/Group/CustomReports`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -62,11 +63,8 @@ const SEBrowserMainPage = (props: {}) => {
                             <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/meteractivity"}>Meter Activity</NavLink>
 
                             <hr style={{borderTop: '1px solid darkgrey', width: '75%'}}/>
-                            <h6 style={{width: '100%', textAlign: 'center'}}>Custom Reports</h6>
-                            {(links.map(l => l.Text).indexOf('BreakerReport') >= 0 ? <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/breakerreport"}>Breaker Report</NavLink> : null)}
-                            {(links.map(l => l.Text).indexOf('TripCoilReport') >= 0 ? <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/relayreport"}>TripCoil Report</NavLink> : null)}
-                            {(links.map(l => l.Text).indexOf('CapBankReport') >= 0 ? <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/capbankreport"}>CapBank Report</NavLink> : null)}
-
+                            <h6 style={{ width: '100%', textAlign: 'center' }}>Custom Reports</h6>
+                            {links.map(item => <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/" + item.AltValue}>{item.Value}</NavLink>)}
                         </div>
                         
                         <div style={{ width: '100%', textAlign: 'center' }}>
