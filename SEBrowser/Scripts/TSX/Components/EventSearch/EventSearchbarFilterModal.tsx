@@ -79,12 +79,12 @@ function EventSearchbarFilterModal<T extends S>(props: IProps<T>) {
     React.useEffect(() => {
         if (assetGroupStatus == 'changed' || assetGroupStatus == 'unintiated')
             dispatch(AssetGroupSlice.Fetch());
-    }, [meterStatus]);
+    }, [assetGroupStatus]);
 
     React.useEffect(() => {
         if (locationStatus == 'changed' || locationStatus == 'unintiated')
             dispatch(LocationSlice.Fetch());
-    }, [meterStatus]);
+    }, [locationStatus]);
 
     // #ToDo: Move default Fields into gpa-gemstone to match SystemCenter and SEBrowser
     React.useEffect(() => {
