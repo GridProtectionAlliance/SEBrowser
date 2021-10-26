@@ -94,7 +94,7 @@ export const EventSearchsSlice = createSlice({
             state.TimeRange = action.payload.time;
             state.EventType = action.payload.types;
             state.EventCharacteristic = action.payload.characteristics;
-            state.isReset = false;
+            state.isReset = computeReset(state);
         },
         ResetFilters: (state, action: PayloadAction<void>) => {
             state.EventCharacteristic = {
@@ -116,7 +116,7 @@ export const EventSearchsSlice = createSlice({
             state.SelectedGroups = action.payload.Groups;
             state.SelectedAssets = action.payload.Assets;
 
-            state.isReset = false;
+            state.isReset = computeReset(state);
             state.Status = 'changed';
         }
     },
@@ -187,6 +187,16 @@ function GetEventSearchs(params): JQuery.jqXHR<OpenXDA.Event[]> {
 }
 
 function computeReset(state: Redux.EventSearchState): boolean {
-    return false;
+    const event = state.EventCharacteristic.durationMax == 0 && state.EventCharacteristic.durationMin == 0 &&
+        state.EventCharacteristic.transientMin == 0 && state.EventCharacteristic.transientMax == 0 &&
+        state.EventCharacteristic.sagMin == 0 && state.EventCharacteristic.sagMax == 0 &&
+        state.EventCharacteristic.swellMin == 0 && state.EventCharacteristic.swellMax == 0 &&
+        state.EventCharacteristic.Phase.A && state.EventCharacteristic.Phase.A && state.EventCharacteristic.Phase.A &&
+        state.EventCharacteristic.curveInside && state.EventCharacteristic.curveOutside;
+
+    const types = state.EventType.breakerOps && state.EventType.faults && state.EventType.interruptions && state.EventType.others
+        && state.EventType.relayTCE && state.EventType.swells && state.EventType.sags && state.EventType.transients;
+
+    return event && types && state.SelectedAssets.length == 0 && state.SelectedStations.length == 0 && state.SelectedMeters.length == 0 && state.SelectedGroups.length == 0;
 }
 // #endregion
