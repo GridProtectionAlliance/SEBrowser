@@ -27,6 +27,7 @@ import * as _ from 'lodash';
 import { SelectEventSearchBySearchText, SelectEventSearchsStatus, FetchEventSearches } from './EventSearchSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { OpenXDA, SEBrowser } from '../../global';
+import { MagDurCurveSlice } from '../../Store';
 
 interface iCurve {
     ID: number,
@@ -55,8 +56,12 @@ const MagDurChart = (props: IProps) => {
     const svgWidth = props.Width - margin.left - margin.right;
     const svgHeight = props.Height - margin.top - margin.bottom;
     const chart = React.useRef(null);
-    const [magDurCurveData, setMagDurCurveData] = React.useState<iCurve[]>([]);
-    const [curve, setCurve] = React.useState<'ITIC' | 'SEMI' | 'I & II' | 'III' | 'NERC'>('ITIC');
+
+    const magDurStatus = useSelector(MagDurCurveSlice.Status);
+    const magDurCurves = useSelector(MagDurCurveSlice.Data);
+
+    const [currentCurve, setCurrentCurve] = React.useState<SEBrowser.MagDurCurve>(null)
+
     const dispatch = useDispatch();
     const status = useSelector(SelectEventSearchsStatus);
     const points: OpenXDA.Event[] = useSelector((state: any) => SelectEventSearchBySearchText(state, props.SearchText));
@@ -69,45 +74,34 @@ const MagDurChart = (props: IProps) => {
         }
     }, [status]);
 
+    React.useEffect(() => {
+        if (magDurStatus == 'changed' || magDurStatus == 'unintiated')
+            dispatch(MagDurCurveSlice.Fetch());
+    }, [magDurStatus]);
 
     React.useEffect(() => {
-        Promise.all([GetMagDurCurves()]).then(data => {
-            setMagDurCurveData(data[0]);
-            Initialize(data[0])
-        });
+        if (currentCurve == null && magDurCurves.length > 0)
+            setCurrentCurve(magDurCurves[0]);
 
-    }, []);
+    }, [magDurCurves]);
 
     React.useEffect(() => {
-        Initialize(magDurCurveData);
-    }, [curve, points])
-
-    function GetMagDurCurves(): Promise<iCurve[]> {
-        return new Promise((res, rej) => $.ajax({
-            type: "GET",
-            url: `${homePath}api/SEBrowser/MagDurCurves`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: true,
-            async: true
-        }).done(d => res(d)));
-    }
+        Initialize();
+    }, [currentCurve, points])
 
     function resetZoom(evt: any) {
-        Initialize(magDurCurveData);
+        Initialize();
     }
 
-    function Initialize(curves: iCurve[]) {
+    function Initialize() {
+
+        if (currentCurve == null)
+            return; 
         const margin = { top: 15, right: 20, bottom: 60, left: 40 };
         const svgWidth = props.Width - margin.left - margin.right;
         const svgHeight = props.Height - margin.top - margin.bottom;
-        let data = _.groupBy(curves.filter(d => d.Name.includes(curve)), 'Name');
-
-        const XHigh = [...new Set(data[Object.keys(data)[0]]?.map(d => d.XHigh) ?? [100])][0];
-        const XLow = [...new Set(data[Object.keys(data)[0]]?.map(d => d.XLow) ?? [0.000001])][0];
-        const YHigh = [...new Set(data[Object.keys(data)[0]]?.map(d => d.YHigh) ?? [5])][0];
-        const YLow = [...new Set(data[Object.keys(data)[0]]?.map(d => d.YLow) ?? [0])][0];
-
+       
+     
         d3.select(chart.current).selectAll('svg').remove();
         const svg = d3.select(chart.current)
             .append('svg').attr('width', props.Width).attr('height', props.Height);
@@ -124,8 +118,8 @@ const MagDurChart = (props: IProps) => {
             .attr("clip-path", "url(#clip)")
             .attr('id', 'chartdata');
 
-        let y = d3.scaleLinear().rangeRound([svgHeight, margin.top]).domain([YLow, YHigh]);
-        let x = d3.scaleLog().rangeRound([margin.left, svgWidth + margin.left]).domain([XLow, XHigh]);
+        let y = d3.scaleLinear().rangeRound([svgHeight, margin.top]).domain([currentCurve?.YLow ?? 0, currentCurve?.YHigh ?? 5]);
+        let x = d3.scaleLog().rangeRound([margin.left, svgWidth + margin.left]).domain([currentCurve?.XLow ?? 0.000001, currentCurve?.XHigh ?? 100]);
 
         svg.selectAll("g.xaxis").remove();
         const xg = svg.append("g")
@@ -146,7 +140,7 @@ const MagDurChart = (props: IProps) => {
 
         let ticks = 10;
         let format = '.1f';
-        if (curve === 'NERC') {
+        if (currentCurve.Name === 'NERC PRC-024-2') {
             ticks = 20
             format = '.2f';
         }
@@ -157,21 +151,25 @@ const MagDurChart = (props: IProps) => {
 
         svg.selectAll('line').style("stroke", "lightgrey").style("stroke-opacity", 0.8).style("shape-rendering", "crispEdges").style("z-index", "0")
 
+        const data = [];
 
+        if (currentCurve.LowerCurve == null && currentCurve.UpperCurve == null) {
+            let pt = currentCurve.Area.split(',');
+            let cu = pt.map(point => { let s = point.trim().split(" "); return [parseFloat(s[0]), parseFloat(s[1])];})
+            data.push(cu);
 
-        const lineFunc = d3.line<iCurve>().x(xd => x(xd.DurationSeconds)).y(yd => y(yd.PerUnitMagnitude));
+        }
+
+        const lineFunc = d3.line<[number,number]>().x(xd => x(xd[0])).y(yd => y(yd[1]));
         const lines = scatter.selectAll('g.lines')
-            .data([data])
+            .data(data)
             .enter()
             .append('g')
             .attr('class', 'lines')
-            .selectAll('path')
-            .data(d => Object.keys(d) as string[])
-            .enter()
             .append('path')
             .attr('stroke', 'red')
             .attr('fill', 'none')
-            .attr('d', (d) => lineFunc(data[d]));
+            .attr('d', (d) => lineFunc(d));
 
         // Define the div for the tooltip
         d3.select(chart.current).selectAll('.tooltip').remove()
@@ -244,8 +242,8 @@ const MagDurChart = (props: IProps) => {
             svg.selectAll('line').style("stroke", "lightgrey").style("stroke-opacity", 0.8).style("shape-rendering", "crispEdges").style("z-index", "0")
 
             circles.attr('cx', d => updatedX(d.DurationSeconds)).attr('cy', d => updatedY(d.PerUnitMagnitude));
-            const upLineFunc = d3.line<iCurve>().x(xd => updatedX(xd.DurationSeconds)).y(yd => updatedY(yd.PerUnitMagnitude))
-            lines.attr('d', d => upLineFunc(data[d]));
+            const upLineFunc = d3.line<[number, number]>().x(xd => updatedX(xd[0])).y(yd => updatedY(yd[1]));
+            lines.attr('d', d => upLineFunc(d));
         })
 
         svg.call(zoom)
@@ -256,26 +254,10 @@ const MagDurChart = (props: IProps) => {
     return (
         <div ref={chart} style={{ height: props.Height, width: props.Width }}>
             <div style={{ textAlign: 'center' }}>
-                <div className="form-check form-check-inline">
-                    <input className="form-check-input" type="radio" value={curve} checked={curve === 'ITIC'} onChange={(evt) => setCurve('ITIC')} />
-                    <label className="form-check-label">ITIC</label>
-                </div>
-                <div className="form-check form-check-inline">
-                    <input className="form-check-input" type="radio" value={curve} checked={curve === 'SEMI'} onChange={(evt) => setCurve('SEMI')} />
-                    <label className="form-check-label" >SEMI F47</label>
-                </div>
-                <div className="form-check form-check-inline">
-                    <input className="form-check-input" type="radio" value={curve} checked={curve === 'I & II'} onChange={(evt) => setCurve('I & II')} />
-                    <label className="form-check-label">IEEE 1668 Recommended Type I & II</label>
-                </div>
-                <div className="form-check form-check-inline">
-                    <input className="form-check-input" type="radio" value={curve} checked={curve === 'III'} onChange={(evt) => setCurve('III')} />
-                    <label className="form-check-label">IEEE 1668 Recommended Type III</label>
-                </div>
-                <div className="form-check form-check-inline">
-                    <input className="form-check-input" type="radio" value={curve} checked={curve === 'NERC'} onChange={(evt) => setCurve('NERC')} />
-                    <label className="form-check-label">NERC PRC-024-2</label>
-                </div>
+                {currentCurve == null ? null : magDurCurves.map(curve => <div className="form-check form-check-inline">
+                    <input className="form-check-input" type="radio" value={curve.ID} checked={curve.ID == currentCurve.ID} onChange={(evt) => setCurrentCurve(curve)} />
+                    <label className="form-check-label">{curve.Name}</label>
+                </div> )}             
             </div>
             <button style={{ position: 'absolute', top: 95, left: svgWidth - margin.right }} onClick={resetZoom}>Reset</button>
         </div>
