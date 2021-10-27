@@ -36,12 +36,6 @@ import EventSearchMagDur from './EventSearchMagDur';
 import { useDispatch, useSelector } from 'react-redux';
 import { ProcessQuery, SelectQueryParam, SetFilters } from './EventSearchSlice';
 import createHistory from "history/createBrowserHistory";
-import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice } from '../../Store';
-
-
-const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
-const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS";
 
 interface IProps { }
 
@@ -51,21 +45,11 @@ const EventSearch = (props: IProps) => {
 
     const dispatch = useDispatch();
 
-    const meterList = useSelector(MeterSlice.SearchResults);
-    const assetList = useSelector(AssetSlice.SearchResults);
-    const assetGroupList = useSelector(AssetGroupSlice.SearchResults);
-    const locationList = useSelector(LocationSlice.SearchResults);
-    const meterStatus = useSelector(MeterSlice.Status);
-    const assetStatus = useSelector(AssetSlice.Status);
-    const assetGroupStatus = useSelector(AssetGroupSlice.Status);
-    const locationStatus = useSelector(LocationSlice.Status);
-
     const [eventId, setEventId] = React.useState<number>(-1);
     const [searchText, setSearchText] = React.useState<string>('');
-    const [searchList, setSearchList] = React.useState<OpenXDA.Event[]>([]);
     const [initialTab, setInitialTab] = React.useState<tab>(undefined);
     const [showMagDur, setShowMagDur] = React.useState<boolean>(false);
-    const [showNav, setShowNav] = React.useState<boolean>(true);
+    const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
 
     const queryParam = useSelector(SelectQueryParam);
 
@@ -82,31 +66,23 @@ const EventSearch = (props: IProps) => {
 
     }, []);
 
-    React.useEffect(() => {
-        if (meterStatus == 'changed' || meterStatus == 'unintiated')
-            dispatch(MeterSlice.Fetch());
-    }, [meterStatus]);
-
-    React.useEffect(() => {
-        if (assetStatus == 'changed' || assetStatus == 'unintiated')
-            dispatch(AssetSlice.Fetch());
-    }, [assetStatus]);
-
-    React.useEffect(() => {
-        if (assetGroupStatus == 'changed' || assetGroupStatus == 'unintiated')
-            dispatch(AssetGroupSlice.Fetch());
-    }, [assetGroupStatus]);
-
-    React.useEffect(() => {
-        if (locationStatus == 'changed' || locationStatus == 'unintiated')
-            dispatch(LocationSlice.Fetch());
-    }, [locationStatus]);
-
+   
     React.useEffect(() => {
         let q = queryString.stringify(queryParam, "&", "=", { encodeURIComponent: queryString.escape });
         let handle = setTimeout(() => history.current['push'](history.current['location'].pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
     }, [queryParam])
+
+    React.useEffect(() => {
+        localStorage.setItem('SEbrowser.EventSearch.ShowNav', showNav.toString())
+    }, [showNav])
+
+    function getShowNav(): boolean {
+        if (localStorage.hasOwnProperty('SEbrowser.EventSearch.ShowNav'))
+            return JSON.parse(localStorage.getItem('SEbrowser.EventSearch.ShowNav'))
+        else
+            return true;
+    }
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
@@ -120,7 +96,7 @@ const EventSearch = (props: IProps) => {
                         <input className='form-control' type='text' placeholder='Search...' value={searchText} onChange={(evt) => setSearchText(evt.target.value)} />
                     </div>
                     <div style={{ width: 120, float: 'right', padding: 10 }}>
-                        <EventSearchListedEventsNoteWindow searchList={searchList} />
+                        <EventSearchListedEventsNoteWindow />
                     </div>
                     <div style={{ width: 160, float: 'right', padding: 10 }}>
                         <button className='btn btn-danger' onClick={() => setShowMagDur((c) => !c)} > View As {showMagDur ? 'List' : 'Mag/Dur'}</button>
