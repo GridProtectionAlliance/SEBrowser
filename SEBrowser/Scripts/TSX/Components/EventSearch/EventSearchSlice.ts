@@ -21,11 +21,13 @@
 //
 //******************************************************************************************************
 
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { SEBrowser, OpenXDA, Redux } from '../../global';
 import * as _ from 'lodash';
 import {  ajax } from 'jquery';
 import moment from 'moment';
+import queryString from 'querystring';
+import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice } from '../../Store';
 
 // #region [ Thunks ]
 export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (_, { dispatch, getState }) => {
@@ -50,6 +52,21 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
         groupIDs: groupList.map(item => item.ID), locationIDs: locationList.map(item => item.ID)
     }
     return await GetEventSearchs(filter);
+});
+
+export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async (query: queryString.ParsedUrlQuery , { dispatch, getState }) => {
+    let state = getState() as Redux.StoreState;
+    if (state.Asset.Status == 'unintiated')
+        await dispatch(AssetSlice.Fetch());
+    if (state.Meter.Status == 'unintiated')
+        await dispatch(MeterSlice.Fetch());
+    if (state.AssetGroup.Status == 'unintiated')
+        await dispatch(AssetGroupSlice.Fetch());
+    if (state.Location.Status == 'unintiated')
+        await dispatch(LocationSlice.Fetch());
+
+    state = getState() as Redux.StoreState;
+    return dispatch(EventSearchsSlice.actions.ProcessQuery({ query, assets: state.Asset.Data, groups: state.AssetGroup.Data, locations: [], meters: state.Meter.Data }));
 });
 
 // #endregion
@@ -85,6 +102,55 @@ export const EventSearchsSlice = createSlice({
 
             const sorted = _.orderBy(state.Data, [state.SortField], [state.Ascending ? "asc" : "desc"])
             state.Data = sorted;
+        },
+        ProcessQuery: (state, action: PayloadAction<{ query: queryString.ParsedUrlQuery, assets: OpenXDA.Asset[], groups: OpenXDA.AssetGroup[], locations: OpenXDA.Location[], meters: OpenXDA.Meter[] }>) => {
+
+            state.SearchText = action.payload.query['searchText']?.toString() ?? '';
+
+            state.TimeRange.date = action.payload.query['date']?.toString() ?? state.TimeRange.date;
+            state.TimeRange.time = action.payload.query['time']?.toString() ?? state.TimeRange.time;
+            state.TimeRange.windowSize = parseFloat(action.payload.query['windowSize']?.toString() ?? state.TimeRange.windowSize.toString());
+            state.TimeRange.timeWindowUnits = parseInt(action.payload.query['timeWindowUnits']?.toString() ?? state.TimeRange.timeWindowUnits.toString());
+
+            state.EventType.faults = (action.payload.query['faults'] ?? 'true') == 'true';
+            state.EventType.sags = (action.payload.query['sags'] ?? 'true') == 'true';
+            state.EventType.swells = (action.payload.query['swells'] ?? 'true') == 'true';
+            state.EventType.interruptions = (action.payload.query['interruptions'] ?? 'true') == 'true';
+            state.EventType.breakerOps = (action.payload.query['breakerOps'] ?? 'true') == 'true';
+            state.EventType.transients = (action.payload.query['transients'] ?? 'true') == 'true';
+            state.EventType.relayTCE = (action.payload.query['relayTCE'] ?? 'true') == 'true';
+            state.EventType.others = (action.payload.query['others'] ?? 'true') == 'true';
+
+            state.SelectedAssets = parseList('assets', action.payload.query)?.map(id => action.payload.assets.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
+            state.SelectedGroups = parseList('groups', action.payload.query)?.map(id => action.payload.groups.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
+            state.SelectedMeters = parseList('meters', action.payload.query)?.map(id => action.payload.meters.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
+            state.SelectedStations = parseList('stations', action.payload.query)?.map(id => action.payload.locations.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
+
+            state.EventCharacteristic.durationMin = parseFloat(action.payload.query['durationMin']?.toString() ?? '0');
+            state.EventCharacteristic.durationMax = parseFloat(action.payload.query['durationMax']?.toString() ?? '0');
+
+            state.EventCharacteristic.transientMin = parseFloat(action.payload.query['transientMin']?.toString() ?? '0');
+            state.EventCharacteristic.transientMax = parseFloat(action.payload.query['transientMax']?.toString() ?? '0');
+
+            state.EventCharacteristic.sagMin = parseFloat(action.payload.query['sagMin']?.toString() ?? '0');
+            state.EventCharacteristic.sagMax = parseFloat(action.payload.query['sagMax']?.toString() ?? '0');
+
+            state.EventCharacteristic.swellMax = parseFloat(action.payload.query['swellMax']?.toString() ?? '0');
+            state.EventCharacteristic.swellMin = parseFloat(action.payload.query['swellMin']?.toString() ?? '0');
+
+            state.EventCharacteristic.sagType = (action.payload.query['sagType'] ?? 'both') as ('both' | 'LL' | 'LN');
+            state.EventCharacteristic.swellType = (action.payload.query['swellType'] ?? 'both') as ('both' | 'LL' | 'LN');
+            state.EventCharacteristic.transientType = (action.payload.query['transientType'] ?? 'both') as ('both' | 'LL' | 'LN');
+
+            state.EventCharacteristic.curveID = parseInt(action.payload.query['curveID']?.toString() ?? '1');
+            state.EventCharacteristic.curveInside = (action.payload.query['curveInside'] ?? 'true') == 'true';
+            state.EventCharacteristic.curveOutside = (action.payload.query['curveOutside'] ?? 'true') == 'true';
+
+            state.EventCharacteristic.Phase.A = (action.payload.query['PhaseA'] ?? 'true') == 'true';
+            state.EventCharacteristic.Phase.B = (action.payload.query['PhaseB'] ?? 'true') == 'true';
+            state.EventCharacteristic.Phase.C = (action.payload.query['PhaseC'] ?? 'true') == 'true';
+
+            state.isReset = computeReset(state);
         },
         SetSearchText: (state, action) => {
             state.SearchText = action.payload;
@@ -145,6 +211,7 @@ export const EventSearchsSlice = createSlice({
 
 // #region [ Selectors ]
 export const { Sort, SetFilters, ResetFilters, SetFilterLists } = EventSearchsSlice.actions;
+
 export default EventSearchsSlice.reducer;
 export const SelectEventSearchs = (state: Redux.StoreState) => state.EventSearch.Data;
 export const SelectEventSearchByID = (state: Redux.StoreState, id: number) => state.EventSearch.Data.find(ds => ds.EventID === id);
@@ -170,6 +237,18 @@ export const SelectMeterList = (state: Redux.StoreState) => state.EventSearch.Se
 export const SelectAssetList = (state: Redux.StoreState) => state.EventSearch.SelectedAssets;
 export const SelectAssetGroupList = (state: Redux.StoreState) => state.EventSearch.SelectedGroups;
 export const SelectStationList = (state: Redux.StoreState) => state.EventSearch.SelectedStations;
+
+export const SelectQueryParam = createSelector(
+        (state: Redux.StoreState) => state.EventSearch.EventCharacteristic,
+        (state: Redux.StoreState) => state.EventSearch.EventType,
+        (state: Redux.StoreState) => state.EventSearch.TimeRange,
+        (state: Redux.StoreState) => state.EventSearch.SelectedAssets,
+        (state: Redux.StoreState) => state.EventSearch.SelectedGroups,
+        (state: Redux.StoreState) => state.EventSearch.SelectedMeters,
+    (state: Redux.StoreState) => state.EventSearch.SelectedStations,
+    (state: Redux.StoreState) => state.EventSearch.SearchText,
+        GenerateQueryParams
+    );
 
 // #endregion
 
@@ -199,4 +278,126 @@ function computeReset(state: Redux.EventSearchState): boolean {
 
     return event && types && state.SelectedAssets.length == 0 && state.SelectedStations.length == 0 && state.SelectedMeters.length == 0 && state.SelectedGroups.length == 0;
 }
+
+function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: SEBrowser.IEventTypeFilters, time: SEBrowser.IReportTimeFilter, assets: OpenXDA.Asset[], groups: OpenXDA.AssetGroup[], meters: OpenXDA.Meter[], stations: OpenXDA.Location[], searchText: string): any {
+    let result: any = {};
+    if (assets.length > 0 && assets.length < 100) {
+        let i = 0;
+        assets.forEach(a => {
+            result["assets" + i] = a.ID;
+            i = i + 1;
+        })
+    }
+    if (meters.length > 0 && meters.length < 100) {
+        let i = 0;
+        meters.forEach(m => {
+            result["meters" + i] = m.ID;
+            i = i + 1;
+        })
+    }
+    if (stations.length > 0 && stations.length < 100) {
+        let i = 0;
+        stations.forEach(s => {
+            result["stations" + i] = s.ID;
+            i = i + 1;
+        })
+    }
+    if (groups.length > 0 && groups.length < 100) {
+        let i = 0;
+        groups.forEach(ag => {
+            result["groups" + i] = ag.ID;
+            i = i + 1;
+        })
+    }
+
+    if (searchText.length > 0)
+        result['searchText'] = searchText;
+
+    if (!type.faults)
+        result['faults'] = false;
+
+    if (!type.sags)
+        result['sags'] = false;
+
+    if (!type.swells)
+        result['swells'] = false;
+
+    if (!type.interruptions)
+        result['interruptions'] = false;
+
+    if (!type.breakerOps)
+        result['breakerOps'] = false;
+
+    if (!type.transients)
+        result['transients'] = false;
+
+    if (!type.relayTCE)
+        result['relayTCE'] = false;
+
+    if (!type.others)
+        result['others'] = false;
+
+    if (event.durationMin != 0)
+        result['durationMin'] = event.durationMin
+    if (event.durationMax != 0)
+        result['durationMax'] = event.durationMax
+
+    if (event.transientMin != 0)
+        result['transientMin'] = event.transientMin
+    if (event.transientMax != 0)
+        result['transientMax'] = event.transientMax
+
+    if (event.sagMin != 0)
+        result['sagMin'] = event.sagMin
+    if (event.sagMax != 0)
+        result['sagMax'] = event.sagMax
+
+    if (event.swellMax != 0)
+        result['swellMax'] = event.swellMax
+    if (event.swellMin != 0)
+        result['swellMin'] = event.swellMin
+
+    if (event.sagType != 'both')
+        result['sagType'] = event.sagType
+    if (event.swellType != 'both')
+        result['swellType'] = event.swellType
+    if (event.transientType != 'both')
+        result['transientType'] = event.transientType
+
+    if (event.curveID != 1)
+        result['curveID'] = event.curveID
+    if (!event.curveInside)
+        result['curveInside'] = false
+    if (!event.curveOutside)
+        result['curveOutside'] = false;
+
+    if (!event.Phase.A)
+        result['PhaseA'] = false;
+    if (!event.Phase.B)
+        result['PhaseB'] = false;
+    if (!event.Phase.C)
+        result['PhaseC'] = false;
+    
+    result["date"] = time.date;
+    result["time"] = time.time;
+    result["windowSize"] = time.windowSize;
+    result["timeWindowUnits"] = time.timeWindowUnits;
+
+
+    return result;
+}
+
+function parseList(key: string, object: any) {
+    let result = [];
+    let i = 0;
+
+    while (object[key + i] != null) {
+        result.push(object[key + i]);
+        i = i + 1;
+    }
+
+    return result;
+    
+}
 // #endregion
+

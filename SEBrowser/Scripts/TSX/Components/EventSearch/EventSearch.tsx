@@ -33,9 +33,10 @@ import EventSearchListedEventsNoteWindow from './EventSearchListedEventsNoteWind
 import { OpenXDA, SEBrowser } from '../../global';
 import queryString from 'querystring';
 import EventSearchMagDur from './EventSearchMagDur';
-import { useDispatch } from 'react-redux';
-import { SetFilters } from './EventSearchSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { ProcessQuery, SelectQueryParam, SetFilters } from './EventSearchSlice';
 import createHistory from "history/createBrowserHistory";
+import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice } from '../../Store';
 
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
@@ -50,6 +51,15 @@ const EventSearch = (props: IProps) => {
 
     const dispatch = useDispatch();
 
+    const meterList = useSelector(MeterSlice.SearchResults);
+    const assetList = useSelector(AssetSlice.SearchResults);
+    const assetGroupList = useSelector(AssetGroupSlice.SearchResults);
+    const locationList = useSelector(LocationSlice.SearchResults);
+    const meterStatus = useSelector(MeterSlice.Status);
+    const assetStatus = useSelector(AssetSlice.Status);
+    const assetGroupStatus = useSelector(AssetGroupSlice.Status);
+    const locationStatus = useSelector(LocationSlice.Status);
+
     const [eventId, setEventId] = React.useState<number>(-1);
     const [searchText, setSearchText] = React.useState<string>('');
     const [searchList, setSearchList] = React.useState<OpenXDA.Event[]>([]);
@@ -57,53 +67,47 @@ const EventSearch = (props: IProps) => {
     const [showMagDur, setShowMagDur] = React.useState<boolean>(false);
     const [showNav, setShowNav] = React.useState<boolean>(true);
 
+    const queryParam = useSelector(SelectQueryParam);
+
     React.useEffect(() => {
         history.current = createHistory();
-        var query = queryString.parse(history.current['location'].search, "&", "=", { decodeURIComponent: queryString.unescape });
+        var query = queryString.parse(history.current['location'].search.replace("?",""), "&", "=", { decodeURIComponent: queryString.unescape });
 
-        const eventTypes = {
-            faults: (query['faults'] != undefined ? query['faults'] == 'true' : true),
-            sags: (query['sags'] != undefined ? query['sags'] == 'true' : true),
-            swells: (query['swells'] != undefined ? query['swells'] == 'true' : true),
-            interruptions: (query['interruptions'] != undefined ? query['interruptions'] == 'true' : true),
-            breakerOps: (query['breakerOps'] != undefined ? query['breakerOps'] == 'true' : true),
-            transients: (query['transients'] != undefined ? query['transients'] == 'true' : true),
-            relayTCE: (query['relayTCE'] != undefined ? query['realyTCE'] == 'true' : true),
-            others: (query['others'] != undefined ? query['others'] == 'true' : true)
-        }
-
-        const times = {
-            date: (query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat)),
-            time: (query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat)),
-            windowSize: (query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10),
-            timeWindowUnits: (query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2)
-        };
-
-        const characteristics = {
-            durationMax: 0,
-            durationMin: 0,
-            Phase: { A: true, B: true, C: true },
-            transientMin: 0,
-            transientMax: 0,
-            sagMin: 0,
-            sagMax: 0,
-            swellMin: 0,
-            swellMax: 0,
-            curveID: 1, curveInside: true, curveOutside: true,
-            sagType: 'both' as ('LL' | 'LN' | 'both'), swellType: 'both' as ('LL' | 'LN' | 'both'), transientType: 'both' as ('LL' | 'LN' | 'both')
-        }
+        dispatch(ProcessQuery(query));
 
 
         setInitialTab(query['tab'] != undefined ? query['tab'].toString() as any : undefined);
         setShowMagDur(query['magDur'] != undefined ? query['magDur'] == 'true' : false);
-
-        setSearchText(query['searchText'] != undefined ? query['searchText'].toString() : '');
         setEventId(query['eventid'] != undefined ? parseInt(query['eventid'].toString()) : -1);
 
-        dispatch(SetFilters({ characteristics: characteristics, time: times, types: eventTypes }));
     }, []);
 
-    
+    React.useEffect(() => {
+        if (meterStatus == 'changed' || meterStatus == 'unintiated')
+            dispatch(MeterSlice.Fetch());
+    }, [meterStatus]);
+
+    React.useEffect(() => {
+        if (assetStatus == 'changed' || assetStatus == 'unintiated')
+            dispatch(AssetSlice.Fetch());
+    }, [assetStatus]);
+
+    React.useEffect(() => {
+        if (assetGroupStatus == 'changed' || assetGroupStatus == 'unintiated')
+            dispatch(AssetGroupSlice.Fetch());
+    }, [assetGroupStatus]);
+
+    React.useEffect(() => {
+        if (locationStatus == 'changed' || locationStatus == 'unintiated')
+            dispatch(LocationSlice.Fetch());
+    }, [locationStatus]);
+
+    React.useEffect(() => {
+        let q = queryString.stringify(queryParam, "&", "=", { encodeURIComponent: queryString.escape });
+        let handle = setTimeout(() => history.current['push'](history.current['location'].pathname + '?' + q), 500);
+        return (() => { clearTimeout(handle); })
+    }, [queryParam])
+
     return (
         <div style={{ width: '100%', height: '100%' }}>
             <EventSearchNavbar
