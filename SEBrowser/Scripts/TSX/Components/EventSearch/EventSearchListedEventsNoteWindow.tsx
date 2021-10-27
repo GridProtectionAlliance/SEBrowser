@@ -26,6 +26,10 @@ import SEBrowserService from './../../../TS/Services/SEBrowser';
 import { orderBy, filter, clone } from 'lodash';
 import { OpenXDA } from '../../global';
 import moment from 'moment';
+import { useSelector } from 'react-redux';
+import { SelectEventSearchBySearchText } from './EventSearchSlice';
+
+interface NoteMade { EventIds: Array<number>, Note: string, Timestamp: string, UserAccount: string }
 
 interface IState {
     show: boolean,
@@ -33,84 +37,63 @@ interface IState {
     ids: Array<number>,
     notesMade: Array<{EventIds: Array<number>, Note: string, Timestamp: string, UserAccount: string}>
 }
-export default class EventSearchListedEventsNoteWindow extends React.Component<{ searchList: Array<OpenXDA.Event> }, IState, {}> {
-    seBrowserService: SEBrowserService;
 
-    constructor(props, context) {
-        super(props, context);
+const EventSearchListedEventsNoteWindow: React.FC < {} > = () => {
+    const [show, setShow] = React.useState<boolean>(false);
+    const [note, setNote] = React.useState<string>('');
+    const [notesmade, setNotesMade] = React.useState<NoteMade[]>([])
+    const [selectedIds, setSelectedIDs] = React.useState<number[]>([]);
+    const events = useSelector(SelectEventSearchBySearchText);
 
-        this.seBrowserService = new SEBrowserService();
 
-        this.state = {
-            show: false,
-            note: '',
-            ids: this.props.searchList.map(a => a.EventID).sort(),
-            notesMade: []
-        };
+    var tableRows: Array<JSX.Element> = events.map((evt, index) => {
+        return (
+            <tr key={index} style={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}>
+                <td><input type='checkbox' checked={selectedIds.indexOf(evt.EventID) >= 0} value={evt.EventID} onChange={(e) => {
+                    var selected = $(e.target).prop('checked');
+                    var eventId = parseInt(e.target.value);
+                    var list = clone(selectedIds);
 
-        this.handleAdd.bind(this);
+                    if (selected && !(list.indexOf(eventId) >= 0)) {
 
-    }
+                        list.push(eventId);
+                        setSelectedIDs(list.sort())
+                    }
+                    else if (!selected && (list.indexOf(eventId) >= 0)) {
+                        list = list.filter(a => a != eventId);
+                        setSelectedIDs(list.sort())
+                    }
 
-    componentDidMount() {
-    }
-    componentWillUnmount() {
-    }
+                }} /></td>
+                <td><span>{moment(evt.FileStartTime).format('MM/DD/YYYY')}<br />{moment(evt.FileStartTime).format('HH:mm:ss.SSSSSSS')}</span></td>
+                <td>{evt.AssetName}</td>
+                <td>{evt.EventType}</td>
+            </tr>
+        );
+    });
 
-    componentWillReceiveProps(nextProps) {
-        if (this.state.ids != nextProps.searchList.map(a => a.EventID).sort())
-            this.setState({ ids: nextProps.searchList.map(a => a.EventID).sort()});
-    }
-
-    render() {
-        var tableRows: Array<JSX.Element> = this.props.searchList.map((evt, index) => {
-            return (
-                <tr key={index} style={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}>
-                    <td><input type='checkbox' checked={this.state.ids.indexOf(evt.EventID) >= 0} value={evt.EventID} onChange={(e) => {
-                        var selected = $(e.target).prop('checked');
-                        var eventId = parseInt(e.target.value);
-                        var list = clone(this.state.ids);
-
-                        if (selected && !(list.indexOf(eventId) >= 0)) {
-
-                            list.push(eventId);
-                            this.setState({ids: list.sort()})
-                        }
-                        else if (!selected && (list.indexOf(eventId) >= 0)) {
-                            list = list.filter(a => a != eventId);
-                            this.setState({ ids: list.sort() })
-                        }
-
-                    }} /></td>
-                    <td><span>{moment(evt.FileStartTime).format('MM/DD/YYYY')}<br />{moment(evt.FileStartTime).format('HH:mm:ss.SSSSSSS')}</span></td>
-                    <td>{evt.AssetName}</td>
-                    <td>{evt.EventType}</td>
-                </tr>
-            );
-        });
-
-        var madeNotes: Array<JSX.Element> = this.state.notesMade.map((noteMade, index) => {
-            return (
-                <tr key={index} style={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}>
-                    <td>{noteMade.Note}</td>
-                    <td><span>{moment(noteMade.Timestamp).format('MM/DD/YYYY')}<br />{moment(noteMade.Timestamp).format('HH:mm:ss.SSSSSSS')}</span></td>
-                    <td>{noteMade.UserAccount}</td>
-                    <td><button className="btn btn-sm" onClick={(e) => this.handleDelete(noteMade)}><span><i className="fa fa-times"></i></span></button></td>
-                </tr>
+    var madeNotes: Array<JSX.Element> = notesmade.map((noteMade, index) => {
+        return (
+            <tr key={index} style={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}>
+                <td>{noteMade.Note}</td>
+                <td><span>{moment(noteMade.Timestamp).format('MM/DD/YYYY')}<br />{moment(noteMade.Timestamp).format('HH:mm:ss.SSSSSSS')}</span></td>
+                <td>{noteMade.UserAccount}</td>
+                <td><button className="btn btn-sm" onClick={(e) => handleDelete(noteMade)}><span><i className="fa fa-times"></i></span></button></td>
+            </tr>
             
-            )
-        });
+        )
+    });
 
         return (
             <div>
-                <button className="btn btn-primary form-control" onClick={() => { this.setState({ show: true }) }} title="Click here to add a note to all events listed below ...">Add Notes</button>
+                <button className="btn btn-primary form-control" onClick={() => setShow(true)} title="Click here to add a note to all events listed below ...">Add Notes</button>
 
-                <div className="modal fade show" style={{ display: (this.state.show ? 'block' : 'none') }} role="dialog">
+                <div className="modal fade show" style={{ display: (show ? 'block' : 'none') }} role="dialog">
                     <div className="modal-dialog" style={{maxWidth: '75%'}} role="document">
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h3 className="modal-title">Add notes for the following events.</h3>
-                                <button type="button" className="close" onClick={() => this.setState({ show: false })}>
+                                <button type="button" className="close" onClick={() => setShow(false)}>
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
@@ -118,14 +101,14 @@ export default class EventSearchListedEventsNoteWindow extends React.Component<{
                                 <div style={{width: '50%', float: 'left', padding: 10}}>
                                     <table className="table">
                                         <thead style={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}>
-                                            <tr><td><input type='checkbox' checked={this.props.searchList.length == this.state.ids.length} onChange={(e) => {
+                                            <tr><td><input type='checkbox' checked={events.length == selectedIds.length} onChange={(e) => {
                                                 var selected = $(e.target).prop('checked');
 
                                                 if (selected) {
-                                                    this.setState({ ids: this.props.searchList.map(a => a.EventID).sort() })
+                                                    setSelectedIDs(events.map(a => a.EventID).sort())
                                                 }
                                                 else if (!selected) {
-                                                    this.setState({ ids: [] })
+                                                    setSelectedIDs([]);
                                                 }
 
                                             }} /></td><td>Time</td><td>Asset</td><td>Type</td></tr>
@@ -144,32 +127,23 @@ export default class EventSearchListedEventsNoteWindow extends React.Component<{
                                             {madeNotes}
                                         </tbody>
                                     </table>
-                                    <textarea className="form-control" value={this.state.note} rows={4} onChange={(e) => this.setState({ note: (e.target as any).value })}></textarea>
+                                    <textarea className="form-control" value={note} rows={4} onChange={(e) => setNote( (e.target as any).value )}></textarea>
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button className="btn btn-primary" onClick={() => this.handleAdd()} disabled={this.state.note.length == 0}>Add Note</button>
-                                <button className="btn btn-secondary" onClick={() => this.setState({ show: false })}>Close</button>
+                                <button className="btn btn-primary" onClick={() => handleAdd()} disabled={note.length == 0}>Add Note</button>
+                                <button className="btn btn-secondary" onClick={() => setShow(false)}>Close</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         );
-    }
+    
 
-    createTableRows() {
-        //this.openSEEService.getNotes(props.eventId).done(data => {
-        //    var rows = data.map(d => <tr key={d.ID}><td>{d.Note}</td><td>{moment(d.Timestamp).format("MM/DD/YYYY HH:mm")}</td><td>{d.UserAccount}</td><td>
-        //        <button className="btn btn-sm" onClick={(e) => this.handleEdit(d)}><span><i className="fa fa-pencil"></i></span></button>
-        //        <button className="btn btn-sm" onClick={(e) => this.handleDelete(d)}><span><i className="fa fa-times"></i></span></button>
-        //    </td></tr>)
+    
 
-        //    this.setState({ tableRows: rows });
-        //});
-    }
-
-    handleAdd() {
+    function handleAdd() {
         this.addMultiNote(this.state.note, this.state.ids).done(notesMade => {
             var list = clone(this.state.notesMade);
             list.push({ Note: notesMade[0].Note, Timestamp: notesMade[0].Timestamp, UserAccount: notesMade[0].UserAccount, EventIds: notesMade.map(a => a.EventID)});
@@ -177,19 +151,19 @@ export default class EventSearchListedEventsNoteWindow extends React.Component<{
         });
     }
 
-    handleDelete(noteMade) {
+    function handleDelete(noteMade) {
         this.deleteMultiNote(noteMade.Note, noteMade.UserAccount, noteMade.Timestamp);
         var list = clone(this.state.notesMade);
         list = list.filter(note => note != noteMade);
         this.setState({notesMade: list});
     }
 
-    handleEdit(d) {
+    function handleEdit(d) {
         this.setState({ note: d.Note });
         this.deleteNote(d).done(() => this.createTableRows());
     }
 
-    addMultiNote(note: string, eventIDs: Array<number>): JQuery.jqXHR {
+    function addMultiNote(note: string, eventIDs: Array<number>): JQuery.jqXHR {
         return $.ajax({
             type: "POST",
             url: `${homePath}api/OpenXDA/Note/Multi`,
@@ -204,7 +178,7 @@ export default class EventSearchListedEventsNoteWindow extends React.Component<{
         });
     }
 
-    deleteNote(note): JQuery.jqXHR {
+    function deleteNote(note): JQuery.jqXHR {
         return $.ajax({
             type: "DELETE",
             url: `${homePath}api/OpenXDA/Note`,
@@ -219,7 +193,7 @@ export default class EventSearchListedEventsNoteWindow extends React.Component<{
         });
     }
 
-    deleteMultiNote(Note: string, UserAccount: string, Timestamp: string): JQuery.jqXHR {
+    function deleteMultiNote(Note: string, UserAccount: string, Timestamp: string): JQuery.jqXHR {
         return $.ajax({
             type: "DELETE",
             url: `${homePath}api/OpenXDA/Note`,
@@ -235,3 +209,5 @@ export default class EventSearchListedEventsNoteWindow extends React.Component<{
     }
 
 }
+
+export default EventSearchListedEventsNoteWindow

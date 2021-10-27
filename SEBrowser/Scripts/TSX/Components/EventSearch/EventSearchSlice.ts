@@ -216,7 +216,7 @@ export const EventSearchsSlice = createSlice({
 // #endregion
 
 // #region [ Selectors ]
-export const { Sort, SetFilters, ResetFilters, SetFilterLists } = EventSearchsSlice.actions;
+export const { Sort, SetFilters, ResetFilters, SetFilterLists, SetSearchText } = EventSearchsSlice.actions;
 
 export default EventSearchsSlice.reducer;
 export const SelectEventSearchs = (state: Redux.StoreState) => state.EventSearch.Data;
@@ -224,15 +224,15 @@ export const SelectEventSearchByID = (state: Redux.StoreState, id: number) => st
 export const SelectEventSearchsStatus = (state: Redux.StoreState) => state.EventSearch.Status;
 export const SelectEventSearchsSortField = (state: Redux.StoreState) => state.EventSearch.SortField;
 export const SelectEventSearchsAscending = (state: Redux.StoreState) => state.EventSearch.Ascending;
-export const SelectEventSearchBySearchText = (state: Redux.StoreState, searchText: string) => state.EventSearch.Data.filter((d, i) => {
-    if (searchText === '') return true
+export const SelectEventSearchBySearchText = (state: Redux.StoreState) => state.EventSearch.Data.filter((d, i) => {
+    if (state.EventSearch.SearchText === '') return true
     else
-    return d.AssetName.toLowerCase().indexOf(searchText) >= 0 ||
-        d.AssetType.toLowerCase().indexOf(searchText) >= 0 ||
-        d.EventType.toLowerCase().indexOf(searchText) >= 0 ||
-        moment(d.FileStartTime).format('MM/DD/YYYY').toLowerCase().indexOf(searchText) >= 0 ||
-        moment(d.FileStartTime).format('HH:mm:ss.SSSSSSS').toLowerCase().indexOf(searchText) >= 0 ||
-        d.VoltageClass.toString().toLowerCase().indexOf(searchText) >= 0
+        return d.AssetName.toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
+            d.AssetType.toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
+            d.EventType.toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
+            moment(d.FileStartTime).format('MM/DD/YYYY').toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
+            moment(d.FileStartTime).format('HH:mm:ss.SSSSSSS').toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
+            d.VoltageClass.toString().toLowerCase().indexOf(state.EventSearch.SearchText) >= 0
 
 });
 export const SelectTimeFilter = (state: Redux.StoreState) => state.EventSearch.TimeRange;
@@ -243,6 +243,7 @@ export const SelectMeterList = (state: Redux.StoreState) => state.EventSearch.Se
 export const SelectAssetList = (state: Redux.StoreState) => state.EventSearch.SelectedAssets;
 export const SelectAssetGroupList = (state: Redux.StoreState) => state.EventSearch.SelectedGroups;
 export const SelectStationList = (state: Redux.StoreState) => state.EventSearch.SelectedStations;
+export const SelectSearchText = (state: Redux.StoreState) => state.EventSearch.SearchText;
 
 export const SelectQueryParam = createSelector(
         (state: Redux.StoreState) => state.EventSearch.EventCharacteristic,

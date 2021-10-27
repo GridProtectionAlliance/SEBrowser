@@ -24,34 +24,33 @@
 //******************************************************************************************************
 
 import React from 'react';
-import moment from 'moment';
 import EventSearchList from './EventSearchList';
 import { History } from 'history';
 import EventSearchNavbar from './EventSearchNavbar';
 import EventPreviewPane from './EventSearchPreview/EventSearchPreviewPane';
 import EventSearchListedEventsNoteWindow from './EventSearchListedEventsNoteWindow';
-import { OpenXDA, SEBrowser } from '../../global';
 import queryString from 'querystring';
 import EventSearchMagDur from './EventSearchMagDur';
 import { useDispatch, useSelector } from 'react-redux';
-import { ProcessQuery, SelectQueryParam, SetFilters } from './EventSearchSlice';
+import { ProcessQuery, SelectQueryParam, SelectSearchText, SetSearchText } from './EventSearchSlice';
 import createHistory from "history/createBrowserHistory";
 
 interface IProps { }
 
 type tab = 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All' | undefined;
+
 const EventSearch = (props: IProps) => {
     const history = React.useRef<History<any>>();
 
     const dispatch = useDispatch();
 
     const [eventId, setEventId] = React.useState<number>(-1);
-    const [searchText, setSearchText] = React.useState<string>('');
     const [initialTab, setInitialTab] = React.useState<tab>(undefined);
     const [showMagDur, setShowMagDur] = React.useState<boolean>(false);
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
 
     const queryParam = useSelector(SelectQueryParam);
+    const searchtext = useSelector(SelectSearchText);
 
     React.useEffect(() => {
         history.current = createHistory();
@@ -93,7 +92,7 @@ const EventSearch = (props: IProps) => {
             <div style={{ width: '100%', height: (showNav ? 'calc( 100% - 303px)' : 'calc( 100% - 52px)')}}>
                 <div style={{ width: '50%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
                     <div style={{ width: 'calc(100% - 300px)', padding: 10, float: 'left' }}>
-                        <input className='form-control' type='text' placeholder='Search...' value={searchText} onChange={(evt) => setSearchText(evt.target.value)} />
+                        <input className='form-control' type='text' placeholder='Search...' value={searchtext} onChange={(evt) => dispatch(SetSearchText(evt.target.value))} />
                     </div>
                     <div style={{ width: 120, float: 'right', padding: 10 }}>
                         <EventSearchListedEventsNoteWindow />
@@ -104,10 +103,10 @@ const EventSearch = (props: IProps) => {
                     {showMagDur ?
                         <EventSearchMagDur Width={(window.innerWidth - 300) / 2}
                             Height={window.innerHeight - ((showNav? 303 : 52) + 58)}
-                            EventID={eventId} SearchText={searchText}
+                            EventID={eventId}
                             OnSelect={(evt, point) => setEventId(point.EventID)}
                         /> :
-                        <EventSearchList eventid={eventId} searchText={searchText} selectEvent={setEventId} height={window.innerHeight - ((showNav ? 303 : 52) + 58)}/>
+                        <EventSearchList eventid={eventId} selectEvent={setEventId} height={window.innerHeight - ((showNav ? 303 : 52) + 58)}/>
                     }
                 </div>
                 <div style={{ width: '50%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>

@@ -31,10 +31,8 @@ import { SelectEventSearchBySearchText, SelectEventSearchsAscending, SelectEvent
 
 interface IProps {
     eventid: number,
-    searchText: string,
     selectEvent: (id: number) => void,
     height: number
-
 }
 
 export default function EventSearchList(props: IProps) {
@@ -44,7 +42,7 @@ export default function EventSearchList(props: IProps) {
     const status = useSelector(SelectEventSearchsStatus);
     const sortField = useSelector(SelectEventSearchsSortField);
     const ascending = useSelector(SelectEventSearchsAscending);
-    const data = useSelector((state: Redux.StoreState) => SelectEventSearchBySearchText(state, props.searchText));
+    const data = useSelector((state: Redux.StoreState) => SelectEventSearchBySearchText(state));
 
     React.useEffect(() => {
         document.addEventListener("keydown", handleKeyPress, false);
