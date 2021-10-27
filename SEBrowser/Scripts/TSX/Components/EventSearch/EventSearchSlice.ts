@@ -29,6 +29,12 @@ import moment from 'moment';
 import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice } from '../../Store';
 
+
+const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
+const momentDateFormat = "MM/DD/YYYY";
+const momentTimeFormat = "HH:mm:ss.SSS";
+
+
 // #region [ Thunks ]
 export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (_, { dispatch, getState }) => {
     const time = (getState() as any).EventSearch.TimeRange as SEBrowser.IReportTimeFilter;
@@ -85,7 +91,7 @@ export const EventSearchsSlice = createSlice({
             durationMax: 0, durationMin: 0, Phase: { A: true, B: true, C: true }, transientMin: 0, transientMax: 0, sagMin: 0, sagMax: 0, swellMin: 0, swellMax: 0, sagType: 'both', swellType: 'both', transientType: 'both',
             curveID: 1, curveInside: true, curveOutside: true
         },
-        TimeRange: { date: '01/01/2000', time: '12:00:00.000', windowSize: 1, timeWindowUnits: 2 },
+        TimeRange: { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 10, timeWindowUnits: 5 },
         EventType: { breakerOps: true, faults: true, interruptions: true, others: true, relayTCE: true, swells: true, sags: true, transients: true },
         isReset: true,
         SelectedAssets: [],
