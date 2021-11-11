@@ -47,7 +47,7 @@ interface IProps {
     Width: number,
     Height: number,
     EventID: number,
-    OnSelect: (evt: any, point: OpenXDA.Event) => void
+    OnSelect: (evt: any, point: any) => void
 }
 const MagDurChart = (props: IProps) => {
 
@@ -63,7 +63,7 @@ const MagDurChart = (props: IProps) => {
 
     const dispatch = useDispatch();
     const status = useSelector(SelectEventSearchsStatus);
-    const points: OpenXDA.Event[] = useSelector(SelectEventSearchBySearchText);
+    const points: any[] = useSelector(SelectEventSearchBySearchText);
 
     React.useEffect(() => {
         if (status != 'unitiated' && status != 'changed') return;

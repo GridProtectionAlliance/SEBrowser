@@ -21,7 +21,7 @@
 //
 //******************************************************************************************************
 
-import React from 'react';
+import * as React from 'react';
 import ReactDOM from 'react-dom';
 import moment from 'moment';
 import { ConfigurableTable } from '@gpa-gemstone/react-interactive';
@@ -35,6 +35,13 @@ interface IProps {
     height: number
 }
 
+interface IColumn {
+    key: string,
+    label: string,
+    field: keyof any,
+    content: (item: any, key: string, field: keyof any, style: React.CSSProperties, index: number) => React.ReactNode
+}
+
 export default function EventSearchList(props: IProps) {
     const ref = React.useRef();
     const dispatch = useDispatch();
@@ -43,6 +50,7 @@ export default function EventSearchList(props: IProps) {
     const sortField = useSelector(SelectEventSearchsSortField);
     const ascending = useSelector(SelectEventSearchsAscending);
     const data = useSelector((state: Redux.StoreState) => SelectEventSearchBySearchText(state));
+    const [cols, setCols] = React.useState<IColumn[]>([]);
 
     React.useEffect(() => {
         document.addEventListener("keydown", handleKeyPress, false);
@@ -59,6 +67,20 @@ export default function EventSearchList(props: IProps) {
         return function () {
         }
     }, [status]);
+
+    React.useEffect(() => {
+        let flds = [];
+        if (data.length == 0)
+            return;
+
+        flds = Object.keys(data[0]).filter(item => item != "Time" && item != "DisturbanceID" && item != "EventID").sort();
+
+        
+        if (flds.length != cols.length)
+            setCols(flds.map(item => ({
+                field: item, key: item, label: item, content: (item, key, fld, style) => ProcessWhitespace(item[fld]) })))
+
+    }, [data])
 
     function handleKeyPress(event) {
         if (data.length == 0) return;
@@ -109,20 +131,25 @@ export default function EventSearchList(props: IProps) {
 
     }
 
+    function ProcessWhitespace(txt: string | number): React.ReactNode {
+        if (txt == null)
+            return <>N/A</>
+        let lines = txt.toString().split("<br>");
+    return lines.map((item, index) => {
+        if (index == 0)
+            return <> {item} </>
+        return <> <br/> {item} </> 
+            })
+    }
     return (
         <div ref={ref} style={{width: '100%', maxHeight: props.height, overflowY: "hidden"}}>
-            <ConfigurableTable<OpenXDA.Event>
-                cols={[
-                    { key: "FileStartTime", label: 'Time', headerStyle: { width: 'calc(20%)' }, rowStyle: { width: 'calc(20%)' }, content: (item, key) => <span>{moment(item.FileStartTime).format('MM/DD/YYYY')}<br />{moment(item.FileStartTime).format('HH:mm:ss.SSSSSSS')}</span> },
-                    { key: "AssetName", field: 'AssetName', label: 'Asset', headerStyle: { width: '20%' }, rowStyle: { width: '20%' } },
-                    { key: "AssetType", field: 'AssetType', label: 'Asset Tp', headerStyle: { width: '15%' }, rowStyle: { width: '15%' } },
-                    { key: "VoltageClass", field: 'VoltageClass', label: 'kV', headerStyle: { width: '15%' }, rowStyle: { width: '15%' }, content: (item, key, style) => item[key].toString().split('.')[1] != undefined && item[key].toString().split('.')[1].length > 3 ? (item[key] as number).toFixed(3) : item[key] },
-                    { key: "EventType", field: 'EventType', label: 'Evt Cl', headerStyle: { width: '15%' }, rowStyle: { width: '15%' } },
-                    { key: "BreakerOperation", label: 'Brkr Op', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' }, content: (item, key, style) => <span><i className={(item.BreakerOperation == true ? "fa fa-check" : '')}></i></span> },
-                ]}
+            <ConfigurableTable<any>
+                cols={[{
+                    field: "Time", key: "Time", label: "Time", content: (item, key, fld, style) => ProcessWhitespace(item[fld])
+                }, ...cols]}
                 tableClass="table table-hover"
                 data={data}
-                sortKey={sortField}
+                sortKey={sortField as string}
                 ascending={ascending}
                 onSort={(d) => {
                     if (d.colKey == sortField) dispatch(Sort({ Ascending: ascending, SortField: sortField }));
@@ -136,8 +163,8 @@ export default function EventSearchList(props: IProps) {
                     if (item.EventID == props.eventid) return true;
                     else return false;
                 }}
-                requiredColumns={["FileStartTime"]}
-                defaultColumns={["EventType", "AssetName"]}
+                requiredColumns={["Time"]}
+                defaultColumns={["Event Type"]}
             />
         </div>
     );

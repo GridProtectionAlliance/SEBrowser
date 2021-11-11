@@ -306,25 +306,18 @@ namespace SEBrowser.Controllers
 	                        Disturbance.PhaseID = (SELECT ID FROM Phase WHERE Name = 'Worst') AND 
 	                        (CAST(Disturbance.StartTime as date) BETWEEN DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}) OR CAST(Disturbance.EndTime as Date) BETWEEN  DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}))
                     )
-	                SELECT TOP 100
+	                SELECT 
+                        Format(Main.WorstLL*100.0,'F2') as [Worst LL Magnitude (%nominal)],
+                        Format(Main.WorstLN*100.0,'F2')  as [Worst LN Magnitude (%nominal)],
+                        [SEBrowser.EventSearchEventView].*,
+                        [SEBrowser.EventSearchWorstDisturbanceView].*
+                    FROM (SELECT TOP 100
 	                    Event.ID as EventID,
-                        Meter.AssetKey as MeterName,
-	                    Asset.AssetKey as AssetName,
-	                    AssetType.Name as AssetType,
-	                    Asset.VoltageKV as VoltageClass,
-	                    EventType.Name as EventType,
-	                    Event.StartTime as FileStartTime,
-	                    (SELECT WDR.DurationSeconds FROM WorstDisturbanceRecord WDR WHERE WDR.row_number = MIN(wsr.row_number) AND WDR.EventID = Event.ID) AS DurationSeconds,
-	                    (SELECT WDR.PerUnitMagnitude FROM WorstDisturbanceRecord WDR WHERE WDR.row_number = MIN(wsr.row_number) AND WDR.EventID = Event.ID) AS PerUnitMagnitude,
-                        (SELECT WDR.DurationCycles FROM WorstDisturbanceRecord WDR WHERE WDR.row_number = MIN(wsr.row_number) AND WDR.EventID = Event.ID) AS DurationCycles,
-	                    (SELECT COUNT(*) FROM BreakerOperation WHERE BreakerOperation.EventID = Event.ID) as BreakerOperation,
-                        (SELECT COUNT(Channel.ID) FROM Channel LEFT JOIN MeasurementType ON Channel.MeasurementTypeID = MeasurementType.ID WHERE MeasurementType.Name = 'TripCoilCurrent' AND Channel.AssetID = Asset.ID ) as TripCoilCount
+	                    (SELECT WDR.WorstLLPerUnit FROM WorstDisturbanceRecord WDR WHERE WDR.row_number = MIN(wsr.row_number) AND WDR.EventID = Event.ID) AS WorstLL,
+                        (SELECT WDR.WorstLNPerUnit FROM WorstDisturbanceRecord WDR WHERE WDR.row_number = MIN(wsr.row_number) AND WDR.EventID = Event.ID) AS WorstLN,
+                        (SELECT WDR.ID FROM WorstDisturbanceRecord WDR WHERE WDR.row_number = MIN(wsr.row_number) AND WDR.EventID = Event.ID) AS WorstDisturbanceID
 	                FROM
 	                    Event LEFT JOIN
-	                    EventType ON Event.EventTypeID = EventType.ID LEFT JOIN
-	                    Asset ON Event.AssetID = Asset.ID LEFT JOIN
-                        Meter ON Event.MeterID = Meter.ID LEFT JOIN
-	                    AssetType ON Asset.AssetTypeID = AssetType.ID JOIN
 	                    WorstDisturbanceRecord wsr ON wsr.EventID = Event.ID LEFT JOIN
                         Phase ON Phase.ID = wsr.OriginalPhaseId
                     WHERE
@@ -332,8 +325,9 @@ namespace SEBrowser.Controllers
                         {eventTypeRestriction} AND {eventCharacteristicsRestricitons} 
                         {(string.IsNullOrEmpty(otherRestrictions)? "" : ("AND " + otherRestrictions))}
                     GROUP BY 
-                       Event.ID, Meter.AssetKey, Asset.AssetKey, AssetType.Name, Asset.VoltageKV, EventType.Name,
-	                   Event.StartTime, Asset.ID                        
+                       Event.ID, Event.StartTime) Main LEFT JOIN
+                    [SEBrowser.EventSearchEventView] ON Main.EventID =  [SEBrowser.EventSearchEventView].EventID LEFT JOIN    
+                    [SEBrowser.EventSearchWorstDisturbanceView] ON [SEBrowser.EventSearchWorstDisturbanceView].DisturbanceID = Main.WorstDisturbanceID
                 ";
 
                 DataTable table = connection.RetrieveData(query, dateTime);

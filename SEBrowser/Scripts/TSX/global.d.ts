@@ -60,7 +60,7 @@ export namespace Redux {
         SearchText?: string
     }
 
-    interface EventSearchState extends Redux.State<OpenXDA.Event> {
+    interface EventSearchState extends Redux.State<any> {
         TimeRange: SEBrowser.IReportTimeFilter,
         EventType: SEBrowser.IEventTypeFilters,
         EventCharacteristic: SEBrowser.IEventCharacteristicFilters,
@@ -90,8 +90,6 @@ export namespace SEBrowser {
 }
 
 export namespace OpenXDA {
-    interface Event { EventID: number, FileStartTime: string, MeterName: string, AssetName: string, AssetType: AssetTypeName, VoltageClass: string, BreakerOperation: boolean, DurationSeconds:number, PerUnitMagnitude: number, EventType: string }
-
     type AssetTypeName = 'Line' | 'Breaker' | 'Transformer' | 'CapacitorBank' | 'Bus';
     type EventTypeName = 'Fault' | 'RecloseIntoFault' | 'BreakerOpen' | 'Interruption' | 'Sag' | 'Swell' | 'Transient' | 'Other' | 'Test' | 'Breaker' | 'Snapshot';
     interface Asset { ID: number, AssetKey: string, AssetName: string, AssetType: string, VoltageKV: number, Meters: number, Locations: string }

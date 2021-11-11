@@ -260,7 +260,7 @@ export const SelectQueryParam = createSelector(
 // #endregion
 
 // #region [ Async Functions ]
-function GetEventSearchs(params): JQuery.jqXHR<OpenXDA.Event[]> {
+function GetEventSearchs(params): JQuery.jqXHR<any[]> {
     return ajax({
         type: "POST",
         url: `${homePath}api/OpenXDA/GetEventSearchData`,

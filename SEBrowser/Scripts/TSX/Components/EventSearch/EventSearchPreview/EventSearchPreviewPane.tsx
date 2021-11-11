@@ -53,7 +53,7 @@ export default function EventPreviewPane(props: { EventID: number, InitialTab?: 
 
     const [settings, setSettings] = React.useState<SEBrowser.EventPreviewPaneSetting[]>([]);
     const [tab, setTab] = React.useState<'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All'>(props.InitialTab == null ? 'Waveform' : props.InitialTab);
-    const event: OpenXDA.Event = useSelector((state: Redux.StoreState) => SelectEventSearchByID(state,props.EventID));
+    const event: any = useSelector((state: Redux.StoreState) => SelectEventSearchByID(state,props.EventID));
     React.useEffect(() => {
         GetSettings();
     }, []);
