@@ -58,42 +58,6 @@ namespace SEBrowser.Controllers
             }
         }
 
-        [Route("MagDurCurves"), HttpGet]
-        public IHttpActionResult GetMagDurCurves()
-        {
-            try
-            {
-                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
-                {
-
-                    return Ok(connection.RetrieveData(@"
-                    SELECT
-	                    MagDurCurve.ID,
-	                    MagDurCurve.Name,
-	                    MagDurCurve.Visible,
-	                    MagDurCurve.Color,
-                        MagDurCurve.XHigh,
-                        MagDurCurve.XLow,
-                        MagDurCurve.YHigh,
-                        MagDurcurve.YLow,
-	                    MagDurCurvePoint.PerUnitMagnitude,
-	                    MagDurCurvePoint.DurationSeconds,
-	                    MagDurCurvePoint.LoadOrder
-                    FROM
-	                    MagDurCurve JOIN
-	                    MagDurCurvePoint ON MagDurCurve.ID = MagDurCurvePoint.VoltageCurveID       
-                    ORDER BY
-	                    MagDurCurve.ID, MagDurCurvePoint.LoadOrder
-
-                "));
-                }
-            }
-            catch (Exception ex)
-            {
-                return InternalServerError(ex);
-            }
-        }
-
         #endregion
 
     }
