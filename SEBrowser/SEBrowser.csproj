@@ -285,6 +285,9 @@
     <Content Include="Scripts\Lib\bootstrap4-datetimepicker.min.js" />
     <Content Include="Scripts\Lib\d3.v4.min.js" />
     <Content Include="Scripts\Lib\react-router-dom.min.js" />
+    <Content Include="Scripts\SEBrowser.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Shared\Content\Readme.txt" />
     <Content Include="Shared\Readme.txt" />
     <Content Include="Shared\Scripts\flot\LICENSE.txt" />
@@ -363,46 +366,45 @@
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\CapBankReport\CapBankReport.tsx" />
+    <None Include="Scripts\TSX\Components\CapBankReport\CapBankReport.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\CapBankReport\CapBankReportNavBar.tsx" />
+    <None Include="Scripts\TSX\Components\CapBankReport\CapBankReportNavBar.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\CapBankReport\CapBankReportPane.tsx" />
+    <None Include="Scripts\TSX\Components\CapBankReport\CapBankReportPane.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\Modal.tsx" />
+    <None Include="Scripts\TSX\Components\Modal.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\ESRIMap.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\FaultInfo.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\Lightning.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\LSC.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\PQWeb.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\SIDA.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\SOE.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\StructureInfo.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchRelayPerformance.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchAssetFaultSegments.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchAssetHistory.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchAssetVoltageDisturbances.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchBreakerPerformance.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchCapBankAnalyticOverview.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchCorrelatedSags.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchEsriMap.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchFileInfo.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchNoteWindow.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchOpenSEE.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewD3Chart.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewD3ChartAxis.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewPane.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\LineParameters.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\ESRIMap.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\FaultInfo.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\Lightning.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\LSC.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\PQWeb.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\SIDA.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\SOE.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\StructureInfo.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchRelayPerformance.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchAssetFaultSegments.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchAssetHistory.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchAssetVoltageDisturbances.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchBreakerPerformance.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchCapBankAnalyticOverview.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchCorrelatedSags.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchEsriMap.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchFileInfo.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchNoteWindow.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchOpenSEE.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewD3Chart.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewD3ChartAxis.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewPane.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\LineParameters.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchbarFilterModal.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
-    <Content Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchbarFilterButton.tsx" />
+    <None Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Store.ts" />
   </ItemGroup>
   <PropertyGroup>
