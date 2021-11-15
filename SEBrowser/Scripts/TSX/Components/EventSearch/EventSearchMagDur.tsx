@@ -189,8 +189,8 @@ const MagDurChart = (props: IProps) => {
             .attr('r', 5)
             .style('cursor', 'pointer')
             .attr('fill', d=> d.EventID === props.EventID ? 'green': 'blue')
-            .attr('cx', d => x(d.DurationSeconds))
-            .attr('cy', d => y(d.PerUnitMagnitude))
+            .attr('cx', d => x(d.MagDurDuration))
+            .attr('cy', d => y(d.MagDurMagnitude))
             .on('click', d => {
                 tooltip.transition()
                     .duration(500)
@@ -207,12 +207,12 @@ const MagDurChart = (props: IProps) => {
                     .style("top", (d3.event.offsetY - 75) + "px")
                     .html(`
                     <table class=''>
-                    <tr><td>Meter</td><td>${d.MeterName}</td></tr>
-                    <tr><td>Asset</td><td>${d.AssetName}</td></tr>
-                    <tr><td>Start Time</td><td>${d.FileStartTime}</td></tr>
-                    <tr><td>Event Type</td><td>${d.EventType}</td></tr>
-                    <tr><td>Magnitude</td><td>${d.PerUnitMagnitude.toFixed(2)}</td></tr>
-                    <tr><td>Duration</td><td>${d.DurationSeconds.toFixed(2)}</td></tr>
+                    <tr><td>Meter</td><td>${d['Meter']}</td></tr>
+                    <tr><td>Asset</td><td>${d['Asset']}</td></tr>
+                    <tr><td>Start Time</td><td>${d.Time}</td></tr>
+                    <tr><td>Event Type</td><td>${d['Event Type']}</td></tr>
+                    <tr><td>Magnitude</td><td>${d.MagDurMagnitude.toFixed(2)}</td></tr>
+                    <tr><td>Duration</td><td>${d.MagDurDuration.toFixed(2)}</td></tr>
                     </table>   
                 `)
                     ;
@@ -240,7 +240,7 @@ const MagDurChart = (props: IProps) => {
             yAxis.call(d3.axisLeft(updatedY).tickSize(-(svgWidth)));
             svg.selectAll('line').style("stroke", "lightgrey").style("stroke-opacity", 0.8).style("shape-rendering", "crispEdges").style("z-index", "0")
 
-            circles.attr('cx', d => updatedX(d.DurationSeconds)).attr('cy', d => updatedY(d.PerUnitMagnitude));
+            circles.attr('cx', d => updatedX(d.MagDurDuration)).attr('cy', d => updatedY(d.MagDurMagnitude));
             const upLineFunc = d3.line<[number, number]>().x(xd => updatedX(xd[0])).y(yd => updatedY(yd[1]));
             lines.attr('d', d => upLineFunc(d));
         })
@@ -253,7 +253,7 @@ const MagDurChart = (props: IProps) => {
     return (
         <div ref={chart} style={{ height: props.Height, width: props.Width }}>
             <div style={{ textAlign: 'center' }}>
-                {currentCurve == null ? null : magDurCurves.map(curve => <div className="form-check form-check-inline">
+                {currentCurve == null ? null : magDurCurves.map(curve => <div key={curve.ID} className="form-check form-check-inline">
                     <input className="form-check-input" type="radio" value={curve.ID} checked={curve.ID == currentCurve.ID} onChange={(evt) => setCurrentCurve(curve)} />
                     <label className="form-check-label">{curve.Name}</label>
                 </div> )}             

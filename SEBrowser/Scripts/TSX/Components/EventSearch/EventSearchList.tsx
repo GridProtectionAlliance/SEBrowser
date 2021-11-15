@@ -73,7 +73,7 @@ export default function EventSearchList(props: IProps) {
         if (data.length == 0)
             return;
 
-        flds = Object.keys(data[0]).filter(item => item != "Time" && item != "DisturbanceID" && item != "EventID").sort();
+        flds = Object.keys(data[0]).filter(item => item != "Time" && item != "DisturbanceID" && item != "EventID" && item != 'MagDurDuration' && item != 'MagDurMagnitude').sort();
 
         
         if (flds.length != cols.length)
