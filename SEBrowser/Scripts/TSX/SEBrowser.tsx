@@ -26,7 +26,7 @@ import store from './Store';
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Route, NavLink } from 'react-router-dom';
+import { BrowserRouter as Router, Route, NavLink, Switch, Redirect } from 'react-router-dom';
 import About from './Components/About';
 import MeterActivity from './Components/MeterActivity';
 import EventSearch from './Components/EventSearch/EventSearch';
@@ -59,12 +59,12 @@ const SEBrowserMainPage = (props: {}) => {
                     <div style={{ width: '100%', height: '100%', marginTop: 30}}>
                         <div className="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical" style={{ height: 'calc(100% - 240px)' }}>
                             {/*<NavLink activeClassName='nav-link active' className="nav-link" exact={true} to={controllerViewPath + "/"}>Home</NavLink>*/}
-                            <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/eventsearch"}>Event Search</NavLink>
-                            <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/meteractivity"}>Meter Activity</NavLink>
+                            <NavLink activeClassName='nav-link active' className="nav-link" to={homePath + "eventsearch"}>Event Search</NavLink>
+                            <NavLink activeClassName='nav-link active' className="nav-link" to={homePath + "meteractivity"}>Meter Activity</NavLink>
 
                             <hr style={{borderTop: '1px solid darkgrey', width: '75%'}}/>
                             <h6 style={{ width: '100%', textAlign: 'center' }}>Custom Reports</h6>
-                            {links.map(item => <NavLink activeClassName='nav-link active' className="nav-link" to={controllerViewPath + "/" + item.AltValue}>{item.Value}</NavLink>)}
+                            {links.map((item, i) => <NavLink key={i} activeClassName='nav-link active' className="nav-link" to={homePath +  item.AltValue}>{item.Value}</NavLink>)}
                         </div>
                         
                         <div style={{ width: '100%', textAlign: 'center' }}>
@@ -76,11 +76,14 @@ const SEBrowserMainPage = (props: {}) => {
                     </div>
                 </div>
                 <div style={{ width: 'calc(100% - 300px)', height: 'inherit', position: 'relative', float: 'right' }}>
-                    <Route path={controllerViewPath + "/eventsearch"} component={EventSearch} />
-                    <Route path={controllerViewPath + "/meteractivity"} component={MeterActivity} />
-                    <Route path={controllerViewPath + "/breakerreport"} component={BreakerReport} />
-                    <Route path={controllerViewPath + "/relayreport"} component={RelayReport} />
-                    <Route path={controllerViewPath + "/capbankreport"} component={CapBankReport} />
+                    <Switch >
+                        <Route path={homePath + "eventsearch"}><EventSearch /> </Route>
+                        <Route path={homePath + "meteractivity"}><MeterActivity /> </Route>
+                        <Route path={homePath + "breakerreport"}><BreakerReport /> </Route>
+                        <Route path={homePath + "relayreport"}><RelayReport /> </Route>
+                        <Route path={homePath + "capbankreport"}><CapBankReport /> </Route>
+                        <Route path={homePath}><Redirect to={homePath + "eventsearch"}/></Route>
+                    </Switch>
                 </div>
             </div>
     </Router>

@@ -38,8 +38,8 @@ namespace SEBrowser
 
             routes.MapRoute(
                 name: "Default",
-                url: "{controller}/{action}/{id}",
-                defaults: new { controller = "Home", action = "Home", id = UrlParameter.Optional }
+                url: "{page}/{id}",
+                defaults: new { controller = "Home", action = "Home", page = UrlParameter.Optional, id = UrlParameter.Optional }
             );
         }
     }

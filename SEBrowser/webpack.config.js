@@ -47,10 +47,6 @@ module.exports = env => {
             ]
         },
         externals: {
-            react: 'React',
-            'react-dom': 'ReactDOM',
-            d3: 'd3',
-            'react-router-dom': 'ReactRouterDOM'
         },
         optimization: {
             minimizer: [
