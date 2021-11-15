@@ -157,6 +157,7 @@ export const EventSearchsSlice = createSlice({
             state.EventCharacteristic.Phase.C = (action.payload.query['PhaseC'] ?? 'true') == 'true';
 
             state.isReset = computeReset(state);
+            state.Status = 'changed';
         },
         SetSearchText: (state, action) => {
             state.SearchText = action.payload;
@@ -277,7 +278,7 @@ function computeReset(state: Redux.EventSearchState): boolean {
         state.EventCharacteristic.transientMin == 0 && state.EventCharacteristic.transientMax == 0 &&
         state.EventCharacteristic.sagMin == 0 && state.EventCharacteristic.sagMax == 0 &&
         state.EventCharacteristic.swellMin == 0 && state.EventCharacteristic.swellMax == 0 &&
-        state.EventCharacteristic.Phase.A && state.EventCharacteristic.Phase.A && state.EventCharacteristic.Phase.A &&
+        state.EventCharacteristic.Phase.A && state.EventCharacteristic.Phase.B && state.EventCharacteristic.Phase.C &&
         state.EventCharacteristic.curveInside && state.EventCharacteristic.curveOutside;
 
     const types = state.EventType.breakerOps && state.EventType.faults && state.EventType.interruptions && state.EventType.others
