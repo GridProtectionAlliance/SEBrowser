@@ -258,6 +258,10 @@ export const SelectQueryParam = createSelector(
         GenerateQueryParams
     );
 
+export const SelectEventList = createSelector(
+    (state: Redux.StoreState) => state.EventSearch.Data,
+    (d) => d.map(i => i["EventID"]).join(",")
+);
 // #endregion
 
 // #region [ Async Functions ]

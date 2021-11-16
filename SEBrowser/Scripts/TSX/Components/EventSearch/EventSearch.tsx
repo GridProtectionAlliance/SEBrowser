@@ -32,7 +32,7 @@ import EventSearchListedEventsNoteWindow from './EventSearchListedEventsNoteWind
 import queryString from 'querystring';
 import EventSearchMagDur from './EventSearchMagDur';
 import { useDispatch, useSelector } from 'react-redux';
-import { ProcessQuery, SelectQueryParam, SelectSearchText, SetSearchText } from './EventSearchSlice';
+import { ProcessQuery, SelectEventList, SelectQueryParam, SelectSearchText, SetSearchText } from './EventSearchSlice';
 import createHistory from "history/createBrowserHistory";
 
 interface IProps { }
@@ -50,6 +50,7 @@ const EventSearch = (props: IProps) => {
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
 
     const queryParam = useSelector(SelectQueryParam);
+    const evtList = useSelector(SelectEventList);
     const searchtext = useSelector(SelectSearchText);
 
     React.useEffect(() => {
@@ -75,6 +76,11 @@ const EventSearch = (props: IProps) => {
     React.useEffect(() => {
         localStorage.setItem('SEbrowser.EventSearch.ShowNav', showNav.toString())
     }, [showNav])
+
+    React.useEffect(() => {
+        localStorage.setItem('SEbrowser.EventSearch.EventIDs', evtList)
+    }, [evtList])
+
 
     function getShowNav(): boolean {
         if (localStorage.hasOwnProperty('SEbrowser.EventSearch.ShowNav'))
