@@ -31,7 +31,7 @@ namespace SEBrowser.Controllers
     [RoutePrefix("api/SIDA")]
     public class SIDAQueryController : ApiController
     {
-        const string SettingsCategory = "dbOpenXDA";
+        const string SettingsCategory = "systemSettings";
 
         [Route("{eventID:int}"), HttpGet]
         public IHttpActionResult Get(int eventID) {

@@ -31,7 +31,7 @@ namespace SEBrowser.Controllers
     [RoutePrefix("api/LSC")]
     public class LSCQueryController : ApiController
     {
-        const string SettingsCategory = "dbOpenXDA";
+        const string SettingsCategory = "systemSettings";
 
         [Route("{eventID:int}"), HttpGet]
         public IHttpActionResult Get(int eventID) {

@@ -108,7 +108,7 @@ namespace PQDashboard.Controllers.BreakerReport
         [Route("GetSubstationData"), HttpGet]
         public DataTable GetSubstationData()
         {
-            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
             {
                 
                 
@@ -146,7 +146,7 @@ namespace PQDashboard.Controllers.BreakerReport
             Dictionary<string, string> query = Request.QueryParameters();
             int locationID = int.Parse(query["locationID"]);
 
-            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
             {
                 DataTable table = new DataTable();
 
@@ -181,7 +181,7 @@ namespace PQDashboard.Controllers.BreakerReport
             Dictionary<string, string> query = Request.QueryParameters();
             int lineID = int.Parse(query["lineID"]);
 
-            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
             {
                 DataTable table = new DataTable();
 
@@ -214,7 +214,7 @@ namespace PQDashboard.Controllers.BreakerReport
 
             string timeRestriction = $"TripInitiate Between DATEADD({timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}')";
 
-            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
             {
                 if (channelID > 0)
                 {

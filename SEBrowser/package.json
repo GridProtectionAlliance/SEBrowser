@@ -23,6 +23,7 @@
     "@gpa-gemstone/react-graph": "1.0.1",
     "@gpa-gemstone/react-interactive": "1.0.27",
     "@gpa-gemstone/react-table": "1.2.4",
+    "@gpa-gemstone/react-forms": "1.1.15",
     "@reduxjs/toolkit": "1.6.0",
     "@types/d3": "^4.13.2",
     "@types/eonasdan-bootstrap-datetimepicker": "4.17.26",

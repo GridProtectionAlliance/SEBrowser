@@ -38,7 +38,7 @@ namespace SEBrowser.Controllers
             try
             {
                 using(AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
-                using(AdoDataConnection xdaConnection = new AdoDataConnection("dbOpenXDA"))
+                using(AdoDataConnection xdaConnection = new AdoDataConnection("systemSettings"))
                 {
 
                     DateTime eventTime = xdaConnection.ExecuteScalar<DateTime>("SELECT StartTime FROM Event WHERE ID = {0}", eventID);

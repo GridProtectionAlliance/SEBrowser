@@ -46,7 +46,7 @@ namespace SEBrowser.Controllers.OpenXDA
     [RoutePrefix("api/OpenXDA/FaultInfo")]
     public class FaultInfoController : ApiController
     {
-        const string SettingsCategory = "dbOpenXDA";
+        const string SettingsCategory = "systemSettings";
 
         [Route("{eventID:int}"), HttpGet]
         public IHttpActionResult Get(int eventID) {
