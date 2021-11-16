@@ -22,192 +22,266 @@
 //******************************************************************************************************
 
 import React from 'react';
-import SEBrowserService from './../../../TS/Services/SEBrowser';
-import { orderBy, filter, clone } from 'lodash';
-import { OpenXDA } from '../../global';
-import moment from 'moment';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { SelectEventSearchBySearchText } from './EventSearchSlice';
+import { LoadingScreen, Modal, ServerErrorIcon, ToolTip } from '@gpa-gemstone/react-interactive';
+import Table, { SelectTable } from '@gpa-gemstone/react-table';
+import { EventNoteSlice } from '../../Store';
+import { Application, OpenXDA } from '@gpa-gemstone/application-typings';
+import { EventNote } from './EventNoteSlice';
+import moment from 'moment';
+import { CrossMark } from '@gpa-gemstone/gpa-symbols';
+import { TextArea } from '@gpa-gemstone/react-forms';
 
-interface NoteMade { EventIds: Array<number>, Note: string, Timestamp: string, UserAccount: string }
 
-interface IState {
-    show: boolean,
-    note: string,
-    ids: Array<number>,
-    notesMade: Array<{EventIds: Array<number>, Note: string, Timestamp: string, UserAccount: string}>
+const EventSearchListedEventsNoteWindow: React.FC<{}> = () => {
+    const [show, setShow] = React.useState<boolean>(false);
+    const events = useSelector(SelectEventSearchBySearchText);
+    const selectedIDs = useSelector(EventNoteSlice.EventIDs);
+    const dispatch = useDispatch();
+
+    const [noteType, setNoteType] = React.useState<OpenXDA.Types.NoteType>({ ID: -1, Name: 'Event', ReferenceTableName: 'Event' });
+    const [noteTag, setNoteTag] = React.useState<OpenXDA.Types.NoteTag>({ ID: -1, Name: 'General' });
+    const [noteApp, setNoteApp] = React.useState<OpenXDA.Types.NoteApplication>({ ID: -1, Name: 'SEbrowser' });
+
+    const [note, setNote] = React.useState<EventNote>(CreateNewNote());
+
+
+    function CreateNewNote() {
+        const newNote: EventNote = {
+            ID: -1,
+            ReferenceTableID: -1,
+            NoteTagID: noteTag?.ID ?? -1,
+            NoteTypeID: noteType?.ID ?? -1,
+            NoteApplicationID: noteApp?.ID ?? -1,
+            Timestamp: '',
+            UserAccount: '',
+            Note: '',
+            IDs: selectedIDs.map(() => -1),
+            EventIDs: selectedIDs,
+            NumEvents: selectedIDs.length
+        }
+
+        return newNote;
+    }
+
+    React.useEffect(() => {
+        setNote(CreateNewNote());
+    }, [selectedIDs, noteType, noteTag, noteApp])
+
+    React.useEffect(() => {
+        let typeHandle = getNoteType();
+        return () => { if (typeHandle != null && typeHandle.abort != null) typeHandle.abort(); }
+    }, []);
+
+    React.useEffect(() => {
+        let tagHandle = getNoteTag();
+        return () => { if (tagHandle != null && tagHandle.abort != null) tagHandle.abort(); }
+    }, []);
+
+    React.useEffect(() => {
+        let appHandle = getNoteApp();
+        return () => { if (appHandle != null && appHandle.abort != null) appHandle.abort(); }
+    }, []);
+
+    React.useEffect(() => { })
+
+    function getNoteType(): JQuery.jqXHR<OpenXDA.Types.NoteType[]> {
+        let handle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/NoteType`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+
+        handle.done((d: OpenXDA.Types.NoteType[]) => {
+
+            let record = d.find(r => r.ReferenceTableName == 'Event')
+            setNoteType(record);
+        });
+
+        return handle;
+    }
+
+    function getNoteApp(): JQuery.jqXHR<OpenXDA.Types.NoteApplication[]> {
+        let handle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/NoteApp`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+
+        handle.done((d: OpenXDA.Types.NoteApplication[]) => {
+            let record = d.find(r => r.Name == "SEbrowser")
+            setNoteApp(record);
+        });
+
+        return handle;
+    }
+
+    function getNoteTag(): JQuery.jqXHR<OpenXDA.Types.NoteTag[]> {
+        let handle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/NoteTag`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+
+        handle.done((d: OpenXDA.Types.NoteTag[]) => {
+            let record = d.find(r => r.Name == "General")
+            setNoteTag(record);
+        });
+
+        return handle;
+    }
+
+    function ProcessWhitespace(txt: string | number): React.ReactNode {
+        if (txt == null)
+            return <>N/A</>
+        let lines = txt.toString().split("<br>");
+        return lines.map((item, index) => {
+            if (index == 0)
+                return <> {item} </>
+            return <> <br /> {item} </>
+        })
+    }
+
+    function handleAdd(d: EventNote) {
+        dispatch(EventNoteSlice.DBAction({ verb: 'POST', record: { ...d, UserAccount: undefined, Timestamp: moment().format('MM/DD/YYYY HH:mm') } }))
+        setNote(CreateNewNote());
+    }
+
+    return (
+        <div>
+            <button className="btn btn-primary" onClick={() => setShow(true)}>Add Notes</button>
+
+            <Modal Show={show} ShowX={true} Title={'Add Notes to an Event'} Size={'xlg'}
+                ShowCancel={true} CancelBtnClass={'btn-default'}
+                DisableCancel={note.Note === null || note.Note.length === 0}
+                DisableConfirm={note.Note === null || note.Note.length === 0 || selectedIDs.length == 0}
+                CancelText={'Clear'}
+                ConfirmText={'Add Note'}
+                CancelShowToolTip={(note.Note === null || note.Note.length === 0)}
+                ConfirmShowToolTip={(note.Note === null || note.Note.length === 0) || selectedIDs.length == 0}
+                CancelToolTipContent={<p>{CrossMark} The note field is already empty. </p>}
+                ConfirmToolTipContent={selectedIDs.length > 0 ? < p > {CrossMark} A note needs to be entered. </p> : <p> {CrossMark} At least 1 Event needs to be selected. </p>}
+                CallBack={(conf, isBtn) => {
+                    if (!isBtn)
+                        setShow(false);
+                    if (conf && isBtn)
+                        handleAdd(note);
+                    if (!confirm && isBtn)
+                        setNote((n) => ({ ...n, Note: '' }))
+                }}>
+
+                <div className="row">
+                    <div className="col-6">
+                        <SelectTable
+                            cols={[
+                                { field: "Time", key: "Time", label: "Time", content: (item, key, fld, style) => ProcessWhitespace(item[fld]) },
+                                { field: "Event Type", key: "Event Type", label: "Event Type" },
+                                { field: "Meter", key: "Meter", label: "Meter" },
+                                { field: "Asset", key: "Asset", label: "Asset" }                                
+                            ]}
+                            ascending={true}
+                            sortKey={'Time'}
+                            data={events}
+                            KeyField={'EventID'}
+                            onSelection={(d) => dispatch(EventNoteSlice.SetSelectedEvents(d.map(i => i["EventID"])))}
+                            theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                            tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 400 }}
+                            rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
+                        />
+                    </div>
+                    <div className="col-6">
+                        <EventNoteWindow note={note} setNote={(n) => setNote(n)} />
+                    </div>
+                </div> 
+            </Modal>
+        </div>
+    );
+    
 }
 
-const EventSearchListedEventsNoteWindow: React.FC < {} > = () => {
-    const [show, setShow] = React.useState<boolean>(false);
-    const [note, setNote] = React.useState<string>('');
-    const [notesmade, setNotesMade] = React.useState<NoteMade[]>([])
-    const [selectedIds, setSelectedIDs] = React.useState<number[]>([]);
-    const events = useSelector(SelectEventSearchBySearchText);
+interface IEvNoteProps { note: EventNote, setNote: (n:EventNote) => void }
+const EventNoteWindow = (props: IEvNoteProps) => {
+    const data: EventNote[] = useSelector(EventNoteSlice.Data)
+    const dataStatus: Application.Types.Status = useSelector(EventNoteSlice.Status)
+    const sortField: keyof OpenXDA.Types.Note = useSelector(EventNoteSlice.SortField)
+    const ascending: boolean = useSelector(EventNoteSlice.Ascending);
+
+    const selectedIDs = useSelector(EventNoteSlice.EventIDs);
 
 
-    var tableRows: Array<JSX.Element> = events.map((evt, index) => {
-        return (
-            <tr key={index} style={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}>
-                <td><input type='checkbox' checked={selectedIds.indexOf(evt.EventID) >= 0} value={evt.EventID} onChange={(e) => {
-                    var selected = $(e.target).prop('checked');
-                    var eventId = parseInt(e.target.value);
-                    var list = clone(selectedIds);
+    const dispatch = useDispatch();
 
-                    if (selected && !(list.indexOf(eventId) >= 0)) {
+    const h = window.innerHeight - 400;
 
-                        list.push(eventId);
-                        setSelectedIDs(list.sort())
-                    }
-                    else if (!selected && (list.indexOf(eventId) >= 0)) {
-                        list = list.filter(a => a != eventId);
-                        setSelectedIDs(list.sort())
-                    }
 
-                }} /></td>
-                <td><span>{moment(evt.FileStartTime).format('MM/DD/YYYY')}<br />{moment(evt.FileStartTime).format('HH:mm:ss.SSSSSSS')}</span></td>
-                <td>{evt.AssetName}</td>
-                <td>{evt.EventType}</td>
-            </tr>
-        );
-    });
+    React.useEffect(() => {
+        if (dataStatus === 'unintiated' || dataStatus === 'changed')
+            dispatch(EventNoteSlice.Fetch(selectedIDs));
+    }, [dataStatus]);
 
-    var madeNotes: Array<JSX.Element> = notesmade.map((noteMade, index) => {
-        return (
-            <tr key={index} style={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}>
-                <td>{noteMade.Note}</td>
-                <td><span>{moment(noteMade.Timestamp).format('MM/DD/YYYY')}<br />{moment(noteMade.Timestamp).format('HH:mm:ss.SSSSSSS')}</span></td>
-                <td>{noteMade.UserAccount}</td>
-                <td><button className="btn btn-sm" onClick={(e) => handleDelete(noteMade)}><span><i className="fa fa-times"></i></span></button></td>
-            </tr>
-            
-        )
-    });
+    if (dataStatus === "error")
+        return (<div style={{ width: '100%', height: '100%' }}>
+            <div style={{ height: '40px', margin: 'auto', marginTop: 'calc(50% - 20 px)' }}>
+                <ServerErrorIcon Show={true} Size={40} Label={'A Server Error Occurred. Please Reload the Application'} />
+            </div>
+        </div>)
 
-        return (
-            <div>
-                <button className="btn btn-primary form-control" onClick={() => setShow(true)} title="Click here to add a note to all events listed below ...">Add Notes</button>
-
-                <div className="modal fade show" style={{ display: (show ? 'block' : 'none') }} role="dialog">
-                    <div className="modal-dialog" style={{maxWidth: '75%'}} role="document">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h3 className="modal-title">Add notes for the following events.</h3>
-                                <button type="button" className="close" onClick={() => setShow(false)}>
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div className="modal-body" style={{maxHeight: 650, height: 650}}>
-                                <div style={{width: '50%', float: 'left', padding: 10}}>
-                                    <table className="table">
-                                        <thead style={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}>
-                                            <tr><td><input type='checkbox' checked={events.length == selectedIds.length} onChange={(e) => {
-                                                var selected = $(e.target).prop('checked');
-
-                                                if (selected) {
-                                                    setSelectedIDs(events.map(a => a.EventID).sort())
-                                                }
-                                                else if (!selected) {
-                                                    setSelectedIDs([]);
-                                                }
-
-                                            }} /></td><td>Time</td><td>Asset</td><td>Type</td></tr>
-                                        </thead>
-                                        <tbody style={{ display: 'block', overflowY: 'scroll', height: 580, maxHeight: 580 }}>
-                                            {tableRows}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div style={{ width: '50%', float: 'right', padding: 10 }}>
-                                    <table className="table">
-                                        <thead style={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}>
-                                            <tr><td>Note</td><td>Time</td><td>User</td><td></td></tr>
-                                        </thead>
-                                        <tbody style={{ display: 'block', overflowY: 'scroll', height: 437, maxHeight: 437}}>
-                                            {madeNotes}
-                                        </tbody>
-                                    </table>
-                                    <textarea className="form-control" value={note} rows={4} onChange={(e) => setNote( (e.target as any).value )}></textarea>
-                                </div>
-                            </div>
-                            <div className="modal-footer">
-                                <button className="btn btn-primary" onClick={() => handleAdd()} disabled={note.length == 0}>Add Note</button>
-                                <button className="btn btn-secondary" onClick={() => setShow(false)}>Close</button>
-                            </div>
-                        </div>
-                    </div>
+    return <div className="card" style={{ marginBottom: 10, maxHeight: h, width: '100%' }}>
+        <LoadingScreen Show={dataStatus === 'loading'} />
+        <div className="card-header">
+            <div className="row">
+                <div className="col">
+                    <h4>{'Notes:'}</h4>
                 </div>
             </div>
-        );
-    
+        </div>
+        <div className="card-body" style={{ maxHeight: h - 100, overflowY: 'auto', width: '100%' }}>
+            <div>
+                <Table<EventNote>
+                    cols={[
+                        { key: 'Note', field: 'Note', label: 'Note', headerStyle: { width: '50%' }, rowStyle: { width: '50%' } },
+                        { key: 'Timestamp', field: 'Timestamp', label: 'Time', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' }, content: (item) => moment.utc(item.Timestamp).format("MM/DD/YYYY HH:mm") },
+                        { key: 'UserAccount', field: 'UserAccount', label: 'User', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                        { key: 'Num', field: 'NumEvents', label: 'Num. of Events', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' }, content: (item) => item.IDs.length },
+                    ]}
+                    tableClass="table table-hover"
+                    data={data}
+                    sortKey={sortField}
+                    ascending={ascending}
+                    onSort={(d) => {
+                        if (d.colField === undefined)
+                            return;
+                        if (d.colField === sortField)
+                            dispatch(EventNoteSlice.Sort({ SortField: sortField, Ascending: ascending }))
+                        else
+                            dispatch(EventNoteSlice.Sort({ SortField: d.colField, Ascending: true }))
 
-    
-
-    function handleAdd() {
-        this.addMultiNote(this.state.note, this.state.ids).done(notesMade => {
-            var list = clone(this.state.notesMade);
-            list.push({ Note: notesMade[0].Note, Timestamp: notesMade[0].Timestamp, UserAccount: notesMade[0].UserAccount, EventIds: notesMade.map(a => a.EventID)});
-            this.setState({ note: '', notesMade: list });
-        });
-    }
-
-    function handleDelete(noteMade) {
-        this.deleteMultiNote(noteMade.Note, noteMade.UserAccount, noteMade.Timestamp);
-        var list = clone(this.state.notesMade);
-        list = list.filter(note => note != noteMade);
-        this.setState({notesMade: list});
-    }
-
-    function handleEdit(d) {
-        this.setState({ note: d.Note });
-        this.deleteNote(d).done(() => this.createTableRows());
-    }
-
-    function addMultiNote(note: string, eventIDs: Array<number>): JQuery.jqXHR {
-        return $.ajax({
-            type: "POST",
-            url: `${homePath}api/OpenXDA/Note/Multi`,
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify({ note: note, eventIDs: eventIDs }),
-            cache: false,
-            async: true,
-            processData: false,
-            error: function (jqXhr, textStatus, errorThrown) {
-                console.log(errorThrown);
-            }
-        });
-    }
-
-    function deleteNote(note): JQuery.jqXHR {
-        return $.ajax({
-            type: "DELETE",
-            url: `${homePath}api/OpenXDA/Note`,
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(note),
-            cache: false,
-            async: true,
-            processData: false,
-            error: function (jqXhr, textStatus, errorThrown) {
-                console.log(errorThrown);
-            }
-        });
-    }
-
-    function deleteMultiNote(Note: string, UserAccount: string, Timestamp: string): JQuery.jqXHR {
-        return $.ajax({
-            type: "DELETE",
-            url: `${homePath}api/OpenXDA/Note`,
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify({ Note: Note, UserAccount: UserAccount, Timestamp: Timestamp }),
-            cache: false,
-            async: true,
-            processData: false,
-            error: function (jqXhr, textStatus, errorThrown) {
-                console.log(errorThrown);
-            }
-        });
-    }
-
+                    }}
+                    onClick={() => { return; }}
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 300, width: '100%' }}
+                    rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                    selected={() => false}
+                />
+            </div>
+            <div className="row">
+                <div className={'col-12'}>
+                    <TextArea<EventNote> Record={props.note} Rows={4} Field={'Note'} Setter={(n) => props.setNote(n)} Valid={() => props.note.Note != null && props.note.Note.length > 0} Label={''} />
+                </div>
+            </div>
+        </div>
+        <div className="card-footer">
+        </div>
+    </div>
 }
-
 export default EventSearchListedEventsNoteWindow

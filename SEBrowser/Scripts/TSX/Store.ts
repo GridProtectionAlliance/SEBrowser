@@ -23,6 +23,7 @@
 
 import { GenericSlice } from '@gpa-gemstone/react-interactive';
 import { configureStore } from '@reduxjs/toolkit';
+import NoteSlice from './Components/EventSearch/EventNoteSlice';
 import EventSearchReducer from './Components/EventSearch/EventSearchSlice';
 import { SEBrowser, OpenXDA } from './global';
 
@@ -33,7 +34,7 @@ export const MeterSlice = new GenericSlice<OpenXDA.Meter>('Meter', `${homePath}a
 export const AssetSlice = new GenericSlice<OpenXDA.Asset>('Asset', `${homePath}api/openXDA/Asset`, 'AssetName');
 export const AssetGroupSlice = new GenericSlice<OpenXDA.AssetGroup>('AssetGroup', `${homePath}api/openXDA/AssetGroup`, 'Name');
 export const LocationSlice = new GenericSlice<OpenXDA.Location>('Location', `${homePath}api/openXDA/Location`, 'Name');
-
+export const EventNoteSlice = new NoteSlice();
 
 const reducer = {
     EventSearch: EventSearchReducer,
@@ -41,7 +42,8 @@ const reducer = {
     Meter: MeterSlice.Reducer,
     Asset: AssetSlice.Reducer,
     AssetGroup: AssetGroupSlice.Reducer,
-    Location: LocationSlice.Reducer
+    Location: LocationSlice.Reducer,
+    EventNote: EventNoteSlice.Reducer,
 }
 
 const store = configureStore({ reducer });

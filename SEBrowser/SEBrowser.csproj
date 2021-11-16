@@ -403,6 +403,7 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\LineParameters.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchbarFilterModal.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventNoteSlice.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
     <None Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
     <Content Include="Scripts\TSX\Components\DERAnalysisReport\RelayPerformanceTrend.tsx" />
