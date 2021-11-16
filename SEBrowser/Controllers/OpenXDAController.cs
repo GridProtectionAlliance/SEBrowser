@@ -47,7 +47,7 @@ namespace SEBrowser.Controllers
     public class OpenXDAController: ApiController
     {
         #region [ Members ]
-        const string SettingsCategory = "dbOpenXDA";
+        const string SettingsCategory = "systemSettings";
         #endregion
         #region [ Constructors ]
         public OpenXDAController() : base() { }

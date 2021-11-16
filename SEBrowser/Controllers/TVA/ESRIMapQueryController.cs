@@ -36,7 +36,7 @@ namespace SEBrowser.Controllers
     [RoutePrefix("api/ESRIMap")]
     public class ESRIMapQueryController : ApiController
     {
-        const string SettingsCategory = "dbOpenXDA";
+        const string SettingsCategory = "systemSettings";
 
         [Route("NearestStructure/{station}/{line}"), HttpGet]
         public IHttpActionResult GetNearestStructrue(string station, string line, string mileage) {

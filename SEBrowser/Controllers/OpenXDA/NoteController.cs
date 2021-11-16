@@ -36,7 +36,7 @@ namespace SEBrowser.Controllers.OpenXDA
     [RoutePrefix("api/OpenXDA/Note")]
     public class OpenXDANoteController : ApiController
     {
-        const string SettingsCategory = "dbOpenXDA";
+        const string SettingsCategory = "systemSettings";
 
         [Route("{eventID:int}"), HttpGet]
         public DataTable Get(int eventID)

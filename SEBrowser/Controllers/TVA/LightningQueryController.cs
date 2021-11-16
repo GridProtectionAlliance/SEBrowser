@@ -36,7 +36,7 @@ namespace SEBrowser.Controllers
         public IHttpActionResult Get(int eventID) {
             try
             {
-                using (AdoDataConnection xdaConnection = new AdoDataConnection("dbOpenXDA"))
+                using (AdoDataConnection xdaConnection = new AdoDataConnection("systemSettings"))
                 using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
                 {
 

@@ -132,7 +132,7 @@ namespace PQDashboard.Controllers.CapBankReport
         [Route("GetSubstationData"), HttpGet]
         public DataTable GetSubstationData()
         {
-            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
             {
 
 
@@ -170,7 +170,7 @@ namespace PQDashboard.Controllers.CapBankReport
             Dictionary<string, string> query = Request.QueryParameters();
             int locationID = int.Parse(query["locationID"]);
 
-            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
             {
                 DataTable table = new DataTable();
 
@@ -227,7 +227,7 @@ namespace PQDashboard.Controllers.CapBankReport
                 bankNumRestriction = "(CBAnalyticResult.EnergizedBanks = -1 AND CBAnalyticResult.DeEnergizedBanks = -1)";
             }
 
-            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
             {
                 DataTable table = new DataTable();
 
@@ -273,7 +273,7 @@ namespace PQDashboard.Controllers.CapBankReport
         {
             try
             {
-                using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
                 {
                     connection.ExecuteNonQuery($"UPDATE CBAnalyticResult SET EnergizedBanks = {bank} WHERE ID = {id}");
                 }
@@ -349,7 +349,7 @@ namespace PQDashboard.Controllers.CapBankReport
             phaseColor.Add("BN", "#0029A3");
             phaseColor.Add("CN", "#007A29");
 
-            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
             {
                 
                 foreach (KeyValuePair<string, string> phase in phaseColor)
@@ -916,7 +916,7 @@ namespace PQDashboard.Controllers.CapBankReport
 
         private DataTable GettrendTable(string PhaseRestriction, string OtherRestriction, string CapBankRestriction, string NumRestriction, string timeRestriction)
         {
-            using (AdoDataConnection connection = new AdoDataConnection("dbOpenXDA"))
+            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
             {
                 List<string> restrictions = new List<string>();
 

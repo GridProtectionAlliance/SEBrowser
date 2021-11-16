@@ -47,7 +47,7 @@ namespace SEBrowser.Controllers
                     ID, Name, XHigh, XLow, YHigh, YLow, NULL AS UpperCurve, NULL AS LowerCurve,
                     REPLACE(REPLACE(RIGHT(Area.STAsText(), len(Area.STAsText()) - charindex('(', Area.STAsText())),')',''),'(','') AS Area
                     FROM StandardMagDurCurve")]
-    [SettingsCategory("dbOpenXDA")]
+    [SettingsCategory("systemSettings")]
     public class StandardMagDurCurve
     {
         [PrimaryKey]
