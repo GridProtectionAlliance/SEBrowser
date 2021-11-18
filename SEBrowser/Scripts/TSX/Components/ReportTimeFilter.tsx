@@ -280,51 +280,47 @@ const ReportTimeFilter = (props: IProps) => {
     return (
         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
             <legend className="w-auto" style={{ fontSize: 'large' }}>Time Window:</legend>
-            <div className="row">
-                <div className={"col-12"}>
-                    <form>
-                        <label style={{ width: '100%', position: 'relative', float: "left" }} >Date: </label>
-                        <div className="form-group" style={{ height: 30 }}>
-                            <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
-                                <input id="timePicker" className='form-control form-control-sm' value={props.filter.time} onChange={(e) => {
-                                    props.setFilter({ ...props.filter, time: (e.target as any).value });
-                                }} />
-                            </div>
-
-                            <div className='input-group date' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
-                                <input className='form-control form-control-sm' id='datePicker' value={props.filter.date} onChange={(e) => {
-                                    props.setFilter({ ...props.filter, date: (e.target as any).value });
-                                }} />
-                            </div>
-
+                <div className="">
+                    <label style={{ width: '100%', position: 'relative', float: "left" }} >Date: </label>
+                    <div className="form-group" style={{ height: 30 }}>
+                        <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
+                            <input id="timePicker" className='form-control form-control-sm' value={props.filter.time} onChange={(e) => {
+                                props.setFilter({ ...props.filter, time: (e.target as any).value });
+                            }} />
                         </div>
-                        <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
-                        <div className="form-group" style={{ height: 30 }}>
-                            <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
-                                <input className={'form-control form-control-sm'} onChange={(e) => {
-                                    props.setFilter({ ...props.filter, windowSize: (e.target as any).value });
-                                }} type="number" value={props.filter.windowSize} />
-                            </div>
-                            <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
-                                <select className={'form-control form-control-sm'} value={props.filter.timeWindowUnits} onChange={(e) => {
-                                props.setFilter({ ...props.filter, timeWindowUnits: (e.target as any).value });
-                                }} >
-                                    <option value="7">Year</option>
-                                    <option value="6">Month</option>
-                                    <option value="5">Week</option>
-                                    <option value="4">Day</option>
-                                    <option value="3">Hour</option>
-                                    <option value="2">Minute</option>
-                                    <option value="1">Second</option>
-                                    <option value="0">Millisecond</option>
-                                </select>
-                            </div>
+
+                        <div className='input-group date' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
+                            <input className='form-control form-control-sm' id='datePicker' value={props.filter.date} onChange={(e) => {
+                                props.setFilter({ ...props.filter, date: (e.target as any).value });
+                            }} />
                         </div>
-                    </form>
-                </div>
-                </div>
+
+                    </div>
+                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
+                    <div className="form-group" style={{ height: 30 }}>
+                        <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
+                            <input className={'form-control form-control-sm'} onChange={(e) => {
+                                props.setFilter({ ...props.filter, windowSize: (e.target as any).value });
+                            }} type="number" value={props.filter.windowSize} />
+                        </div>
+                        <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
+                            <select className={'form-control form-control-sm'} value={props.filter.timeWindowUnits} onChange={(e) => {
+                            props.setFilter({ ...props.filter, timeWindowUnits: (e.target as any).value });
+                            }} >
+                                <option value="7">Year</option>
+                                <option value="6">Month</option>
+                                <option value="5">Week</option>
+                                <option value="4">Day</option>
+                                <option value="3">Hour</option>
+                                <option value="2">Minute</option>
+                                <option value="1">Second</option>
+                                <option value="0">Millisecond</option>
+                            </select>
+                        </div>
+                    </div>
+            </div>
             {props.showQuickSelect ?
-                <div className="row">
+                <div className="row" style={{width: '100%'}}>
                     
                         {AvailableQuickSelects.map((qs, i) => {
                             if (i % 3 !== 0)
@@ -332,14 +328,13 @@ const ReportTimeFilter = (props: IProps) => {
                             return (
                                 <div className={"col-3"} style={{ paddingLeft: (i %12 == 0 ? 15 : 0), paddingRight: (i % 12 == 9 ? 15 : 2), marginTop: 10 }}>
                                     <ul className="list-group" key={i}>
-                                        <li onClick={() => props.setFilter(AvailableQuickSelects[i].createFilter())}
-                                            className="item badge badge-secondary">{AvailableQuickSelects[i].label}</li>
-                                        {i +1 < AvailableQuickSelects.length ?
-                                            <li style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i+1].createFilter())}>
+                                        <li key={i} onClick={() => props.setFilter(AvailableQuickSelects[i].createFilter())} className="item badge badge-secondary">{AvailableQuickSelects[i].label}</li>
+                                        {i + 1 < AvailableQuickSelects.length ?
+                                            <li key={i+1} style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i+1].createFilter())}>
                                             {AvailableQuickSelects[i+ 1].label}
                                         </li> : null}
-                                        {i+ 2 < AvailableQuickSelects.length ?
-                                            <li style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i+ 2].createFilter())}>
+                                        {i + 2 < AvailableQuickSelects.length ?
+                                            <li key={i+2}  style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i+ 2].createFilter())}>
                                             {AvailableQuickSelects[i+ 2].label}
                                         </li> : null}
                                     </ul>

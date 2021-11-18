@@ -33,6 +33,8 @@ import EventSearch from './Components/EventSearch/EventSearch';
 import BreakerReport from './Components/BreakerReport/BreakerReport';
 import RelayReport from './Components/RelayReport/RelayReport';
 import CapBankReport from './Components/CapBankReport/CapBankReport';
+import DERAnalysisReport from './Components/DERAnalysisReport/DERAnalysisReport';
+
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 
 const SEBrowserMainPage = (props: {}) => {
@@ -82,6 +84,8 @@ const SEBrowserMainPage = (props: {}) => {
                         <Route path={homePath + "breakerreport"}><BreakerReport /> </Route>
                         <Route path={homePath + "relayreport"}><RelayReport /> </Route>
                         <Route path={homePath + "capbankreport"}><CapBankReport /> </Route>
+                        <Route path={homePath + "derreport"}><DERAnalysisReport /> </Route>
+
                         <Route path={homePath}><Redirect to={homePath + "eventsearch"}/></Route>
                     </Switch>
                 </div>

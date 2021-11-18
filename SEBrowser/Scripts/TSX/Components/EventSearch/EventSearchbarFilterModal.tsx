@@ -53,15 +53,15 @@ function EventSearchbarFilterModal<T extends S>(props: IProps<T>) {
     const [filterableList, setFilterableList] = React.useState<Search.IField<T>[]>(getDefaultFilterList() as Search.IField<T>[]);
     const [standardSearch, setStandardSearch] = React.useState<Search.IField<T>>({ label: 'Name', key: 'Name', type: 'string', isPivotField: false });
     const [tableColumns, settableColumns] = React.useState<Column<T>[]>([{ key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } }]);
-    const meterList = useSelector(MeterSlice.SearchResults);
-    const assetList = useSelector(AssetSlice.SearchResults);
-    const assetGroupList = useSelector(AssetGroupSlice.SearchResults);
-    const locationList = useSelector(LocationSlice.SearchResults);
+    const meterList = useSelector(MeterSlice.SearchResults) as any[];
+    const assetList = useSelector(AssetSlice.SearchResults) as any[];
+    const assetGroupList = useSelector(AssetGroupSlice.SearchResults) as any[];
+    const locationList = useSelector(LocationSlice.SearchResults) as any[];
 
-    const meterFilters = useSelector(MeterSlice.SearchFilters);
-    const assetFilters = useSelector(AssetSlice.SearchFilters);
-    const assetGroupFilters = useSelector(AssetGroupSlice.SearchFilters);
-    const locationFilters = useSelector(LocationSlice.SearchFilters);
+    const meterFilters = useSelector(MeterSlice.SearchFilters) as Search.IFilter<any>[];
+    const assetFilters = useSelector(AssetSlice.SearchFilters) as Search.IFilter<any>[];
+    const assetGroupFilters = useSelector(AssetGroupSlice.SearchFilters) as Search.IFilter<any>[];
+    const locationFilters = useSelector(LocationSlice.SearchFilters) as Search.IFilter<any>[];
 
     const [asc, setAsc] = React.useState<boolean>(false);
     const [sortKey, setSortKey] = React.useState<keyof T>(null);

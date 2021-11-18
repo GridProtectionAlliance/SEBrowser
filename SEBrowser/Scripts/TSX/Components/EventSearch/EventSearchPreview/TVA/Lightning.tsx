@@ -125,7 +125,7 @@ const TVALightningChart = (props: { EventID: number }) => {
         //select('#xaxis').call(axisBottom(x).ticks(15).tickFormat((domainValue: number, index: number) => {
         //    return moment.unix(domainValue).format('MM/DD');
         //})).call(g => g.select(".domain").remove());
-        select('#yaxis').call(axisLeft(y).ticks(5)).call(g => g.select(".domain").remove());
+        select('#yaxis').call(axisLeft(y).ticks(5) as any).call(g => g.select(".domain").remove());
 
     }
 
