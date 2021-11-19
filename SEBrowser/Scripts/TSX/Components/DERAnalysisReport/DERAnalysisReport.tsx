@@ -30,7 +30,6 @@ import * as queryString from 'querystring';
 import moment from 'moment';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { orderBy } from 'lodash';
-import { scaleLinear, scaleTime, timeParse, line, select} from 'd3';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
 
 const momentDateFormat = "MM/DD/YYYY";

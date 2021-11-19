@@ -422,10 +422,7 @@
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventNoteSlice.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
     <None Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
-    <Content Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisTrend.tsx" />
     <Content Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisReport.tsx" />
-    <Content Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisNavBar.tsx" />
-    <Content Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisPane.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Store.ts" />
   </ItemGroup>
   <PropertyGroup>
