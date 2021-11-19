@@ -241,7 +241,7 @@ const MagDurChart = (props: IProps) => {
             svg.selectAll('line').style("stroke", "lightgrey").style("stroke-opacity", 0.8).style("shape-rendering", "crispEdges").style("z-index", "0")
 
             circles.attr('cx', d => updatedX(d.DurationSeconds)).attr('cy', d => updatedY(d.PerUnitMagnitude));
-            const upLineFunc = d3.line<[number, number]>().x(xd => updatedX(xd[0])).y(yd => updatedY(yd[1]));
+            const upLineFunc = line<[number, number]>().x(xd => updatedX(xd[0])).y(yd => updatedY(yd[1]));
             lines.attr('d', d => upLineFunc(d));
         })
 

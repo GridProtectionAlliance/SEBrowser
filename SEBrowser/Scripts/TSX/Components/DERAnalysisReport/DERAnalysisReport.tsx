@@ -52,7 +52,7 @@ interface DERAnalyticResult {
 
 function DERAnalysisReport() {
     let history = createHistory();
-    let query = queryString.parse(history['location'].search);
+    let query = queryString.decode(history['location'].search.slice(1));
 
     const [date, setDate] = React.useState<string>(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat));
     const [time, setTime] = React.useState<string>(query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat));
@@ -144,7 +144,7 @@ function DERAnalysisReport() {
             if (handle1.abort != undefined) handle1.abort();
 
         };
-    }, [ders, time, windowSize, timeWindowUnits, regulations]);
+    }, [ders, date,  time, windowSize, timeWindowUnits, regulations]);
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
@@ -325,7 +325,7 @@ const Graph = (props: DERAnalyticResult) => {
                 useMetricFactors={false}
                 onDataInspect={(tdomain) => ''}>
                 <Line highlightHover={false} showPoints={false} color={'red'} data={[[data[0][0], props.Threshold], [data[data.length - 1][0], props.Threshold]]} legend={'Threshold'} lineStyle='-' />
-                <Line highlightHover={false} showPoints={false} color={'darkblue'} data={data} legend={'data'} lineStyle='-' />
+                <Line highlightHover={true} showPoints={false} color={'darkblue'} data={data} legend={'data'} lineStyle='-' />
             </Plot>
         )
 
