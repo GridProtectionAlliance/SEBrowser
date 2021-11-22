@@ -350,7 +350,7 @@
     <None Include="packages.config" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Web.config" />
-    <Content Include="tsconfig.json" />
+    <None Include="tsconfig.json" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
   </ItemGroup>
   <ItemGroup>
@@ -418,11 +418,11 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewPane.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\LineParameters.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchbarFilterModal.tsx" />
+    <None Include="Scripts\TSX\Components\EventSearch\EventSearchbarFilterModal.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventNoteSlice.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
     <None Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
-    <Content Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisReport.tsx" />
+    <None Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisReport.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Store.ts" />
   </ItemGroup>
   <PropertyGroup>
