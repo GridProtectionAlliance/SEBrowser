@@ -200,6 +200,7 @@ function DERAnalysisReport() {
                                 setTimeWindowUnits(f.timeWindowUnits);
                                 setWindowSize(f.windowSize);
                             }} showQuickSelect={false} />
+                            <button style={{ position: 'absolute', top: 30, right: 30 }} data-toggle="modal" data-target="#epriModal">⚠</button>
                         </li>
 
 
@@ -243,7 +244,7 @@ function DERAnalysisReport() {
             </div>
 
             <div className="modal" id="dataModal">
-                <div className="modal-dialog modal-lg" style={{maxWidth: '75%'}}>
+                <div className="modal-dialog modal-lg" style={{ maxWidth: '75%' }}>
                     <div className="modal-content">
 
                         <div className="modal-header">
@@ -253,7 +254,7 @@ function DERAnalysisReport() {
                         <div className="modal-body">
                             <div><h6>Regulation: {selectedData?.Regulation ?? ''}</h6></div>
                             <div><h6>Parameter: {selectedData?.Parameter ?? ''}</h6></div>
-                            <Graph {...selectedData}/>
+                            <Graph {...selectedData} />
                         </div>
                         <div className="modal-footer">
                             <button type="button" className="btn btn-danger" data-dismiss="modal">Close</button>
@@ -262,6 +263,41 @@ function DERAnalysisReport() {
                     </div>
                 </div>
             </div>
+
+            <div className="modal" id="epriModal">
+                <div className="modal-dialog modal-lg">
+                    <div className="modal-content">
+
+                        <div className="modal-header">
+                            <button type="button" className="close" data-dismiss="modal">&times;</button>
+                        </div>
+                        <div className="modal-body">
+                            <img src={`${homePath}Images/EPRILogo.jpeg` }/>
+                            <div>Software Title DER Operation Version #0</div>
+                            <div>Electric Power Research Institute (EPRI)</div>
+                            <div>3420 Hillview Ave.</div>
+                            <div>Palo Alto, CA 94304</div>
+                            <br/>
+                            <div>Copyright © 2021 Electric Power Research Institute, Inc. All rights reserved.</div>
+                            <br />
+                            <div>As a user of this EPRI preproduction software, you accept and acknowledge that:</div>
+                            <ul>
+                                <li>This software is a preproduction version which may have problems that could potentially harm your system</li>
+                                <li>To satisfy the terms and conditions of the Master License Agreement or Preproduction License Agreement between EPRI and your company, you understand what to do with this preproduction product after the preproduction review period has expired</li>
+                                <li>Reproduction or distribution of this preproduction software is in violation of the terms and conditions of the Master License Agreement or Preproduction License Agreement currently in place between EPRI and your company</li>
+                                <li>Your company's funding will determine if you have the rights to the final production release of this product</li>
+                                <li>EPRI will evaluate all tester suggestions and recommendations, but does not guarantee they will be incorporated into the final production product</li>
+                                <li>As a preproduction tester, you agree to provide feedback as a condition of obtaining the preproduction software</li>
+                            </ul>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-danger" data-dismiss="modal">Close</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     );
