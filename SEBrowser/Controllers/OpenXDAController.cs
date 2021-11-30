@@ -123,108 +123,108 @@ namespace SEBrowser.Controllers
                 List<string> eventTypes = new List<string>();
 
                 if (postData.faults)
-                    eventTypes.Add(" ((wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name = 'Fault') AND (SELECT COUNT(*) FROM BreakerOperation WHERE BreakerOperation.EventID = Event.ID) = 0)  OR (wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name = 'RecloseIntoFault')))");
+                    eventTypes.Add(" (((SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name = 'Fault') AND (SELECT COUNT(*) FROM BreakerOperation WHERE BreakerOperation.EventID = Event.ID) = 0)  OR ((SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name = 'RecloseIntoFault')))");
                 if (postData.breakerOps)
-                    eventTypes.Add("((wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name = 'Fault') AND (SELECT COUNT(*) FROM BreakerOperation WHERE BreakerOperation.EventID = Event.ID) > 0) OR (wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name = 'BreakerOpen')))");
+                    eventTypes.Add("(((SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name = 'Fault') AND (SELECT COUNT(*) FROM BreakerOperation WHERE BreakerOperation.EventID = Event.ID) > 0) OR ((SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name = 'BreakerOpen')))");
                 if (postData.sags)
-                    eventTypes.Add("wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name = 'Sag')");
+                    eventTypes.Add("(SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name = 'Sag')");
                 if (postData.swells)
-                    eventTypes.Add("wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name  = 'Swell')");
+                    eventTypes.Add("(SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name  = 'Swell')");
                 if (postData.interruptions)
-                    eventTypes.Add("wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name  = 'Interruption')");
+                    eventTypes.Add("(SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name  = 'Interruption')");
                 if (postData.transients)
-                    eventTypes.Add("wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name  = 'Transient')");
+                    eventTypes.Add("(SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name  = 'Transient')");
                 if (postData.others)
-                    eventTypes.Add("wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name  = 'Other')");
+                    eventTypes.Add("(SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name  = 'Other')");
                 if (postData.relayTCE)
                     eventTypes.Add("(SELECT COUNT(RelayPerformance.ID) FROM RelayPerformance WHERE RelayPerformance.EventID = Event.ID) > 0");
                 if (!eventTypes.Any())
-                    eventTypes.Add("wsr.EventTypeID IN (0)");
+                    eventTypes.Add("0 = 1");
 
                 string eventTypeRestriction = $"({string.Join(" OR ", eventTypes)})";
 
                 List<string> phase = new List<string>();
 
                 if (postData.PhaseA)
-                    phase.Add("Phase.Name IN ('AN','AB','CA')");
+                    phase.Add("(SELECT Phase.Name FROM Disturbance LEFT JOIN Phase ON Disturbance.PhaseID = Phase.ID WHERE Disturbance.ID = EventWorstDisturbance.WorstDisturbanceID) IN ('AN','AB','CA')");
                 if (postData.PhaseB)
-                    phase.Add("Phase.Name IN ('BN','AB','BC')");
+                    phase.Add("(SELECT Phase.Name FROM Disturbance LEFT JOIN Phase ON Disturbance.PhaseID = Phase.ID WHERE Disturbance.ID = EventWorstDisturbance.WorstDisturbanceID) IN ('BN','AB','BC')");
                 if (postData.PhaseC)
-                    phase.Add("Phase.Name IN ('CN','BC','CA')");
+                    phase.Add("(SELECT Phase.Name FROM Disturbance LEFT JOIN Phase ON Disturbance.PhaseID = Phase.ID WHERE Disturbance.ID = EventWorstDisturbance.WorstDisturbanceID) IN ('CN','BC','CA')");
                 if (!phase.Any() || phase.Count == 3)
                     phase.Add("1=1");
 
                 string eventCharacteristicsRestricitons = $"(({string.Join(" OR ", phase)})";
 
                 if (postData.durationMin > 0)
-                    eventCharacteristicsRestricitons += $" AND (wsr.DurationCycles > {postData.durationMin})";
+                    eventCharacteristicsRestricitons += $" AND ((SELECT d.DurationCycles FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) > {postData.durationMin})";
                 if (postData.durationMax > 0)
-                    eventCharacteristicsRestricitons += $" AND (wsr.DurationCycles < {postData.durationMax})";
+                    eventCharacteristicsRestricitons += $" AND ((SELECT d.DurationCycles FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) < {postData.durationMax})";
 
                 if (postData.sagMin > 0)
                 {
                     if (postData.sagType == "LL")
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit > {postData.sagMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) > {postData.sagMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
                     else if (postData.sagType == "LL")
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLNPerUnit > {postData.sagMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) > {postData.sagMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
                     else
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit > {postData.sagMin} OR wsr.WorstLNPerUnit > {postData.sagMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) > {postData.sagMin} OR (SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) > {postData.sagMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
                 }
                     
                 if (postData.sagMax > 0)
                 {
                     if (postData.sagType == "LL")
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit < {postData.sagMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) < {postData.sagMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
                     else if (postData.sagType == "LL")
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLNPerUnit < {postData.sagMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) < {postData.sagMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
                     else
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit < {postData.sagMax} OR wsr.WorstLNPerUnit < {postData.sagMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) < {postData.sagMax} OR (SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) < {postData.sagMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
                 }
 
                 if (postData.swellMin > 0)
                 {
                     if (postData.swellType == "LL")
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit > {postData.swellMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) > {postData.swellMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
                     else if (postData.swellType == "LL")
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLNPerUnit > {postData.swellMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) > {postData.swellMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
                     else
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit > {postData.swellMin} OR wsr.WorstLNPerUnit > {postData.swellMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) > {postData.swellMin} OR (SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) > {postData.swellMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
                 }
 
                 if (postData.swellMax > 0)
                 {
                     if (postData.swellType == "LL")
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit < {postData.swellMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) < {postData.swellMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
                     else if (postData.swellType == "LL")
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLNPerUnit < {postData.swellMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) < {postData.swellMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
                     else
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit < {postData.swellMax} OR wsr.WorstLNPerUnit < {postData.swellMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) < {postData.swellMax} OR (SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) < {postData.swellMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
                 }
 
                 if (postData.transientMin > 0)
                 {
                     if (postData.transientType == "LL")
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit > {postData.transientMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
-                    else if (postData.transientType == "LL")
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLNPerUnit > {postData.transientMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) > {postData.transientMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
+                    else if (postData.transientType == "LN")
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) > {postData.transientMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
                     else
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit > {postData.transientMin} OR wsr.WorstLNPerUnit > {postData.transientMin} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) > {postData.transientMin} OR (SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) > {postData.transientMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
                 }
 
                 if (postData.transientMax > 0)
                 {
                     if (postData.transientType == "LL")
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit < {postData.transientMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
-                    else if (postData.transientType == "LL")
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLNPerUnit < {postData.transientMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) < {postData.transientMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
+                    else if (postData.transientType == "LN")
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) < {postData.transientMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
                     else
-                        eventCharacteristicsRestricitons += $" AND (wsr.WorstLLPerUnit < {postData.transientMax} OR wsr.WorstLNPerUnit < {postData.transientMax} OR wsr.EventTypeID IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
+                        eventCharacteristicsRestricitons += $" AND ((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) < {postData.transientMax} OR (SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) < {postData.transientMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
                 }
 
                 if (!postData.curveOutside || !postData.curveInside)
                 {
-                    eventCharacteristicsRestricitons += $" AND ( wsr.DurationSeconds IS NOT NULL AND wsr.PerUnitMagnitude IS NOT NULL AND (SELECT TOP 1 Area FROM StandardMagDurCurve WHERE ID = {postData.curveID})";
-                    eventCharacteristicsRestricitons += $".STContains(geometry::Point(wsr.DurationSeconds,wsr.PerUnitMagnitude,0)) = {(postData.curveInside ? 1 : 0)})";
+                    eventCharacteristicsRestricitons += $" AND ( (SELECT d.DurationSeconds FROM Disturbance d WHERE d.ID = WorstDisturbanceID) IS NOT NULL AND (SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = WorstDisturbanceID) IS NOT NULL AND (SELECT TOP 1 Area FROM StandardMagDurCurve WHERE ID = {postData.curveID})";
+                    eventCharacteristicsRestricitons += $".STContains(geometry::Point((SELECT d.DurationSeconds FROM Disturbance d WHERE d.ID = WorstDisturbanceID),(SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = WorstDisturbanceID),0)) = {(postData.curveInside ? 1 : 0)})";
                 }
 
 
@@ -266,67 +266,21 @@ namespace SEBrowser.Controllers
                 // #ToDo: Move openXDA from using Phase=worst to add a Flag to Disturbance for worst - This will speed up the query and remove the need for self-joining
 
                 string query = $@" 
-                      ;With WorstLL AS (
-					    SELECT 
-	                            Disturbance.EventID AS EventID,
-							    Disturbance.EventTypeID AS EventTypeID,
-							    MAX(Disturbance.PerUnitMagnitude) AS MaxMag,
-							    MIN(Disturbance.PerUnitMagnitude) AS MinMag
-                            FROM 
-	                            Disturbance
-						    WHERE
-	                            Disturbance.PhaseID IN (SELECT ID FROM Phase WHERE Name IN ('AB','BC','CA'))	
-						    GROUP BY Disturbance.EventID, Disturbance.EventTypeID
-					), WorstLN AS (
-					SELECT 
-	                        Disturbance.EventID AS EventID,
-							Disturbance.EventTypeID AS EventTypeID,
-							MAX(Disturbance.PerUnitMagnitude) AS MaxMag,
-							MIN(Disturbance.PerUnitMagnitude) AS MinMag
-                        FROM 
-	                        Disturbance
-						WHERE
-	                        Disturbance.PhaseID IN (SELECT ID FROM Phase WHERE Name IN ('AN','BN','CN'))	
-						GROUP BY Disturbance.EventID, Disturbance.EventTypeID
-					),
-                    WorstDisturbanceRecord as (
-                        SELECT 
-	                        Disturbance.*,
-                            Dist.PhaseID AS OriginalPhaseId,
-                            ( SELECT CASE WHEN Disturbance.PerUnitMagnitude > 1 THEN WorstLL.MinMag ELSE WorstLL.MaxMag END) AS WorstLLPerUnit,
-                            ( SELECT CASE WHEN Disturbance.PerUnitMagnitude > 1 THEN WorstLN.MinMag ELSE WorstLN.MaxMag END) AS WorstLNPerUnit,
-                            ROW_NUMBER() OVER(PARTITION BY Disturbance.EventID ORDER BY DisturbanceSeverity.SeverityCode, Disturbance.PerUnitMagnitude DESC) AS row_number
-                        FROM 
-	                        Disturbance LEFT JOIN
-                            WorstLL ON Disturbance.EventID = WorstLL.EventID AND Disturbance.EventTypeID = WorstLL.EventTypeID LEFT JOIN
-                            WorstLN ON Disturbance.EventID = WorstLN.EventID AND Disturbance.EventTypeID = WorstLN.EventTypeID LEFT JOIN
-                            DisturbanceSeverity ON DisturbanceSeverity.DisturbanceID = Disturbance.ID LEFT JOIN
-                            Disturbance DIST ON Disturbance.EventID = DIST.EventID AND Disturbance.Magnitude = DIST.Magnitude AND Disturbance.DurationCycles = DIST.DurationCycles AND DIST.PhaseID <> (SELECT ID FROM Phase WHERE Name = 'Worst')
-                        WHERE
-	                        Disturbance.PhaseID = (SELECT ID FROM Phase WHERE Name = 'Worst') AND 
-	                        (CAST(Disturbance.StartTime as date) BETWEEN DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}) OR CAST(Disturbance.EndTime as Date) BETWEEN  DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}))
-                    )
 	                SELECT 
-                        Format(Main.WorstLL*100.0,'F2') as [Worst LL Magnitude (%nominal)],
-                        Format(Main.WorstLN*100.0,'F2')  as [Worst LN Magnitude (%nominal)],
                         [SEBrowser.EventSearchEventView].*,
                         [SEBrowser.EventSearchWorstDisturbanceView].*
                     FROM (SELECT TOP 100
 	                    Event.ID as EventID,
-	                    (SELECT WDR.WorstLLPerUnit FROM WorstDisturbanceRecord WDR WHERE WDR.row_number = MIN(wsr.row_number) AND WDR.EventID = Event.ID) AS WorstLL,
-                        (SELECT WDR.WorstLNPerUnit FROM WorstDisturbanceRecord WDR WHERE WDR.row_number = MIN(wsr.row_number) AND WDR.EventID = Event.ID) AS WorstLN,
-                        (SELECT WDR.ID FROM WorstDisturbanceRecord WDR WHERE WDR.row_number = MIN(wsr.row_number) AND WDR.EventID = Event.ID) AS WorstDisturbanceID
+                        EventWorstDisturbance.WorstDisturbanceID AS WorstDisturbanceID
 	                FROM
-	                    Event LEFT JOIN
-	                    WorstDisturbanceRecord wsr ON wsr.EventID = Event.ID LEFT JOIN
-                        Phase ON Phase.ID = wsr.OriginalPhaseId
+	                    Event INNER JOIN
+	                    EventWorstDisturbance ON EventWorstDisturbance.EventID = Event.ID
                     WHERE
                         Event.StartTime BETWEEN DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}}) AND
                         {eventTypeRestriction} AND {eventCharacteristicsRestricitons} 
                         {(string.IsNullOrEmpty(otherRestrictions)? "" : ("AND " + otherRestrictions))}
-                    GROUP BY 
-                       Event.ID, Event.StartTime) Main LEFT JOIN
-                    [SEBrowser.EventSearchEventView] ON Main.EventID =  [SEBrowser.EventSearchEventView].EventID LEFT JOIN    
+                    ) Main LEFT JOIN
+                    [SEBrowser.EventSearchEventView] ON Main.EventID =  [SEBrowser.EventSearchEventView].EventID Inner JOIN    
                     [SEBrowser.EventSearchWorstDisturbanceView] ON [SEBrowser.EventSearchWorstDisturbanceView].DisturbanceID = Main.WorstDisturbanceID
                 ";
 
