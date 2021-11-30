@@ -22,7 +22,7 @@
 //******************************************************************************************************
 
 import * as React from 'react';
-import * as d3 from 'd3';
+import { select, scaleLinear, scaleLog, axisBottom, format as d3format, line, zoom as d3zoom, axisLeft} from 'd3';
 import * as _ from 'lodash';
 import { SelectEventSearchBySearchText, SelectEventSearchsStatus, FetchEventSearches } from './EventSearchSlice';
 import { useSelector, useDispatch } from 'react-redux';
@@ -57,7 +57,7 @@ const MagDurChart = (props: IProps) => {
     const chart = React.useRef(null);
 
     const magDurStatus = useSelector(MagDurCurveSlice.Status);
-    const magDurCurves = useSelector(MagDurCurveSlice.Data);
+    const magDurCurves = useSelector(MagDurCurveSlice.Data) as SEBrowser.MagDurCurve[];
 
     const [currentCurve, setCurrentCurve] = React.useState<SEBrowser.MagDurCurve>(null)
 
@@ -101,8 +101,8 @@ const MagDurChart = (props: IProps) => {
         const svgHeight = props.Height - margin.top - margin.bottom;
        
      
-        d3.select(chart.current).selectAll('svg').remove();
-        const svg = d3.select(chart.current)
+        select(chart.current).selectAll('svg').remove();
+        const svg = select(chart.current)
             .append('svg').attr('width', props.Width).attr('height', props.Height);
 
         let clip = svg.append("defs").append("svg:clipPath")
@@ -117,17 +117,17 @@ const MagDurChart = (props: IProps) => {
             .attr("clip-path", "url(#clip)")
             .attr('id', 'chartdata');
 
-        let y = d3.scaleLinear().rangeRound([svgHeight, margin.top]).domain([currentCurve?.YLow ?? 0, currentCurve?.YHigh ?? 5]);
-        let x = d3.scaleLog().rangeRound([margin.left, svgWidth + margin.left]).domain([currentCurve?.XLow ?? 0.000001, currentCurve?.XHigh ?? 100]);
+        let y = scaleLinear().rangeRound([svgHeight, margin.top]).domain([currentCurve?.YLow ?? 0, currentCurve?.YHigh ?? 5]);
+        let x = scaleLog().rangeRound([margin.left, svgWidth + margin.left]).domain([currentCurve?.XLow ?? 0.000001, currentCurve?.XHigh ?? 100]);
 
         svg.selectAll("g.xaxis").remove();
         const xg = svg.append("g")
             .classed("xaxis", true)
             .attr("transform", "translate(0," + (props.Height - margin.bottom - margin.top) + ")");
 
-        const xAxis = xg.call(d3.axisBottom(x).tickSize(-(svgHeight - margin.top)).tickFormat((value) => {
+        const xAxis = xg.call(axisBottom(x).tickSize(-(svgHeight - margin.top)).tickFormat((value) => {
             if (Math.log10(value as number) === Math.floor(Math.log10(value as number)))
-                return d3.format(".0s")(value)
+                return d3format(".0s")(value)
             else return '';
         }))
         xg.append('text').text('Duration(s)').attr('x', (svgWidth - margin.right) / 2 + margin.left).attr('y', margin.bottom / 2).attr('fill', 'black').style('font-size', 'small');
@@ -144,7 +144,7 @@ const MagDurChart = (props: IProps) => {
             format = '.2f';
         }
 
-        const yAxis = yg.call(d3.axisLeft(y).ticks(ticks, format).tickSize(-(svgWidth)));
+        const yAxis = yg.call(axisLeft(y).ticks(ticks, format).tickSize(-(svgWidth)));
 
         yg.append('text').text('Per Unit Voltage').attr('transform', 'rotate(-90 0,0)').attr('x', -(svgHeight - margin.bottom) / 2 + margin.top).attr('y', -margin.left * 3 / 4).attr('fill', 'black').style('font-size', 'small');
 
@@ -159,7 +159,7 @@ const MagDurChart = (props: IProps) => {
 
         }
 
-        const lineFunc = d3.line<[number,number]>().x(xd => x(xd[0])).y(yd => y(yd[1]));
+        const lineFunc = line<[number,number]>().x(xd => x(xd[0])).y(yd => y(yd[1]));
         const lines = scatter.selectAll('g.lines')
             .data(data)
             .enter()
@@ -171,8 +171,8 @@ const MagDurChart = (props: IProps) => {
             .attr('d', (d) => lineFunc(d));
 
         // Define the div for the tooltip
-        d3.select(chart.current).selectAll('.tooltip').remove()
-        var tooltip = d3.select(chart.current).append("div")
+        select(chart.current).selectAll('.tooltip').remove()
+        var tooltip = select(chart.current).append("div")
             .attr("class", "tooltip")
             .style('background-color', 'darkgray')
             .style("opacity", .9)
@@ -195,16 +195,16 @@ const MagDurChart = (props: IProps) => {
                 tooltip.transition()
                     .duration(500)
                     .attr('hidden', 'hidden');
-                props.OnSelect(d3.event, d)
+                props.OnSelect(event, d)
             })
-            .on("mouseover", function (d) {
+            .on("mouseover", function (event, d) {
                 //d3.select(this).attr('stroke', 'black');
                 tooltip.transition()
                     .duration(200)               
                     .attr('hidden', null);
 
-                tooltip.style("left", (d3.event.offsetX - 150 ) + "px")
-                    .style("top", (d3.event.offsetY - 75) + "px")
+                tooltip.style("left", (event.offsetX - 150 ) + "px")
+                    .style("top", (event.offsetY - 75) + "px")
                     .html(`
                     <table class=''>
                     <tr><td>Meter</td><td>${d['Meter']}</td></tr>
@@ -228,20 +228,20 @@ const MagDurChart = (props: IProps) => {
             })
             ;
 
-        let zoom = d3.zoom().on('zoom', function () {
-            let transform = d3.event.transform;
+        let zoom = d3zoom().on('zoom', function (event) {
+            let transform = event.transform;
             let updatedX = transform.rescaleX(x);
             let updatedY = transform.rescaleY(y);
-            xAxis.call(d3.axisBottom(updatedX).tickSize(-(svgHeight - margin.top)).tickFormat((value) => {
+            xAxis.call(axisBottom(updatedX).tickSize(-(svgHeight - margin.top)).tickFormat((value) => {
                 if (Math.log10(value as number) === Math.floor(Math.log10(value as number)))
-                    return d3.format(".0s")(value as number)
+                    return d3format(".0s")(value as number)
                 else return '';
             }));
-            yAxis.call(d3.axisLeft(updatedY).tickSize(-(svgWidth)));
+            yAxis.call(axisLeft(updatedY).tickSize(-(svgWidth)));
             svg.selectAll('line').style("stroke", "lightgrey").style("stroke-opacity", 0.8).style("shape-rendering", "crispEdges").style("z-index", "0")
 
-            circles.attr('cx', d => updatedX(d.MagDurDuration)).attr('cy', d => updatedY(d.MagDurMagnitude));
-            const upLineFunc = d3.line<[number, number]>().x(xd => updatedX(xd[0])).y(yd => updatedY(yd[1]));
+            circles.attr('cx', d => updatedX(d.DurationSeconds)).attr('cy', d => updatedY(d.PerUnitMagnitude));
+            const upLineFunc = line<[number, number]>().x(xd => updatedX(xd[0])).y(yd => updatedY(yd[1]));
             lines.attr('d', d => upLineFunc(d));
         })
 

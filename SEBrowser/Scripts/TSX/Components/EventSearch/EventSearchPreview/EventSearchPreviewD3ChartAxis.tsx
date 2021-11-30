@@ -95,7 +95,7 @@ const EventSearchPreviewD3ChartAxis = (props: { EventID: number }) => {
 
         select('#xaxis').call(axisBottom(x).ticks(5).tickFormat((domainValue: number, index: number) => {
             return moment('1970-01-01T00:00:00').add(domainValue,'milliseconds').format('ss.SSS');
-        })).call(g => g.select(".domain").remove());
+        }) as any).call(g => g.select(".domain").remove());
     }
     
     return (
