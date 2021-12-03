@@ -351,7 +351,6 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Web.config" />
     <None Include="tsconfig.json" />
-    <Content Include="Scripts\Lib\react-router-dom.min.js.map" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
   </ItemGroup>
   <ItemGroup>
