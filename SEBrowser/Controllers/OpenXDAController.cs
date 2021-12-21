@@ -164,9 +164,9 @@ namespace SEBrowser.Controllers
                     ) X) Main LEFT JOIN
                     [SEBrowser.EventSearchEventView] ON Main.EventID =  [SEBrowser.EventSearchEventView].EventID Inner JOIN    
                     [SEBrowser.EventSearchDetailsView] ON
-                        [SEBrowser.EventSearchDetailsView].DisturbanceID = Main.DisturbanceID AND (
-                        [SEBrowser.EventSearchDetailsView].EventID = Main.EventID OR 
-                        [SEBrowser.EventSearchDetailsView].FaultID = Main.FaultID)
+                        (Main.DisturbanceID IS NOT NULL AND [SEBrowser.EventSearchDetailsView].DisturbanceID = Main.DisturbanceID) OR
+                        (Main.FaultID IS NOT NULL AND [SEBrowser.EventSearchDetailsView].EventID = Main.EventID AND [SEBrowser.EventSearchDetailsView].FaultID = Main.FaultID) OR
+                        (COALESCE([SEBrowser.EventSearchDetailsView].DisturbanceID, Main.DisturbanceID) IS NULL AND COALESCE([SEBrowser.EventSearchDetailsView].FaultID, Main.FaultID) IS NULL AND [SEBrowser.EventSearchDetailsView].EventID = Main.EventID)
                 ";
 
                 DataTable table = connection.RetrieveData(query, dateTime);
