@@ -418,6 +418,7 @@
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchbarFilterModal.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventNoteSlice.ts" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\HECCO\InterruptionReport.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
     <None Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
     <None Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisReport.tsx" />
