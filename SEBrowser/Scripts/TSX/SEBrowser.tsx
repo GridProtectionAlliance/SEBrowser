@@ -67,7 +67,7 @@ const SEBrowserMainPage = (props: {}) => {
     }
 
     return (
-        <Application HomePath={homePath} DefaultPath={"eventsearch"} Logo={homePath + "Images/SE Browser - Spelled out - 111 high.png"} Version={version}>
+        <Application HomePath={homePath} DefaultPath={"eventsearch"} Logo={homePath + "Images/SE Browser Spelled out - 40 high.png"} Version={version}>
             <Page Name={'eventsearch'} Label={'Event Search'}>
                 <EventSearch />
             </Page>
