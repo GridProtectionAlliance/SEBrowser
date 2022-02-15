@@ -25,12 +25,12 @@ import { MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import Table from '@gpa-gemstone/react-table';
 
 import { OpenXDA } from '@gpa-gemstone/application-typings';
-import createHistory from "history/createBrowserHistory"
 import * as queryString from 'querystring';
 import moment from 'moment';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { orderBy } from 'lodash';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
+import { useNavigate } from 'react-router-dom';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -50,8 +50,8 @@ interface DERAnalyticResult {
 }
 
 function DERAnalysisReport() {
-    let history = createHistory();
-    let query = queryString.decode(history['location'].search.slice(1));
+    let navigate = useNavigate();
+    let query = queryString.decode(navigate['location'].search.slice(1));
 
     const [date, setDate] = React.useState<string>(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat));
     const [time, setTime] = React.useState<string>(query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat));

@@ -21,14 +21,12 @@
 //******************************************************************************************************
 
 import * as React from 'react';
-import { clone, cloneDeep, isEqual } from 'lodash';
-
-import createHistory from "history/createBrowserHistory"
-import { History } from 'history';
+import { cloneDeep, isEqual } from 'lodash';
 import CapBankReportNavBar, { CapBankReportNavBarProps } from './CapBankReportNavBar';
 import CapBankReportPane from './CapBankReportPane';
 import * as queryString from 'querystring';
 import moment from 'moment';
+import { NavigateFunction, useNavigate } from 'react-router-dom';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -40,15 +38,15 @@ interface IState {
 
 
 export default class CapBankReport extends React.Component<IProps, IState>{
-    history: History<any>;
+    navigate: NavigateFunction;
     historyHandle: any;
 
 
     constructor(props, context) {
         super(props, context);
 
-        this.history = createHistory();
-        var query = queryString.parse(this.history['location'].search);
+        this.navigate = useNavigate();
+        var query = queryString.parse(this.navigate['location'].search);
 
         this.state = {
             searchBarProps: {
@@ -102,7 +100,7 @@ export default class CapBankReport extends React.Component<IProps, IState>{
 
             if (!isEqual(oldQueryString, newQueryString)) {
                 clearTimeout(this.historyHandle);
-                this.historyHandle = setTimeout(() => this.history['push'](this.history['location'].pathname + '?' + newQueryString), 500);
+                this.historyHandle = setTimeout(() => this.navigate['push'](this.navigate['location'].pathname + '?' + newQueryString), 500);
             }
         });
     }

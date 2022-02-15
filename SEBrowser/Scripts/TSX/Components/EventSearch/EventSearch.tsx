@@ -34,14 +34,15 @@ import EventSearchMagDur from './EventSearchMagDur';
 import { useDispatch, useSelector } from 'react-redux';
 import { ProcessQuery, SelectEventList, SelectQueryParam, SelectSearchText, SetSearchText } from './EventSearchSlice';
 import createHistory from "history/createBrowserHistory";
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface IProps { }
 
 type tab = 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All' | undefined;
 
 const EventSearch = (props: IProps) => {
-    const history = React.useRef<History<any>>();
-
+    const history = useLocation();
+    const navigate = useNavigate();
     const dispatch = useDispatch();
 
     const [eventId, setEventId] = React.useState<number>(-1);
@@ -54,8 +55,7 @@ const EventSearch = (props: IProps) => {
     const searchtext = useSelector(SelectSearchText);
 
     React.useEffect(() => {
-        history.current = createHistory();
-        var query = queryString.parse(history.current['location'].search.replace("?",""), "&", "=", { decodeURIComponent: queryString.unescape });
+        var query = queryString.parse(history.search.replace("?",""), "&", "=", { decodeURIComponent: queryString.unescape });
 
         dispatch(ProcessQuery(query));
 
@@ -69,7 +69,7 @@ const EventSearch = (props: IProps) => {
    
     React.useEffect(() => {
         let q = queryString.stringify(queryParam, "&", "=", { encodeURIComponent: queryString.escape });
-        let handle = setTimeout(() => history.current['push'](history.current['location'].pathname + '?' + q), 500);
+        let handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
     }, [queryParam])
 

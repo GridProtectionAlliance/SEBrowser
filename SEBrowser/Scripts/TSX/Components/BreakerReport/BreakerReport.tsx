@@ -24,22 +24,21 @@
 
 import * as React from 'react';
 import BreakerReportNavbar from './BreakerReportNavbar';
-import createHistory from "history/createBrowserHistory"
-import { History } from 'history';
 import { clone, isEqual } from 'lodash';
 import * as queryString from 'querystring';
 const momentDateFormat = "MM/DD/YYYY";
 import moment from 'moment';
+import { NavigateFunction, useNavigate } from 'react-router-dom';
 declare var homePath: string;
 
 export default class BreakerReport extends React.Component<{}, State>{
-    history: History<any>;
+    navigate: NavigateFunction;
     historyHandle: any;
     constructor(props, context) {
         super(props, context);
 
-        this.history = createHistory();
-        var query = queryString.parse(this.history['location'].search);
+        this.navigate = useNavigate();
+        var query = queryString.parse(this.navigate['location'].search);
 
         this.state = {
             fromDate: (query['fromDate'] != undefined ? query['fromDate'] as string : moment().subtract(30, 'days').format(momentDateFormat)),
@@ -47,8 +46,8 @@ export default class BreakerReport extends React.Component<{}, State>{
             breaker: (query['breaker'] != undefined ? query['breaker'] as string : '0'),
         }
 
-        this.history['listen']((location, action) => {
-            var query = queryString.parse(this.history['location'].search);
+        this.navigate['listen']((location, action) => {
+            var query = queryString.parse(this.navigate['location'].search);
             this.setState({
                 fromDate: (query['fromDate'] != undefined ? query['fromDate'] as string : moment().subtract(30, 'days').format(momentDateFormat)),
                 toDate: (query['toDate'] != undefined ? query['toDate'] as string : moment().format(momentDateFormat)),
@@ -89,7 +88,7 @@ export default class BreakerReport extends React.Component<{}, State>{
 
             if (!isEqual(oldQueryString, newQueryString)) {
                 clearTimeout(this.historyHandle);
-                this.historyHandle = setTimeout(() => this.history['push'](this.history['location'].pathname + '?' + newQueryString), 500);
+                this.historyHandle = setTimeout(() => this.navigate['push'](this.navigate['location'].pathname + '?' + newQueryString), 500);
             }
         });
     }
