@@ -326,7 +326,7 @@ const ReportTimeFilter = (props: IProps) => {
                             if (i % 3 !== 0)
                                 return null;
                             return (
-                                <div className={"col-3"} style={{ paddingLeft: (i %12 == 0 ? 15 : 0), paddingRight: (i % 12 == 9 ? 15 : 2), marginTop: 10 }}>
+                                <div key={i} className={"col-3"} style={{ paddingLeft: (i %12 == 0 ? 15 : 0), paddingRight: (i % 12 == 9 ? 15 : 2), marginTop: 10 }}>
                                     <ul className="list-group" key={i}>
                                         <li key={i} onClick={() => props.setFilter(AvailableQuickSelects[i].createFilter())} className="item badge badge-secondary">{AvailableQuickSelects[i].label}</li>
                                         {i + 1 < AvailableQuickSelects.length ?
