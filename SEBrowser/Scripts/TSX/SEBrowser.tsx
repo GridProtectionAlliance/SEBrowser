@@ -26,8 +26,6 @@ import store from './Store';
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Route, NavLink, Switch, Redirect } from 'react-router-dom';
-import About from './Components/About';
 import MeterActivity from './Components/MeterActivity';
 import EventSearch from './Components/EventSearch/EventSearch';
 import BreakerReport from './Components/BreakerReport/BreakerReport';
@@ -36,9 +34,11 @@ import CapBankReport from './Components/CapBankReport/CapBankReport';
 import DERAnalysisReport from './Components/DERAnalysisReport/DERAnalysisReport';
 
 import { SystemCenter } from '@gpa-gemstone/application-typings';
+import { Application, Page, Section } from '@gpa-gemstone/react-interactive';
 
 const SEBrowserMainPage = (props: {}) => {
     const [links, setLinks] = React.useState<SystemCenter.Types.ValueListItem[]>([]);
+
 
     React.useEffect(() => {
         let handle = $.ajax({
@@ -50,47 +50,34 @@ const SEBrowserMainPage = (props: {}) => {
             async: true
         });
 
+
         handle.done(data => setLinks(data));
         return () => { if(handle.abort != undefined) handle.abort()}
     }, []);
+
+    const createWidget = (item: string) => {
+        if (item === "breakerreport")
+            return <BreakerReport />
+        if (item === "relayreport")
+            return <RelayReport />
+        if (item === "capbankreport")
+            return <CapBankReport />
+        if (item === "derreport")
+            return <DERAnalysisReport />
+    }
+
     return (
-        <Router>
-            <div style={{ position: 'absolute', width: '100%', height: '100%', overflow: 'hidden' }}>
-                <div style={{ width: 300, height: 'inherit', backgroundColor: '#eeeeee', position: 'relative', float: 'left' }}>
-                    <a href="https://www.gridprotectionalliance.org"><img style={{ width: 280, margin: 10 }} src={homePath + "Images/SE Browser - Spelled out - 111 high.png"} /></a>
-                    <div style={{ width: '100%', height: '100%', marginTop: 30}}>
-                        <div className="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical" style={{ height: 'calc(100% - 240px)' }}>
-                            {/*<NavLink activeClassName='nav-link active' className="nav-link" exact={true} to={controllerViewPath + "/"}>Home</NavLink>*/}
-                            <NavLink activeClassName='nav-link active' className="nav-link" to={homePath + "eventsearch"}>Event Search</NavLink>
-                            <NavLink activeClassName='nav-link active' className="nav-link" to={homePath + "meteractivity"}>Meter Activity</NavLink>
-
-                            <hr style={{borderTop: '1px solid darkgrey', width: '75%'}}/>
-                            <h6 style={{ width: '100%', textAlign: 'center' }}>Custom Reports</h6>
-                            {links.map((item, i) => <NavLink key={i} activeClassName='nav-link active' className="nav-link" to={homePath +  item.AltValue}>{item.Value}</NavLink>)}
-                        </div>
-                        
-                        <div style={{ width: '100%', textAlign: 'center' }}>
-
-                            <span>Version {version}</span>
-                            <br />
-                            <span><About /></span>
-                        </div>
-                    </div>
-                </div>
-                <div style={{ width: 'calc(100% - 300px)', height: 'inherit', position: 'relative', float: 'right' }}>
-                    <Switch >
-                        <Route path={homePath + "eventsearch"}><EventSearch /> </Route>
-                        <Route path={homePath + "meteractivity"}><MeterActivity /> </Route>
-                        <Route path={homePath + "breakerreport"}><BreakerReport /> </Route>
-                        <Route path={homePath + "relayreport"}><RelayReport /> </Route>
-                        <Route path={homePath + "capbankreport"}><CapBankReport /> </Route>
-                        <Route path={homePath + "derreport"}><DERAnalysisReport /> </Route>
-
-                        <Route path={homePath}><Redirect to={homePath + "eventsearch"}/></Route>
-                    </Switch>
-                </div>
-            </div>
-    </Router>
+        <Application HomePath={homePath} DefaultPath={"eventsearch"} Logo={homePath + "Images/SE Browser - Spelled out - 111 high.png"} Version={version}>
+            <Page Name={'eventsearch'} Label={'Event Search'}>
+                <EventSearch />
+            </Page>
+            <Page Name={'meteractivity'} Label={'Meter Activity'}>
+                <MeterActivity />
+            </Page>
+            <Section Label={"Custom Reports"}>
+                {links.map((item, i) => <Page key={i} Name={item.AltValue} Label={item.Value}>{createWidget(item.AltValue)}</Page>)}
+            </Section>
+        </Application>
     );
 }
 
