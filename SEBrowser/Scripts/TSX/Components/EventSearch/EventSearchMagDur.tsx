@@ -209,10 +209,10 @@ const MagDurChart = (props: IProps) => {
                     <table class=''>
                     <tr><td>Meter</td><td>${d['Meter']}</td></tr>
                     <tr><td>Asset</td><td>${d['Asset']}</td></tr>
-                    <tr><td>Start Time</td><td>${d.Time}</td></tr>
+                    <tr><td>Start Time</td><td>${d['Time']}</td></tr>
                     <tr><td>Event Type</td><td>${d['Event Type']}</td></tr>
-                    <tr><td>Magnitude</td><td>${d.MagDurMagnitude.toFixed(2)}</td></tr>
-                    <tr><td>Duration</td><td>${d.MagDurDuration.toFixed(2)}</td></tr>
+                    <tr><td>Magnitude</td><td>${d['MagDurMagnitude'].toFixed(2)}</td></tr>
+                    <tr><td>Duration</td><td>${d['MagDurDuration'].toFixed(2)}</td></tr>
                     </table>   
                 `)
                     ;
@@ -228,7 +228,7 @@ const MagDurChart = (props: IProps) => {
             })
             ;
 
-        let zoom = d3zoom().on('zoom', function (event) {
+        let zoom = d3zoom().on('zoom', function (event: any) {
             let transform = event.transform;
             let updatedX = transform.rescaleX(x);
             let updatedY = transform.rescaleY(y);
