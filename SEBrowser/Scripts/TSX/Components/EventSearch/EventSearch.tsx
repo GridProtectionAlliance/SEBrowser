@@ -32,7 +32,7 @@ import EventSearchListedEventsNoteWindow from './EventSearchListedEventsNoteWind
 import queryString from 'querystring';
 import EventSearchMagDur from './EventSearchMagDur';
 import { useDispatch, useSelector } from 'react-redux';
-import { ProcessQuery, SelectEventList, SelectQueryParam, SelectSearchText, SetSearchText } from './EventSearchSlice';
+import { ProcessQuery, SelectEventList, SelectQueryParam } from './EventSearchSlice';
 import createHistory from "history/createBrowserHistory";
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -52,7 +52,6 @@ const EventSearch = (props: IProps) => {
 
     const queryParam = useSelector(SelectQueryParam);
     const evtList = useSelector(SelectEventList);
-    const searchtext = useSelector(SelectSearchText);
 
     React.useEffect(() => {
         var query = queryString.parse(history.search.replace("?",""), "&", "=", { decodeURIComponent: queryString.unescape });
@@ -98,7 +97,6 @@ const EventSearch = (props: IProps) => {
             <div style={{ width: '100%', height: (showNav ? 'calc( 100% - 303px)' : 'calc( 100% - 52px)')}}>
                 <div style={{ width: '50%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
                     <div style={{ width: 'calc(100% - 300px)', padding: 10, float: 'left' }}>
-                        <input className='form-control' type='text' placeholder='Search...' value={searchtext} onChange={(evt) => dispatch(SetSearchText(evt.target.value))} />
                     </div>
                     <div style={{ width: 120, float: 'right', padding: 10 }}>
                         <EventSearchListedEventsNoteWindow />
