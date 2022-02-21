@@ -23,7 +23,7 @@
 
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { SelectEventSearchBySearchText } from './EventSearchSlice';
+import { SelectEventSearchs } from './EventSearchSlice';
 import { LoadingScreen, Modal, ServerErrorIcon, ToolTip } from '@gpa-gemstone/react-interactive';
 import Table, { SelectTable } from '@gpa-gemstone/react-table';
 import { EventNoteSlice } from '../../Store';
@@ -36,7 +36,7 @@ import { TextArea } from '@gpa-gemstone/react-forms';
 
 const EventSearchListedEventsNoteWindow: React.FC<{}> = () => {
     const [show, setShow] = React.useState<boolean>(false);
-    const events = useSelector(SelectEventSearchBySearchText);
+    const events = useSelector(SelectEventSearchs);
     const selectedIDs = useSelector(EventNoteSlice.EventIDs);
     const dispatch = useDispatch();
 
