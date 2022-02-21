@@ -57,7 +57,6 @@ export namespace Redux {
         SortField: keyof T,
         Ascending: boolean,
         Record?: T,
-        SearchText?: string
     }
 
     interface EventSearchState extends Redux.State<any> {
