@@ -111,7 +111,6 @@ export const EventSearchsSlice = createSlice({
         },
         ProcessQuery: (state, action: PayloadAction<{ query: queryString.ParsedUrlQuery, assets: OpenXDA.Asset[], groups: OpenXDA.AssetGroup[], locations: OpenXDA.Location[], meters: OpenXDA.Meter[] }>) => {
 
-            state.SearchText = action.payload.query['searchText']?.toString() ?? '';
 
             state.TimeRange.date = action.payload.query['date']?.toString() ?? state.TimeRange.date;
             state.TimeRange.time = action.payload.query['time']?.toString() ?? state.TimeRange.time;
@@ -158,9 +157,6 @@ export const EventSearchsSlice = createSlice({
 
             state.isReset = computeReset(state);
             state.Status = 'changed';
-        },
-        SetSearchText: (state, action) => {
-            state.SearchText = action.payload;
         },
         SetFilters: (state, action: PayloadAction<{ characteristics: SEBrowser.IEventCharacteristicFilters, types: SEBrowser.IEventTypeFilters, time: SEBrowser.IReportTimeFilter }>) => {
             state.Status = 'changed';
@@ -217,7 +213,7 @@ export const EventSearchsSlice = createSlice({
 // #endregion
 
 // #region [ Selectors ]
-export const { Sort, SetFilters, ResetFilters, SetFilterLists, SetSearchText } = EventSearchsSlice.actions;
+export const { Sort, SetFilters, ResetFilters, SetFilterLists } = EventSearchsSlice.actions;
 
 export default EventSearchsSlice.reducer;
 export const SelectEventSearchs = (state: Redux.StoreState) => state.EventSearch.Data;
@@ -225,17 +221,6 @@ export const SelectEventSearchByID = (state: Redux.StoreState, id: number) => st
 export const SelectEventSearchsStatus = (state: Redux.StoreState) => state.EventSearch.Status;
 export const SelectEventSearchsSortField = (state: Redux.StoreState) => state.EventSearch.SortField;
 export const SelectEventSearchsAscending = (state: Redux.StoreState) => state.EventSearch.Ascending;
-export const SelectEventSearchBySearchText = (state: Redux.StoreState) => state.EventSearch.Data.filter((d, i) => {
-    if (state.EventSearch.SearchText === '') return true
-    else
-        return d.AssetName.toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
-            d.AssetType.toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
-            d.EventType.toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
-            moment(d.FileStartTime).format('MM/DD/YYYY').toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
-            moment(d.FileStartTime).format('HH:mm:ss.SSSSSSS').toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
-            d.VoltageClass.toString().toLowerCase().indexOf(state.EventSearch.SearchText) >= 0
-
-});
 export const SelectTimeFilter = (state: Redux.StoreState) => state.EventSearch.TimeRange;
 export const SelectTypeFilter = (state: Redux.StoreState) => state.EventSearch.EventType;
 export const SelectCharacteristicFilter = (state: Redux.StoreState) => state.EventSearch.EventCharacteristic;
@@ -244,7 +229,6 @@ export const SelectMeterList = (state: Redux.StoreState) => state.EventSearch.Se
 export const SelectAssetList = (state: Redux.StoreState) => state.EventSearch.SelectedAssets;
 export const SelectAssetGroupList = (state: Redux.StoreState) => state.EventSearch.SelectedGroups;
 export const SelectStationList = (state: Redux.StoreState) => state.EventSearch.SelectedStations;
-export const SelectSearchText = (state: Redux.StoreState) => state.EventSearch.SearchText;
 
 export const SelectQueryParam = createSelector(
         (state: Redux.StoreState) => state.EventSearch.EventCharacteristic,
@@ -252,9 +236,8 @@ export const SelectQueryParam = createSelector(
         (state: Redux.StoreState) => state.EventSearch.TimeRange,
         (state: Redux.StoreState) => state.EventSearch.SelectedAssets,
         (state: Redux.StoreState) => state.EventSearch.SelectedGroups,
-        (state: Redux.StoreState) => state.EventSearch.SelectedMeters,
+    (state: Redux.StoreState) => state.EventSearch.SelectedMeters,
     (state: Redux.StoreState) => state.EventSearch.SelectedStations,
-    (state: Redux.StoreState) => state.EventSearch.SearchText,
         GenerateQueryParams
     );
 
@@ -291,7 +274,7 @@ function computeReset(state: Redux.EventSearchState): boolean {
     return event && types && state.SelectedAssets.length == 0 && state.SelectedStations.length == 0 && state.SelectedMeters.length == 0 && state.SelectedGroups.length == 0;
 }
 
-function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: SEBrowser.IEventTypeFilters, time: SEBrowser.IReportTimeFilter, assets: OpenXDA.Asset[], groups: OpenXDA.AssetGroup[], meters: OpenXDA.Meter[], stations: OpenXDA.Location[], searchText: string): any {
+function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: SEBrowser.IEventTypeFilters, time: SEBrowser.IReportTimeFilter, assets: OpenXDA.Asset[], groups: OpenXDA.AssetGroup[], meters: OpenXDA.Meter[], stations: OpenXDA.Location[]): any {
     let result: any = {};
     if (assets.length > 0 && assets.length < 100) {
         let i = 0;
@@ -321,9 +304,6 @@ function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type:
             i = i + 1;
         })
     }
-
-    if (searchText.length > 0)
-        result['searchText'] = searchText;
 
     if (!type.faults)
         result['faults'] = false;
