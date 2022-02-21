@@ -27,7 +27,7 @@ import moment from 'moment';
 import { ConfigurableTable } from '@gpa-gemstone/react-interactive';
 import { useSelector, useDispatch } from 'react-redux';
 import { OpenXDA, Redux, SEBrowser } from '../../global';
-import { SelectEventSearchBySearchText, SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches } from './EventSearchSlice';
+import { SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
 
 interface IProps {
     eventid: number,
@@ -49,7 +49,7 @@ export default function EventSearchList(props: IProps) {
     const status = useSelector(SelectEventSearchsStatus);
     const sortField = useSelector(SelectEventSearchsSortField);
     const ascending = useSelector(SelectEventSearchsAscending);
-    const data = useSelector((state: Redux.StoreState) => SelectEventSearchBySearchText(state));
+    const data = useSelector((state: Redux.StoreState) => SelectEventSearchs(state));
     const [cols, setCols] = React.useState<IColumn[]>([]);
 
     React.useEffect(() => {
@@ -169,3 +169,4 @@ export default function EventSearchList(props: IProps) {
         </div>
     );
 }
+
