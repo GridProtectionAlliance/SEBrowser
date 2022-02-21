@@ -24,7 +24,7 @@
 import * as React from 'react';
 import { select, scaleLinear, scaleLog, axisBottom, format as d3format, line, zoom as d3zoom, axisLeft} from 'd3';
 import * as _ from 'lodash';
-import { SelectEventSearchBySearchText, SelectEventSearchsStatus, FetchEventSearches } from './EventSearchSlice';
+import { SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { OpenXDA, SEBrowser } from '../../global';
 import { MagDurCurveSlice } from '../../Store';
@@ -63,7 +63,7 @@ const MagDurChart = (props: IProps) => {
 
     const dispatch = useDispatch();
     const status = useSelector(SelectEventSearchsStatus);
-    const points: any[] = useSelector(SelectEventSearchBySearchText);
+    const points: any[] = useSelector(SelectEventSearchs);
 
     React.useEffect(() => {
         if (status != 'unitiated' && status != 'changed') return;
