@@ -28,12 +28,13 @@ import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { OpenXDA } from '../../global';
 import { useDispatch, useSelector } from 'react-redux';
-import { SelectAssetGroupList, SelectAssetList, SelectCharacteristicFilter, SelectMeterList, SelectReset, SelectStationList, SelectTimeFilter, SelectTypeFilter, SetFilterLists } from './EventSearchSlice';
+import { SelectAssetGroupList, SelectAssetList, SelectCharacteristicFilter, SelectDetailedAssetList, SelectDetailedMeterList, SelectDetailedStationList, SelectReset, SelectTimeFilter, SelectTypeFilter } from './EventSearchSlice';
 import { ResetFilters,  SetFilters } from './EventSearchSlice';
-import { MagDurCurveSlice } from '../../Store';
-import { Modal } from '@gpa-gemstone/react-interactive';
+import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice, MagDurCurveSlice } from '../../Store';
+import { DefaultSelects } from '@gpa-gemstone/common-pages';
 import EventSearchFilterButton from './EventSearchbarFilterButton';
-import EventSearchbarFilterModal from './EventSearchbarFilterModal';
+import { SystemCenter } from '@gpa-gemstone/application-typings';
+import { Search } from '@gpa-gemstone/react-interactive';
 
 
 interface IProps {
@@ -53,10 +54,11 @@ const EventSearchNavbar = (props: IProps) => {
     const magDurStatus = useSelector(MagDurCurveSlice.Status);
     const magDurCurves = useSelector(MagDurCurveSlice.Data);
 
-    const meterList = useSelector(SelectMeterList);
-    const assetList = useSelector(SelectAssetList);
     const assetGroupList = useSelector(SelectAssetGroupList);
-    const stationList = useSelector(SelectStationList)
+
+    const detailedMeterList = useSelector(SelectDetailedMeterList);
+    const detailedAssetList = useSelector(SelectDetailedAssetList);
+    const detailedLocationList = useSelector(SelectDetailedStationList);
 
     const reset = useSelector(SelectReset);
 
@@ -85,6 +87,84 @@ const EventSearchNavbar = (props: IProps) => {
         if (i == 1)
             return "Seconds";
         return "Milliseconds";
+    }
+
+    function getEnum(setOptions, field) {
+        let handle = null;
+        if (field.type != 'enum' || field.enum == undefined || field.enum.length != 1)
+            return () => { };
+
+        handle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/ValueList/Group/${field.enum[0].Value}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+
+        handle.done(d => setOptions(d.map(item => ({ Value: item.Value.toString(), Label: item.Text }))))
+        return () => {
+            if (handle != null && handle.abort == null) handle.abort();
+        }
+    }
+
+    function getAdditionalMeterFields(setFields) {
+        let handle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/openXDA/AdditionalField/ParentTable/Meter/FieldName/0`,
+            contentType: "application/json; charset=utf-8",
+            cache: false,
+            async: true
+        });
+
+        function ConvertType(type: string) {
+            if (type == 'string' || type == 'integer' || type == 'number' || type == 'datetime' || type == 'boolean')
+                return { type: type }
+            return {
+                type: 'enum', enum: [{ Label: type, Value: type }]
+            }
+        }
+
+        handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
+            let ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
+                { label: `[AF${item.ExternalDB != undefined ? " " + item.ExternalDB : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedMeter>
+            )), ['label'], ["asc"]);
+            setFields(ordered)
+        });
+
+        return () => {
+            if (handle != null && handle.abort == null) handle.abort();
+        };
+    }
+
+    function getAdditionalAssetFields(setFields) {
+        let handle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/SystemCenter/AdditionalField/ParentTable/Asset/FieldName/0`,
+            contentType: "application/json; charset=utf-8",
+            cache: false,
+            async: true
+        });
+
+        function ConvertType(type: string) {
+            if (type == 'string' || type == 'integer' || type == 'number' || type == 'datetime' || type == 'boolean')
+                return { type: type }
+            return {
+                type: 'enum', enum: [{ Label: type, Value: type }]
+            }
+        }
+
+        handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
+
+            let ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
+                { label: `[AF${item.ExternalDB != undefined ? " " + item.ExternalDB : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedAsset>
+            )), ['label'], ["asc"]);
+            setFields(ordered);
+        });
+        return () => {
+            if (handle != null && handle.abort == null) handle.abort();
+        };
     }
 
     if (!props.showNav)
@@ -493,12 +573,12 @@ const EventSearchNavbar = (props: IProps) => {
                             <legend className="w-auto" style={{ fontSize: 'large' }}>Other Filters:</legend>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<OpenXDA.Meter> Type={'Meter'} OnClick={() => setFilter('Meter')} Data={meterList} />
+                                        <EventSearchFilterButton<SystemCenter.Types.DetailedMeter> Type={'Meter'} OnClick={() => setFilter('Meter')} Data={detailedMeterList} />
                                     </div>
                                 </div>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<OpenXDA.Asset> Type={'Asset'} OnClick={() => setFilter('Asset')} Data={assetList} />
+                                        <EventSearchFilterButton<SystemCenter.Types.DetailedAsset> Type={'Asset'} OnClick={() => setFilter('Asset')} Data={detailedAssetList} />
                                     </div>
                                 </div>
                                 <div className={"row"}>
@@ -508,7 +588,7 @@ const EventSearchNavbar = (props: IProps) => {
                                 </div>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<OpenXDA.Location> Type={'Station'} OnClick={() => setFilter('Station')} Data={stationList} />
+                                        <EventSearchFilterButton<SystemCenter.Types.DetailedLocation> Type={'Station'} OnClick={() => setFilter('Station')} Data={detailedLocationList} />
                                     </div>
                                 </div>
 
@@ -522,24 +602,92 @@ const EventSearchNavbar = (props: IProps) => {
                 </div>
             </div>
             </nav>
-            <Modal Show={showFilter != 'None'} Size={'xlg'} ShowX={true} ShowCancel={false} ConfirmBtnClass={'btn-danger'} ConfirmText={'Remove all ' + showFilter + ' filters'} Title={"Filter By " + showFilter} CallBack={(conf,btn) => {
 
-                if (btn && showFilter == 'Meter')
-                    dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: [], Stations: stationList }));
-                if (btn && showFilter == 'Asset')
-                    dispatch(SetFilterLists({ Assets: [], Groups: assetGroupList, Meters: meterList, Stations: stationList }));
-                if (btn && showFilter == 'AssetGroup')
-                    dispatch(SetFilterLists({ Assets: assetList, Groups: [], Meters: meterList, Stations: stationList }));
-                if (btn && showFilter == 'Station')
-                    dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: meterList, Stations: [] }));
-            
-                setFilter('None');
-            }}>
-                {showFilter == 'Meter' ? <EventSearchbarFilterModal< OpenXDA.Meter> Type={'Meter'} Data={meterList} SetData={(d) => dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: d, Stations: stationList }))} /> : null}
-                {showFilter == 'Asset' ? <EventSearchbarFilterModal< OpenXDA.Asset> Type={'Asset'} Data={assetList} SetData={(d) => dispatch(SetFilterLists({ Assets: d, Groups: assetGroupList, Meters: meterList, Stations: stationList }))} /> : null}
-                {showFilter == 'AssetGroup' ? <EventSearchbarFilterModal< OpenXDA.AssetGroup> Type={'AssetGroup'} Data={assetGroupList} SetData={(d) => dispatch(SetFilterLists({ Assets: assetList, Groups: d, Meters: meterList, Stations: stationList }))} /> : null}
-                {showFilter == 'Station' ? <EventSearchbarFilterModal< OpenXDA.Location> Type={'Station'} Data={stationList} SetData={(d) => dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: meterList, Stations: d }))} /> : null}
-            </Modal>
+                {showFilter == 'Meter' ?
+                    <DefaultSelects.Meter
+                        Slice={MeterSlice}
+                        Selection={detailedMeterList}
+                        OnClose={(selected, conf) => {
+                            setFilter('None')
+                        }}
+                        Show={showFilter == 'Meter'}
+                        Type={'multiple'}
+                        Columns={[
+                            { key: 'AssetKey', field: 'AssetKey', label: 'Key', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'Name', field: 'Name', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'Location', field: 'Location', label: 'Substation', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'MappedAssets', field: 'MappedAssets', label: 'Assets', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'Make', field: 'Make', label: 'Make', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'Model', field: 'Model', label: 'Model', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
+                        ]}
+                        Title={"Filter by Meter"}
+                        GetEnum={getEnum}
+                        GetAddlFields={getAdditionalMeterFields} />
+                        : null}
+                {showFilter == 'Asset' ?
+                <DefaultSelects.Asset
+                        Slice={AssetSlice}
+                        Selection={detailedAssetList}
+                        OnClose={(selected, conf) => {
+                            setFilter('None')
+                        }}
+                        Show={showFilter == 'Asset'}
+                        Type={'multiple'}
+                        Columns={[
+                            { key: 'AssetKey', field: 'AssetKey', label: 'Key', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'AssetName', field: 'AssetName', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'AssetType', field: 'AssetType', label: 'Asset Type', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'VoltageKV', field: 'VoltageKV', label: 'Voltage (kV)', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'Meters', field: 'Meters', label: 'Meters', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'Locations', field: 'Locations', label: 'Substations', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } }
+                        ]}
+                        Title={"Filter by Asset"}
+                        GetEnum={getEnum}
+                        GetAddlFields={getAdditionalAssetFields} />
+                        : null}
+                {showFilter == 'Station' ?
+                    <DefaultSelects.Location 
+                        Slice={LocationSlice}
+                        Selection={detailedLocationList}
+                        OnClose={(selected, conf) => {
+                            setFilter('None')
+                        }}
+                        Show={showFilter == 'Station'}
+                        Type={'multiple'}
+                        Columns={[
+                            { key: 'Name', field: 'Name', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'LocationKey', field: 'LocationKey', label: 'Key', headerStyle: { width: '30%' }, rowStyle: { width: '30%' } },
+                            //{ key: 'Type', field: 'Type', label: 'Type', headerStyle: { width: '10%' }, rowStyle: { width: '10%' } },
+                            { key: 'Meters', field: 'Meters', label: 'Meters', headerStyle: { width: '10%' }, rowStyle: { width: '10%' } },
+                            { key: 'Assets', field: 'Assets', label: 'Assets', headerStyle: { width: '10%' }, rowStyle: { width: '10%' } },
+                            { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
+                        ]}
+                        Title={"Filter by Location"}
+                    GetEnum={getEnum}
+                    GetAddlFields={() => { return () => { } }} />
+                        : null}
+                {showFilter == 'AssetGroup' ?
+                    <DefaultSelects.AssetGroup
+                    Slice={AssetGroupSlice}
+                    Selection={assetGroupList}
+                    OnClose={(selected, conf) => {
+                        setFilter('None')
+                    }}
+                    Show={showFilter == 'AssetGroup'}
+                    Type={'multiple'}
+                    Columns={[
+                        { key: 'Name', field: 'Name', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                        { key: 'Assets', field: 'Assets', label: 'Assets', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                        { key: 'Meters', field: 'Meters', label: 'Meters', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                        { key: 'Users', field: 'Users', label: 'Users', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                        { key: 'AssetGroups', field: 'AssetGroups', label: 'SubGroups', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                        { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
+                    ]}
+                    Title={"Filter by Asset Group"}
+                    GetEnum={getEnum}
+                    GetAddlFields={() => { return () => { } }} />
+                        : null}
             </>
     );
 }
