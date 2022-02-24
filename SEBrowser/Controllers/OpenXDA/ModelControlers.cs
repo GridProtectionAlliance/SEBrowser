@@ -40,13 +40,13 @@ namespace SEBrowser.Controllers.OpenXDA
     public class OpenXDAAssetGroupController : ModelController<AssetGroupView> { }
 
     [RoutePrefix("api/openXDA/Asset")]
-    public class OpenXDAAssetController : ModelController<DetailedAsset> { }
+    public class OpenXDAAssetController : DetailedAssetController<DetailedAsset> { }
 
     [RoutePrefix("api/openXDA/Meter")]
     public class OpenXDAMeterController : ModelController<DetailedMeter> { }
 
     [RoutePrefix("api/openXDA/Location")]
-    public class OpenXDALocationController : ModelController<DetailedLocation> { }
+    public class OpenXDALocationController : DetailedLocationController<DetailedLocation> { }
 
     [RoutePrefix("api/openXDA/AdditionalField")]
     public class AdditionalFieldController : ModelController<AdditionalField>
