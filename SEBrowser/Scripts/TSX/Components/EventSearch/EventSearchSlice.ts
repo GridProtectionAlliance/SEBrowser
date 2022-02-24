@@ -28,6 +28,7 @@ import {  ajax } from 'jquery';
 import moment from 'moment';
 import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice } from '../../Store';
+import { SystemCenter } from '@gpa-gemstone/application-typings';
 
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
@@ -72,7 +73,7 @@ export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async 
         await dispatch(LocationSlice.Fetch());
 
     state = getState() as Redux.StoreState;
-    return dispatch(EventSearchsSlice.actions.ProcessQuery({ query, assets: state.Asset.Data, groups: state.AssetGroup.Data, locations: [], meters: state.Meter.Data }));
+    return dispatch(EventSearchsSlice.actions.ProcessQuery({ query, assets: state.Asset.Data, groups: state.AssetGroup.Data, locations: [], meters: state.Meter.Data, detailedMeters: state.DetailedMeter.Data, detailedAssets: state.DetailedAsset.Data, detailedStations: state.DetailedLocation.Data }));
 });
 
 // #endregion
@@ -97,7 +98,10 @@ export const EventSearchsSlice = createSlice({
         SelectedAssets: [],
         SelectedGroups: [],
         SelectedMeters: [],
-        SelectedStations: []
+        SelectedStations: [],
+        SelectedDetailedMeters: [],
+        SelectedDetailedAssets: [],
+        SelectedDetailedStations: []
     } as Redux.EventSearchState,
     reducers: {
         Sort: (state, action) => {
@@ -109,7 +113,10 @@ export const EventSearchsSlice = createSlice({
             const sorted = _.orderBy(state.Data, [state.SortField], [state.Ascending ? "asc" : "desc"])
             state.Data = sorted;
         },
-        ProcessQuery: (state, action: PayloadAction<{ query: queryString.ParsedUrlQuery, assets: OpenXDA.Asset[], groups: OpenXDA.AssetGroup[], locations: OpenXDA.Location[], meters: OpenXDA.Meter[] }>) => {
+        ProcessQuery: (state, action: PayloadAction<{
+            query: queryString.ParsedUrlQuery, assets: OpenXDA.Asset[], groups: OpenXDA.AssetGroup[], locations: OpenXDA.Location[], meters: OpenXDA.Meter[], detailedMeters: SystemCenter.Types.DetailedMeter[],
+            detailedStations: SystemCenter.Types.DetailedLocation[], detailedAssets: SystemCenter.Types.DetailedAsset[]
+        }>) => {
 
 
             state.TimeRange.date = action.payload.query['date']?.toString() ?? state.TimeRange.date;
@@ -130,6 +137,10 @@ export const EventSearchsSlice = createSlice({
             state.SelectedGroups = parseList('groups', action.payload.query)?.map(id => action.payload.groups.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
             state.SelectedMeters = parseList('meters', action.payload.query)?.map(id => action.payload.meters.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
             state.SelectedStations = parseList('stations', action.payload.query)?.map(id => action.payload.locations.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
+
+            state.SelectedDetailedAssets = parseList('detailedassets', action.payload.query)?.map(id => action.payload.detailedAssets.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
+            state.SelectedDetailedMeters = parseList('detailedmeters', action.payload.query)?.map(id => action.payload.detailedMeters.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
+            state.SelectedDetailedStations = parseList('detailedassets', action.payload.query)?.map(id => action.payload.detailedStations.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
 
             state.EventCharacteristic.durationMin = parseFloat(action.payload.query['durationMin']?.toString() ?? '0');
             state.EventCharacteristic.durationMax = parseFloat(action.payload.query['durationMax']?.toString() ?? '0');
@@ -229,6 +240,9 @@ export const SelectMeterList = (state: Redux.StoreState) => state.EventSearch.Se
 export const SelectAssetList = (state: Redux.StoreState) => state.EventSearch.SelectedAssets;
 export const SelectAssetGroupList = (state: Redux.StoreState) => state.EventSearch.SelectedGroups;
 export const SelectStationList = (state: Redux.StoreState) => state.EventSearch.SelectedStations;
+export const SelectDetailedMeterList = (state: Redux.StoreState) => state.EventSearch.SelectedDetailedMeters;
+export const SelectDetailedAssetList = (state: Redux.StoreState) => state.EventSearch.SelectedDetailedAssets;
+export const SelectDetailedStationList = (state: Redux.StoreState) => state.EventSearch.SelectedDetailedStations;
 
 export const SelectQueryParam = createSelector(
         (state: Redux.StoreState) => state.EventSearch.EventCharacteristic,
