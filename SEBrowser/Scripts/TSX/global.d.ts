@@ -20,6 +20,7 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
+import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { IGenericSliceState } from '@gpa-gemstone/react-interactive';
 
 declare global {
@@ -47,6 +48,9 @@ export namespace Redux {
         Meter: IGenericSliceState<OpenXDA.Meter>,
         Asset: IGenericSliceState<OpenXDA.Asset>,
         AssetGroup: IGenericSliceState<OpenXDA.AssetGroup>,
+        DetailedMeter: IGenericSliceState<SystemCenter.Types.DetailedMeter>,
+        DetailedAsset: IGenericSliceState<SystemCenter.Types.DetailedAsset>,
+        DetailedLocation: IGenericSliceState<SystemCenter.Types.DetailedLocation>,
         Location: IGenericSliceState<OpenXDA.Location>
     }
 
@@ -67,6 +71,9 @@ export namespace Redux {
         SelectedAssets: OpenXDA.Asset[],
         SelectedStations: OpenXDA.Location[],
         SelectedGroups: OpenXDA.AssetGroup[],
+        SelectedDetailedMeters: SystemCenter.Types.DetailedMeter[],
+        SelectedDetailedAssets: SystemCenter.Types.DetailedAsset[],
+        SelectedDetailedStations: SystemCenter.Types.DetailedLocation[],
         isReset: boolean
     }
 
