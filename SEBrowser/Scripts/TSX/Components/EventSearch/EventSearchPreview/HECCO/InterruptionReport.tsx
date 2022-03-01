@@ -22,6 +22,7 @@
 //******************************************************************************************************
 
 import Table from '@gpa-gemstone/react-table';
+import moment from 'moment';
 import React from 'react';
 
 interface IInterruption {
@@ -65,7 +66,7 @@ const InterruptionReport = (props: { EventID: number }) => {
             CircuitInfo: 'WAILUPE SUB WAILUPE 12.5KV CKT  CB- 1607 FUSE V4008D'
         },
         {
-            TimeOut: null,
+            TimeOut: '1/2/2020  12:19:00 AM',
             TimeIn: '1/2/2020  1:19:00 AM',
             Class: null,
             Area: '1875 KIHI ST  V-4008C, 1773 HANAHANAI PL  V-4008B, 1915 KIHI ST  V-4008A, 1810 ALAWEO ST  V-4008M, 1842 LAUKAHI ST  V-4008L, 1887 LALEA PL  V-4008K',
@@ -75,6 +76,17 @@ const InterruptionReport = (props: { EventID: number }) => {
         },
     ]
 
+    function formatDif(Tout: string, Tin: string) {
+        const T1 = moment(Tin);
+        const T2 = moment(Tout);
+
+        let r = '';
+        if (T1.diff(T2, 'minute') >= 60)
+            r = T1.diff(T2, 'hour').toFixed(0) + ' Hrs ';
+        r = r + (T1.diff(T2, 'minute') % 60) + ' Min';
+        return r;
+
+    }
     return (
         <div className="card">
             <div className="card-header">Interruption Report:</div>
@@ -82,9 +94,18 @@ const InterruptionReport = (props: { EventID: number }) => {
                 <Table<IInterruption>
                     cols={[
                         { key: 'CircuitInfo', field: 'CircuitInfo', label: 'Substation Ckt' },
-                        { key: 'TimeOut', field: 'TimeOut', label: 'Time Out' },
-                        { key: 'TimeIn', field: 'TimeIn', label: 'Time In' },
-                        { key: 'TotalTime', field: 'TimeIn', label: 'Total Time', content: (record) => { return null; }},
+                        {
+                            key: 'TimeOut', field: 'TimeOut', label: 'Time Out',
+                            content: (record) => (record.TimeIn == null && record.TimeOut != null ? moment(record.TimeOut).format("HH:mm") : null)
+                        },
+                        {
+                            key: 'TimeIn', field: 'TimeIn', label: 'Time In',
+                            content: (record) => (record.TimeIn == null ? null : moment(record.TimeIn).format("HH:mm"))
+                        },
+                        {
+                            key: 'TotalTime', field: 'TimeIn', label: 'Total Time',
+                            content: (record) => (record.TimeOut == null || record.TimeIn == null ? null : formatDif(record.TimeOut, record.TimeIn) )
+                        },
                         { key: 'Class', field: 'Class', label: 'Class Type' },
                         { key: 'Area', field: 'Area', label: 'Affected Area/District' },
                         { key: 'ReportNumber', field: 'ReportNumber', label: 'Report' },
@@ -97,7 +118,7 @@ const InterruptionReport = (props: { EventID: number }) => {
                     ascending={true}
                     tableClass="table"
                     theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
-                    tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: 200, height: 200, width: '100%' }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: 600, height: 600, width: '100%' }}
                     rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                 />
             </div>
