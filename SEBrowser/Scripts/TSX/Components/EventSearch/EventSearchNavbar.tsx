@@ -607,7 +607,8 @@ const EventSearchNavbar = (props: IProps) => {
                         Selection={meterList}
                         OnClose={(selected, conf) => {
                             setFilter('None');
-                            dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: selected, Stations: locationList }))
+                            if (conf)
+                                dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: selected, Stations: locationList }))
                         }
                         }
                         Show={showFilter == 'Meter'}
@@ -628,7 +629,9 @@ const EventSearchNavbar = (props: IProps) => {
                         Slice={AssetSlice}
                         Selection={assetList}
                         OnClose={(selected, conf) => {
-                            setFilter('None')
+                            setFilter('None');
+                            if (conf)
+                                dispatch(SetFilterLists({ Assets: selected, Groups: assetGroupList, Meters: meterList, Stations: locationList }))
                         }}
                         Show={showFilter == 'Asset'}
                         Type={'multiple'}
@@ -647,7 +650,9 @@ const EventSearchNavbar = (props: IProps) => {
                         Slice={LocationSlice}
                         Selection={locationList}
                         OnClose={(selected, conf) => {
-                            setFilter('None')
+                            setFilter('None');
+                            if (conf)
+                                dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: meterList, Stations: selected }))
                         }}
                         Show={showFilter == 'Station'}
                         Type={'multiple'}
@@ -666,7 +671,9 @@ const EventSearchNavbar = (props: IProps) => {
                     Slice={AssetGroupSlice}
                     Selection={assetGroupList}
                     OnClose={(selected, conf) => {
-                        setFilter('None')
+                        setFilter('None');
+                        if (conf)
+                            dispatch(SetFilterLists({ Assets: assetList, Groups: selected, Meters: meterList, Stations: locationList }))
                     }}
                     Show={showFilter == 'AssetGroup'}
                     Type={'multiple'}
