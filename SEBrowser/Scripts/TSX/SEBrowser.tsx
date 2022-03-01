@@ -38,7 +38,7 @@ import { Application, Page, Section } from '@gpa-gemstone/react-interactive';
 
 const SEBrowserMainPage = (props: {}) => {
     const [links, setLinks] = React.useState<SystemCenter.Types.ValueListItem[]>([]);
-
+    const [ignored, forceUpdate] = React.useReducer(x => x + 1, 0); // integer state for resize renders
 
     React.useEffect(() => {
         let handle = $.ajax({
@@ -54,6 +54,15 @@ const SEBrowserMainPage = (props: {}) => {
         handle.done(data => setLinks(data));
         return () => { if(handle.abort != undefined) handle.abort()}
     }, []);
+
+
+    React.useEffect(() => {
+        window.addEventListener('resize', (evt) => forceUpdate());
+
+        return () => {
+            window.removeEventListener('resize', (evt) => { });
+        }
+    }, [])
 
     const createWidget = (item: string) => {
         if (item === "breakerreport")
