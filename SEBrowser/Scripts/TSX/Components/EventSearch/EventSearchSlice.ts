@@ -22,13 +22,13 @@
 //******************************************************************************************************
 
 import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
-import { SEBrowser, OpenXDA, Redux } from '../../global';
+import { SEBrowser, Redux } from '../../global';
 import * as _ from 'lodash';
 import {  ajax } from 'jquery';
 import moment from 'moment';
 import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice } from '../../Store';
-import { SystemCenter } from '@gpa-gemstone/application-typings';
+import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
@@ -41,10 +41,10 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     const time = (getState() as any).EventSearch.TimeRange as SEBrowser.IReportTimeFilter;
     const types = (getState() as any).EventSearch.EventType as SEBrowser.IEventTypeFilters;
     const characteristics = (getState() as any).EventSearch.EventCharacteristic as SEBrowser.IEventCharacteristicFilters;
-    const meterList = (getState() as any).EventSearch.SelectedMeters as OpenXDA.Meter[];
-    const assetList = (getState() as any).EventSearch.SelectedAssets as OpenXDA.Asset[];
-    const locationList = (getState() as any).EventSearch.SelectedStations as OpenXDA.Location[];
-    const groupList = (getState() as any).EventSearch.SelectedGroups as OpenXDA.AssetGroup[];
+    const meterList = (getState() as any).EventSearch.SelectedMeters as SystemCenter.Types.DetailedMeter[];
+    const assetList = (getState() as any).EventSearch.SelectedAssets as SystemCenter.Types.DetailedAsset[];
+    const locationList = (getState() as any).EventSearch.SelectedStations as SystemCenter.Types.DetailedLocation[];
+    const groupList = (getState() as any).EventSearch.SelectedGroups as OpenXDA.Types.AssetGroup[];
 
     const filter = {
         date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,
@@ -73,7 +73,9 @@ export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async 
         await dispatch(LocationSlice.Fetch());
 
     state = getState() as Redux.StoreState;
-    return dispatch(EventSearchsSlice.actions.ProcessQuery({ query, assets: state.Asset.Data, groups: state.AssetGroup.Data, locations: [], meters: state.Meter.Data, detailedMeters: state.DetailedMeter.Data, detailedAssets: state.DetailedAsset.Data, detailedStations: state.DetailedLocation.Data }));
+    return dispatch(EventSearchsSlice.actions.ProcessQuery({
+        query, assets: state.Asset.Data, groups: state.AssetGroup.Data, locations: [], meters: state.Meter.Data
+    }));
 });
 
 // #endregion
@@ -114,8 +116,8 @@ export const EventSearchsSlice = createSlice({
             state.Data = sorted;
         },
         ProcessQuery: (state, action: PayloadAction<{
-            query: queryString.ParsedUrlQuery, assets: OpenXDA.Asset[], groups: OpenXDA.AssetGroup[], locations: OpenXDA.Location[], meters: OpenXDA.Meter[], detailedMeters: SystemCenter.Types.DetailedMeter[],
-            detailedStations: SystemCenter.Types.DetailedLocation[], detailedAssets: SystemCenter.Types.DetailedAsset[]
+            query: queryString.ParsedUrlQuery, assets: SystemCenter.Types.DetailedAsset[],
+            groups: OpenXDA.Types.AssetGroup[], locations: SystemCenter.Types.DetailedLocation[], meters: SystemCenter.Types.DetailedMeter[],
         }>) => {
 
 
@@ -137,10 +139,6 @@ export const EventSearchsSlice = createSlice({
             state.SelectedGroups = parseList('groups', action.payload.query)?.map(id => action.payload.groups.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
             state.SelectedMeters = parseList('meters', action.payload.query)?.map(id => action.payload.meters.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
             state.SelectedStations = parseList('stations', action.payload.query)?.map(id => action.payload.locations.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
-
-            state.SelectedDetailedAssets = parseList('detailedassets', action.payload.query)?.map(id => action.payload.detailedAssets.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
-            state.SelectedDetailedMeters = parseList('detailedmeters', action.payload.query)?.map(id => action.payload.detailedMeters.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
-            state.SelectedDetailedStations = parseList('detailedassets', action.payload.query)?.map(id => action.payload.detailedStations.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
 
             state.EventCharacteristic.durationMin = parseFloat(action.payload.query['durationMin']?.toString() ?? '0');
             state.EventCharacteristic.durationMax = parseFloat(action.payload.query['durationMax']?.toString() ?? '0');
@@ -190,7 +188,10 @@ export const EventSearchsSlice = createSlice({
             state.isReset = true;
             state.Status = 'changed';
         },
-        SetFilterLists: (state, action: PayloadAction<{ Meters: OpenXDA.Meter[], Assets: OpenXDA.Asset[], Groups: OpenXDA.AssetGroup[], Stations: OpenXDA.Location[] }>) => {
+        SetFilterLists: (state, action: PayloadAction<{
+            Meters: SystemCenter.Types.DetailedMeter[],
+            Assets: SystemCenter.Types.DetailedAsset[], Groups: OpenXDA.Types.AssetGroup[], Stations: SystemCenter.Types.DetailedLocation[]
+        }>) => {
             state.SelectedStations = action.payload.Stations;
             state.SelectedMeters = action.payload.Meters;
             state.SelectedGroups = action.payload.Groups;
@@ -240,9 +241,6 @@ export const SelectMeterList = (state: Redux.StoreState) => state.EventSearch.Se
 export const SelectAssetList = (state: Redux.StoreState) => state.EventSearch.SelectedAssets;
 export const SelectAssetGroupList = (state: Redux.StoreState) => state.EventSearch.SelectedGroups;
 export const SelectStationList = (state: Redux.StoreState) => state.EventSearch.SelectedStations;
-export const SelectDetailedMeterList = (state: Redux.StoreState) => state.EventSearch.SelectedDetailedMeters;
-export const SelectDetailedAssetList = (state: Redux.StoreState) => state.EventSearch.SelectedDetailedAssets;
-export const SelectDetailedStationList = (state: Redux.StoreState) => state.EventSearch.SelectedDetailedStations;
 
 export const SelectQueryParam = createSelector(
         (state: Redux.StoreState) => state.EventSearch.EventCharacteristic,
@@ -262,7 +260,7 @@ export const SelectEventList = createSelector(
 // #endregion
 
 // #region [ Async Functions ]
-function GetEventSearchs(params): JQuery.jqXHR<any[]> {
+function GetEventSearchs(params: any): JQuery.jqXHR<any[]> {
     return ajax({
         type: "POST",
         url: `${homePath}api/OpenXDA/GetEventSearchData`,
@@ -288,7 +286,9 @@ function computeReset(state: Redux.EventSearchState): boolean {
     return event && types && state.SelectedAssets.length == 0 && state.SelectedStations.length == 0 && state.SelectedMeters.length == 0 && state.SelectedGroups.length == 0;
 }
 
-function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: SEBrowser.IEventTypeFilters, time: SEBrowser.IReportTimeFilter, assets: OpenXDA.Asset[], groups: OpenXDA.AssetGroup[], meters: OpenXDA.Meter[], stations: OpenXDA.Location[]): any {
+function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: SEBrowser.IEventTypeFilters,
+    time: SEBrowser.IReportTimeFilter, assets: SystemCenter.Types.DetailedAsset[], groups: OpenXDA.Types.AssetGroup[],
+    meters: SystemCenter.Types.DetailedMeter[], stations: SystemCenter.Types.DetailedLocation[]): any {
     let result: any = {};
     if (assets.length > 0 && assets.length < 100) {
         let i = 0;

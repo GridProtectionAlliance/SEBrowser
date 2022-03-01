@@ -26,14 +26,13 @@ import React from 'react';
 import 'moment';
 import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
-import { OpenXDA } from '../../global';
 import { useDispatch, useSelector } from 'react-redux';
-import { SelectAssetGroupList, SelectAssetList, SelectCharacteristicFilter, SelectDetailedAssetList, SelectDetailedMeterList, SelectDetailedStationList, SelectReset, SelectTimeFilter, SelectTypeFilter } from './EventSearchSlice';
+import { SelectAssetGroupList, SelectAssetList, SelectCharacteristicFilter, SelectMeterList, SelectReset, SelectStationList, SelectTimeFilter, SelectTypeFilter, SetFilterLists } from './EventSearchSlice';
 import { ResetFilters,  SetFilters } from './EventSearchSlice';
 import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice, MagDurCurveSlice } from '../../Store';
 import { DefaultSelects } from '@gpa-gemstone/common-pages';
 import EventSearchFilterButton from './EventSearchbarFilterButton';
-import { SystemCenter } from '@gpa-gemstone/application-typings';
+import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { Search } from '@gpa-gemstone/react-interactive';
 
 
@@ -56,9 +55,9 @@ const EventSearchNavbar = (props: IProps) => {
 
     const assetGroupList = useSelector(SelectAssetGroupList);
 
-    const detailedMeterList = useSelector(SelectDetailedMeterList);
-    const detailedAssetList = useSelector(SelectDetailedAssetList);
-    const detailedLocationList = useSelector(SelectDetailedStationList);
+    const meterList = useSelector(SelectMeterList);
+    const assetList = useSelector(SelectAssetList);
+    const locationList = useSelector(SelectStationList);
 
     const reset = useSelector(SelectReset);
 
@@ -573,22 +572,22 @@ const EventSearchNavbar = (props: IProps) => {
                             <legend className="w-auto" style={{ fontSize: 'large' }}>Other Filters:</legend>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<SystemCenter.Types.DetailedMeter> Type={'Meter'} OnClick={() => setFilter('Meter')} Data={detailedMeterList} />
+                                        <EventSearchFilterButton<SystemCenter.Types.DetailedMeter> Type={'Meter'} OnClick={() => setFilter('Meter')} Data={meterList} />
                                     </div>
                                 </div>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<SystemCenter.Types.DetailedAsset> Type={'Asset'} OnClick={() => setFilter('Asset')} Data={detailedAssetList} />
+                                        <EventSearchFilterButton<SystemCenter.Types.DetailedAsset> Type={'Asset'} OnClick={() => setFilter('Asset')} Data={assetList} />
                                     </div>
                                 </div>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<OpenXDA.AssetGroup> Type={'AssetGroup'} OnClick={() => setFilter('AssetGroup')} Data={assetGroupList} />
+                                        <EventSearchFilterButton<OpenXDA.Types.AssetGroup> Type={'AssetGroup'} OnClick={() => setFilter('AssetGroup')} Data={assetGroupList} />
                                     </div>
                                 </div>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<SystemCenter.Types.DetailedLocation> Type={'Station'} OnClick={() => setFilter('Station')} Data={detailedLocationList} />
+                                        <EventSearchFilterButton<SystemCenter.Types.DetailedLocation> Type={'Station'} OnClick={() => setFilter('Station')} Data={locationList} />
                                     </div>
                                 </div>
 
@@ -603,13 +602,14 @@ const EventSearchNavbar = (props: IProps) => {
             </div>
             </nav>
 
-                {showFilter == 'Meter' ?
                     <DefaultSelects.Meter
                         Slice={MeterSlice}
-                        Selection={detailedMeterList}
+                        Selection={meterList}
                         OnClose={(selected, conf) => {
-                            setFilter('None')
-                        }}
+                            setFilter('None');
+                            dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: selected, Stations: locationList }))
+                        }
+                        }
                         Show={showFilter == 'Meter'}
                         Type={'multiple'}
                         Columns={[
@@ -624,11 +624,9 @@ const EventSearchNavbar = (props: IProps) => {
                         Title={"Filter by Meter"}
                         GetEnum={getEnum}
                         GetAddlFields={getAdditionalMeterFields} />
-                        : null}
-                {showFilter == 'Asset' ?
                 <DefaultSelects.Asset
                         Slice={AssetSlice}
-                        Selection={detailedAssetList}
+                        Selection={assetList}
                         OnClose={(selected, conf) => {
                             setFilter('None')
                         }}
@@ -645,11 +643,9 @@ const EventSearchNavbar = (props: IProps) => {
                         Title={"Filter by Asset"}
                         GetEnum={getEnum}
                         GetAddlFields={getAdditionalAssetFields} />
-                        : null}
-                {showFilter == 'Station' ?
                     <DefaultSelects.Location 
                         Slice={LocationSlice}
-                        Selection={detailedLocationList}
+                        Selection={locationList}
                         OnClose={(selected, conf) => {
                             setFilter('None')
                         }}
@@ -666,9 +662,7 @@ const EventSearchNavbar = (props: IProps) => {
                         Title={"Filter by Location"}
                     GetEnum={getEnum}
                     GetAddlFields={() => { return () => { } }} />
-                        : null}
-                {showFilter == 'AssetGroup' ?
-                    <DefaultSelects.AssetGroup
+                <DefaultSelects.AssetGroup
                     Slice={AssetGroupSlice}
                     Selection={assetGroupList}
                     OnClose={(selected, conf) => {
@@ -687,7 +681,6 @@ const EventSearchNavbar = (props: IProps) => {
                     Title={"Filter by Asset Group"}
                     GetEnum={getEnum}
                     GetAddlFields={() => { return () => { } }} />
-                        : null}
             </>
     );
 }

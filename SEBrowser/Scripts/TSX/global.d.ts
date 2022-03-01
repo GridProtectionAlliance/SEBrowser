@@ -20,7 +20,7 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-import { SystemCenter } from '@gpa-gemstone/application-typings';
+import { Application, SystemCenter, OpenXDA as XDA } from '@gpa-gemstone/application-typings';
 import { IGenericSliceState } from '@gpa-gemstone/react-interactive';
 
 declare global {
@@ -39,19 +39,15 @@ declare global {
     }
 }
 
-
-
 export namespace Redux {
     interface StoreState {
         EventSearch: EventSearchState,
         MagDurCurve: IGenericSliceState<SEBrowser.MagDurCurve>,
-        Meter: IGenericSliceState<OpenXDA.Meter>,
-        Asset: IGenericSliceState<OpenXDA.Asset>,
-        AssetGroup: IGenericSliceState<OpenXDA.AssetGroup>,
-        DetailedMeter: IGenericSliceState<SystemCenter.Types.DetailedMeter>,
-        DetailedAsset: IGenericSliceState<SystemCenter.Types.DetailedAsset>,
-        DetailedLocation: IGenericSliceState<SystemCenter.Types.DetailedLocation>,
-        Location: IGenericSliceState<OpenXDA.Location>
+        Meter: IGenericSliceState<SystemCenter.Types.DetailedMeter>,
+        Asset: IGenericSliceState<SystemCenter.Types.DetailedAsset>,
+        AssetGroup: IGenericSliceState<XDA.Types.AssetGroup>,
+        Location: IGenericSliceState<SystemCenter.Types.DetailedLocation>,
+        EventNote: NoteState
     }
 
     interface State<T> {
@@ -67,15 +63,21 @@ export namespace Redux {
         TimeRange: SEBrowser.IReportTimeFilter,
         EventType: SEBrowser.IEventTypeFilters,
         EventCharacteristic: SEBrowser.IEventCharacteristicFilters,
-        SelectedMeters: OpenXDA.Meter[],
-        SelectedAssets: OpenXDA.Asset[],
-        SelectedStations: OpenXDA.Location[],
-        SelectedGroups: OpenXDA.AssetGroup[],
-        SelectedDetailedMeters: SystemCenter.Types.DetailedMeter[],
-        SelectedDetailedAssets: SystemCenter.Types.DetailedAsset[],
-        SelectedDetailedStations: SystemCenter.Types.DetailedLocation[],
+        SelectedMeters: SystemCenter.Types.DetailedMeter[],
+        SelectedAssets: SystemCenter.Types.DetailedAsset[],
+        SelectedStations: SystemCenter.Types.DetailedLocation[],
+        SelectedGroups: XDA.Types.AssetGroup[],
         isReset: boolean
     }
+
+    interface NoteState {
+        Status: Application.Types.Status,
+        Data: SEBrowser.EventNote[],
+        ParentID: (number[] | null),
+        SortField: keyof XDA.Types.Note,
+        Ascending: boolean,
+    }
+
 
 } 
 export namespace SEBrowser {
@@ -93,14 +95,16 @@ export namespace SEBrowser {
     }
     interface IEventTypeFilters { faults: boolean, sags: boolean, swells: boolean, interruptions: boolean, breakerOps: boolean, transients: boolean, relayTCE: boolean, others: boolean}
     interface MagDurCurve { ID: number, Name: string, XHigh: number, XLow: number, YHigh: number, YLow: number, UpperCurve: string, LowerCurve: string, Area: string }
+
+    interface EventNote extends XDA.Types.Note {
+        EventIDs: number[],
+        IDs: number[],
+        NumEvents: number
+    }
 }
 
 export namespace OpenXDA {
     type AssetTypeName = 'Line' | 'Breaker' | 'Transformer' | 'CapacitorBank' | 'Bus';
     type EventTypeName = 'Fault' | 'RecloseIntoFault' | 'BreakerOpen' | 'Interruption' | 'Sag' | 'Swell' | 'Transient' | 'Other' | 'Test' | 'Breaker' | 'Snapshot';
-    interface Asset { ID: number, AssetKey: string, AssetName: string, AssetType: string, VoltageKV: number, Meters: number, Locations: string }
-    interface Meter { ID: number, AssetKey: string, Name: string, Location: string, MappedAssets: number, Make: string, Model: string }
-    interface AssetGroup { ID: number, Name: string, DisplayDashboard: boolean, AssetGroups: number, Meters: number, Assets: number, Users: number }
-    interface Location { ID: number, LocationKey: string, Name: string, Assets: number, Meters: number }
 }
 

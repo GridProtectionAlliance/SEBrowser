@@ -24,11 +24,11 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { SelectEventSearchs } from './EventSearchSlice';
-import { LoadingScreen, Modal, ServerErrorIcon, ToolTip } from '@gpa-gemstone/react-interactive';
+import { LoadingScreen, Modal, ServerErrorIcon } from '@gpa-gemstone/react-interactive';
 import Table, { SelectTable } from '@gpa-gemstone/react-table';
 import { EventNoteSlice } from '../../Store';
 import { Application, OpenXDA } from '@gpa-gemstone/application-typings';
-import { EventNote } from './EventNoteSlice';
+import { SEBrowser } from '../../global';
 import moment from 'moment';
 import { CrossMark } from '@gpa-gemstone/gpa-symbols';
 import { TextArea } from '@gpa-gemstone/react-forms';
@@ -44,11 +44,11 @@ const EventSearchListedEventsNoteWindow: React.FC<{}> = () => {
     const [noteTag, setNoteTag] = React.useState<OpenXDA.Types.NoteTag>({ ID: -1, Name: 'General' });
     const [noteApp, setNoteApp] = React.useState<OpenXDA.Types.NoteApplication>({ ID: -1, Name: 'SEbrowser' });
 
-    const [note, setNote] = React.useState<EventNote>(CreateNewNote());
+    const [note, setNote] = React.useState<SEBrowser.EventNote>(CreateNewNote());
 
 
     function CreateNewNote() {
-        const newNote: EventNote = {
+        const newNote: SEBrowser.EventNote = {
             ID: -1,
             ReferenceTableID: -1,
             NoteTagID: noteTag?.ID ?? -1,
@@ -152,7 +152,7 @@ const EventSearchListedEventsNoteWindow: React.FC<{}> = () => {
         })
     }
 
-    function handleAdd(d: EventNote) {
+    function handleAdd(d: SEBrowser.EventNote) {
         dispatch(EventNoteSlice.DBAction({ verb: 'POST', record: { ...d, UserAccount: undefined, Timestamp: moment().format('MM/DD/YYYY HH:mm') } }))
         setNote(CreateNewNote());
     }
@@ -209,9 +209,9 @@ const EventSearchListedEventsNoteWindow: React.FC<{}> = () => {
     
 }
 
-interface IEvNoteProps { note: EventNote, setNote: (n:EventNote) => void }
+interface IEvNoteProps { note: SEBrowser.EventNote, setNote: (n:SEBrowser.EventNote) => void }
 const EventNoteWindow = (props: IEvNoteProps) => {
-    const data: EventNote[] = useSelector(EventNoteSlice.Data)
+    const data: SEBrowser.EventNote[] = useSelector(EventNoteSlice.Data)
     const dataStatus: Application.Types.Status = useSelector(EventNoteSlice.Status)
     const sortField: keyof OpenXDA.Types.Note = useSelector(EventNoteSlice.SortField)
     const ascending: boolean = useSelector(EventNoteSlice.Ascending);
@@ -247,7 +247,7 @@ const EventNoteWindow = (props: IEvNoteProps) => {
         </div>
         <div className="card-body" style={{ maxHeight: h - 100, overflowY: 'auto', width: '100%' }}>
             <div>
-                <Table<EventNote>
+                <Table<SEBrowser.EventNote>
                     cols={[
                         { key: 'Note', field: 'Note', label: 'Note', headerStyle: { width: '50%' }, rowStyle: { width: '50%' } },
                         { key: 'Timestamp', field: 'Timestamp', label: 'Time', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' }, content: (item) => moment.utc(item.Timestamp).format("MM/DD/YYYY HH:mm") },
@@ -276,7 +276,7 @@ const EventNoteWindow = (props: IEvNoteProps) => {
             </div>
             <div className="row">
                 <div className={'col-12'}>
-                    <TextArea<EventNote> Record={props.note} Rows={4} Field={'Note'} Setter={(n) => props.setNote(n)} Valid={() => props.note.Note != null && props.note.Note.length > 0} Label={''} />
+                    <TextArea<SEBrowser.EventNote> Record={props.note} Rows={4} Field={'Note'} Setter={(n) => props.setNote(n)} Valid={() => props.note.Note != null && props.note.Note.length > 0} Label={''} />
                 </div>
             </div>
         </div>

@@ -21,17 +21,17 @@
 //
 //******************************************************************************************************
 
-import { SystemCenter } from '@gpa-gemstone/application-typings';
+import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { GenericSlice } from '@gpa-gemstone/react-interactive';
 import { configureStore } from '@reduxjs/toolkit';
 import NoteSlice from './Components/EventSearch/EventNoteSlice';
 import EventSearchReducer from './Components/EventSearch/EventSearchSlice';
-import { SEBrowser, OpenXDA } from './global';
+import { SEBrowser,  } from './global';
 
 declare var homePath: string;
 
 export const MagDurCurveSlice = new GenericSlice<SEBrowser.MagDurCurve>('MagDurCurve', `${homePath}api/StandardMagDurCurve`, 'Name');
-export const AssetGroupSlice = new GenericSlice<OpenXDA.AssetGroup>('AssetGroup', `${homePath}api/openXDA/AssetGroup`, 'Name');
+export const AssetGroupSlice = new GenericSlice<OpenXDA.Types.AssetGroup>('AssetGroup', `${homePath}api/openXDA/AssetGroup`, 'Name');
 
 export const MeterSlice = new GenericSlice<SystemCenter.Types.DetailedMeter>("Meter", `${homePath}api/OpenXDA/Meter`, "Name", true);
 export const AssetSlice = new GenericSlice<SystemCenter.Types.DetailedAsset>("Asset", `${homePath}api/OpenXDA/Asset`, "AssetName", true);
