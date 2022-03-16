@@ -33,7 +33,7 @@ import queryString from 'querystring';
 import EventSearchMagDur from './EventSearchMagDur';
 import { useDispatch, useSelector } from 'react-redux';
 import { ProcessQuery, SelectEventList, SelectQueryParam } from './EventSearchSlice';
-import createHistory from "history/createBrowserHistory";
+
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface IProps { }
