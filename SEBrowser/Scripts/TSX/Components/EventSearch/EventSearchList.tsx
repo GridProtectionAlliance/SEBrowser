@@ -24,7 +24,7 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import moment from 'moment';
-import { ConfigurableTable } from '@gpa-gemstone/react-interactive';
+import { ConfigurableTable, LoadingIcon } from '@gpa-gemstone/react-interactive';
 import { useSelector, useDispatch } from 'react-redux';
 import { OpenXDA, Redux, SEBrowser } from '../../global';
 import { SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
@@ -61,10 +61,9 @@ export default function EventSearchList(props: IProps) {
     })
 
     React.useEffect(() => {
-        let handle = null;
         if (status != 'unitiated' && status != 'changed') return;
 
-        handle = dispatch(FetchEventSearches());
+        dispatch(FetchEventSearches());
         return () => {}
 
     }, [status]);
@@ -143,7 +142,13 @@ export default function EventSearchList(props: IProps) {
             })
     }
     return (
-        <div ref={ref} style={{width: '100%', maxHeight: props.height, overflowY: "hidden"}}>
+        <div ref={ref} style={{
+            width: '100%', maxHeight: props.height, overflowY: "hidden", opacity: (status == 'loading' ? 0.5 : undefined),
+            backgroundColor: (status == 'loading' ? '#00000' : undefined)
+        }}>
+            {status == 'loading' ? <div style={{ height: '40px', width: '40px', margin: 'auto' }}>
+                    <LoadingIcon Show={true} Size={40} />
+                </div> : null}
             <ConfigurableTable<any>
                 cols={[{
                     field: "Time", key: "Time", label: "Time", content: (item, key, fld, style) => ProcessWhitespace(item[fld])
