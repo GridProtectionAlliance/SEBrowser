@@ -35,9 +35,10 @@ const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
 
+let fetchHandle: JQuery.jqXHR<any> | null = null;
 
 // #region [ Thunks ]
-export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (_, { dispatch, getState }) => {
+export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (_, { signal, dispatch, getState }) => {
     const time = (getState() as any).EventSearch.TimeRange as SEBrowser.IReportTimeFilter;
     const types = (getState() as any).EventSearch.EventType as SEBrowser.IEventTypeFilters;
     const characteristics = (getState() as any).EventSearch.EventCharacteristic as SEBrowser.IEventCharacteristicFilters;
@@ -58,7 +59,17 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
         meterIDs: meterList.map(item => item.ID), assetIDs: assetList.map(item => item.ID),
         groupIDs: groupList.map(item => item.ID), locationIDs: locationList.map(item => item.ID)
     }
-    return await GetEventSearchs(filter);
+
+    if (fetchHandle != null && fetchHandle.abort != null)
+        fetchHandle.abort();
+
+    const handle = GetEventSearchs(filter);
+    fetchHandle = handle;
+    signal.addEventListener('abort', () => {
+        if (handle.abort !== undefined) handle.abort();
+    });
+
+    return await handle;
 });
 
 export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async (query: queryString.ParsedUrlQuery , { dispatch, getState }) => {
@@ -103,7 +114,8 @@ export const EventSearchsSlice = createSlice({
         SelectedStations: [],
         SelectedDetailedMeters: [],
         SelectedDetailedAssets: [],
-        SelectedDetailedStations: []
+        SelectedDetailedStations: [],
+        ActiveFetchID: []
     } as Redux.EventSearchState,
     reducers: {
         Sort: (state, action) => {
@@ -204,6 +216,7 @@ export const EventSearchsSlice = createSlice({
     extraReducers: (builder) => {
 
         builder.addCase(FetchEventSearches.fulfilled, (state, action) => {
+            state.ActiveFetchID = state.ActiveFetchID.filter(id => id !== action.meta.requestId);
             state.Status = 'idle';
             state.Error = null;
             if (action.payload.length > 100) alert("The query you submitted was too large (" + action.payload.length.toString() + " records) and only the first 100 records were return.  Please refine your search if necessary.")
@@ -213,8 +226,12 @@ export const EventSearchsSlice = createSlice({
         });
         builder.addCase(FetchEventSearches.pending, (state, action) => {
             state.Status = 'loading';
+            state.ActiveFetchID.push(action.meta.requestId);
         });
         builder.addCase(FetchEventSearches.rejected, (state, action) => {
+            state.ActiveFetchID = state.ActiveFetchID.filter(id => id !== action.meta.requestId);
+            if (state.ActiveFetchID.length > 0)
+                return;
             state.Status = 'error';
             state.Error = action.error.message;
 

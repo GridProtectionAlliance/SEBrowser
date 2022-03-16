@@ -67,7 +67,8 @@ export namespace Redux {
         SelectedAssets: SystemCenter.Types.DetailedAsset[],
         SelectedStations: SystemCenter.Types.DetailedLocation[],
         SelectedGroups: XDA.Types.AssetGroup[],
-        isReset: boolean
+        isReset: boolean,
+        ActiveFetchID: string[]
     }
 
     interface NoteState {

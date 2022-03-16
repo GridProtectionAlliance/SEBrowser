@@ -61,11 +61,12 @@ export default function EventSearchList(props: IProps) {
     })
 
     React.useEffect(() => {
+        let handle = null;
         if (status != 'unitiated' && status != 'changed') return;
-        dispatch(FetchEventSearches());
 
-        return function () {
-        }
+        handle = dispatch(FetchEventSearches());
+        return () => {}
+
     }, [status]);
 
     React.useEffect(() => {
