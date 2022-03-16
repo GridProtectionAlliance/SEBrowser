@@ -17,11 +17,11 @@
   },
   "dependencies": {
     "@gpa-gemstone/application-typings": "0.0.45",
-    "@gpa-gemstone/common-pages": "0.0.37",
+    "@gpa-gemstone/common-pages": "0.0.38",
     "@gpa-gemstone/gpa-symbols": "0.0.20",
     "@gpa-gemstone/react-forms": "1.1.21",
     "@gpa-gemstone/react-graph": "1.0.14",
-    "@gpa-gemstone/react-interactive": "1.0.47",
+    "@gpa-gemstone/react-interactive": "1.0.49",
     "@gpa-gemstone/react-table": "1.2.12",
     "@reduxjs/toolkit": "1.7.2",
     "@types/d3": "7.1.0",
