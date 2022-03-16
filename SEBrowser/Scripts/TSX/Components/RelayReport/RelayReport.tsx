@@ -21,96 +21,82 @@
 //******************************************************************************************************
 
 import * as React from 'react';
-import { clone, isEqual } from 'lodash';
-
 import RelayReportNavBar, { RelayReportNavBarProps } from './RelayReportNavBar';
 import RelayReportPane from './RelayReportPane';
-
 import * as queryString from 'querystring';
 import moment from 'moment';
-import { NavigateFunction, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
 
-interface IProps { }
 interface IState {
     searchBarProps: RelayReportNavBarProps,
 }
 
-export default class RelayReport extends React.Component<IProps, IState>{
-    navigate: NavigateFunction;
-    historyHandle: any;
+const RelayReport = (props: {}) => {
+    const navigate = useNavigate();
+    const history = useLocation();
 
+    const [BreakerID, setBreakerID] = React.useState<number>(0);
+    const [ChannelID, setChannelID] = React.useState<number>(0);
+    const [StationId, setStationId] = React.useState<number>(0);
+    const [date, setDate] = React.useState<string>('');
+    const [time, setTime] = React.useState<string>('');
+    const [windowSize, setWindowSize] = React.useState<number>(0);
+    const [timeWindowUnits, setTimeWindowUnits] = React.useState<number>(0);
 
-    constructor(props, context) {
-        super(props, context);
+    React.useEffect(() => {
+        var query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
+        setBreakerID(query['breakerid'] != undefined ? parseInt(query['breakerid'] as string) : -1);
+        setChannelID(query['channelid'] != undefined ? parseInt(query['channelid'] as string) : -1);
+        setDate(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat));
+        setTime(query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat));
+        setWindowSize(query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10);
+        setTimeWindowUnits(query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2);
+        setStationId(query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1);
 
-        this.navigate = useNavigate();
-        var query = queryString.parse(this.navigate['location'].search);
+    }, []);
 
-        this.state = {
-            searchBarProps: {
-                stateSetter: this.stateSetter.bind(this),
-                BreakerID: (query['breakerid'] != undefined ? parseInt(query['breakerid'] as string) : -1),
-                ChannelID: (query['channelid'] != undefined ? parseInt(query['channelid'] as string) : -1),
-                date: (query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat)),
-                time: (query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat)),
-                windowSize: (query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10),
-                timeWindowUnits: (query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2),
-                StationId: (query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1),
-            },
-            
+    React.useEffect(() => {
+        const state = {
+            BreakerID, ChannelID, StationId, date, time,
+            windowSize, timeWindowUnits
         };
+
+        let q = queryString.stringify(state, "&", "=", { encodeURIComponent: queryString.escape });
+        let handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
+        return (() => { clearTimeout(handle); })
+
+    }, [BreakerID, ChannelID, StationId, date, time,
+        windowSize, timeWindowUnits])
+
+    function setState(obj: IState) {
+        setBreakerID(obj.searchBarProps.BreakerID);
+        setChannelID(obj.searchBarProps.ChannelID);
+        setDate(obj.searchBarProps.date);
+        setTime(obj.searchBarProps.time);
+        setWindowSize(obj.searchBarProps.windowSize);
+        setTimeWindowUnits(obj.searchBarProps.timeWindowUnits);
+        setStationId(obj.searchBarProps.StationId);
     }
 
-    componentDidMount() {
-        
-    }
+    const searchBarProps: RelayReportNavBarProps = {
+        BreakerID, ChannelID, StationId, date, time,
+        windowSize, timeWindowUnits, stateSetter: setState
+    };
 
-    componentWillUnmount() {
-    }
-
-    componentWillReceiveProps(nextProps: IProps) {
-    }
-
-
-    render() {
-        return (
-            <div style={{ width: '100%', height: '100%' }}>
-                <RelayReportNavBar {...this.state.searchBarProps}/>
-                <div style={{ width: '100%', height: 'calc( 100% - 250px)' }}>
-                    <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
-                        <RelayReportPane {...this.state.searchBarProps} />
-                    </div>
-
+    return (
+        <div style={{ width: '100%', height: '100%' }}>
+            <RelayReportNavBar {...searchBarProps} />
+            <div style={{ width: '100%', height: 'calc( 100% - 250px)' }}>
+                <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
+                    <RelayReportPane {...searchBarProps} />
                 </div>
+
             </div>
-        );
-    }
-
-    stateSetter(obj) {
-        function toQueryString(state: IState) {
-            var dataTypes = ["boolean", "number", "string"]
-            var stateObject: IState = clone(state);
-            $.each(Object.keys(stateObject), (index, key) => {
-                if (dataTypes.indexOf(typeof (stateObject[key])) < 0)
-                    delete stateObject[key];
-            })
-            return queryString.stringify(stateObject as any);
-        }
-
-        var oldQueryString = toQueryString(this.state);
-
-        this.setState(obj, () => {
-            var newQueryString = toQueryString(this.state);
-
-            if (!isEqual(oldQueryString, newQueryString)) {
-                clearTimeout(this.historyHandle);
-                this.historyHandle = setTimeout(() => this.navigate['push'](this.navigate['location'].pathname + '?' + newQueryString), 500);
-            }
-        });
-    }
-
-
+        </div>
+    );
 }
+
+export default RelayReport;
