@@ -24,73 +24,53 @@
 
 import * as React from 'react';
 import BreakerReportNavbar from './BreakerReportNavbar';
-import { clone, isEqual } from 'lodash';
 import * as queryString from 'querystring';
 const momentDateFormat = "MM/DD/YYYY";
 import moment from 'moment';
-import { NavigateFunction, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+
 declare var homePath: string;
 
-export default class BreakerReport extends React.Component<{}, State>{
-    navigate: NavigateFunction;
-    historyHandle: any;
-    constructor(props, context) {
-        super(props, context);
+const BreakerReport = (props: {}) => {
+    const [fromDate, setFromDate] = React.useState<string>('');
+    const [toDate, setToDate] = React.useState<string>('');
+    const [breaker, setBreaker] = React.useState<string>('');
+    const navigate = useNavigate();
+    const history = useLocation();
 
-        this.navigate = useNavigate();
-        var query = queryString.parse(this.navigate['location'].search);
+    React.useEffect(() => {
+        var query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
 
-        this.state = {
-            fromDate: (query['fromDate'] != undefined ? query['fromDate'] as string : moment().subtract(30, 'days').format(momentDateFormat)),
-            toDate: (query['toDate'] != undefined ? query['toDate'] as string : moment().format(momentDateFormat)),
-            breaker: (query['breaker'] != undefined ? query['breaker'] as string : '0'),
-        }
+        setFromDate(query['fromDate'] != undefined ? query['fromDate'].toString() : moment().subtract(30, 'days').format(momentDateFormat));
+        setToDate(query['toDate'] != undefined ? query['toDate'].toString() : moment().format(momentDateFormat));
+        setBreaker(query['breaker'] != undefined ? query['breaker'].toString() : '0');
 
-        this.navigate['listen']((location, action) => {
-            var query = queryString.parse(this.navigate['location'].search);
-            this.setState({
-                fromDate: (query['fromDate'] != undefined ? query['fromDate'] as string : moment().subtract(30, 'days').format(momentDateFormat)),
-                toDate: (query['toDate'] != undefined ? query['toDate'] as string : moment().format(momentDateFormat)),
-                breaker: (query['breaker'] != undefined ? query['breaker'] as string : '0'),
-            });
-        });
+    }, []);
 
-        this.stateSetter = this.stateSetter.bind(this);
+
+    React.useEffect(() => {
+        const state = { breaker, toDate, fromDate };
+
+        let q = queryString.stringify(state, "&", "=", { encodeURIComponent: queryString.escape });
+        let handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
+        return (() => { clearTimeout(handle); })
+    }, [fromDate,toDate,breaker])
+
+    function setState(a: State) {
+        setFromDate(a.fromDate);
+        setToDate(a.toDate);
+        setBreaker(a.breaker);
     }
 
-    render() {
-        var link = `${homePath}api/BreakerReport/${(this.state.breaker == '0' ? `AllBreakersReport?` : `IndividualBreakerReport?breakerId=${this.state.breaker}&`)}startDate=${this.state.fromDate}&endDate=${this.state.toDate}`;
-        return (
-            <div style={{ width: '100%', height: '100%' }}>
-                <BreakerReportNavbar toDate={this.state.toDate} fromDate={this.state.fromDate} breaker={this.state.breaker} stateSetter={this.stateSetter}/>
-                <div style={{ width: '100%', height: 'calc( 100% - 163px)' }}>
-                    <embed style={{ width: 'inherit', height: 'inherit', position: 'absolute' }} id="pdfContent" src={link} key={link} type="application/pdf"/>
-                </div>
+    const link = `${homePath}api/BreakerReport/${(breaker == '0' ? `AllBreakersReport?` : `IndividualBreakerReport?breakerId=${breaker}&`)}startDate=${fromDate}&endDate=${toDate}`;
+    return (
+        <div style={{ width: '100%', height: '100%' }}>
+            <BreakerReportNavbar toDate={toDate} fromDate={fromDate} breaker={breaker} stateSetter={setState} />
+            <div style={{ width: '100%', height: 'calc( 100% - 163px)' }}>
+                <embed style={{ width: 'inherit', height: 'inherit', position: 'absolute' }} id="pdfContent" src={link} key={link} type="application/pdf" />
             </div>
-        );
-    }
-
-    stateSetter(obj) {
-        function toQueryString(state: State) {
-            var dataTypes = ["boolean", "number", "string"]
-            var stateObject: State = clone(state);
-            $.each(Object.keys(stateObject), (index, key) => {
-                if (dataTypes.indexOf(typeof (stateObject[key])) < 0)
-                    delete stateObject[key];
-            })
-            return queryString.stringify(stateObject as any);
-        }
-
-        var oldQueryString = toQueryString(this.state);
-
-        this.setState(obj, () => {
-            var newQueryString = toQueryString(this.state);
-
-            if (!isEqual(oldQueryString, newQueryString)) {
-                clearTimeout(this.historyHandle);
-                this.historyHandle = setTimeout(() => this.navigate['push'](this.navigate['location'].pathname + '?' + newQueryString), 500);
-            }
-        });
-    }
-
+        </div>
+    );
 }
+
+export default BreakerReport;
