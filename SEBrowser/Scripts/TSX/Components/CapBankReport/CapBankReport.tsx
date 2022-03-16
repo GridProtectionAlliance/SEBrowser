@@ -21,91 +21,109 @@
 //******************************************************************************************************
 
 import * as React from 'react';
-import { cloneDeep, isEqual } from 'lodash';
 import CapBankReportNavBar, { CapBankReportNavBarProps } from './CapBankReportNavBar';
 import CapBankReportPane from './CapBankReportPane';
 import * as queryString from 'querystring';
 import moment from 'moment';
-import { NavigateFunction, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
 
-interface IProps { }
 interface IState {
     searchBarProps: CapBankReportNavBarProps,
 }
 
+const CapBankReport = (props: {}) => {
+    const navigate = useNavigate();
+    const history = useLocation();
+    const [CapBankID, setCapBankID] = React.useState<number>(0);
+    const [date, setDate] = React.useState<string>('');
+    const [time, setTime] = React.useState<string>('');
+    const [windowSize, setWindowSize] = React.useState<number>(0);
+    const [timeWindowUnits, setTimeWindowUnits] = React.useState<number>(0);
+    const [selectedBank, setSelectedBank] = React.useState<number>(0);
+    const [StationId, setStationID] = React.useState<number>(0);
+    const [numBanks, setNumBanks] = React.useState<number>(0);
 
-export default class CapBankReport extends React.Component<IProps, IState>{
-    navigate: NavigateFunction;
-    historyHandle: any;
+    const [ResFilt, setResFilt] = React.useState<number[]>([]);
+    const [StatFilt, setStatFilt] = React.useState<number[]>([]);
+    const [OpFilt, setOpFilt] = React.useState<number[]>([]);
+    const [RestFilt, setRestFilt] = React.useState<number[]>([]);
+    const [PISFilt, setPISFilt] = React.useState<number[]>([]);
+    const [HealthFilt, setHealthFilt] = React.useState<number[]>([]);
+    const [PhaseFilter, setPhaseFilter] = React.useState<number[]>([]);
 
+    React.useEffect(() => {
+        var query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
 
-    constructor(props, context) {
-        super(props, context);
+        setCapBankID(query['capBankId'] != undefined ? parseInt(query['capBankId'] as string) : -1);
+        setDate(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat));
+        setTime(query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat));
+        setWindowSize(query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10);
+        setTimeWindowUnits(query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2);
+        setSelectedBank(query['selectedBank'] != undefined ? parseInt(query['selectedBank'].toString()) : -1);
+        setStationID(query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1);
+        setNumBanks(0);
+        setResFilt([0, 1]);
+        setStatFilt([999]);
+        setOpFilt([999]);
+        setRestFilt([999]);
+        setPISFilt([999]);
+        setHealthFilt([999]);
+        setPhaseFilter([999]);
+        
+    }, []);
 
-        this.navigate = useNavigate();
-        var query = queryString.parse(this.navigate['location'].search);
+    React.useEffect(() => {
+        const state = {
+            CapBankID, date, time, windowSize, timeWindowUnits,
+            selectedBank, StationId, numBanks, ResFilt, StatFilt,
+            OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter };
 
-        this.state = {
-            searchBarProps: {
-                stateSetter: this.stateSetter.bind(this),
-                CapBankID: (query['capBankId'] != undefined ? parseInt(query['capBankId'] as string) : -1),
-                date: (query['date'] != undefined ? query['date'] as string: moment().format(momentDateFormat)),
-                time: (query['time'] != undefined ? query['time'] as string: moment().format(momentTimeFormat)),
-                windowSize: (query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10),
-                timeWindowUnits: (query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2),          
-                selectedBank: (query['selectedBank'] != undefined ? parseInt(query['selectedBank'].toString()) : -1),
-                StationId: (query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1),
-                numBanks: 0,
-                ResFilt: [0,1],
-                StatFilt: [999],
-                OpFilt: [999],
-                RestFilt: [999],
-                PISFilt: [999],
-                HealthFilt: [999],
-                PhaseFilter: [999]
-            },
-        };
+        let q = queryString.stringify(state, "&", "=", { encodeURIComponent: queryString.escape });
+        let handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
+        return (() => { clearTimeout(handle); })
+
+    }, [CapBankID, date, time, windowSize, timeWindowUnits,
+        selectedBank, StationId, numBanks, ResFilt, StatFilt,
+        OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter])
+
+    function setState(a: IState) {
+        setCapBankID(a.searchBarProps.CapBankID);
+        setDate(a.searchBarProps.date);
+        setTime(a.searchBarProps.time);
+        setWindowSize(a.searchBarProps.windowSize);
+        setTimeWindowUnits(a.searchBarProps.timeWindowUnits);
+        setSelectedBank(a.searchBarProps.selectedBank);
+        setStationID(a.searchBarProps.StationId);
+        setNumBanks(a.searchBarProps.numBanks);
+        setResFilt(a.searchBarProps.ResFilt);
+        setStatFilt(a.searchBarProps.StatFilt);
+        setOpFilt(a.searchBarProps.OpFilt);
+        setRestFilt(a.searchBarProps.RestFilt);
+        setPISFilt(a.searchBarProps.PISFilt);
+        setHealthFilt(a.searchBarProps.HealthFilt);
+        setPhaseFilter(a.searchBarProps.PhaseFilter);
     }
-    
-    render() {
-        return (
-            <div style={{ width: '100%', height: '100%' }}>
-                <CapBankReportNavBar {...this.state.searchBarProps}/>
-                <div style={{ width: '100%', height: 'calc( 100% - 250px)' }}>
-                    <CapBankReportPane {...this.state.searchBarProps}/>
-                </div>
+
+    const searchBarProps: CapBankReportNavBarProps = {
+        CapBankID, date, time, windowSize, timeWindowUnits,
+        selectedBank, StationId, numBanks, ResFilt, StatFilt,
+        OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter,
+        stateSetter: setState
+    }
+
+    return (
+        <div style={{ width: '100%', height: '100%' }}>
+            <CapBankReportNavBar {...searchBarProps} />
+            <div style={{ width: '100%', height: 'calc( 100% - 250px)' }}>
+                <CapBankReportPane {...searchBarProps} />
             </div>
-        );
-    }
-
-    
-    stateSetter(obj) {
-        function toQueryString(state: IState) {
-            var dataTypes = ["boolean", "number", "string"]
-            var stateObject: IState = cloneDeep(state);
-            $.each(Object.keys(stateObject.searchBarProps), (index, key) => {
-                if (dataTypes.indexOf(typeof (stateObject.searchBarProps[key])) < 0)
-                    delete stateObject.searchBarProps[key];
-            })
-            return queryString.stringify(stateObject.searchBarProps as any);
-        }
-
-        var oldQueryString = toQueryString(this.state);
-
-        this.setState(obj, () => {
-            var newQueryString = toQueryString(this.state);
-
-            if (!isEqual(oldQueryString, newQueryString)) {
-                clearTimeout(this.historyHandle);
-                this.historyHandle = setTimeout(() => this.navigate['push'](this.navigate['location'].pathname + '?' + newQueryString), 500);
-            }
-        });
-    }
-
-
+        </div>
+    );
 }
+
+export default CapBankReport;
 
 
