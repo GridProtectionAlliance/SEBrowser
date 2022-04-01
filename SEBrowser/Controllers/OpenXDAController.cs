@@ -143,7 +143,7 @@ namespace SEBrowser.Controllers
 	                    EventWorstDisturbance ON EventWorstDisturbance.EventID = Event.ID  Left JOIN
                         FaultSummary ON FaultSummary.ID IS NULL
                     WHERE {getTimeFilter(postData)} {filters}                       
-                    UNION
+                    UNION ALL
                     SELECT Event.ID as EventID,
                         NULL AS DisturbanceID,
                         NULL AS FaultID
@@ -152,7 +152,7 @@ namespace SEBrowser.Controllers
                         FaultSummary ON FaultSummary.ID IS NULL LEFT JOIN
                         EventWorstDisturbance ON EventWorstDisturbance.ID IS NULL
                     WHERE {getTimeFilter(postData)} AND EventTypeID IN (SELECT ID FROM EventType WHERE NAME IN ('BreakerOpen','Other')) {filters}
-                    UNION
+                    UNION ALL
                     SELECT Event.ID as EventID,
                         NULL AS DisturbanceID,
                         FaultSummary.FaultNumber AS FaultID
