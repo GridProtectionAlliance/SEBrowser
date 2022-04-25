@@ -55,7 +55,7 @@ const CapBankReport = (props: {}) => {
     const [PhaseFilter, setPhaseFilter] = React.useState<number[]>([]);
 
     React.useEffect(() => {
-        var query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
+        var query = queryString.parse(history.search.replace("?", ""), "&", "=");
 
         setCapBankID(query['capBankId'] != undefined ? parseInt(query['capBankId'] as string) : -1);
         setDate(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat));
@@ -81,7 +81,7 @@ const CapBankReport = (props: {}) => {
             selectedBank, StationId, numBanks, ResFilt, StatFilt,
             OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter };
 
-        let q = queryString.stringify(state, "&", "=", { encodeURIComponent: queryString.escape });
+        let q = queryString.stringify(state, "&", "=");
         let handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
 
