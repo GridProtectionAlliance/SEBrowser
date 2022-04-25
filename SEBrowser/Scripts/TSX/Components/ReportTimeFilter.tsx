@@ -262,20 +262,41 @@ const AvailableQuickSelects: IQuickSelect[] = [
 
 
 const ReportTimeFilter = (props: IProps) => {
+    const [filter, setFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.filter)
 
     React.useEffect(() => {
         $('#datePicker').datetimepicker({ format: momentDateFormat });
         $('#datePicker').on('dp.change', (e) => {
-            props.setFilter({ ...props.filter, date: (e.target as any).value });
+            setFilter({ ...filter, date: (e.target as any).value });
         });
 
         $('#timePicker').datetimepicker({ format: momentTimeFormat });
         $('#timePicker').on('dp.change', (e) => {
-            props.setFilter({ ...props.filter, time: (e.target as any).value });
+            setFilter({ ...filter, time: (e.target as any).value });
         });
 
     });
 
+    React.useEffect(() => {
+        if (isEqual(props.filter, filter))
+            return;
+        const handle = setTimeout(() => {
+            props.setFilter(filter)
+        }, 500);
+        return () => { if (handle !== null) clearTimeout(handle); };
+    }, [filter]);
+
+    React.useEffect(() => {
+        if (isEqual(props.filter, filter))
+            return;
+        setFilter(props.filter);
+    }, [props.filter])
+
+    function isEqual(flt1: SEBrowser.IReportTimeFilter, flt2: SEBrowser.IReportTimeFilter) {
+        return flt1.date == flt2.date && flt1.time == flt2.time &&
+            flt1.timeWindowUnits == flt2.timeWindowUnits &&
+            flt1.windowSize == flt2.windowSize;
+    }
 
     return (
         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
@@ -285,13 +306,13 @@ const ReportTimeFilter = (props: IProps) => {
                     <div className="form-group" style={{ height: 30 }}>
                         <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
                             <input id="timePicker" className='form-control form-control-sm' value={props.filter.time} onChange={(e) => {
-                                props.setFilter({ ...props.filter, time: (e.target as any).value });
+                                setFilter({ ...filter, time: (e.target as any).value });
                             }} />
                         </div>
 
                         <div className='input-group date' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
                             <input className='form-control form-control-sm' id='datePicker' value={props.filter.date} onChange={(e) => {
-                                props.setFilter({ ...props.filter, date: (e.target as any).value });
+                                setFilter({ ...filter, date: (e.target as any).value });
                             }} />
                         </div>
 
@@ -300,12 +321,12 @@ const ReportTimeFilter = (props: IProps) => {
                     <div className="form-group" style={{ height: 30 }}>
                         <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
                             <input className={'form-control form-control-sm'} onChange={(e) => {
-                                props.setFilter({ ...props.filter, windowSize: (e.target as any).value });
-                            }} type="number" value={props.filter.windowSize} />
+                                setFilter({ ...filter, windowSize: (e.target as any).value });
+                            }} type="number" value={filter.windowSize} />
                         </div>
                         <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
                             <select className={'form-control form-control-sm'} value={props.filter.timeWindowUnits} onChange={(e) => {
-                            props.setFilter({ ...props.filter, timeWindowUnits: (e.target as any).value });
+                                setFilter({ ...filter, timeWindowUnits: (e.target as any).value });
                             }} >
                                 <option value="7">Year</option>
                                 <option value="6">Month</option>
@@ -330,11 +351,11 @@ const ReportTimeFilter = (props: IProps) => {
                                     <ul className="list-group" key={i}>
                                         <li key={i} onClick={() => props.setFilter(AvailableQuickSelects[i].createFilter())} className="item badge badge-secondary">{AvailableQuickSelects[i].label}</li>
                                         {i + 1 < AvailableQuickSelects.length ?
-                                            <li key={i+1} style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i+1].createFilter())}>
+                                            <li key={i+1} style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => setFilter(AvailableQuickSelects[i+1].createFilter())}>
                                             {AvailableQuickSelects[i+ 1].label}
                                         </li> : null}
                                         {i + 2 < AvailableQuickSelects.length ?
-                                            <li key={i+2}  style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i+ 2].createFilter())}>
+                                            <li key={i+2}  style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => setFilter(AvailableQuickSelects[i+ 2].createFilter())}>
                                             {AvailableQuickSelects[i+ 2].label}
                                         </li> : null}
                                     </ul>
