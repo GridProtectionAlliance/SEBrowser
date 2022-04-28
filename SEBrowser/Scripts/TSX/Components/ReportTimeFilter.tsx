@@ -263,27 +263,29 @@ const AvailableQuickSelects: IQuickSelect[] = [
 
 const ReportTimeFilter = (props: IProps) => {
     const [filter, setFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.filter)
+    const [isValidDate, setValidDate] = React.useState<boolean>(true);
+    const [isValidTime, setValidTime] = React.useState<boolean>(true);
 
     React.useEffect(() => {
         $('#datePicker').datetimepicker({ format: momentDateFormat });
         $('#datePicker').on('dp.change', (e) => {
-            setFilter({ ...filter, date: (e.target as any).value });
+            setFilter((f) => ({ ...filter, date: (e.target as any).value }));
         });
 
         $('#timePicker').datetimepicker({ format: momentTimeFormat });
         $('#timePicker').on('dp.change', (e) => {
-            setFilter({ ...filter, time: (e.target as any).value });
+            setFilter((f) => ({ ...f, time: (e.target as any).value }));
         });
 
     });
 
     React.useEffect(() => {
-        if (isEqual(props.filter, filter))
-            return;
-        const handle = setTimeout(() => {
-            props.setFilter(filter)
-        }, 500);
-        return () => { if (handle !== null) clearTimeout(handle); };
+
+        //Validate Time and date based on Regex and set Error Messages appropriately
+        const timeRegex = /^[0-2][0-9]:[0-5][0-9]:[0-5][0-9](\.[0-9]+)?$/;
+        setValidTime(filter.time.match(timeRegex) != null);
+        const dateRegex = /^[0-1][0-9]\/[0-2][0-9]\/[0-9]{4}$/;
+        setValidDate(filter.date.match(dateRegex) != null); 
     }, [filter]);
 
     React.useEffect(() => {
@@ -304,29 +306,29 @@ const ReportTimeFilter = (props: IProps) => {
                 <div className="">
                     <label style={{ width: '100%', position: 'relative', float: "left" }} >Date: </label>
                     <div className="form-group" style={{ height: 30 }}>
-                        <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
-                            <input id="timePicker" className='form-control form-control-sm' value={filter.time} onChange={(e) => {
-                                setFilter({ ...filter, time: (e.target as any).value });
+                    <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
+                        <input id="timePicker" className={'form-control form-control-sm' + isValidTime? '' : 'is-invalid'} value={filter.time} onChange={(e) => {
+                            setFilter((f) => ({ ...f, time: (e.target as any).value }));
                             }} />
                         </div>
 
                         <div className='input-group date' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
-                            <input className='form-control form-control-sm' id='datePicker' value={filter.date} onChange={(e) => {
-                                setFilter({ ...filter, date: (e.target as any).value });
+                        <input className={'form-control form-control-sm' + isValidDate ? '' : 'is-invalid'} id='datePicker' value={filter.date} onChange={(e) => {
+                                setFilter((f) => ({ ...f, date: (e.target as any).value }));
                             }} />
                         </div>
 
                     </div>
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
-                    <div className="form-group" style={{ height: 30 }}>
+                    <div className="form-group">
                         <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
                             <input className={'form-control form-control-sm'} onChange={(e) => {
-                                setFilter({ ...filter, windowSize: (e.target as any).value });
+                            setFilter((f) => ({ ...f, windowSize: (e.target as any).value }));
                             }} type="number" value={filter.windowSize} />
                         </div>
                         <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
                             <select className={'form-control form-control-sm'} value={filter.timeWindowUnits} onChange={(e) => {
-                                setFilter({ ...filter, timeWindowUnits: (e.target as any).value });
+                                setFilter((f) => ({ ...filter, timeWindowUnits: (e.target as any).value }));
                             }} >
                                 <option value="7">Year</option>
                                 <option value="6">Month</option>
@@ -338,7 +340,12 @@ const ReportTimeFilter = (props: IProps) => {
                                 <option value="0">Millisecond</option>
                             </select>
                         </div>
-                    </div>
+                </div>
+                <div className="btn-group-vertical btn-block" style={{ marginTop: 5 }}>
+                    <button type="button" className="btn btn-primary btn-sm btn-block" disabled={isEqual(props.filter, filter)} onClick={() => { props.setFilter(filter) }}>
+                        Apply
+                    </button>
+                </div>
             </div>
             {props.showQuickSelect ?
                 <div className="row" style={{width: '100%'}}>
@@ -351,11 +358,11 @@ const ReportTimeFilter = (props: IProps) => {
                                     <ul className="list-group" key={i}>
                                         <li key={i} onClick={() => props.setFilter(AvailableQuickSelects[i].createFilter())} className="item badge badge-secondary">{AvailableQuickSelects[i].label}</li>
                                         {i + 1 < AvailableQuickSelects.length ?
-                                            <li key={i+1} style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => setFilter(AvailableQuickSelects[i+1].createFilter())}>
+                                            <li key={i+1} style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i+1].createFilter())}>
                                             {AvailableQuickSelects[i+ 1].label}
                                         </li> : null}
                                         {i + 2 < AvailableQuickSelects.length ?
-                                            <li key={i+2}  style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => setFilter(AvailableQuickSelects[i+ 2].createFilter())}>
+                                            <li key={i+2}  style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i+ 2].createFilter())}>
                                             {AvailableQuickSelects[i+ 2].label}
                                         </li> : null}
                                     </ul>
