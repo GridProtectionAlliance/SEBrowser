@@ -305,13 +305,13 @@ const ReportTimeFilter = (props: IProps) => {
                     <label style={{ width: '100%', position: 'relative', float: "left" }} >Date: </label>
                     <div className="form-group" style={{ height: 30 }}>
                         <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
-                            <input id="timePicker" className='form-control form-control-sm' value={props.filter.time} onChange={(e) => {
+                            <input id="timePicker" className='form-control form-control-sm' value={filter.time} onChange={(e) => {
                                 setFilter({ ...filter, time: (e.target as any).value });
                             }} />
                         </div>
 
                         <div className='input-group date' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
-                            <input className='form-control form-control-sm' id='datePicker' value={props.filter.date} onChange={(e) => {
+                            <input className='form-control form-control-sm' id='datePicker' value={filter.date} onChange={(e) => {
                                 setFilter({ ...filter, date: (e.target as any).value });
                             }} />
                         </div>
@@ -325,7 +325,7 @@ const ReportTimeFilter = (props: IProps) => {
                             }} type="number" value={filter.windowSize} />
                         </div>
                         <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
-                            <select className={'form-control form-control-sm'} value={props.filter.timeWindowUnits} onChange={(e) => {
+                            <select className={'form-control form-control-sm'} value={filter.timeWindowUnits} onChange={(e) => {
                                 setFilter({ ...filter, timeWindowUnits: (e.target as any).value });
                             }} >
                                 <option value="7">Year</option>
