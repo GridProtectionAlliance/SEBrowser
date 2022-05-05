@@ -184,8 +184,8 @@ const AvailableQuickSelects: IQuickSelect[] = [
             const t = moment.utc().startOf('quarter');
             const tend = moment.utc().startOf('quarter');
             tend.add(1, 'quarter')
-            const h = moment.duration(tend.diff(t)).asHours();
-            t.subtract(h * 0.5);
+            const h = moment.duration(tend.diff(t)).asDays();
+            t.add(h * 0.5, 'day');
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
@@ -199,9 +199,8 @@ const AvailableQuickSelects: IQuickSelect[] = [
             const t = moment.utc().startOf('quarter');
             const tend = moment.utc().startOf('quarter');
             t.subtract(1, 'quarter');
-            tend.subtract(2, 'quarter')
-            const h = moment.duration(tend.diff(t)).asHours();
-            t.subtract(h * 0.5);
+            const h = moment.duration(tend.diff(t)).asDays();
+            t.add(h * 0.5,'day');
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
@@ -356,13 +355,13 @@ const ReportTimeFilter = (props: IProps) => {
                             return (
                                 <div key={i} className={"col-3"} style={{ paddingLeft: (i %12 == 0 ? 15 : 0), paddingRight: (i % 12 == 9 ? 15 : 2), marginTop: 10 }}>
                                     <ul className="list-group" key={i}>
-                                        <li key={i} onClick={() => props.setFilter(AvailableQuickSelects[i].createFilter())} className="item badge badge-secondary">{AvailableQuickSelects[i].label}</li>
+                                        <li key={i} style={{cursor: 'pointer'}} onClick={() => props.setFilter(AvailableQuickSelects[i].createFilter())} className="item badge badge-secondary">{AvailableQuickSelects[i].label}</li>
                                         {i + 1 < AvailableQuickSelects.length ?
-                                            <li key={i+1} style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i+1].createFilter())}>
+                                            <li key={i + 1} style={{ marginTop: 3, cursor: 'pointer' }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i+1].createFilter())}>
                                             {AvailableQuickSelects[i+ 1].label}
                                         </li> : null}
                                         {i + 2 < AvailableQuickSelects.length ?
-                                            <li key={i+2}  style={{ marginTop: 3 }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i+ 2].createFilter())}>
+                                            <li key={i + 2} style={{ marginTop: 3, cursor: 'pointer' }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i + 2].createFilter())}>
                                             {AvailableQuickSelects[i+ 2].label}
                                         </li> : null}
                                     </ul>
