@@ -163,7 +163,7 @@ export default function EventSearchList(props: IProps) {
                 }}
                 onClick={(item) => props.selectEvent(item.row.EventID)}
                 theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - 100 }}
+                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - 160 }}
                 rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
                 selected={(item) => {
                     if (item.EventID == props.eventid) return true;
