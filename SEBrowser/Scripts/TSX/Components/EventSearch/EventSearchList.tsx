@@ -163,7 +163,7 @@ export default function EventSearchList(props: IProps) {
                 }}
                 onClick={(item) => props.selectEvent(item.row.EventID)}
                 theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - 160 }}
+                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - 300 }}
                 rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
                 selected={(item) => {
                     if (item.EventID == props.eventid) return true;
@@ -172,6 +172,14 @@ export default function EventSearchList(props: IProps) {
                 requiredColumns={["Time"]}
                 defaultColumns={["Event Type"]}
             />
+            {status == 'loading' ? null :
+                    data.length >= 100 ?
+                        <div style={{ padding: 20, backgroundColor: '#458EFF', color: 'white', marginBottom: 15 }}>
+                            Only the first {data.length} results are shown - please narrow your search
+                        </div> :
+                        <div style={{ padding: 20, backgroundColor: '#458EFF', color: 'white', marginBottom: 15 }}>
+                            {data.length} results
+                        </div>}
         </div>
     );
 }
