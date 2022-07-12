@@ -317,6 +317,7 @@
     <Compile Include="Controllers\BreakerReport\MaximoBreakersController.cs" />
     <Compile Include="Controllers\DERReport\DERReportController.cs" />
     <Compile Include="Controllers\CapBankReport\CapBankReportController.cs" />
+    <Compile Include="Controllers\HECCO\InterruptionReportController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MeterActivity\MeterActivityController.cs" />
     <Compile Include="Controllers\OpenXDA\ModelControlers.cs" />
