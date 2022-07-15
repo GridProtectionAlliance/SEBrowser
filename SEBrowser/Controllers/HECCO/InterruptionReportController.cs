@@ -31,6 +31,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Web.Http;
 using GSF.Data;
+using System.Data.SqlClient;
+using System.Collections.Generic;
 
 namespace SEBrowser.Controllers
 {
@@ -39,17 +41,78 @@ namespace SEBrowser.Controllers
     {
         const string SettingsCategory = "interruptionReport";
 
+
+        public class Interruption
+        {
+            public DateTime? TimeOut { get; set; }
+            public DateTime? TimeIn { get; set; }
+            public string Class { get; set; }
+            public string Area { get; set; }
+            public int ReportNumber { get; set; }
+            public string Explanation { get; set; }
+            public string CircuitInfo { get; set; }
+        }
+
         [Route("GetEvents/{hour:int}/{eventID:int}"), HttpGet]
         public IHttpActionResult GetData(int hour, int eventID) {
-           
+
             try
             {
                 DateTime start = DateTime.UtcNow;
                 using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
                     start = connection.ExecuteScalar<DateTime>("SELECT StartTime FROM Event WHERE ID = {0} ", eventID);
+
+                List<Interruption> result = new List<Interruption>();
+                DataSet ds = new DataSet();
                 using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
-                    return Ok(connection.RetrieveData("Exec devsql12.ir.iradmin.GetIncidentsByDateTimeRange({0},{1})",start.AddHours(hour), start.AddHours(hour)));
+                {
+                    using (SqlCommand command = ((SqlConnection)connection.Connection).CreateCommand())
+                    {
+                        using (SqlDataAdapter sda = new SqlDataAdapter(command))
+                        {
+                            command.CommandType = System.Data.CommandType.StoredProcedure;
+                            command.CommandText = "iradmin.GetIncidentsByDateTimeRange";
+                            command.Parameters.AddWithValue("@startDateTime", start.AddHours(-hour));
+                            command.Parameters.AddWithValue("@endDateTime", start.AddHours(hour));
+
+                            sda.Fill(ds);
+                        }
+                    }
+                }
+
+                foreach (DataRow dr in ds.Tables[0].Rows)
+                {
+                    int recordNumber = int.Parse(dr["ReportNumber"].ToString());
+
+
+                    DataRow[] children = ds.Tables[1].Select($"ReportNumber = {recordNumber}");
+
+                    Interruption interruption = new Interruption()
+                    {
+                        TimeOut = DateTime.Parse(dr["TimeOut"].ToString()),
+                        Class = dr["ClassType"].ToString(),
+                        Area = dr["Area"].ToString(),
+                        ReportNumber = recordNumber,
+                        Explanation = dr["Explanation"].ToString(),
+                        CircuitInfo = dr["CircuitInfo"].ToString(),
+                        TimeIn = null
+                    };
+
+                    result.Add(interruption);
+                    result.AddRange(children.Select((r) => new Interruption() {
+                        TimeOut = DateTime.Parse(dr["TimeOut"].ToString()),
+                        Class = "",
+                        Area = r["Area"].ToString(),
+                        ReportNumber = recordNumber,
+                        Explanation = "",
+                        CircuitInfo = "",
+                        TimeIn = DateTime.Parse(r["TimeIn"].ToString())
+                    }));
+                }
+
+                return Ok(result);
             }
+
             catch (Exception ex)
             {
                 return InternalServerError(ex);
