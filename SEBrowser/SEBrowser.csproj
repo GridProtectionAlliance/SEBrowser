@@ -187,6 +187,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Dependencies\GSF\openXDA.Model.dll</HintPath>
     </Reference>
+    <Reference Include="openXDA.PQI">
+      <HintPath>..\Dependencies\GSF\openXDA.PQI.dll</HintPath>
+    </Reference>
     <Reference Include="openXDA.Reports">
       <HintPath>..\Dependencies\GSF\openXDA.Reports.dll</HintPath>
     </Reference>
@@ -321,6 +324,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MeterActivity\MeterActivityController.cs" />
     <Compile Include="Controllers\OpenXDA\ModelControlers.cs" />
+    <Compile Include="Controllers\TVA\PQIController.cs" />
     <Compile Include="Model\StandardMagDurCurve.cs" />
     <Compile Include="Controllers\OpenXDA\NoteController.cs" />
     <Compile Include="Controllers\OpenXDA\FaultInfoController.cs" />
@@ -418,6 +422,7 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\LineParameters.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventNoteSlice.ts" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPQI.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
     <None Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
     <None Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisReport.tsx" />
