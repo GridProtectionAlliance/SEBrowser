@@ -76,7 +76,7 @@ namespace SEBrowser.Controllers
             public bool others { get; set; }
             public string date { get; set; }
             public string time { get; set; }
-            public int windowSize { get; set; }
+            public double windowSize { get; set; }
             public int timeWindowUnits { get; set; }
             public double durationMin { get; set; }
             public double durationMax { get; set; }
@@ -121,7 +121,7 @@ namespace SEBrowser.Controllers
                 DateTime dateTime = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
 
                 string eventType = getEventTypeFilter(postData);
-                string phase = getPhaseFilter(postData);
+               string phase = getPhaseFilter(postData);
                 string eventCharacteristic = getEventCharacteristicFilter(postData);
                 string asset = getAssetFilters(postData);
 
@@ -246,13 +246,13 @@ namespace SEBrowser.Controllers
             if (postData.durationMin > 0)
             {
                 string filt = $"((SELECT d.DurationCycles FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) >= {postData.durationMin} OR ";
-                filt += $" FaultSummary.DuractionCycles >= {postData.durationMin})";
+                filt += $" FaultSummary.DurationCycles >= {postData.durationMin})";
                 characteristics.Add(filt);
             }
             if (postData.durationMax > 0)
             {
                 string filt = $" ((SELECT d.DurationCycles FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) <= {postData.durationMax} OR";
-                filt += $" FaultSummary.DuractionCycles <= {postData.durationMax})";
+                filt += $" FaultSummary.DurationCycles <= {postData.durationMax})";
                 characteristics.Add(filt);
             }
 
