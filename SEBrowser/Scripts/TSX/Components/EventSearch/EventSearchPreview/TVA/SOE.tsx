@@ -30,6 +30,7 @@ const SOE = (props: { EventID: number }) => {
     const [statusFilter, setStatusFilter] = React.useState<{ 'ABNORMAL': boolean, 'Close': boolean, 'No': boolean, 'NORMAL': boolean, 'RECEIVED': boolean, 'Start': boolean, 'Trip': boolean, 'Yes': boolean}>({ 'ABNORMAL':false, 'Close':false, 'No':false, 'NORMAL': false, 'RECEIVED': false, 'Start': false, 'Trip':false, 'Yes': false})
     const [timeWindow, setTimeWindow] = React.useState<number>(2);
     const [table, setTable] = React.useState<any>(null);
+
     React.useEffect(() => {
         return GetData();
     }, [props.EventID, timeWindow, statusFilter]);
@@ -77,7 +78,7 @@ const SOE = (props: { EventID: number }) => {
                 <div className='row'>
                     <div className='col'>
                         <label>Time Window(s)</label>
-                        <select value={timeWindow} onChange={(evt) => setTimeWindow(parseInt(evt.target.value))}>
+                        <select value={timeWindow} onChange={(evt) => setTimeWindow(parseFloat(evt.target.value))}>
                             <option value={2}>2</option>
                             <option value={10}>10</option>
                             <option value={60}>60</option>

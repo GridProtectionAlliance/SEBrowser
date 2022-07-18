@@ -24,10 +24,10 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import moment from 'moment';
-import { ConfigurableTable } from '@gpa-gemstone/react-interactive';
+import { ConfigurableTable, LoadingIcon } from '@gpa-gemstone/react-interactive';
 import { useSelector, useDispatch } from 'react-redux';
 import { OpenXDA, Redux, SEBrowser } from '../../global';
-import { SelectEventSearchBySearchText, SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches } from './EventSearchSlice';
+import { SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
 
 interface IProps {
     eventid: number,
@@ -49,7 +49,7 @@ export default function EventSearchList(props: IProps) {
     const status = useSelector(SelectEventSearchsStatus);
     const sortField = useSelector(SelectEventSearchsSortField);
     const ascending = useSelector(SelectEventSearchsAscending);
-    const data = useSelector((state: Redux.StoreState) => SelectEventSearchBySearchText(state));
+    const data = useSelector((state: Redux.StoreState) => SelectEventSearchs(state));
     const [cols, setCols] = React.useState<IColumn[]>([]);
 
     React.useEffect(() => {
@@ -62,10 +62,10 @@ export default function EventSearchList(props: IProps) {
 
     React.useEffect(() => {
         if (status != 'unitiated' && status != 'changed') return;
-        dispatch(FetchEventSearches());
 
-        return function () {
-        }
+        dispatch(FetchEventSearches());
+        return () => {}
+
     }, [status]);
 
     React.useEffect(() => {
@@ -142,7 +142,13 @@ export default function EventSearchList(props: IProps) {
             })
     }
     return (
-        <div ref={ref} style={{width: '100%', maxHeight: props.height, overflowY: "hidden"}}>
+        <div ref={ref} style={{
+            width: '100%', maxHeight: props.height, overflowY: "hidden", opacity: (status == 'loading' ? 0.5 : undefined),
+            backgroundColor: (status == 'loading' ? '#00000' : undefined)
+        }}>
+            {status == 'loading' ? <div style={{ height: '40px', width: '40px', margin: 'auto' }}>
+                    <LoadingIcon Show={true} Size={40} />
+                </div> : null}
             <ConfigurableTable<any>
                 cols={[{
                     field: "Time", key: "Time", label: "Time", content: (item, key, fld, style) => ProcessWhitespace(item[fld])
@@ -157,7 +163,7 @@ export default function EventSearchList(props: IProps) {
                 }}
                 onClick={(item) => props.selectEvent(item.row.EventID)}
                 theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - 100 }}
+                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - 300 }}
                 rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
                 selected={(item) => {
                     if (item.EventID == props.eventid) return true;
@@ -166,6 +172,15 @@ export default function EventSearchList(props: IProps) {
                 requiredColumns={["Time"]}
                 defaultColumns={["Event Type"]}
             />
+            {status == 'loading' ? null :
+                    data.length >= 100 ?
+                        <div style={{ padding: 20, backgroundColor: '#458EFF', color: 'white', marginBottom: 15 }}>
+                            Only the first {data.length} results are shown - please narrow your search
+                        </div> :
+                        <div style={{ padding: 20, backgroundColor: '#458EFF', color: 'white', marginBottom: 15 }}>
+                            {data.length} results
+                        </div>}
         </div>
     );
 }
+

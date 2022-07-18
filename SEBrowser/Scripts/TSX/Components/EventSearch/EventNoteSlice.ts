@@ -21,33 +21,21 @@
 //
 //******************************************************************************************************
 import { Application, OpenXDA } from '@gpa-gemstone/application-typings'
-import { ActionCreatorWithPayload, ActionReducerMapBuilder, AsyncThunk, createAsyncThunk, createSlice, Draft, PayloadAction, Slice } from '@reduxjs/toolkit';
-import _, { forEach } from 'lodash';
+import { ActionCreatorWithPayload, AsyncThunk, createAsyncThunk, createSlice, Draft, PayloadAction, Slice } from '@reduxjs/toolkit';
+import _ from 'lodash';
+import { Redux, SEBrowser } from '../../global';
 
 declare var homePath: string;
 
 
-interface NoteState {
-    Status: Application.Types.Status,
-    Data: EventNote[],
-    ParentID: (number[] | null),
-    SortField: keyof OpenXDA.Types.Note,
-    Ascending: boolean,
-}
-
-export interface EventNote extends OpenXDA.Types.Note {
-    EventIDs: number[],
-    IDs: number[],
-    NumEvents: number
-}
 
 export default class NoteSlice {
     Name: string = "";
     APIPath: string = "";
-    Slice: (Slice<NoteState>);
+    Slice: (Slice<Redux.NoteState>);
     Fetch: (AsyncThunk<any, void | number[], {}>);
-    DBAction: (AsyncThunk<any, { verb: 'POST' | 'DELETE' | 'PATCH', record: EventNote }, {}>);
-    Sort: ActionCreatorWithPayload<{ SortField: keyof EventNote, Ascending: boolean }, string>;
+    DBAction: (AsyncThunk<any, { verb: 'POST' | 'DELETE' | 'PATCH', record: SEBrowser.EventNote }, {}>);
+    Sort: ActionCreatorWithPayload<{ SortField: keyof SEBrowser.EventNote, Ascending: boolean }, string>;
     Reducer: any;
     SetSelectedEvents: ActionCreatorWithPayload<number[], string>;
 
@@ -63,7 +51,7 @@ export default class NoteSlice {
             return await handle;
         });
 
-        const dBAction = createAsyncThunk(`${this.Name}/DBAction${this.Name}`, async (args: { verb: 'POST' | 'DELETE' | 'PATCH', record: EventNote }, {}) => {
+        const dBAction = createAsyncThunk(`${this.Name}/DBAction${this.Name}`, async (args: { verb: 'POST' | 'DELETE' | 'PATCH', record: SEBrowser.EventNote }, {}) => {
 
             const handle = args.record.IDs.map((id, i) => this.Action(args.verb, { ...args.record, ReferenceTableID: args.record.EventIDs[i], ID: id }));
 
@@ -74,17 +62,17 @@ export default class NoteSlice {
             name: this.Name,
             initialState: {
                 Status: 'unintiated',
-                Data: [] as EventNote[],
+                Data: [] as SEBrowser.EventNote[],
                 SortField: 'Timestamp',
                 Ascending: false,
                 ParentID: [],
-            } as NoteState,
+            } as Redux.NoteState,
             reducers: {
-                Sort: (state: any, action: PayloadAction<{ SortField: keyof EventNote, Ascending: boolean }>) => {
+                Sort: (state: any, action: PayloadAction<{ SortField: keyof SEBrowser.EventNote, Ascending: boolean }>) => {
                     if (state.SortField === action.payload.SortField)
                         state.Ascending = !action.payload.Ascending;
                     else
-                        state.SortField = action.payload.SortField as Draft<keyof EventNote>;
+                        state.SortField = action.payload.SortField as Draft<keyof SEBrowser.EventNote>;
 
                     if (state.SortField == 'EventIDs' || state.SortField == 'IDs')
                         return
@@ -173,7 +161,7 @@ export default class NoteSlice {
         });
     }
 
-    public Data = (state: any) => state[this.Name].Data as EventNote[];
+    public Data = (state: any) => state[this.Name].Data as SEBrowser.EventNote[];
     public Status = (state: any) => state[this.Name].Status as Application.Types.Status;
     public SortField = (state: any) => state[this.Name].SortField as keyof OpenXDA.Types.Note;
     public Ascending = (state: any) => state[this.Name].Ascending as boolean;

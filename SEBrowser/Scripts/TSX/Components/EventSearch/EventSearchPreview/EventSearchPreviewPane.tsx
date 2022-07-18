@@ -42,6 +42,8 @@ import TVASIDA from './TVA/SIDA';
 import TVASOE from './TVA/SOE';
 import TVALSC from './TVA/LSC';
 import TVAPQWeb from './TVA/PQWeb';
+import EventSearchPQI from './EventSearchPQI';
+
 import { useSelector, useDispatch } from 'react-redux';
 
 import EventSearchCapBankAnalyticOverview from './EventSearchCapBankAnalyticOverview';
@@ -94,6 +96,8 @@ export default function EventPreviewPane(props: { EventID: number, InitialTab?: 
             {settings.filter(setting => setting.Show).map((setting, index) => {
             if (setting.Name.indexOf('EventSearchOpenSEE') >= 0 && (tab == "Waveform" || tab == "All"))
                 return <EventSearchOpenSEE key={index} EventID={props.EventID} />;
+            else if (setting.Name.indexOf('pqi') >= 0 && (tab == "Configuration" || tab == "All"))
+                return <EventSearchPQI key={index} EventID={props.EventID} />;
             else if (setting.Name.indexOf('EventSearchFaultSegments') >= 0 && (tab == "Waveform" || tab == "All"))
                 return <EventSearchFaultSegments key={index} EventID={props.EventID} />;
             else if (setting.Name.indexOf('EventSearchAssetVoltageDisturbances') >= 0 && (tab == "Waveform" || tab == "All"))

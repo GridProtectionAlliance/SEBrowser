@@ -22,28 +22,30 @@
 //******************************************************************************************************
 
 import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
-import { SEBrowser, OpenXDA, Redux } from '../../global';
+import { SEBrowser, Redux } from '../../global';
 import * as _ from 'lodash';
 import {  ajax } from 'jquery';
 import moment from 'moment';
 import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice } from '../../Store';
+import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
 
+let fetchHandle: JQuery.jqXHR<any> | null = null;
 
 // #region [ Thunks ]
-export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (_, { dispatch, getState }) => {
+export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (_, { signal, dispatch, getState }) => {
     const time = (getState() as any).EventSearch.TimeRange as SEBrowser.IReportTimeFilter;
     const types = (getState() as any).EventSearch.EventType as SEBrowser.IEventTypeFilters;
     const characteristics = (getState() as any).EventSearch.EventCharacteristic as SEBrowser.IEventCharacteristicFilters;
-    const meterList = (getState() as any).EventSearch.SelectedMeters as OpenXDA.Meter[];
-    const assetList = (getState() as any).EventSearch.SelectedAssets as OpenXDA.Asset[];
-    const locationList = (getState() as any).EventSearch.SelectedStations as OpenXDA.Location[];
-    const groupList = (getState() as any).EventSearch.SelectedGroups as OpenXDA.AssetGroup[];
+    const meterList = (getState() as any).EventSearch.SelectedMeters as SystemCenter.Types.DetailedMeter[];
+    const assetList = (getState() as any).EventSearch.SelectedAssets as SystemCenter.Types.DetailedAsset[];
+    const locationList = (getState() as any).EventSearch.SelectedStations as SystemCenter.Types.DetailedLocation[];
+    const groupList = (getState() as any).EventSearch.SelectedGroups as OpenXDA.Types.AssetGroup[];
 
     const filter = {
         date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,
@@ -57,7 +59,17 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
         meterIDs: meterList.map(item => item.ID), assetIDs: assetList.map(item => item.ID),
         groupIDs: groupList.map(item => item.ID), locationIDs: locationList.map(item => item.ID)
     }
-    return await GetEventSearchs(filter);
+
+    if (fetchHandle != null && fetchHandle.abort != null)
+        fetchHandle.abort();
+
+    const handle = GetEventSearchs(filter);
+    fetchHandle = handle;
+    signal.addEventListener('abort', () => {
+        if (handle.abort !== undefined) handle.abort();
+    });
+
+    return await handle;
 });
 
 export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async (query: queryString.ParsedUrlQuery , { dispatch, getState }) => {
@@ -72,7 +84,9 @@ export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async 
         await dispatch(LocationSlice.Fetch());
 
     state = getState() as Redux.StoreState;
-    return dispatch(EventSearchsSlice.actions.ProcessQuery({ query, assets: state.Asset.Data, groups: state.AssetGroup.Data, locations: [], meters: state.Meter.Data }));
+    return dispatch(EventSearchsSlice.actions.ProcessQuery({
+        query, assets: state.Asset.Data, groups: state.AssetGroup.Data, locations: [], meters: state.Meter.Data
+    }));
 });
 
 // #endregion
@@ -97,7 +111,11 @@ export const EventSearchsSlice = createSlice({
         SelectedAssets: [],
         SelectedGroups: [],
         SelectedMeters: [],
-        SelectedStations: []
+        SelectedStations: [],
+        SelectedDetailedMeters: [],
+        SelectedDetailedAssets: [],
+        SelectedDetailedStations: [],
+        ActiveFetchID: []
     } as Redux.EventSearchState,
     reducers: {
         Sort: (state, action) => {
@@ -109,9 +127,11 @@ export const EventSearchsSlice = createSlice({
             const sorted = _.orderBy(state.Data, [state.SortField], [state.Ascending ? "asc" : "desc"])
             state.Data = sorted;
         },
-        ProcessQuery: (state, action: PayloadAction<{ query: queryString.ParsedUrlQuery, assets: OpenXDA.Asset[], groups: OpenXDA.AssetGroup[], locations: OpenXDA.Location[], meters: OpenXDA.Meter[] }>) => {
+        ProcessQuery: (state, action: PayloadAction<{
+            query: queryString.ParsedUrlQuery, assets: SystemCenter.Types.DetailedAsset[],
+            groups: OpenXDA.Types.AssetGroup[], locations: SystemCenter.Types.DetailedLocation[], meters: SystemCenter.Types.DetailedMeter[],
+        }>) => {
 
-            state.SearchText = action.payload.query['searchText']?.toString() ?? '';
 
             state.TimeRange.date = action.payload.query['date']?.toString() ?? state.TimeRange.date;
             state.TimeRange.time = action.payload.query['time']?.toString() ?? state.TimeRange.time;
@@ -159,9 +179,6 @@ export const EventSearchsSlice = createSlice({
             state.isReset = computeReset(state);
             state.Status = 'changed';
         },
-        SetSearchText: (state, action) => {
-            state.SearchText = action.payload;
-        },
         SetFilters: (state, action: PayloadAction<{ characteristics: SEBrowser.IEventCharacteristicFilters, types: SEBrowser.IEventTypeFilters, time: SEBrowser.IReportTimeFilter }>) => {
             state.Status = 'changed';
             state.TimeRange = action.payload.time;
@@ -183,7 +200,10 @@ export const EventSearchsSlice = createSlice({
             state.isReset = true;
             state.Status = 'changed';
         },
-        SetFilterLists: (state, action: PayloadAction<{ Meters: OpenXDA.Meter[], Assets: OpenXDA.Asset[], Groups: OpenXDA.AssetGroup[], Stations: OpenXDA.Location[] }>) => {
+        SetFilterLists: (state, action: PayloadAction<{
+            Meters: SystemCenter.Types.DetailedMeter[],
+            Assets: SystemCenter.Types.DetailedAsset[], Groups: OpenXDA.Types.AssetGroup[], Stations: SystemCenter.Types.DetailedLocation[]
+        }>) => {
             state.SelectedStations = action.payload.Stations;
             state.SelectedMeters = action.payload.Meters;
             state.SelectedGroups = action.payload.Groups;
@@ -196,6 +216,7 @@ export const EventSearchsSlice = createSlice({
     extraReducers: (builder) => {
 
         builder.addCase(FetchEventSearches.fulfilled, (state, action) => {
+            state.ActiveFetchID = state.ActiveFetchID.filter(id => id !== action.meta.requestId);
             state.Status = 'idle';
             state.Error = null;
             if (action.payload.length > 100) alert("The query you submitted was too large (" + action.payload.length.toString() + " records) and only the first 100 records were return.  Please refine your search if necessary.")
@@ -205,8 +226,12 @@ export const EventSearchsSlice = createSlice({
         });
         builder.addCase(FetchEventSearches.pending, (state, action) => {
             state.Status = 'loading';
+            state.ActiveFetchID.push(action.meta.requestId);
         });
         builder.addCase(FetchEventSearches.rejected, (state, action) => {
+            state.ActiveFetchID = state.ActiveFetchID.filter(id => id !== action.meta.requestId);
+            if (state.ActiveFetchID.length > 0)
+                return;
             state.Status = 'error';
             state.Error = action.error.message;
 
@@ -217,7 +242,7 @@ export const EventSearchsSlice = createSlice({
 // #endregion
 
 // #region [ Selectors ]
-export const { Sort, SetFilters, ResetFilters, SetFilterLists, SetSearchText } = EventSearchsSlice.actions;
+export const { Sort, SetFilters, ResetFilters, SetFilterLists } = EventSearchsSlice.actions;
 
 export default EventSearchsSlice.reducer;
 export const SelectEventSearchs = (state: Redux.StoreState) => state.EventSearch.Data;
@@ -225,17 +250,6 @@ export const SelectEventSearchByID = (state: Redux.StoreState, id: number) => st
 export const SelectEventSearchsStatus = (state: Redux.StoreState) => state.EventSearch.Status;
 export const SelectEventSearchsSortField = (state: Redux.StoreState) => state.EventSearch.SortField;
 export const SelectEventSearchsAscending = (state: Redux.StoreState) => state.EventSearch.Ascending;
-export const SelectEventSearchBySearchText = (state: Redux.StoreState) => state.EventSearch.Data.filter((d, i) => {
-    if (state.EventSearch.SearchText === '') return true
-    else
-        return d.AssetName.toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
-            d.AssetType.toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
-            d.EventType.toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
-            moment(d.FileStartTime).format('MM/DD/YYYY').toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
-            moment(d.FileStartTime).format('HH:mm:ss.SSSSSSS').toLowerCase().indexOf(state.EventSearch.SearchText) >= 0 ||
-            d.VoltageClass.toString().toLowerCase().indexOf(state.EventSearch.SearchText) >= 0
-
-});
 export const SelectTimeFilter = (state: Redux.StoreState) => state.EventSearch.TimeRange;
 export const SelectTypeFilter = (state: Redux.StoreState) => state.EventSearch.EventType;
 export const SelectCharacteristicFilter = (state: Redux.StoreState) => state.EventSearch.EventCharacteristic;
@@ -244,7 +258,6 @@ export const SelectMeterList = (state: Redux.StoreState) => state.EventSearch.Se
 export const SelectAssetList = (state: Redux.StoreState) => state.EventSearch.SelectedAssets;
 export const SelectAssetGroupList = (state: Redux.StoreState) => state.EventSearch.SelectedGroups;
 export const SelectStationList = (state: Redux.StoreState) => state.EventSearch.SelectedStations;
-export const SelectSearchText = (state: Redux.StoreState) => state.EventSearch.SearchText;
 
 export const SelectQueryParam = createSelector(
         (state: Redux.StoreState) => state.EventSearch.EventCharacteristic,
@@ -252,9 +265,8 @@ export const SelectQueryParam = createSelector(
         (state: Redux.StoreState) => state.EventSearch.TimeRange,
         (state: Redux.StoreState) => state.EventSearch.SelectedAssets,
         (state: Redux.StoreState) => state.EventSearch.SelectedGroups,
-        (state: Redux.StoreState) => state.EventSearch.SelectedMeters,
+    (state: Redux.StoreState) => state.EventSearch.SelectedMeters,
     (state: Redux.StoreState) => state.EventSearch.SelectedStations,
-    (state: Redux.StoreState) => state.EventSearch.SearchText,
         GenerateQueryParams
     );
 
@@ -265,7 +277,7 @@ export const SelectEventList = createSelector(
 // #endregion
 
 // #region [ Async Functions ]
-function GetEventSearchs(params): JQuery.jqXHR<any[]> {
+function GetEventSearchs(params: any): JQuery.jqXHR<any[]> {
     return ajax({
         type: "POST",
         url: `${homePath}api/OpenXDA/GetEventSearchData`,
@@ -291,7 +303,9 @@ function computeReset(state: Redux.EventSearchState): boolean {
     return event && types && state.SelectedAssets.length == 0 && state.SelectedStations.length == 0 && state.SelectedMeters.length == 0 && state.SelectedGroups.length == 0;
 }
 
-function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: SEBrowser.IEventTypeFilters, time: SEBrowser.IReportTimeFilter, assets: OpenXDA.Asset[], groups: OpenXDA.AssetGroup[], meters: OpenXDA.Meter[], stations: OpenXDA.Location[], searchText: string): any {
+function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: SEBrowser.IEventTypeFilters,
+    time: SEBrowser.IReportTimeFilter, assets: SystemCenter.Types.DetailedAsset[], groups: OpenXDA.Types.AssetGroup[],
+    meters: SystemCenter.Types.DetailedMeter[], stations: SystemCenter.Types.DetailedLocation[]): any {
     let result: any = {};
     if (assets.length > 0 && assets.length < 100) {
         let i = 0;
@@ -321,9 +335,6 @@ function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type:
             i = i + 1;
         })
     }
-
-    if (searchText.length > 0)
-        result['searchText'] = searchText;
 
     if (!type.faults)
         result['faults'] = false;
