@@ -23,6 +23,7 @@
 import * as React from 'react';
 import { SEBrowser } from '../global';
 import moment from 'moment';
+import { TimePicker, DatePicker, Select, Input } from '@gpa-gemstone/react-forms'
 
 interface IProps {
     filter: SEBrowser.IReportTimeFilter;
@@ -33,7 +34,8 @@ interface IProps {
 interface IQuickSelect { label: string, createFilter: () =>  SEBrowser.IReportTimeFilter }
 
 const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS";
+const momentTimeFormat = "HH:mm:ss.SSS"; // Also is the gemstone format
+
 
 const AvailableQuickSelects: IQuickSelect[] = [
     {
@@ -262,36 +264,18 @@ const AvailableQuickSelects: IQuickSelect[] = [
 
 const ReportTimeFilter = (props: IProps) => {
     const [filter, setFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.filter)
-    const [isValidDate, setValidDate] = React.useState<boolean>(true);
-    const [isValidTime, setValidTime] = React.useState<boolean>(true);
-
-    React.useEffect(() => {
-        $('#datePicker').datetimepicker({ format: momentDateFormat });
-        $('#datePicker').on('dp.change', (e) => {
-            setFilter((f) => ({ ...filter, date: (e.target as any).value }));
-        });
-
-        $('#timePicker').datetimepicker({ format: momentTimeFormat });
-        $('#timePicker').on('dp.change', (e) => {
-            setFilter((f) => ({ ...f, time: (e.target as any).value }));
-        });
-
-    });
-
-    React.useEffect(() => {
-
-        //Validate Time and date based on Regex and set Error Messages appropriately
-        const timeRegex = /^[0-2][0-9]:[0-5][0-9]:[0-5][0-9](\.[0-9]+)?$/;
-        setValidTime(filter.time.match(timeRegex) != null);
-        const dateRegex = /^[0-1][0-9]\/[0-2][0-9]\/[0-9]{4}$/;
-        setValidDate(filter.date.match(dateRegex) != null); 
-    }, [filter]);
 
     React.useEffect(() => {
         if (isEqual(props.filter, filter))
             return;
         setFilter(props.filter);
     }, [props.filter])
+
+    React.useEffect(() => {
+        if (isEqual(props.filter, filter))
+            return;
+        props.setFilter(filter);
+    }, [filter])
 
     function isEqual(flt1: SEBrowser.IReportTimeFilter, flt2: SEBrowser.IReportTimeFilter) {
         return flt1.date == flt2.date && flt1.time == flt2.time &&
@@ -303,47 +287,34 @@ const ReportTimeFilter = (props: IProps) => {
         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
             <legend className="w-auto" style={{ fontSize: 'large' }}>Time Window:</legend>
                 <div className="">
-                    <label style={{ width: '100%', position: 'relative', float: "left" }} >Date: </label>
+                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Date: </label>
                     <div className="form-group" style={{ height: 30 }}>
-                    <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
-                        <input id="timePicker" className={'form-control form-control-sm' + isValidTime? '' : 'is-invalid'} value={filter.time} onChange={(e) => {
-                            setFilter((f) => ({ ...f, time: (e.target as any).value }));
-                            }} />
+                        <div className='col' style={{ width: 'auto', position: 'relative', float: "left" }}>
+                            <DatePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="date" Setter={setFilter} Label='' Valid={(record) => { return true; }}  Format="MM/DD/YYYY" />
                         </div>
-
-                        <div className='input-group date' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
-                        <input className={'form-control form-control-sm' + isValidDate ? '' : 'is-invalid'} id='datePicker' value={filter.date} onChange={(e) => {
-                                setFilter((f) => ({ ...f, date: (e.target as any).value }));
-                            }} />
+                        <div className='col' style={{ width: 'auto', position: 'relative', float: "left" }}>
+                            <TimePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="time" Setter={setFilter} Label='' Valid={(record) => { return true; }} Step={0.001} />
                         </div>
-
                     </div>
+
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
                     <div className="form-group">
                         <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
-                            <input className={'form-control form-control-sm'} onChange={(e) => {
-                            setFilter((f) => ({ ...f, windowSize: (e.target as any).value }));
-                            }} type="number" value={filter.windowSize} />
+                            <Input<SEBrowser.IReportTimeFilter> Record={filter} Field='windowSize' Setter={setFilter} Label='' Valid={(record) => { return true; }} Type='number' />
                         </div>
                         <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
-                            <select className={'form-control form-control-sm'} value={filter.timeWindowUnits} onChange={(e) => {
-                                setFilter((f) => ({ ...filter, timeWindowUnits: (e.target as any).value }));
-                            }} >
-                                <option value="7">Year</option>
-                                <option value="6">Month</option>
-                                <option value="5">Week</option>
-                                <option value="4">Day</option>
-                                <option value="3">Hour</option>
-                                <option value="2">Minute</option>
-                                <option value="1">Second</option>
-                                <option value="0">Millisecond</option>
-                            </select>
+                            <Select<SEBrowser.IReportTimeFilter> Record={filter} Label='' Field='timeWindowUnits' Setter={setFilter}
+                                Options={[
+                                    { Value: '7', Label: 'Year' },
+                                    { Value: '6', Label: 'Month' },
+                                    { Value: '5', Label: 'Week' },
+                                    { Value: '4', Label: 'Day' },
+                                    { Value: '3', Label: 'Hour' },
+                                    { Value: '2', Label: 'Minute' },
+                                    { Value: '1', Label: 'Second' },
+                                    { Value: '0', Label: 'Millisecond' }
+                            ]} />
                         </div>
-                </div>
-                <div className="btn-group-vertical btn-block" style={{ marginTop: 5 }}>
-                    <button type="button" className="btn btn-primary btn-sm btn-block" disabled={isEqual(props.filter, filter)} onClick={() => { props.setFilter(filter) }}>
-                        Apply
-                    </button>
                 </div>
             </div>
             {props.showQuickSelect ?
