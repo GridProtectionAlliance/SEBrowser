@@ -24,20 +24,11 @@
 import React from 'react';
 import moment from 'moment';
 import Table from '@gpa-gemstone/react-table';
+import { PQI } from '@gpa-gemstone/application-typings';
 
-interface PQIEquipment {
-    Facility: string,
-    Area: string,
-    SectionTitle: string,
-    SectionRank: number,
-    ComponentModel: string,
-    Manufacturer: string,
-    Series: string,
-    ComponentType: string
-}
 
 const EventSearchPQI = (props: { EventID: number }) => {
-    const [data, setData] = React.useState<PQIEquipment[]>([]);
+    const [data, setData] = React.useState<PQI.Types.Equipment[]>([]);
     const [state, setState] = React.useState<('loading' | 'idle' | 'error')>('idle');
 
     React.useEffect(() => {
@@ -65,7 +56,7 @@ const EventSearchPQI = (props: { EventID: number }) => {
             <div className="card-body">
                 <div className='row'>
                     <div className='col'>
-                        <Table<PQIEquipment>
+                        <Table<PQI.Types.Equipment>
                             cols={[
                                 { key: 'Customer', field: 'Facility', label: 'Customer' },
                                 { key: 'Area', field: 'Area', label: 'Area' },
