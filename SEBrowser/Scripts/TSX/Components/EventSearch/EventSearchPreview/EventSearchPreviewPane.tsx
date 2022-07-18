@@ -48,6 +48,7 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import EventSearchCapBankAnalyticOverview from './EventSearchCapBankAnalyticOverview';
 import { SelectEventSearchByID } from './../EventSearchSlice';
+import InterruptionReport from './HECCO/InterruptionReport';
 
 
 export default function EventPreviewPane(props: { EventID: number, InitialTab?: ('Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All') }) {
@@ -134,7 +135,9 @@ export default function EventPreviewPane(props: { EventID: number, InitialTab?: 
             else if (setting.Name.indexOf('EventSearchCapBankAnalyticOverview') >= 0 && event.AssetType == 'CapacitorBank' && (tab == "All"))
                 return <EventSearchCapBankAnalyticOverview key={index} EventID={props.EventID} />;
             else if (setting.Name.indexOf('EventSearchNoteWindow') >= 0 && (tab == "Configuration" || tab == "All"))
-                return <EventSearchNoteWindow key={index} EventID={props.EventID} />;
+                    return <EventSearchNoteWindow key={index} EventID={props.EventID} />;
+            else if (setting.Name.indexOf('HECCOIR') >= 0 && (tab == "Correlating" || tab == "All"))
+                return <InterruptionReport key={index} EventID={props.EventID} />;
             })}
         </div>
         </>)
