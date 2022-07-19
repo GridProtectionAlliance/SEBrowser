@@ -93,7 +93,7 @@ namespace SEBrowser.Controllers
             }
         }
 
-        [Route("GetEquipment/{eventID: int}"), HttpGet]
+        [Route("GetEquipment/{eventID:int}"), HttpGet]
         public IHttpActionResult GetEquipment(int eventID)
         {
             try
