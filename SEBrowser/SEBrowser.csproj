@@ -427,6 +427,7 @@
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
     <None Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
     <None Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisReport.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\hooks.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Store.ts" />
   </ItemGroup>
   <PropertyGroup>
