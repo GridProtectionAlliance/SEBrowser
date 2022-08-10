@@ -43,20 +43,18 @@ import TVASOE from './TVA/SOE';
 import TVALSC from './TVA/LSC';
 import TVAPQWeb from './TVA/PQWeb';
 import EventSearchPQI from './EventSearchPQI';
-
-import { useSelector, useDispatch } from 'react-redux';
-
+import { useAppDispatch, useAppSelector } from '../../../hooks';
 import EventSearchCapBankAnalyticOverview from './EventSearchCapBankAnalyticOverview';
 import { SelectEventSearchByID } from './../EventSearchSlice';
 import InterruptionReport from './HECCO/InterruptionReport';
 
 
 export default function EventPreviewPane(props: { EventID: number, InitialTab?: ('Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All') }) {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
     const [settings, setSettings] = React.useState<SEBrowser.EventPreviewPaneSetting[]>([]);
     const [tab, setTab] = React.useState<'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All'>(props.InitialTab == null ? 'Waveform' : props.InitialTab);
-    const event: any = useSelector((state: Redux.StoreState) => SelectEventSearchByID(state,props.EventID));
+    const event: any = useAppSelector((state: Redux.StoreState) => SelectEventSearchByID(state,props.EventID));
     React.useEffect(() => {
         GetSettings();
     }, []);

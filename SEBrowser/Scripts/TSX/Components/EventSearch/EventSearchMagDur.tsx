@@ -25,7 +25,7 @@ import * as React from 'react';
 import { select, scaleLinear, scaleLog, axisBottom, format as d3format, line, zoom as d3zoom, axisLeft} from 'd3';
 import * as _ from 'lodash';
 import { SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '../../hooks';
 import { OpenXDA, SEBrowser } from '../../global';
 import { MagDurCurveSlice } from '../../Store';
 
@@ -56,14 +56,14 @@ const MagDurChart = (props: IProps) => {
     const svgHeight = props.Height - margin.top - margin.bottom;
     const chart = React.useRef(null);
 
-    const magDurStatus = useSelector(MagDurCurveSlice.Status);
-    const magDurCurves = useSelector(MagDurCurveSlice.Data) as SEBrowser.MagDurCurve[];
+    const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
+    const magDurCurves = useAppSelector(MagDurCurveSlice.Data) as SEBrowser.MagDurCurve[];
 
     const [currentCurve, setCurrentCurve] = React.useState<SEBrowser.MagDurCurve>(null)
 
-    const dispatch = useDispatch();
-    const status = useSelector(SelectEventSearchsStatus);
-    const points: any[] = useSelector(SelectEventSearchs);
+    const dispatch = useAppDispatch();
+    const status = useAppSelector(SelectEventSearchsStatus);
+    const points: any[] = useAppSelector(SelectEventSearchs);
 
     React.useEffect(() => {
         if (status != 'unitiated' && status != 'changed') return;

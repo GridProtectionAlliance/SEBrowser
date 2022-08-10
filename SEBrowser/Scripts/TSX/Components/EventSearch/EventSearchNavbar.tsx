@@ -26,7 +26,7 @@ import React from 'react';
 import 'moment';
 import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SelectAssetGroupList, SelectAssetList, SelectCharacteristicFilter, SelectMeterList, SelectReset, SelectStationList, SelectTimeFilter, SelectTypeFilter, SetFilterLists } from './EventSearchSlice';
 import { ResetFilters,  SetFilters } from './EventSearchSlice';
 import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice, MagDurCurveSlice } from '../../Store';
@@ -48,20 +48,20 @@ const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
 
 const EventSearchNavbar = (props: IProps) => {
-    const dispatch = useDispatch();
-    const timeFilter = useSelector(SelectTimeFilter);
-    const eventTypeFilter = useSelector(SelectTypeFilter);
-    const eventCharacteristicFilter = useSelector(SelectCharacteristicFilter);
-    const magDurStatus = useSelector(MagDurCurveSlice.Status);
-    const magDurCurves = useSelector(MagDurCurveSlice.Data);
+    const dispatch = useAppDispatch();
+    const timeFilter = useAppSelector(SelectTimeFilter);
+    const eventTypeFilter = useAppSelector(SelectTypeFilter);
+    const eventCharacteristicFilter = useAppSelector(SelectCharacteristicFilter);
+    const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
+    const magDurCurves = useAppSelector(MagDurCurveSlice.Data);
 
-    const assetGroupList = useSelector(SelectAssetGroupList);
+    const assetGroupList = useAppSelector(SelectAssetGroupList);
 
-    const meterList = useSelector(SelectMeterList);
-    const assetList = useSelector(SelectAssetList);
-    const locationList = useSelector(SelectStationList);
+    const meterList = useAppSelector(SelectMeterList);
+    const assetList = useAppSelector(SelectAssetList);
+    const locationList = useAppSelector(SelectStationList);
 
-    const reset = useSelector(SelectReset);
+    const reset = useAppSelector(SelectReset);
 
 
 

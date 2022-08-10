@@ -30,6 +30,10 @@ import { SEBrowser,  } from './global';
 
 declare var homePath: string;
 
+//Dispatch and Selector Typed
+export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof store.getState>
+
 export const MagDurCurveSlice = new GenericSlice<SEBrowser.MagDurCurve>('MagDurCurve', `${homePath}api/StandardMagDurCurve`, 'Name');
 export const AssetGroupSlice = new GenericSlice<OpenXDA.Types.AssetGroup>('AssetGroup', `${homePath}api/openXDA/AssetGroup`, 'Name');
 

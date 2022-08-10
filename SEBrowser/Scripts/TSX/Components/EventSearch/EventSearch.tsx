@@ -31,10 +31,9 @@ import EventPreviewPane from './EventSearchPreview/EventSearchPreviewPane';
 import EventSearchListedEventsNoteWindow from './EventSearchListedEventsNoteWindow';
 import queryString from 'querystring';
 import EventSearchMagDur from './EventSearchMagDur';
-import { useDispatch, useSelector } from 'react-redux';
 import { ProcessQuery, SelectEventList, SelectQueryParam } from './EventSearchSlice';
-
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../hooks';
 
 interface IProps { }
 
@@ -43,15 +42,15 @@ type tab = 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All' | unde
 const EventSearch = (props: IProps) => {
     const history = useLocation();
     const navigate = useNavigate();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
     const [eventId, setEventId] = React.useState<number>(-1);
     const [initialTab, setInitialTab] = React.useState<tab>(undefined);
     const [showMagDur, setShowMagDur] = React.useState<boolean>(false);
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
 
-    const queryParam = useSelector(SelectQueryParam);
-    const evtList = useSelector(SelectEventList);
+    const queryParam = useAppSelector(SelectQueryParam);
+    const evtList = useAppSelector(SelectEventList);
 
     React.useEffect(() => {
         var query = queryString.parse(history.search.replace("?",""), "&", "=", { decodeURIComponent: queryString.unescape });

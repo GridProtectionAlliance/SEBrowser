@@ -25,7 +25,7 @@ import * as React from 'react';
 import ReactDOM from 'react-dom';
 import moment from 'moment';
 import { ConfigurableTable, LoadingIcon } from '@gpa-gemstone/react-interactive';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '../../hooks';
 import { OpenXDA, Redux, SEBrowser } from '../../global';
 import { SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
 
@@ -44,12 +44,12 @@ interface IColumn {
 
 export default function EventSearchList(props: IProps) {
     const ref = React.useRef();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
-    const status = useSelector(SelectEventSearchsStatus);
-    const sortField = useSelector(SelectEventSearchsSortField);
-    const ascending = useSelector(SelectEventSearchsAscending);
-    const data = useSelector((state: Redux.StoreState) => SelectEventSearchs(state));
+    const status = useAppSelector(SelectEventSearchsStatus);
+    const sortField = useAppSelector(SelectEventSearchsSortField);
+    const ascending = useAppSelector(SelectEventSearchsAscending);
+    const data = useAppSelector((state: Redux.StoreState) => SelectEventSearchs(state));
     const [cols, setCols] = React.useState<IColumn[]>([]);
 
     React.useEffect(() => {

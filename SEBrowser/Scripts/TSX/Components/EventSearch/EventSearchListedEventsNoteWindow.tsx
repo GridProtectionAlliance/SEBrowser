@@ -22,7 +22,7 @@
 //******************************************************************************************************
 
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SelectEventSearchs } from './EventSearchSlice';
 import { LoadingScreen, Modal, ServerErrorIcon } from '@gpa-gemstone/react-interactive';
 import Table, { SelectTable } from '@gpa-gemstone/react-table';
@@ -36,9 +36,9 @@ import { TextArea } from '@gpa-gemstone/react-forms';
 
 const EventSearchListedEventsNoteWindow: React.FC<{}> = () => {
     const [show, setShow] = React.useState<boolean>(false);
-    const events = useSelector(SelectEventSearchs);
-    const selectedIDs = useSelector(EventNoteSlice.EventIDs);
-    const dispatch = useDispatch();
+    const events = useAppSelector(SelectEventSearchs);
+    const selectedIDs = useAppSelector(EventNoteSlice.EventIDs);
+    const dispatch = useAppDispatch();
 
     const [noteType, setNoteType] = React.useState<OpenXDA.Types.NoteType>({ ID: -1, Name: 'Event', ReferenceTableName: 'Event' });
     const [noteTag, setNoteTag] = React.useState<OpenXDA.Types.NoteTag>({ ID: -1, Name: 'General' });
@@ -211,15 +211,15 @@ const EventSearchListedEventsNoteWindow: React.FC<{}> = () => {
 
 interface IEvNoteProps { note: SEBrowser.EventNote, setNote: (n:SEBrowser.EventNote) => void }
 const EventNoteWindow = (props: IEvNoteProps) => {
-    const data: SEBrowser.EventNote[] = useSelector(EventNoteSlice.Data)
-    const dataStatus: Application.Types.Status = useSelector(EventNoteSlice.Status)
-    const sortField: keyof OpenXDA.Types.Note = useSelector(EventNoteSlice.SortField)
-    const ascending: boolean = useSelector(EventNoteSlice.Ascending);
+    const data: SEBrowser.EventNote[] = useAppSelector(EventNoteSlice.Data)
+    const dataStatus: Application.Types.Status = useAppSelector(EventNoteSlice.Status)
+    const sortField: keyof OpenXDA.Types.Note = useAppSelector(EventNoteSlice.SortField)
+    const ascending: boolean = useAppSelector(EventNoteSlice.Ascending);
 
-    const selectedIDs = useSelector(EventNoteSlice.EventIDs);
+    const selectedIDs = useAppSelector(EventNoteSlice.EventIDs);
 
 
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
     const h = window.innerHeight - 400;
 
