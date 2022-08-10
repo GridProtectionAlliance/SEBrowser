@@ -84,10 +84,10 @@
       <HintPath>..\packages\ExpressionEvaluator.2.0.4.0\lib\net40\ExpressionEvaluator.dll</HintPath>
     </Reference>
     <Reference Include="FaultAlgorithms">
-      <HintPath>..\Dependencies\GSF\FaultAlgorithms.dll</HintPath>
+      <HintPath>..\Dependencies\OpenXDA\FaultAlgorithms.dll</HintPath>
     </Reference>
     <Reference Include="FaultData">
-      <HintPath>..\Dependencies\GSF\FaultData.dll</HintPath>
+      <HintPath>..\Dependencies\OpenXDA\FaultData.dll</HintPath>
     </Reference>
     <Reference Include="GSF.Communication, Version=2.4.23.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\GSF.Communication.2.4.23-beta\lib\net46\GSF.Communication.dll</HintPath>
@@ -183,15 +183,14 @@
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="openXDA.Model, Version=3.0.3.156, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\GSF\openXDA.Model.dll</HintPath>
+    <Reference Include="openXDA.Model">
+      <HintPath>..\Dependencies\OpenXDA\openXDA.Model.dll</HintPath>
     </Reference>
     <Reference Include="openXDA.PQI">
-      <HintPath>..\Dependencies\GSF\openXDA.PQI.dll</HintPath>
+      <HintPath>..\Dependencies\OpenXDA\openXDA.PQI.dll</HintPath>
     </Reference>
     <Reference Include="openXDA.Reports">
-      <HintPath>..\Dependencies\GSF\openXDA.Reports.dll</HintPath>
+      <HintPath>..\Dependencies\OpenXDA\openXDA.Reports.dll</HintPath>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
@@ -200,7 +199,7 @@
       <HintPath>..\packages\RazorEngine.3.10.0\lib\net45\RazorEngine.dll</HintPath>
     </Reference>
     <Reference Include="Reports">
-      <HintPath>..\Dependencies\GSF\Reports.dll</HintPath>
+      <HintPath>..\Dependencies\OpenXDA\Reports.dll</HintPath>
     </Reference>
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
