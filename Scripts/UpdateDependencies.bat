@@ -1,7 +1,7 @@
 ::*******************************************************************************************************
 ::  UpdateDependencies.bat - Gbtc
 ::
-::  Copyright © 2013, Grid Protection Alliance.  All Rights Reserved.
+::  Copyright Â© 2013, Grid Protection Alliance.  All Rights Reserved.
 ::
 ::  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
 ::  the NOTICE file distributed with this work for additional information regarding copyright ownership.
@@ -36,11 +36,11 @@ IF "%openXDA%" == "" SET historian=\\GPAWEB\NightlyBuilds\openXDA\Beta
 IF "%target%" == "" SET target=%defaulttarget%
 
 SET gsflibraries=%gsf%\Libraries\*.*
-SET gsfdependencies=%target%\Source\Dependencies\GSF
+SET gsfdependencies=%target%\Dependencies\GSF
 SET xdaLibraries=%openXDA%\Libraries\*.*
-SET xdaDependencies=%target%\Source\Dependencies\openXDA
+SET xdaDependencies=%target%\Dependencies\openXDA
 SET sourcemasterbuild=%gsf%\Build Scripts\MasterBuild.buildproj
-SET targetmasterbuild=%target%\Build\Scripts
+SET targetmasterbuild=%target%\Scripts
 
 ECHO.
 ECHO Entering working directory...
