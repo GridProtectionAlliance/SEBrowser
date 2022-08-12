@@ -32,7 +32,7 @@ IF "%replace%" == "" SET replace=\\GPAWEB\NightlyBuilds\Tools\ReplaceInFiles\Rep
 SET defaulttarget=%LOCALAPPDATA%\Temp\SEBrowser
 IF "%remote%" == "" SET remote=git@github.com:GridProtectionAlliance/sebrowser.git
 IF "%gsf%" == "" SET gsf=\\GPAWEB\NightlyBuilds\GridSolutionsFramework\Beta
-IF "%openXDA%" == "" SET historian=\\GPAWEB\NightlyBuilds\openXDA\Beta
+IF "%openXDA%" == "" SET openXDA=\\GPAWEB\NightlyBuilds\openXDA\Beta
 IF "%target%" == "" SET target=%defaulttarget%
 
 SET gsflibraries=%gsf%\Libraries\*.*
