@@ -300,6 +300,7 @@
     <Content Include="Images\icon.png" />
     <Content Include="Images\lightning.png" />
     <Content Include="Images\SE Browser - Spelled out - 111 high.png" />
+    <Content Include="Images\SE Browser Spelled out - 40 high.png" />
     <Content Include="Readme.txt" />
     <Content Include="Scripts\Lib\bootstrap4-datetimepicker.min.js" />
     <Content Include="Scripts\SEBrowser.js">
