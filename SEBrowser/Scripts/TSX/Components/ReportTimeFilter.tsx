@@ -176,7 +176,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
-                timeWindowUnits: 5,
+                timeWindowUnits: 4,
                 windowSize: 15
             }
         }
