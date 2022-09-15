@@ -173,10 +173,10 @@ const EventSearchListedEventsNoteWindow: React.FC<{}> = () => {
                 ConfirmToolTipContent={selectedIDs.length > 0 ? < p > {CrossMark} A note needs to be entered. </p> : <p> {CrossMark} At least 1 Event needs to be selected. </p>}
                 CallBack={(conf, isBtn) => {
                     if (!isBtn)
-                        setShow(false);
+                        setShow(false); 
                     if (conf && isBtn)
                         handleAdd(note);
-                    if (!confirm && isBtn)
+                    if (!conf && isBtn)
                         setNote((n) => ({ ...n, Note: '' }))
                 }}>
 
