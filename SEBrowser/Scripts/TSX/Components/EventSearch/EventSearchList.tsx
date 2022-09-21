@@ -163,7 +163,7 @@ export default function EventSearchList(props: IProps) {
                 }}
                 onClick={(item) => props.selectEvent(item.row.EventID)}
                 theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - 300 }}
+                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - 220 }}
                 rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
                 selected={(item) => {
                     if (item.EventID == props.eventid) return true;
@@ -174,10 +174,10 @@ export default function EventSearchList(props: IProps) {
             />
             {status == 'loading' ? null :
                     data.length >= 100 ?
-                        <div style={{ padding: 20, backgroundColor: '#458EFF', color: 'white', marginBottom: 15 }}>
+                        <div style={{padding: 10, backgroundColor: '#458EFF', color: 'white'}}>
                             Only the first {data.length} results are shown - please narrow your search
                         </div> :
-                        <div style={{ padding: 20, backgroundColor: '#458EFF', color: 'white', marginBottom: 15 }}>
+                        <div style={{padding: 10, backgroundColor: '#458EFF', color: 'white'}}>
                             {data.length} results
                         </div>}
         </div>

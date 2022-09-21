@@ -28,6 +28,7 @@ import { SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { OpenXDA, SEBrowser } from '../../global';
 import { MagDurCurveSlice } from '../../Store';
+import { Plot } from '@gpa-gemstone/react-graph';
 
 interface iCurve {
     ID: number,
@@ -52,8 +53,6 @@ interface IProps {
 const MagDurChart = (props: IProps) => {
 
     const margin = { top: 15, right: 20, bottom: 60, left: 40 };
-    const svgWidth = props.Width - margin.left - margin.right;
-    const svgHeight = props.Height - margin.top - margin.bottom;
     const chart = React.useRef(null);
 
     const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
@@ -86,7 +85,7 @@ const MagDurChart = (props: IProps) => {
 
     React.useEffect(() => {
         Initialize();
-    }, [currentCurve, points])
+    }, [currentCurve, points, props.Height, props.Width])
 
     function resetZoom(evt: any) {
         Initialize();
@@ -249,7 +248,7 @@ const MagDurChart = (props: IProps) => {
 
         svg.append('use').attr('xlink:href', '#chartdata');
     }
-
+    const svgWidth = props.Width - margin.left - margin.right;
     return (
         <div ref={chart} style={{ height: props.Height, width: props.Width }}>
             <div style={{ textAlign: 'center' }}>
