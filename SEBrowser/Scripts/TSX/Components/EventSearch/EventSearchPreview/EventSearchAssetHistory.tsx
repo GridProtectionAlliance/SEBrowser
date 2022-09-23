@@ -102,7 +102,7 @@ const EventSearchHistory = (props: { EventID: number }) => {
                             <tr key={i}>
                                 <td>{d.EventType}</td>
                                 <td>{moment(d.StartTime).format('MM/DD/YYYY HH:mm:ss.SSS')}</td>
-                                <td><a href={homePath + 'Main/OpenSEE?eventid=' + d.ID} target="_blank">View in OpenSEE</a></td>
+                                <td><a href={openSEEInstance + '?eventid=' + d.ID} target="_blank">View in OpenSEE</a></td>
                             </tr>)}
                     </tbody>
 
