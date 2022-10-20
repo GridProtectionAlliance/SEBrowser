@@ -105,11 +105,11 @@ const EventSearch = (props: IProps) => {
                     </div>
                     {showMagDur ?
                         <EventSearchMagDur Width={(window.innerWidth - 300) / 2}
-                            Height={window.innerHeight - ((showNav? 420 : 52) + 70)}
+                            Height={window.innerHeight - ((showNav? 400 : 52) + 70)}
                             EventID={eventId}
                             OnSelect={(evt, point) => setEventId(point.EventID)}
                         /> :
-                        <EventSearchList eventid={eventId} selectEvent={setEventId} height={window.innerHeight - ((showNav ? 420 : 52) + 70)}/>
+                        <EventSearchList eventid={eventId} selectEvent={setEventId} height={window.innerHeight - ((showNav ? 390 : 52))}/>
                     }
                 </div>
                 <div style={{ width: '50%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>

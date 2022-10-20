@@ -189,7 +189,7 @@ const EventSearchNavbar = (props: IProps) => {
                         </span>
                     </div>
                     <div className="navbar-nav ml-auto" >
-                        <button type="button" className={`btn btn-${(!reset ? 'primary' : 'info')} btn-sm`} onClick={() => props.toggleVis()}>Show Filters</button>
+                        <button type="button" className={`btn btn-${(!reset ? 'warning' : 'primary')} btn-sm`} onClick={() => props.toggleVis()}>Show Filters</button>
                     </div>
                 </div>
             </nav>
@@ -538,8 +538,8 @@ const EventSearchNavbar = (props: IProps) => {
                     </li>
                  
                 </ul>
-                    <div className="btn-group-vertical float-right" data-toggle="buttons">
-                        <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${(!reset ? 'primary' : 'info')} btn-sm`} onClick={() => props.toggleVis()}>Hide Filters</button>
+                    <div className="btn-group-vertical float-right">
+                        <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${(!reset ? 'warning' : 'primary')} btn-sm`} onClick={() => props.toggleVis()}>Hide Filters</button>
                         <button type="button" className="btn btn-danger btn-sm" disabled={reset} onClick={() => dispatch(ResetFilters())}>Reset Filters</button>
                 </div>
             </div>
