@@ -28,7 +28,6 @@ import { SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { OpenXDA, SEBrowser } from '../../global';
 import { MagDurCurveSlice } from '../../Store';
-import { Plot } from '@gpa-gemstone/react-graph';
 
 interface iCurve {
     ID: number,
