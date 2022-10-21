@@ -146,11 +146,19 @@ namespace SEBrowser.Controllers
                     $"            EventWorstDisturbance ON " +
                     $"                EventWorstDisturbance.EventID = Event.ID AND " +
                     $"                EventType.Name IN ('Sag', 'Swell', 'Interruption', 'Transient') LEFT OUTER JOIN " +
+                    $"            FaultGroup ON " +
+                    $"                FaultGroup.EventID = Event.ID AND " +
+                    $"                COALESCE(FaultGroup.FaultDetectionLogicResult, 0) <> 0 LEFT OUTER JOIN " +
                     $"            FaultSummary ON " +
                     $"                FaultSummary.EventID = Event.ID AND " +
                     $"                FaultSummary.IsSelectedAlgorithm <> 0 AND " +
-                    $"                FaultSummary.IsValid <> 0 AND " +
-                    $"                FaultSummary.IsSuppressed = 0 AND " +
+                    $"                ( " +
+                    $"                    FaultGroup.ID IS NOT NULL OR " +
+                    $"                    ( " +
+                    $"                        FaultSummary.IsValid <> 0 AND " +
+                    $"                        FaultSummary.IsSuppressed = 0 " +
+                    $"                    ) " +
+                    $"                ) AND " +
                     $"                EventType.Name IN ('Fault', 'RecloseIntoFault') " +
                     $"        WHERE " +
                     $"            ({getTimeFilter(postData)}) AND " +
