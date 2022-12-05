@@ -152,8 +152,8 @@ const AvailableQuickSelects: IQuickSelect[] = [
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
-                timeWindowUnits: 4,
-                windowSize: t.daysInMonth()/2.0
+                timeWindowUnits: 3,
+                windowSize: (t.daysInMonth() * 24)/2.0
             }
         }
     },
@@ -164,8 +164,8 @@ const AvailableQuickSelects: IQuickSelect[] = [
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
-                timeWindowUnits: 4,
-                windowSize: t.daysInMonth() / 2.0
+                timeWindowUnits: 3,
+                windowSize: (t.daysInMonth() * 24) / 2.0
             }
         }
     },
@@ -290,17 +290,17 @@ const ReportTimeFilter = (props: IProps) => {
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Date: </label>
                     <div className="form-group" style={{ height: 30 }}>
                         <div className='col' style={{ width: 'auto', position: 'relative', float: "left" }}>
-                            <DatePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="date" Setter={setFilter} Label='' Valid={(record) => { return true; }}  Format="MM/DD/YYYY" />
+                        <DatePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="date" Setter={setFilter} Label='' Valid={(record) => { return true; }}  Format="MM/DD/YYYY" />
                         </div>
-                        <div className='col' style={{ width: 'auto', position: 'relative', float: "left" }}>
-                            <TimePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="time" Setter={setFilter} Label='' Valid={(record) => { return true; }} Step={0.001} />
+                    <div className='col' style={{ width: 'auto', position: 'relative', float: "left" }}>
+                        <TimePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="time" Setter={setFilter} Label='' Valid={(record) => { return true; }} Step={0.001} />
                         </div>
                     </div>
 
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
                     <div className="form-group">
-                        <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
-                            <Input<SEBrowser.IReportTimeFilter> Record={filter} Field='windowSize' Setter={setFilter} Label='' Valid={(record) => { return true; }} Type='number' />
+                    <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
+                        <Input<SEBrowser.IReportTimeFilter> Record={filter} Field='windowSize' Setter={setFilter} Label='' Valid={(record) => { return true; }} Type='number' />
                         </div>
                         <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
                             <Select<SEBrowser.IReportTimeFilter> Record={filter} Label='' Field='timeWindowUnits' Setter={setFilter}
