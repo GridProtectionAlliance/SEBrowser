@@ -71,7 +71,7 @@ namespace PQDashboard.Controllers.BreakerReport
             DateTime endTime = DateTime.Parse(query["endDate"]);
 
             AllBreakersReport report = new AllBreakersReport(startTime, endTime);
-            byte[] pdf = report.createPDF();
+            byte[] pdf = report.CreatePDF();
             using (MemoryStream stream = new MemoryStream())
             {
 
