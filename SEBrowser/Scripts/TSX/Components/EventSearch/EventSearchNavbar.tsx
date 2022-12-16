@@ -540,11 +540,11 @@ const EventSearchNavbar = (props: IProps) => {
 
                         <li className="nav-item" style={{ width: '15%', paddingRight: 10 }}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Settings</legend>
+                                <legend className="w-auto" style={{ fontSize: 'large' }}>Settings:</legend>
                                 <div className={"row"}>
                                     <div className={'col'}>
                                         <label>Number of Results: </label>
-                                        <input type="number" className="form-control" id="numberresults" placeholder={localStorage.getItem("SEBrowser.Settings.numberResults")} onChange={() => {
+                                        <input type="number" className="form-control" id="numberresults" onChange={() => {
                                             dispatch(settingsNumberResultsUpdated((document.getElementById("numberresults") as HTMLInputElement).value))
                                             dispatch(FetchEventSearches())
                                         }}></input>
