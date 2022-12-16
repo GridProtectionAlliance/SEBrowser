@@ -99,6 +99,7 @@ namespace SEBrowser.Controllers
             public List<int> assetIDs { get; set; }
             public List<int> groupIDs { get; set; }
             public List<int> locationIDs { get; set; }
+            public string numberResults { get; set; }
         }
 
         enum TimeWindowUnits
@@ -121,7 +122,7 @@ namespace SEBrowser.Controllers
                 DateTime dateTime = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
 
                 string eventType = getEventTypeFilter(postData);
-               string phase = getPhaseFilter(postData);
+                string phase = getPhaseFilter(postData);
                 string eventCharacteristic = getEventCharacteristicFilter(postData);
                 string asset = getAssetFilters(postData);
 
@@ -136,7 +137,7 @@ namespace SEBrowser.Controllers
                     $"    [SEBrowser.EventSearchDetailsView].* " +
                     $"FROM " +
                     $"    ( " +
-                    $"        SELECT TOP 100 " +
+                    $"        SELECT TOP {postData.numberResults ?? "100"} " +
                     $"            Event.ID EventID, " +
                     $"            EventWorstDisturbance.WorstDisturbanceID DisturbanceID, " +
                     $"            FaultSummary.FaultNumber FaultID " +
@@ -240,7 +241,7 @@ namespace SEBrowser.Controllers
                 phase.Add("(SELECT Phase.Name FROM Disturbance LEFT JOIN Phase ON Disturbance.PhaseID = Phase.ID WHERE Disturbance.ID = EventWorstDisturbance.WorstDisturbanceID) IN ('CN','BC','CA')");
                 phase.Add("FaultSummary.FaultType IN ('CN','BC','CA', 'BCG', 'CAG', 'ABC', 'ABCG')");
             }
-            
+
 
 
             return string.Join(" OR ", phase);
@@ -248,7 +249,7 @@ namespace SEBrowser.Controllers
 
         private string getEventCharacteristicFilter(EventSearchPostData postData)
         {
-           
+
             List<string> characteristics = new List<string>();
 
             //Min and Max Durations
@@ -354,7 +355,7 @@ namespace SEBrowser.Controllers
 
             if (postData.meterIDs.Count() > 0)
                 assets.Add($"Event.MeterID IN ({string.Join(",", postData.meterIDs)})");
-            
+
             if (postData.assetIDs.Count() > 0)
                 assets.Add($"Event.AssetID IN ({string.Join(",", postData.assetIDs)})");
 
@@ -564,7 +565,7 @@ namespace SEBrowser.Controllers
                 "    Event.StartTime, " +
                 "    Sag.PerUnitMagnitude";
 
-        Dictionary<string, string> query = Request.QueryParameters();
+            Dictionary<string, string> query = Request.QueryParameters();
             int eventID = int.Parse(query["eventId"]);
 
             if (eventID <= 0) return new DataTable();
@@ -888,21 +889,21 @@ namespace SEBrowser.Controllers
         private DataGroup QueryDataGroup(int eventID, Meter meter)
         {
             string target = $"DataGroup-{eventID}";
-          
-                Task<DataGroup> dataGroupTask = new Task<DataGroup>(() =>
-                {
-                     List<byte[]> data = ChannelData.DataFromEvent(eventID, () => new AdoDataConnection(SettingsCategory));
-                    return ToDataGroup(meter, data);
-                    
-                });
 
-                if (s_memoryCache.Add(target, dataGroupTask, new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(10.0D) }))
-                    dataGroupTask.Start();
+            Task<DataGroup> dataGroupTask = new Task<DataGroup>(() =>
+            {
+                List<byte[]> data = ChannelData.DataFromEvent(eventID, () => new AdoDataConnection(SettingsCategory));
+                return ToDataGroup(meter, data);
 
-                dataGroupTask = (Task<DataGroup>)s_memoryCache.Get(target);
+            });
 
-                return dataGroupTask.Result;
-            
+            if (s_memoryCache.Add(target, dataGroupTask, new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes(10.0D) }))
+                dataGroupTask.Start();
+
+            dataGroupTask = (Task<DataGroup>)s_memoryCache.Get(target);
+
+            return dataGroupTask.Result;
+
         }
 
 

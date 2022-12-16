@@ -24,7 +24,7 @@
 import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { SEBrowser, Redux } from '../../global';
 import * as _ from 'lodash';
-import {  ajax } from 'jquery';
+import { ajax } from 'jquery';
 import moment from 'moment';
 import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice } from '../../Store';
@@ -57,7 +57,8 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
         swellMin: characteristics.swellMin, swellMax: characteristics.swellMax, swellType: characteristics.swellType,
         curveID: characteristics.curveID, curveInside: characteristics.curveInside, curveOutside: characteristics.curveOutside,
         meterIDs: meterList.map(item => item.ID), assetIDs: assetList.map(item => item.ID),
-        groupIDs: groupList.map(item => item.ID), locationIDs: locationList.map(item => item.ID)
+        groupIDs: groupList.map(item => item.ID), locationIDs: locationList.map(item => item.ID),
+        numberResults: (getState() as any).Settings.NumberResults
     }
 
     if (fetchHandle != null && fetchHandle.abort != null)
@@ -72,7 +73,7 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     return await handle;
 });
 
-export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async (query: queryString.ParsedUrlQuery , { dispatch, getState }) => {
+export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async (query: queryString.ParsedUrlQuery, { dispatch, getState }) => {
     let state = getState() as Redux.StoreState;
     if (state.Asset.Status == 'unintiated')
         await dispatch(AssetSlice.Fetch());
@@ -189,7 +190,7 @@ export const EventSearchsSlice = createSlice({
         ResetFilters: (state, action: PayloadAction<void>) => {
             state.EventCharacteristic = {
                 durationMax: 0, durationMin: 0, Phase: { A: true, B: true, C: true }, transientMin: 0, transientMax: 0, sagMin: 0, sagMax: 0, swellMin: 0, swellMax: 0, sagType: 'both', swellType: 'both', transientType: 'both',
-                    curveID: 1, curveInside: true, curveOutside: true
+                curveID: 1, curveInside: true, curveOutside: true
             };
 
             state.EventType = { breakerOps: true, faults: true, interruptions: true, others: true, relayTCE: true, swells: true, sags: true, transients: true };
@@ -219,9 +220,10 @@ export const EventSearchsSlice = createSlice({
             state.ActiveFetchID = state.ActiveFetchID.filter(id => id !== action.meta.requestId);
             state.Status = 'idle';
             state.Error = null;
-            if (action.payload.length > 100) alert("The query you submitted was too large (" + action.payload.length.toString() + " records) and only the first 100 records were return.  Please refine your search if necessary.")
+            const numberResults = parseInt(localStorage.getItem("SEBrowser.Settings.numberResults"))
+            if (action.payload.length > numberResults) alert("The query you submitted was too large (" + action.payload.length.toString() + " records) and only the first " + numberResults + " records were return.  Please refine your search if necessary.")
             const sorted = _.orderBy(action.payload, [state.SortField], [state.Ascending ? "asc" : "desc"])
-            state.Data = sorted.slice(0,100);
+            state.Data = sorted
 
         });
         builder.addCase(FetchEventSearches.pending, (state, action) => {
@@ -260,15 +262,15 @@ export const SelectAssetGroupList = (state: Redux.StoreState) => state.EventSear
 export const SelectStationList = (state: Redux.StoreState) => state.EventSearch.SelectedStations;
 
 export const SelectQueryParam = createSelector(
-        (state: Redux.StoreState) => state.EventSearch.EventCharacteristic,
-        (state: Redux.StoreState) => state.EventSearch.EventType,
-        (state: Redux.StoreState) => state.EventSearch.TimeRange,
-        (state: Redux.StoreState) => state.EventSearch.SelectedAssets,
-        (state: Redux.StoreState) => state.EventSearch.SelectedGroups,
+    (state: Redux.StoreState) => state.EventSearch.EventCharacteristic,
+    (state: Redux.StoreState) => state.EventSearch.EventType,
+    (state: Redux.StoreState) => state.EventSearch.TimeRange,
+    (state: Redux.StoreState) => state.EventSearch.SelectedAssets,
+    (state: Redux.StoreState) => state.EventSearch.SelectedGroups,
     (state: Redux.StoreState) => state.EventSearch.SelectedMeters,
     (state: Redux.StoreState) => state.EventSearch.SelectedStations,
-        GenerateQueryParams
-    );
+    GenerateQueryParams
+);
 
 export const SelectEventList = createSelector(
     (state: Redux.StoreState) => state.EventSearch.Data,
@@ -307,28 +309,28 @@ function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type:
     time: SEBrowser.IReportTimeFilter, assets: SystemCenter.Types.DetailedAsset[], groups: OpenXDA.Types.AssetGroup[],
     meters: SystemCenter.Types.DetailedMeter[], stations: SystemCenter.Types.DetailedLocation[]): any {
     let result: any = {};
-    if (assets.length > 0 && assets.length < 100) {
+    if (assets.length > 0) {
         let i = 0;
         assets.forEach(a => {
             result["assets" + i] = a.ID;
             i = i + 1;
         })
     }
-    if (meters.length > 0 && meters.length < 100) {
+    if (meters.length > 0) {
         let i = 0;
         meters.forEach(m => {
             result["meters" + i] = m.ID;
             i = i + 1;
         })
     }
-    if (stations.length > 0 && stations.length < 100) {
+    if (stations.length > 0) {
         let i = 0;
         stations.forEach(s => {
             result["stations" + i] = s.ID;
             i = i + 1;
         })
     }
-    if (groups.length > 0 && groups.length < 100) {
+    if (groups.length > 0) {
         let i = 0;
         groups.forEach(ag => {
             result["groups" + i] = ag.ID;
@@ -400,7 +402,7 @@ function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type:
         result['PhaseB'] = false;
     if (!event.Phase.C)
         result['PhaseC'] = false;
-    
+
     result["date"] = time.date;
     result["time"] = time.time;
     result["windowSize"] = time.windowSize;
@@ -420,7 +422,7 @@ function parseList(key: string, object: any) {
     }
 
     return result;
-    
+
 }
 // #endregion
 
