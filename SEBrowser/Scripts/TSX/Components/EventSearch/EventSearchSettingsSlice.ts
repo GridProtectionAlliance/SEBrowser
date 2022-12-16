@@ -32,8 +32,11 @@ const settingsSlice = createSlice({
     
     reducers: {
         settingsNumberResultsUpdated(state: any, action) {
-            state.NumberResults = action.payload
-            localStorage.setItem('SEBrowser.Settings.numberResults', action.payload)
+            const numberResults = parseInt(action.payload)
+            if (numberResults >= 0) {
+                state.NumberResults = numberResults
+                localStorage.setItem('SEBrowser.Settings.numberResults', numberResults + "")
+            }
         }
     }
 })

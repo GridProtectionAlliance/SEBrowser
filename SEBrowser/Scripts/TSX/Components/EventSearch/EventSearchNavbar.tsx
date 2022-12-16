@@ -544,11 +544,10 @@ const EventSearchNavbar = (props: IProps) => {
                                 <div className={"row"}>
                                     <div className={'col'}>
                                         <label>Number of Results: </label>
-                                        <input type="number" id="numberresults" placeholder={localStorage.getItem("SEBrowser.Settings.numberResults")}></input>
-                                        <button type="button" onClick={() => {
+                                        <input type="number" className="form-control" id="numberresults" placeholder={localStorage.getItem("SEBrowser.Settings.numberResults")} onChange={() => {
                                             dispatch(settingsNumberResultsUpdated((document.getElementById("numberresults") as HTMLInputElement).value))
                                             dispatch(FetchEventSearches())
-                                        }}>Save</button>
+                                        }}></input>
                                     </div>
                                 </div>
                             </fieldset>
