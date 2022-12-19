@@ -72,7 +72,7 @@ const EventSearchNavbar = (props: IProps) => {
     const lineNeutralOptions = [{ Value: 'LL', Label: 'LL' }, { Value: 'LN', Label: 'LN' }, { Value: 'both', Label: 'LL/LN' }];
 
     const eventSearchSettingsState = useAppSelector(EventSearchSettings)
-    const [getEventSearchSettings, setEventSearchSettings] = React.useState<Redux.SettingsState>(eventSearchSettingsState)
+    const [eventSearchSettings, setEventSearchSettings] = React.useState<Redux.SettingsState>(eventSearchSettingsState)
 
 
     React.useEffect(() => {
@@ -89,10 +89,10 @@ const EventSearchNavbar = (props: IProps) => {
     }, [newEventCharacteristicFilter]);
     React.useEffect(() => {
         dispatch(SetSettingsNumberResults({
-            numberResults: getEventSearchSettings.NumberResults
+            numberResults: eventSearchSettings.NumberResults
         }));
         dispatch(FetchEventSearches())
-    }, [getEventSearchSettings]);
+    }, [eventSearchSettings]);
 
     function formatWindowUnit(i: number) {
         if (i == 7)
@@ -553,7 +553,7 @@ const EventSearchNavbar = (props: IProps) => {
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>Settings:</legend>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <Input<Redux.SettingsState> Record={getEventSearchSettings} Field='NumberResults' Setter={setEventSearchSettings} Valid={() => { return true }} Label='Number of Results:' />
+                                        <Input<Redux.SettingsState> Record={eventSearchSettings} Field='NumberResults' Setter={setEventSearchSettings} Valid={() => { return true }} Label='Number of Results:' />
                                     </div>
                                 </div>
                             </fieldset>

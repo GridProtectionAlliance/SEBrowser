@@ -46,6 +46,7 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     const assetList = (getState() as any).EventSearch.SelectedAssets as SystemCenter.Types.DetailedAsset[];
     const locationList = (getState() as any).EventSearch.SelectedStations as SystemCenter.Types.DetailedLocation[];
     const groupList = (getState() as any).EventSearch.SelectedGroups as OpenXDA.Types.AssetGroup[];
+    const settings = (getState() as any).Settings as Redux.SettingsState;
 
     const filter = {
         date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,
@@ -58,7 +59,7 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
         curveID: characteristics.curveID, curveInside: characteristics.curveInside, curveOutside: characteristics.curveOutside,
         meterIDs: meterList.map(item => item.ID), assetIDs: assetList.map(item => item.ID),
         groupIDs: groupList.map(item => item.ID), locationIDs: locationList.map(item => item.ID),
-        numberResults: (getState() as any).Settings.NumberResults
+        numberResults: settings.NumberResults,
     }
 
     if (fetchHandle != null && fetchHandle.abort != null)
@@ -73,7 +74,7 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     return await handle;
 });
 
-export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async (query: queryString.ParsedUrlQuery, { dispatch, getState }) => {
+export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async (query: queryString.ParsedUrlQuery , { dispatch, getState }) => {
     let state = getState() as Redux.StoreState;
     if (state.Asset.Status == 'unintiated')
         await dispatch(AssetSlice.Fetch());

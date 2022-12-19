@@ -174,7 +174,7 @@ export default function EventSearchList(props: IProps) {
             />
             {status == 'loading' ? null :
                 data.length >= parseInt(localStorage.getItem('SEBrowser.Settings.numberResults')) ?
-                    <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }}>
+                    <div style={{padding: 10, backgroundColor: '#458EFF', color: 'white'}}>
                         Only the first {data.length} results are shown - please narrow your search or increase the number of results
                     </div> :
                     <div style={{padding: 10, backgroundColor: '#458EFF', color: 'white'}}>
