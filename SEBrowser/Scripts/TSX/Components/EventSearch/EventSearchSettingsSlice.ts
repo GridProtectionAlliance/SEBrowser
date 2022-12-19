@@ -24,15 +24,15 @@ import { createSlice } from '@reduxjs/toolkit';
 import { Redux } from '../../global';
 
 const settingsSlice = createSlice({ 
-    name: 'settings',
+    name: 'EventSearchSettings',
 
     initialState: {
         NumberResults: parseInt(localStorage.getItem('SEBrowser.Settings.numberResults') ?? '100')
     } as Redux.SettingsState,
     
     reducers: {
-        settingsNumberResultsUpdated(state: any, action) {
-            const numberResults = parseInt(action.payload)
+        SetSettingsNumberResults(state: any, action) {
+            const numberResults = parseInt(action.payload.numberResults)
             if (numberResults >= 0) {
                 state.NumberResults = numberResults
                 localStorage.setItem('SEBrowser.Settings.numberResults', numberResults + "")
@@ -41,5 +41,6 @@ const settingsSlice = createSlice({
     }
 })
 
-export const { settingsNumberResultsUpdated } = settingsSlice.actions
-export const SettingsSlice = settingsSlice
+export const SettingsReducer = settingsSlice.reducer
+export const { SetSettingsNumberResults } = settingsSlice.actions
+export const EventSearchSettings = (state: Redux.StoreState) => state.Settings

@@ -35,8 +35,8 @@ import EventSearchFilterButton from './EventSearchbarFilterButton';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { Input, Select, EnumCheckBoxes } from '@gpa-gemstone/react-forms';
 import { Search } from '@gpa-gemstone/react-interactive';
-import { SEBrowser } from '../../Global';
-import { settingsNumberResultsUpdated } from './EventSearchSettingsSlice';
+import { SEBrowser, Redux } from '../../Global';
+import { SetSettingsNumberResults, EventSearchSettings } from './EventSearchSettingsSlice';
 
 
 interface IProps {
@@ -71,6 +71,10 @@ const EventSearchNavbar = (props: IProps) => {
 
     const lineNeutralOptions = [{ Value: 'LL', Label: 'LL' }, { Value: 'LN', Label: 'LN' }, { Value: 'both', Label: 'LL/LN' }];
 
+    const eventSearchSettingsState = useAppSelector(EventSearchSettings)
+    const [getEventSearchSettings, setEventSearchSettings] = React.useState<Redux.SettingsState>(eventSearchSettingsState)
+
+
     React.useEffect(() => {
         if (magDurStatus == 'changed' || magDurStatus == 'unintiated')
             dispatch(MagDurCurveSlice.Fetch());
@@ -83,6 +87,12 @@ const EventSearchNavbar = (props: IProps) => {
             types: eventTypeFilter
         }));
     }, [newEventCharacteristicFilter]);
+    React.useEffect(() => {
+        dispatch(SetSettingsNumberResults({
+            numberResults: getEventSearchSettings.NumberResults
+        }));
+        dispatch(FetchEventSearches())
+    }, [getEventSearchSettings]);
 
     function formatWindowUnit(i: number) {
         if (i == 7)
@@ -543,11 +553,7 @@ const EventSearchNavbar = (props: IProps) => {
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>Settings:</legend>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <label>Number of Results: </label>
-                                        <input type="number" className="form-control" id="numberresults" onChange={() => {
-                                            dispatch(settingsNumberResultsUpdated((document.getElementById("numberresults") as HTMLInputElement).value))
-                                            dispatch(FetchEventSearches())
-                                        }}></input>
+                                        <Input<Redux.SettingsState> Record={getEventSearchSettings} Field='NumberResults' Setter={setEventSearchSettings} Valid={() => { return true }} Label='Number of Results:' />
                                     </div>
                                 </div>
                             </fieldset>
