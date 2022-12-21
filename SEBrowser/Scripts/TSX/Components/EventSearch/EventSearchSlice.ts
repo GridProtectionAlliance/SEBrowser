@@ -46,6 +46,7 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     const assetList = (getState() as any).EventSearch.SelectedAssets as SystemCenter.Types.DetailedAsset[];
     const locationList = (getState() as any).EventSearch.SelectedStations as SystemCenter.Types.DetailedLocation[];
     const groupList = (getState() as any).EventSearch.SelectedGroups as OpenXDA.Types.AssetGroup[];
+
     const settings = (getState() as any).Settings as Redux.SettingsState;
 
     const filter = {
@@ -62,10 +63,17 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
         numberResults: settings.NumberResults,
     }
 
+    const additionalArguments = {
+        numberResults: settings.NumberResults
+    }
+
     if (fetchHandle != null && fetchHandle.abort != null)
         fetchHandle.abort();
 
-    const handle = GetEventSearchs(filter);
+    const handle = GetEventSearchs({
+        ...filter,
+        ...additionalArguments
+    });
     fetchHandle = handle;
     signal.addEventListener('abort', () => {
         if (handle.abort !== undefined) handle.abort();
@@ -221,8 +229,6 @@ export const EventSearchsSlice = createSlice({
             state.ActiveFetchID = state.ActiveFetchID.filter(id => id !== action.meta.requestId);
             state.Status = 'idle';
             state.Error = null;
-            const numberResults = parseInt(localStorage.getItem("SEBrowser.Settings.numberResults"))
-            if (action.payload.length > numberResults) alert("The query you submitted was too large (" + action.payload.length.toString() + " records) and only the first " + numberResults + " records were return.  Please refine your search if necessary.")
             const sorted = _.orderBy(action.payload, [state.SortField], [state.Ascending ? "asc" : "desc"])
             state.Data = sorted
 
@@ -310,28 +316,28 @@ function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type:
     time: SEBrowser.IReportTimeFilter, assets: SystemCenter.Types.DetailedAsset[], groups: OpenXDA.Types.AssetGroup[],
     meters: SystemCenter.Types.DetailedMeter[], stations: SystemCenter.Types.DetailedLocation[]): any {
     let result: any = {};
-    if (assets.length > 0) {
+    if (assets.length > 0 && assets.length < 100) {
         let i = 0;
         assets.forEach(a => {
             result["assets" + i] = a.ID;
             i = i + 1;
         })
     }
-    if (meters.length > 0) {
+    if (meters.length > 0 && meters.length < 100) {
         let i = 0;
         meters.forEach(m => {
             result["meters" + i] = m.ID;
             i = i + 1;
         })
     }
-    if (stations.length > 0) {
+    if (stations.length > 0 && stations.length < 100) {
         let i = 0;
         stations.forEach(s => {
             result["stations" + i] = s.ID;
             i = i + 1;
         })
     }
-    if (groups.length > 0) {
+    if (groups.length > 0 && groups.length < 100) {
         let i = 0;
         groups.forEach(ag => {
             result["groups" + i] = ag.ID;

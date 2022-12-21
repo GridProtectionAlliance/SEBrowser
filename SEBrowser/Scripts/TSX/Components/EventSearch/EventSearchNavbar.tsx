@@ -553,7 +553,7 @@ const EventSearchNavbar = (props: IProps) => {
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>Settings:</legend>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <Input<Redux.SettingsState> Record={eventSearchSettings} Field='NumberResults' Setter={setEventSearchSettings} Valid={() => { return true }} Label='Number of Results:' />
+                                        <Input<Redux.SettingsState> Record={eventSearchSettings} Field='NumberResults' Setter={setEventSearchSettings} Valid={() => { return true }} Label='Number of Results:' Type='number' />
                                     </div>
                                 </div>
                             </fieldset>

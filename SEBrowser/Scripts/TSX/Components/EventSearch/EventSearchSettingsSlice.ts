@@ -31,11 +31,12 @@ const settingsSlice = createSlice({
     } as Redux.SettingsState,
     
     reducers: {
-        SetSettingsNumberResults(state: any, action) {
-            const numberResults = parseInt(action.payload.numberResults)
-            if (numberResults >= 0) {
+        SetSettingsNumberResults(state: any, action: { type: string, payload: { numberResults: number } }) {
+            let numberResults = action.payload.numberResults
+            numberResults = Math.floor(numberResults)       // in case input is not an integer
+            if (numberResults >= 0) {                       // in case input is not positive
                 state.NumberResults = numberResults
-                localStorage.setItem('SEBrowser.Settings.numberResults', numberResults + "")
+                localStorage.setItem('SEBrowser.Settings.numberResults', numberResults.toString())
             }
         }
     }
@@ -44,3 +45,4 @@ const settingsSlice = createSlice({
 export const SettingsReducer = settingsSlice.reducer
 export const { SetSettingsNumberResults } = settingsSlice.actions
 export const EventSearchSettings = (state: Redux.StoreState) => state.Settings
+export const EventSearchNumberResults = (state: Redux.StoreState) => state.Settings.NumberResults

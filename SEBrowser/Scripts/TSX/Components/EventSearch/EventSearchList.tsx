@@ -28,6 +28,7 @@ import { ConfigurableTable, LoadingIcon } from '@gpa-gemstone/react-interactive'
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { OpenXDA, Redux, SEBrowser } from '../../global';
 import { SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
+import { EventSearchNumberResults } from './EventSearchSettingsSlice';
 
 interface IProps {
     eventid: number,
@@ -51,6 +52,7 @@ export default function EventSearchList(props: IProps) {
     const ascending = useAppSelector(SelectEventSearchsAscending);
     const data = useAppSelector((state: Redux.StoreState) => SelectEventSearchs(state));
     const [cols, setCols] = React.useState<IColumn[]>([]);
+    const numberResults = useAppSelector(EventSearchNumberResults)
 
     React.useEffect(() => {
         document.addEventListener("keydown", handleKeyPress, false);
@@ -173,7 +175,7 @@ export default function EventSearchList(props: IProps) {
                 defaultColumns={["Event Type"]}
             />
             {status == 'loading' ? null :
-                data.length >= parseInt(localStorage.getItem('SEBrowser.Settings.numberResults')) ?
+                data.length == numberResults ?
                     <div style={{padding: 10, backgroundColor: '#458EFF', color: 'white'}}>
                         Only the first {data.length} results are shown - please narrow your search or increase the number of results
                     </div> :
