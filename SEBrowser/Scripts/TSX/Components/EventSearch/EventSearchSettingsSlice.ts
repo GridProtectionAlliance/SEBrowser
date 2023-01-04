@@ -44,5 +44,5 @@ const settingsSlice = createSlice({
 
 export const SettingsReducer = settingsSlice.reducer
 export const { SetSettingsNumberResults } = settingsSlice.actions
-export const EventSearchSettings = (state: Redux.StoreState) => state.Settings
-export const EventSearchNumberResults = (state: Redux.StoreState) => state.Settings.NumberResults
+export const SelectSearchSettings = (state: Redux.StoreState) => state.Settings
+export const SelectSearchNumberResults = (state: Redux.StoreState) => state.Settings.NumberResults

@@ -36,7 +36,7 @@ import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { Input, Select, EnumCheckBoxes } from '@gpa-gemstone/react-forms';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { SEBrowser, Redux } from '../../Global';
-import { SetSettingsNumberResults, EventSearchSettings } from './EventSearchSettingsSlice';
+import { SetSettingsNumberResults, SelectSearchSettings } from './EventSearchSettingsSlice';
 
 
 interface IProps {
@@ -71,7 +71,7 @@ const EventSearchNavbar = (props: IProps) => {
 
     const lineNeutralOptions = [{ Value: 'LL', Label: 'LL' }, { Value: 'LN', Label: 'LN' }, { Value: 'both', Label: 'LL/LN' }];
 
-    const eventSearchSettingsState = useAppSelector(EventSearchSettings)
+    const eventSearchSettingsState = useAppSelector(SelectSearchSettings)
     const [eventSearchSettings, setEventSearchSettings] = React.useState<Redux.SettingsState>(eventSearchSettingsState)
 
 
