@@ -389,21 +389,26 @@ namespace SEBrowser.Controllers
 	                    Phase.Name as Phase,
 	                    Disturbance.PerUnitMagnitude,
 	                    Disturbance.DurationSeconds,
-	                    Disturbance.StartTime
+	                    Disturbance.StartTime,
+                        CASE 
+                            WHEN Disturbance.ID = EventWorstDisturbance.WorstDisturbanceID THEN 'true'
+                            ELSE 'false' 
+                        END as IsWorstDisturbance
                     FROM 
 	                    Disturbance JOIN
 	                    Phase ON Disturbance.PhaseID = Phase.ID JOIN
-	                    EventType ON Disturbance.EventTypeID = EventType.ID
+	                    EventType ON Disturbance.EventTypeID = EventType.ID Join
+	                    EventWorstDisturbance ON Disturbance.EventID = EventWorstDisturbance.EventID
                     WHERE
 	                    Phase.Name != 'WORST' AND  
-	                    eventid = {0}
+	                    Disturbance.EventID = {0}
                     ORDER BY Disturbance.StartTime
                     ", eventID
                     );
 
                 return table;
-            }
-
+            }   // modify this such that it includes a boolean of whether the disturbance is the worst in its event
+                // in the typescript, respond to ^
         }
 
         [Route("GetEventSearchFaultSegments"), HttpGet]

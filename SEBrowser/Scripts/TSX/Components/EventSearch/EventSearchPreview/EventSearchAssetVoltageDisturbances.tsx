@@ -24,6 +24,18 @@
 import React from 'react';
 import SEBrowserService from './../../../../TS/Services/SEBrowser';
 import moment from 'moment';
+import Table from './Table';
+import { data } from 'jquery';
+import { forEach } from 'lodash';
+import { color } from 'd3';
+
+interface DisturbanceRow {
+    disturbanceType: string,
+    phase: string,
+    magnitude: number,
+    duration: number,
+    startTime: string
+}
 
 export default class EventSearchAssetVoltageDisturbances extends React.Component<{ EventID: number }, {tableRows: Array<JSX.Element> }>{
     seBrowserService: SEBrowserService;
@@ -51,8 +63,8 @@ export default class EventSearchAssetVoltageDisturbances extends React.Component
 
     createTableRows(eventID: number) {
         this.seBrowserService.getEventSearchAsssetVoltageDisturbancesData(eventID).done(data => {
-            var rows = data.map((d,i) =>
-                <tr key={i}>
+            var rows = data.map((d, i) =>
+                <tr key={i} style={{ backgroundColor: "yellow" }}>
                     <td>{d.EventType}</td>
                     <td>{d.Phase}</td>
                     <td>{(d.PerUnitMagnitude * 100).toFixed(1)}</td>
@@ -68,12 +80,12 @@ export default class EventSearchAssetVoltageDisturbances extends React.Component
         return (
             <div className="card">
                 <div className="card-header">Voltage Disturbance in Waveform:</div>
-
+                   
                 <div className="card-body">
                     <table className="table">
                         <thead>
                             <tr><th>Disturbance Type</th><th>Phase</th><th>Magnitude (%)</th><th>Duration (ms)</th><th>Start Time</th></tr>
-                        </thead>
+                        </thead> 
                         <tbody>
                             {this.state.tableRows}
                         </tbody>
