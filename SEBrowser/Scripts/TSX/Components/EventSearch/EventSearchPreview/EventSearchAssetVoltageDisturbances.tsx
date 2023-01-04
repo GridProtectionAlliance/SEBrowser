@@ -24,7 +24,6 @@
 import React from 'react';
 import SEBrowserService from './../../../../TS/Services/SEBrowser';
 import moment from 'moment';
-import Table from './Table';
 import { data } from 'jquery';
 import { forEach } from 'lodash';
 import { color } from 'd3';
@@ -63,16 +62,28 @@ export default class EventSearchAssetVoltageDisturbances extends React.Component
 
     createTableRows(eventID: number) {
         this.seBrowserService.getEventSearchAsssetVoltageDisturbancesData(eventID).done(data => {
-            var rows = data.map((d, i) =>
-                <tr key={i} style={{ backgroundColor: "yellow" }}>
-                    <td>{d.EventType}</td>
-                    <td>{d.Phase}</td>
-                    <td>{(d.PerUnitMagnitude * 100).toFixed(1)}</td>
-                    <td>{(d.DurationSeconds * 1000).toFixed(2)}</td>
-                    <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
-                </tr>)
+            var rows = data.map((d, i) => {
+                if (d.IsWorstDisturbance === "true") {
+                    return <tr key={i} style={{ backgroundColor: "yellow" }}>
+                        <td>{d.EventType}</td>
+                        <td>{d.Phase}</td>
+                        <td>{(d.PerUnitMagnitude * 100).toFixed(1)}</td>
+                        <td>{(d.DurationSeconds * 1000).toFixed(2)}</td>
+                        <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
+                    </tr>
+                } else {
+                    return <tr key={i}>
+                        <td>{d.EventType}</td>
+                        <td>{d.Phase}</td>
+                        <td>{(d.PerUnitMagnitude * 100).toFixed(1)}</td>
+                        <td>{(d.DurationSeconds * 1000).toFixed(2)}</td>
+                        <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
+                    </tr>
+                }  
+            })
 
-            this.setState({ tableRows: rows});
+            this.setState({ tableRows: rows });
+    
         });
     }
 
