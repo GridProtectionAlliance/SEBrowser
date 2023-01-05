@@ -25,7 +25,6 @@ import React from 'react';
 import SEBrowserService from './../../../../TS/Services/SEBrowser';
 import moment from 'moment';
 
-
 export default class EventSearchAssetVoltageDisturbances extends React.Component<{ EventID: number }, {tableRows: Array<JSX.Element> }>{
     seBrowserService: SEBrowserService;
     constructor(props, context) {
