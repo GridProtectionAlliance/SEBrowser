@@ -61,9 +61,7 @@ export default class EventSearchAssetVoltageDisturbances extends React.Component
                     <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
                 </tr> 
             })
-
             this.setState({ tableRows: rows });
-    
         });
     }
 
