@@ -24,17 +24,7 @@
 import React from 'react';
 import SEBrowserService from './../../../../TS/Services/SEBrowser';
 import moment from 'moment';
-import { data } from 'jquery';
-import { forEach } from 'lodash';
-import { color } from 'd3';
 
-interface DisturbanceRow {
-    disturbanceType: string,
-    phase: string,
-    magnitude: number,
-    duration: number,
-    startTime: string
-}
 
 export default class EventSearchAssetVoltageDisturbances extends React.Component<{ EventID: number }, {tableRows: Array<JSX.Element> }>{
     seBrowserService: SEBrowserService;
