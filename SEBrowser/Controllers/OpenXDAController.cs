@@ -407,8 +407,8 @@ namespace SEBrowser.Controllers
                     );
 
                 return table;
-            }   // modify this such that it includes a boolean of whether the disturbance is the worst in its event
-                // in the typescript, respond to ^
+            }  
+             
         }
 
         [Route("GetEventSearchFaultSegments"), HttpGet]
