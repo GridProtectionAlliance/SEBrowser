@@ -391,8 +391,8 @@ namespace SEBrowser.Controllers
 	                    Disturbance.DurationSeconds,
 	                    Disturbance.StartTime,
                         CASE 
-                            WHEN Disturbance.ID = EventWorstDisturbance.WorstDisturbanceID THEN 'true'
-                            ELSE 'false' 
+                            WHEN Disturbance.ID = EventWorstDisturbance.WorstDisturbanceID THEN 1
+                            ELSE 0
                         END as IsWorstDisturbance
                     FROM 
 	                    Disturbance JOIN

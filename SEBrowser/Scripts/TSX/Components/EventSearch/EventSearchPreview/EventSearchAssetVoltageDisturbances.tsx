@@ -52,7 +52,7 @@ export default class EventSearchAssetVoltageDisturbances extends React.Component
     createTableRows(eventID: number) {
         this.seBrowserService.getEventSearchAsssetVoltageDisturbancesData(eventID).done(data => {
             var rows = data.map((d, i) => {
-                const style = (d.IsWorstDisturbance === "true") ? { backgroundColor: "lightyellow" } : { backgroundColor: "transparent" }
+                const style = { backgroundColor: (d.IsWorstDisturbance ? 'lightyellow' : 'transparent') }
                 return <tr key={i} style={style}>
                     <td>{d.EventType}</td>
                     <td>{d.Phase}</td>
