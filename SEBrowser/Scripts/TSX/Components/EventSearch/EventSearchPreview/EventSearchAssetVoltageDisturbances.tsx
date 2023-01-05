@@ -71,7 +71,6 @@ export default class EventSearchAssetVoltageDisturbances extends React.Component
         return (
             <div className="card">
                 <div className="card-header">Voltage Disturbance in Waveform:</div>
-                   
                 <div className="card-body">
                     <table className="table">
                         <thead>
