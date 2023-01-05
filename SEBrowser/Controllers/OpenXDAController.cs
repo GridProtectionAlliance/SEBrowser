@@ -405,10 +405,8 @@ namespace SEBrowser.Controllers
                     ORDER BY Disturbance.StartTime
                     ", eventID
                     );
-
                 return table;
-            }  
-             
+            } 
         }
 
         [Route("GetEventSearchFaultSegments"), HttpGet]
