@@ -75,7 +75,7 @@ export default class EventSearchAssetVoltageDisturbances extends React.Component
                     <table className="table">
                         <thead>
                             <tr><th>Disturbance Type</th><th>Phase</th><th>Magnitude (%)</th><th>Duration (ms)</th><th>Start Time</th></tr>
-                        </thead> 
+                        </thead>
                         <tbody>
                             {this.state.tableRows}
                         </tbody>
