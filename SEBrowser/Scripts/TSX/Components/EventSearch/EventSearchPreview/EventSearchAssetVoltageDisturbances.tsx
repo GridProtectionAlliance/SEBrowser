@@ -25,7 +25,6 @@ import React from 'react';
 import SEBrowserService from './../../../../TS/Services/SEBrowser';
 import moment from 'moment';
 
-
 export default class EventSearchAssetVoltageDisturbances extends React.Component<{ EventID: number }, {tableRows: Array<JSX.Element> }>{
     seBrowserService: SEBrowserService;
     constructor(props, context) {
@@ -72,12 +71,11 @@ export default class EventSearchAssetVoltageDisturbances extends React.Component
         return (
             <div className="card">
                 <div className="card-header">Voltage Disturbance in Waveform:</div>
-                   
                 <div className="card-body">
                     <table className="table">
                         <thead>
                             <tr><th>Disturbance Type</th><th>Phase</th><th>Magnitude (%)</th><th>Duration (ms)</th><th>Start Time</th></tr>
-                        </thead> 
+                        </thead>
                         <tbody>
                             {this.state.tableRows}
                         </tbody>
