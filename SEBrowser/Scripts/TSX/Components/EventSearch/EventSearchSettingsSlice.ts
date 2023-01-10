@@ -33,11 +33,9 @@ const settingsSlice = createSlice({
     reducers: {
         SetSettingsNumberResults(state: any, action: { type: string, payload: { numberResults: number } }) {
             let numberResults = action.payload.numberResults
-            numberResults = Math.floor(numberResults)       // in case input is not an integer
-            if (numberResults >= 0) {                       // in case input is not positive
-                state.NumberResults = numberResults
-                localStorage.setItem('SEBrowser.Settings.numberResults', numberResults.toString())
-            }
+            numberResults = Math.max(numberResults, 0)          // in case input is negative
+            state.NumberResults = numberResults
+            localStorage.setItem('SEBrowser.Settings.numberResults', numberResults.toString())
         }
     }
 })
