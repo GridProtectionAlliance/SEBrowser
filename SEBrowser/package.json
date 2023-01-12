@@ -16,12 +16,12 @@
     "webpack-cli": "4.9.2"
   },
   "dependencies": {
-    "@gpa-gemstone/application-typings": "0.0.49",
-    "@gpa-gemstone/common-pages": "0.0.54",
+    "@gpa-gemstone/application-typings": "0.0.51",
+    "@gpa-gemstone/common-pages": "0.0.57",
     "@gpa-gemstone/gpa-symbols": "0.0.23",
-    "@gpa-gemstone/react-forms": "1.1.31",
-    "@gpa-gemstone/react-graph": "1.0.23",
-    "@gpa-gemstone/react-interactive": "1.0.68",
+    "@gpa-gemstone/react-forms": "1.1.33",
+    "@gpa-gemstone/react-graph": "1.0.24",
+    "@gpa-gemstone/react-interactive": "1.0.71",
     "@gpa-gemstone/react-table": "1.2.19",
     "@reduxjs/toolkit": "1.8.3",
     "@types/d3": "7.1.0",
