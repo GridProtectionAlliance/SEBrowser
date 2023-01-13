@@ -51,16 +51,17 @@ export default class EventSearchAssetVoltageDisturbances extends React.Component
 
     createTableRows(eventID: number) {
         this.seBrowserService.getEventSearchAsssetVoltageDisturbancesData(eventID).done(data => {
-            var rows = data.map((d,i) =>
-                <tr key={i}>
+            var rows = data.map((d, i) => {
+                const style = { backgroundColor: (d.IsWorstDisturbance ? 'lightyellow' : 'transparent') }
+                return <tr key={i} style={style}>
                     <td>{d.EventType}</td>
                     <td>{d.Phase}</td>
                     <td>{(d.PerUnitMagnitude * 100).toFixed(1)}</td>
                     <td>{(d.DurationSeconds * 1000).toFixed(2)}</td>
                     <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
-                </tr>)
-
-            this.setState({ tableRows: rows});
+                </tr> 
+            })
+            this.setState({ tableRows: rows });
         });
     }
 
@@ -68,7 +69,6 @@ export default class EventSearchAssetVoltageDisturbances extends React.Component
         return (
             <div className="card">
                 <div className="card-header">Voltage Disturbance in Waveform:</div>
-
                 <div className="card-body">
                     <table className="table">
                         <thead>

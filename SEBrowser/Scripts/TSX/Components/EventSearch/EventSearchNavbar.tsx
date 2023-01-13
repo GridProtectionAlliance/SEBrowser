@@ -28,7 +28,7 @@ import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SelectAssetGroupList, SelectAssetList, SelectCharacteristicFilter, SelectMeterList, SelectReset, SelectStationList, SelectTimeFilter, SelectTypeFilter, SetFilterLists } from './EventSearchSlice';
-import { ResetFilters, SetFilters, FetchEventSearches } from './EventSearchSlice';
+import { ResetFilters,  SetFilters, FetchEventSearches } from './EventSearchSlice';
 import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice, MagDurCurveSlice } from '../../Store';
 import { DefaultSelects } from '@gpa-gemstone/common-pages';
 import EventSearchFilterButton from './EventSearchbarFilterButton';
@@ -74,19 +74,25 @@ const EventSearchNavbar = (props: IProps) => {
     const eventSearchSettingsState = useAppSelector(SelectSearchSettings)
     const [eventSearchSettings, setEventSearchSettings] = React.useState<Redux.SettingsState>(eventSearchSettingsState)
 
-
     React.useEffect(() => {
         if (magDurStatus == 'changed' || magDurStatus == 'unintiated')
             dispatch(MagDurCurveSlice.Fetch());
     }, [magDurStatus]);
 
     React.useEffect(() => {
-        dispatch(SetFilters({
-            characteristics: newEventCharacteristicFilter,
-            time: timeFilter,
-            types: eventTypeFilter
-        }));
+        if (!_.isEqual(eventCharacteristicFilter, newEventCharacteristicFilter))
+            dispatch(SetFilters({
+                characteristics: newEventCharacteristicFilter,
+                time: timeFilter,
+                types: eventTypeFilter
+            }));
+
     }, [newEventCharacteristicFilter]);
+
+    React.useEffect(() => {
+        setNewEventCharacteristicFilter(eventCharacteristicFilter);
+    }, [eventCharacteristicFilter]);
+
     React.useEffect(() => {
         dispatch(SetSettingsNumberResults({
             numberResults: eventSearchSettings.NumberResults
@@ -204,118 +210,118 @@ const EventSearchNavbar = (props: IProps) => {
                     </div>
                 </div>
             </nav>
-        );
+            );
 
     return (
         <>
-            <nav className="navbar navbar-expand-xl navbar-light bg-light">
+        <nav className="navbar navbar-expand-xl navbar-light bg-light">
 
-                <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
-                    <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
-                        <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
-                            <ReportTimeFilter filter={timeFilter} setFilter={(f) =>
-                                dispatch(SetFilters({
-                                    characteristics: eventCharacteristicFilter,
-                                    time: f,
-                                    types: eventTypeFilter
-                                }))} showQuickSelect={true} />
-                        </li>
-                        <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Event Types:</legend>
-                                <form>
-                                    <ul style={{ listStyleType: 'none', padding: 0, width: '50%', position: 'relative', float: 'left' }}>
+            <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
+                <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
+                    <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
+                        <ReportTimeFilter filter={timeFilter} setFilter={(f) =>
+                            dispatch(SetFilters({
+                                characteristics: newEventCharacteristicFilter,
+                                time: f,
+                                types: eventTypeFilter
+                            }))} showQuickSelect={true} />
+                    </li>
+                    <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
+                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>Event Types:</legend>
+                            <form>
+                                <ul style={{ listStyleType: 'none', padding: 0, width: '50%', position: 'relative', float: 'left' }}>
+                                    
+                                    <li><label><input type="checkbox" onChange={() => {
+                                        dispatch(SetFilters({
+                                            characteristics: newEventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                faults: !eventTypeFilter.faults,
+                                            }
+                                        }));
+                                    }} checked={eventTypeFilter.faults} />  Faults </label></li>
+                                    <li><label><input type="checkbox" onChange={() => {
+                                        dispatch(SetFilters({
+                                            characteristics: newEventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                sags: !eventTypeFilter.sags,
+                                            }
+                                        }));
+                                    }} checked={eventTypeFilter.sags} />  Sags</label></li>
+                                    <li><label><input type="checkbox" onChange={() => {
+                                        dispatch(SetFilters({
+                                            characteristics: newEventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                swells: !eventTypeFilter.swells,
+                                            }
+                                        }));
+                                    }} checked={eventTypeFilter.swells} />  Swells</label></li>
+                                    <li><label><input type="checkbox" onChange={() => {
+                                        dispatch(SetFilters({
+                                            characteristics: newEventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                interruptions: !eventTypeFilter.interruptions,
+                                            }
+                                        }));
+                                    }} checked={eventTypeFilter.interruptions} />  Interruptions</label></li>
 
-                                        <li><label><input type="checkbox" onChange={() => {
-                                            dispatch(SetFilters({
-                                                characteristics: eventCharacteristicFilter,
-                                                time: timeFilter,
-                                                types: {
-                                                    ...eventTypeFilter,
-                                                    faults: !eventTypeFilter.faults,
-                                                }
-                                            }));
-                                        }} checked={eventTypeFilter.faults} />  Faults </label></li>
-                                        <li><label><input type="checkbox" onChange={() => {
-                                            dispatch(SetFilters({
-                                                characteristics: eventCharacteristicFilter,
-                                                time: timeFilter,
-                                                types: {
-                                                    ...eventTypeFilter,
-                                                    sags: !eventTypeFilter.sags,
-                                                }
-                                            }));
-                                        }} checked={eventTypeFilter.sags} />  Sags</label></li>
-                                        <li><label><input type="checkbox" onChange={() => {
-                                            dispatch(SetFilters({
-                                                characteristics: eventCharacteristicFilter,
-                                                time: timeFilter,
-                                                types: {
-                                                    ...eventTypeFilter,
-                                                    swells: !eventTypeFilter.swells,
-                                                }
-                                            }));
-                                        }} checked={eventTypeFilter.swells} />  Swells</label></li>
-                                        <li><label><input type="checkbox" onChange={() => {
-                                            dispatch(SetFilters({
-                                                characteristics: eventCharacteristicFilter,
-                                                time: timeFilter,
-                                                types: {
-                                                    ...eventTypeFilter,
-                                                    interruptions: !eventTypeFilter.interruptions,
-                                                }
-                                            }));
-                                        }} checked={eventTypeFilter.interruptions} />  Interruptions</label></li>
-
-                                        <li><label><input type="checkbox" onChange={() => {
-                                            dispatch(SetFilters({
-                                                characteristics: eventCharacteristicFilter,
-                                                time: timeFilter,
-                                                types: {
-                                                    ...eventTypeFilter,
-                                                    breakerOps: !eventTypeFilter.breakerOps,
-                                                }
-                                            }));
-                                        }} checked={eventTypeFilter.breakerOps} />  Breaker Ops</label></li>
-                                        <li><label><input type="checkbox" onChange={() => {
-                                            dispatch(SetFilters({
-                                                characteristics: eventCharacteristicFilter,
-                                                time: timeFilter,
-                                                types: {
-                                                    ...eventTypeFilter,
-                                                    transients: !eventTypeFilter.transients,
-                                                }
-                                            }));
-                                        }} checked={eventTypeFilter.transients} />  Transients</label></li>
-                                        <li><label><input type="checkbox" onChange={() => {
-                                            dispatch(SetFilters({
-                                                characteristics: eventCharacteristicFilter,
-                                                time: timeFilter,
-                                                types: {
-                                                    ...eventTypeFilter,
-                                                    relayTCE: !eventTypeFilter.relayTCE,
-                                                }
-                                            }));
+                                    <li><label><input type="checkbox" onChange={() => {
+                                        dispatch(SetFilters({
+                                            characteristics: newEventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                breakerOps: !eventTypeFilter.breakerOps,
+                                            }
+                                        }));
+                                    }} checked={eventTypeFilter.breakerOps} />  Breaker Ops</label></li>
+                                    <li><label><input type="checkbox" onChange={() => {
+                                        dispatch(SetFilters({
+                                            characteristics: newEventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                transients: !eventTypeFilter.transients,
+                                            }
+                                        }));
+                                    }} checked={eventTypeFilter.transients} />  Transients</label></li>
+                                    <li><label><input type="checkbox" onChange={() => {
+                                        dispatch(SetFilters({
+                                            characteristics: newEventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                relayTCE: !eventTypeFilter.relayTCE,
+                                            }
+                                        }));
                                         }} checked={eventTypeFilter.relayTCE} />  Breaker TCE</label></li>
-
-                                        <li><label><input type="checkbox" onChange={() => {
-                                            dispatch(SetFilters({
-                                                characteristics: eventCharacteristicFilter,
-                                                time: timeFilter,
-                                                types: {
-                                                    ...eventTypeFilter,
-                                                    others: !eventTypeFilter.others,
-                                                }
-                                            }));
+                                   
+                                    <li><label><input type="checkbox" onChange={() => {
+                                        dispatch(SetFilters({
+                                            characteristics: newEventCharacteristicFilter,
+                                            time: timeFilter,
+                                            types: {
+                                                ...eventTypeFilter,
+                                                others: !eventTypeFilter.others,
+                                            }
+                                        }));
                                         }} checked={eventTypeFilter.others} />  Others</label></li>
-                                    </ul>
-                                    <ul style={{
+                                </ul>
+                                <ul style={{
                                         listStyleType: 'none', padding: 0, width: '50%', position: 'relative', float: 'right'
                                     }}>
                                         <li><label><input type="checkbox" onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                             var value = e.target.checked;
                                             dispatch(SetFilters({
-                                                characteristics: eventCharacteristicFilter,
+                                                characteristics: newEventCharacteristicFilter,
                                                 time: timeFilter,
                                                 types: {
                                                     faults: value,
@@ -334,67 +340,67 @@ const EventSearchNavbar = (props: IProps) => {
                                                 eventTypeFilter.relayTCE || eventTypeFilter.sags || eventTypeFilter.swells || eventTypeFilter.transients)
                                         } disabled={!(eventTypeFilter.breakerOps || eventTypeFilter.faults || eventTypeFilter.interruptions || eventTypeFilter.others ||
                                             eventTypeFilter.relayTCE || eventTypeFilter.sags || eventTypeFilter.swells || eventTypeFilter.transients)} />  Select All </label></li>
-                                    </ul>
-                                </form>
-                            </fieldset>
-                        </li>
-                        <li className="nav-item" style={{ width: '45%', paddingRight: 10 }}>
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Event Characteristics:</legend>
-                                <div className="row">
-                                    <div className={"col-4"}>
-                                        <form>
-                                            <label style={{ margin: 0 }}>Duration (cycle):</label>
-                                            <div className="form-group">
-                                                <div className='input-group input-group-sm'>
-                                                    <div className='col' style={{ width: '45%' }}>
+                                </ul>
+                            </form>
+                        </fieldset>
+                    </li>
+                    <li className="nav-item" style={{ width: '45%', paddingRight: 10 }}>
+                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>Event Characteristics:</legend>
+                            <div className="row">
+                                <div className={"col-4"}>
+                                    <form>
+                                        <label style={{ margin: 0 }}>Duration (cycle):</label>
+                                        <div className="form-group">
+                                            <div className='input-group input-group-sm'>
+                                                <div className='col' style={{ width: '45%' }}>
                                                         <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Field='durationMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
-                                                    </div>
+                                                </div>
                                                 <div className="input-group-append" style={{ height: '37px'}}>
-                                                        <span className="input-group-text"> to </span>
-                                                    </div>
-                                                    <div className='col' style={{ width: '45%' }}>
+                                                    <span className="input-group-text"> to </span>
+                                                </div>
+                                                <div className='col' style={{ width: '45%' }}>
                                                         <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Field='durationMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
-                                                    </div>
                                                 </div>
                                             </div>
+                                            </div>
                                         </form>
-                                    </div>
-                                    <div className={"col-4"}>
-                                        <form>
-                                            <div className="form-group">
-                                                <div className='input-group input-group-sm' style={{ width: '100%' }}>
+                                </div>
+                                <div className={"col-4"}>
+                                    <form>
+                                        <div className="form-group">
+                                            <div className='input-group input-group-sm' style={{ width: '100%' }}>
                                                     <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='Mag-Dur:' Field='curveID' Setter={setNewEventCharacteristicFilter}
-                                                        Options={magDurCurves.map((v) => (v.Area != undefined && v.Area.length > 0 ? { Value: v.ID.toString(), Label: v.Name } : null))} />
-                                                </div>
-                                                <div className='form-check form-check-inline'>
-                                                    <input className="form-check-input" disabled={!eventCharacteristicFilter.curveOutside} type="checkbox" onChange={() => {
-                                                        dispatch(SetFilters({
-                                                            characteristics: {
-                                                                ...eventCharacteristicFilter, curveInside: !eventCharacteristicFilter.curveInside
-                                                            },
-                                                            time: timeFilter,
-                                                            types: eventTypeFilter,
-                                                        }));
-                                                    }} checked={eventCharacteristicFilter.curveInside} />
-                                                    <label className="form-check-label">Inside</label>
-                                                </div>
-                                                <div className='form-check form-check-inline'>
-                                                    <input className="form-check-input" disabled={!eventCharacteristicFilter.curveInside} type="checkbox" onChange={() => {
-                                                        dispatch(SetFilters({
-                                                            characteristics: {
-                                                                ...eventCharacteristicFilter, curveOutside: !eventCharacteristicFilter.curveOutside
-                                                            },
-                                                            time: timeFilter,
-                                                            types: eventTypeFilter,
-                                                        }));
-                                                    }} checked={eventCharacteristicFilter.curveOutside} />
-                                                    <label className="form-check-label">Outside</label>
-                                                </div>
+                                                    Options={magDurCurves.map((v) => (v.Area != undefined && v.Area.length > 0 ? { Value: v.ID.toString(), Label: v.Name } : null))} />
                                             </div>
+                                            <div className='form-check form-check-inline'>
+                                                    <input className="form-check-input" disabled={!newEventCharacteristicFilter.curveOutside} type="checkbox" onChange={() => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: {
+                                                            ...newEventCharacteristicFilter, curveInside: !newEventCharacteristicFilter.curveInside
+                                                        },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                    }} checked={newEventCharacteristicFilter.curveInside} />
+                                                <label className="form-check-label">Inside</label>
+                                            </div>
+                                            <div className='form-check form-check-inline'>
+                                                    <input className="form-check-input" disabled={!newEventCharacteristicFilter.curveInside} type="checkbox" onChange={() => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: {
+                                                            ...newEventCharacteristicFilter, curveOutside: !newEventCharacteristicFilter.curveOutside
+                                                        },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                    }} checked={newEventCharacteristicFilter.curveOutside} />
+                                                <label className="form-check-label">Outside</label>
+                                            </div>
+                                        </div>
                                         </form>
                                     </div>
-                                    <div className={"col-4"}>
+                                <div className={"col-4"}>
                                         <form>
                                             <label style={{ margin: 0 }}>Sags (p.u.):</label>
                                             <div className="form-group">
@@ -423,107 +429,107 @@ const EventSearchNavbar = (props: IProps) => {
                                                         var value = e.target.checked;
                                                         dispatch(SetFilters({
                                                             characteristics: {
-                                                                ...eventCharacteristicFilter, Phase: { A: value, B: value, C: value }
+                                                                ...newEventCharacteristicFilter, Phase: { A: value, B: value, C: value }
                                                             },
                                                             time: timeFilter,
                                                             types: eventTypeFilter
                                                         }))
-                                                    }} checked={(eventCharacteristicFilter.Phase.A && eventCharacteristicFilter.Phase.B && eventCharacteristicFilter.Phase.C) ||
-                                                        !(eventCharacteristicFilter.Phase.A || eventCharacteristicFilter.Phase.B || eventCharacteristicFilter.Phase.C)}
-                                                        disabled={!(eventCharacteristicFilter.Phase.A || eventCharacteristicFilter.Phase.B || eventCharacteristicFilter.Phase.C)} />
-                                                    <label className="form-check-label">Select All</label>
+                                                    }} checked={(newEventCharacteristicFilter.Phase.A && newEventCharacteristicFilter.Phase.B && newEventCharacteristicFilter.Phase.C) ||
+                                                        !(newEventCharacteristicFilter.Phase.A || newEventCharacteristicFilter.Phase.B || newEventCharacteristicFilter.Phase.C)}
+                                                        disabled={!(newEventCharacteristicFilter.Phase.A || newEventCharacteristicFilter.Phase.B || newEventCharacteristicFilter.Phase.C)} />
+                                                <label className="form-check-label">Select All</label>
                                                 </div>
                                             </div>
                                             <div className="form-group">
-                                                <div className='form-check form-check-inline'>
-                                                    <input className="form-check-input" type="checkbox" onChange={() => {
-                                                        dispatch(SetFilters({
-                                                            characteristics: {
-                                                                ...eventCharacteristicFilter, Phase: { ...eventCharacteristicFilter.Phase, A: !eventCharacteristicFilter.Phase.A }
-                                                            },
-                                                            time: timeFilter,
-                                                            types: eventTypeFilter,
-                                                        }));
-                                                    }} checked={eventCharacteristicFilter.Phase.A} />
-                                                    <label className="form-check-label">A</label>
-                                                </div>
-                                                <div className='form-check form-check-inline'>
-                                                    <input className="form-check-input" type="checkbox" onChange={() => {
-                                                        dispatch(SetFilters({
-                                                            characteristics: {
-                                                                ...eventCharacteristicFilter, Phase: { ...eventCharacteristicFilter.Phase, B: !eventCharacteristicFilter.Phase.B }
-                                                            },
-                                                            time: timeFilter,
-                                                            types: eventTypeFilter,
-                                                        }));
-                                                    }} checked={eventCharacteristicFilter.Phase.B} />
-                                                    <label className="form-check-label">B</label>
-                                                </div>
-                                                <div className='form-check form-check-inline'>
-                                                    <input className="form-check-input" type="checkbox" onChange={() => {
-                                                        dispatch(SetFilters({
-                                                            characteristics: {
-                                                                ...eventCharacteristicFilter, Phase: { ...eventCharacteristicFilter.Phase, C: !eventCharacteristicFilter.Phase.C }
-                                                            },
-                                                            time: timeFilter,
-                                                            types: eventTypeFilter,
-                                                        }));
-                                                    }} checked={eventCharacteristicFilter.Phase.C} />
-                                                    <label className="form-check-label">C</label>
-                                                </div>
+                                            <div className='form-check form-check-inline'>
+                                                <input className="form-check-input" type="checkbox" onChange={() => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: {
+                                                            ...newEventCharacteristicFilter, Phase: { ...newEventCharacteristicFilter.Phase, A: !newEventCharacteristicFilter.Phase.A }
+                                                        },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                    }} checked={newEventCharacteristicFilter.Phase.A} />
+                                                <label className="form-check-label">A</label>
                                             </div>
+                                            <div className='form-check form-check-inline'>
+                                                <input className="form-check-input" type="checkbox" onChange={() => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: {
+                                                            ...newEventCharacteristicFilter, Phase: { ...newEventCharacteristicFilter.Phase, B: !newEventCharacteristicFilter.Phase.B }
+                                                        },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                    }} checked={newEventCharacteristicFilter.Phase.B} />
+                                                <label className="form-check-label">B</label>
+                                            </div>
+                                            <div className='form-check form-check-inline'>
+                                                <input className="form-check-input" type="checkbox" onChange={() => {
+                                                    dispatch(SetFilters({
+                                                        characteristics: {
+                                                            ...newEventCharacteristicFilter, Phase: { ...newEventCharacteristicFilter.Phase, C: !newEventCharacteristicFilter.Phase.C }
+                                                        },
+                                                        time: timeFilter,
+                                                        types: eventTypeFilter,
+                                                    }));
+                                                    }} checked={newEventCharacteristicFilter.Phase.C} />
+                                                <label className="form-check-label">C</label>
+                                                </div>
+                                                </div>
                                         </form>
                                     </div>
-
-                                    <div className={"col-4"}>
-                                        <form>
-                                            <label style={{ margin: 0 }}>Transients (p.u.):</label>
-                                            <div className="form-group">
-                                                <div className='input-group input-group-sm'>
+                                    
+                                <div className={"col-4"}>
+                                   <form>
+                                        <label style={{ margin: 0 }}>Transients (p.u.):</label>
+                                        <div className="form-group">
+                                            <div className='input-group input-group-sm'>
                                                     <div className='col' style={{ width: '45%' }}>
                                                         <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.transients} Field='transientMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
-                                                    </div>
-                                                <div className="input-group-append" style={{ height: '37px'}}>
-                                                        <span className="input-group-text"> to </span>
-                                                    </div>
-                                                    <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.transients} Field='transientMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
-                                                    </div>
                                                 </div>
+                                                <div className="input-group-append" style={{ height: '37px'}}>
+                                                    <span className="input-group-text"> to </span>
+                                                </div>
+                                                <div className='col' style={{ width: '45%' }}>
+                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.transients} Field='transientMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                </div>
+                                            </div>
                                                 <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.transients} Field='transientType' Setter={setNewEventCharacteristicFilter}
                                                 Options={lineNeutralOptions}/>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div className="col-4">
-                                        <form>
-                                            <label style={{ margin: 0 }}>Swells (p.u.):</label>
-                                            <div className="form-group">
-                                                <div className='input-group input-group-sm'>
-                                                    <div className='col' style={{ width: '45%' }}>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div className="col-4">
+                                    <form>
+                                        <label style={{ margin: 0 }}>Swells (p.u.):</label>
+                                        <div className="form-group">
+                                            <div className='input-group input-group-sm'>
+                                                <div className='col' style={{ width: '45%' }}>
                                                         <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.swells} Field='swellMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
-                                                    </div>
-                                                <div className="input-group-append" style={{ height: '37px'}}>
-                                                        <span className="input-group-text"> to </span>
-                                                    </div>
-                                                    <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.swells} Field='swellMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
-                                                    </div>
                                                 </div>
+                                                <div className="input-group-append" style={{ height: '37px'}}>
+                                                    <span className="input-group-text"> to </span>
+                                                </div>
+                                                <div className='col' style={{ width: '45%' }}>
+                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.swells} Field='swellMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                </div>
+                                            </div>
                                                 <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.swells} Field='swellType' Setter={setNewEventCharacteristicFilter}
                                                 Options={lineNeutralOptions}/>
-                                            </div>
-                                        </form>
-                                    </div>
+                                        </div>
+                                    </form>
                                 </div>
+                        </div>
 
+                         
+                        </fieldset>
+                    </li>
 
-                            </fieldset>
-                        </li>
-
-                        <li className="nav-item" style={{ width: '15%', paddingRight: 10 }}>
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Other Filters:</legend>
+                    <li className="nav-item" style={{ width: '15%', paddingRight: 10 }}>
+                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>Other Filters:</legend>
                                 <div className={"row"}>
                                     <div className={'col'}>
                                         <EventSearchFilterButton<SystemCenter.Types.DetailedMeter> Type={'Meter'} OnClick={() => setFilter('Meter')} Data={meterList} />
@@ -545,115 +551,113 @@ const EventSearchNavbar = (props: IProps) => {
                                     </div>
                                 </div>
 
-                            </fieldset>
-                        </li>
-
-                        <li className="nav-item" style={{ width: '15%', paddingRight: 10 }}>
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Settings:</legend>
-                                <div className={"row"}>
-                                    <div className={'col'}>
-                                        <Input<Redux.SettingsState> Record={eventSearchSettings} Field='NumberResults' Setter={setEventSearchSettings} Valid={() => { return true }} Label='Number of Results:' Type='integer' />
-                                    </div>
+                        </fieldset>
+                    </li>
+                    <li className="nav-item" style={{ width: '15%', paddingRight: 10 }}>
+                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>Settings:</legend>
+                            <div className={"row"}>
+                                <div className={'col'}>
+                                    <Input<Redux.SettingsState> Record={eventSearchSettings} Field='NumberResults' Setter={setEventSearchSettings} Valid={() => { return true }} Label='Number of Results:' Type='integer' />
                                 </div>
-                            </fieldset>
-                        </li>
-
-                    </ul>
+                            </div>
+                        </fieldset>
+                    </li>
+                </ul>
                     <div className="btn-group-vertical float-right">
                         <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${(!reset ? 'warning' : 'primary')} btn-sm`} onClick={() => props.toggleVis()}>Hide Filters</button>
                         <button type="button" className="btn btn-danger btn-sm" disabled={reset} onClick={() => dispatch(ResetFilters())}>Reset Filters</button>
-                    </div>
                 </div>
+            </div>
             </nav>
 
-            <DefaultSelects.Meter
-                Slice={MeterSlice}
-                Selection={meterList}
-                OnClose={(selected, conf) => {
-                    setFilter('None');
-                    if (conf)
-                        dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: selected, Stations: locationList }))
-                }
-                }
-                Show={showFilter == 'Meter'}
-                Type={'multiple'}
-                Columns={[
-                    { key: 'AssetKey', field: 'AssetKey', label: 'Key', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Name', field: 'Name', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Location', field: 'Location', label: 'Substation', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'MappedAssets', field: 'MappedAssets', label: 'Assets', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Make', field: 'Make', label: 'Make', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Model', field: 'Model', label: 'Model', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
-                ]}
-                Title={"Filter by Meter"}
-                GetEnum={getEnum}
-                GetAddlFields={getAdditionalMeterFields} />
-            <DefaultSelects.Asset
-                Slice={AssetSlice}
-                Selection={assetList}
-                OnClose={(selected, conf) => {
-                    setFilter('None');
-                    if (conf)
-                        dispatch(SetFilterLists({ Assets: selected, Groups: assetGroupList, Meters: meterList, Stations: locationList }))
-                }}
-                Show={showFilter == 'Asset'}
-                Type={'multiple'}
-                Columns={[
-                    { key: 'AssetKey', field: 'AssetKey', label: 'Key', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'AssetName', field: 'AssetName', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'AssetType', field: 'AssetType', label: 'Asset Type', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'VoltageKV', field: 'VoltageKV', label: 'Voltage (kV)', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Meters', field: 'Meters', label: 'Meters', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Locations', field: 'Locations', label: 'Substations', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } }
-                ]}
-                Title={"Filter by Asset"}
-                GetEnum={getEnum}
-                GetAddlFields={getAdditionalAssetFields} />
-            <DefaultSelects.Location
-                Slice={LocationSlice}
-                Selection={locationList}
-                OnClose={(selected, conf) => {
-                    setFilter('None');
-                    if (conf)
-                        dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: meterList, Stations: selected }))
-                }}
-                Show={showFilter == 'Station'}
-                Type={'multiple'}
-                Columns={[
-                    { key: 'Name', field: 'Name', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'LocationKey', field: 'LocationKey', label: 'Key', headerStyle: { width: '30%' }, rowStyle: { width: '30%' } },
-                    //{ key: 'Type', field: 'Type', label: 'Type', headerStyle: { width: '10%' }, rowStyle: { width: '10%' } },
-                    { key: 'Meters', field: 'Meters', label: 'Meters', headerStyle: { width: '10%' }, rowStyle: { width: '10%' } },
-                    { key: 'Assets', field: 'Assets', label: 'Assets', headerStyle: { width: '10%' }, rowStyle: { width: '10%' } },
-                    { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
-                ]}
-                Title={"Filter by Location"}
-                GetEnum={getEnum}
-                GetAddlFields={() => { return () => { } }} />
-            <DefaultSelects.AssetGroup
-                Slice={AssetGroupSlice}
-                Selection={assetGroupList}
-                OnClose={(selected, conf) => {
-                    setFilter('None');
-                    if (conf)
-                        dispatch(SetFilterLists({ Assets: assetList, Groups: selected, Meters: meterList, Stations: locationList }))
-                }}
-                Show={showFilter == 'AssetGroup'}
-                Type={'multiple'}
-                Columns={[
-                    { key: 'Name', field: 'Name', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Assets', field: 'Assets', label: 'Assets', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Meters', field: 'Meters', label: 'Meters', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Users', field: 'Users', label: 'Users', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'AssetGroups', field: 'AssetGroups', label: 'SubGroups', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
-                ]}
-                Title={"Filter by Asset Group"}
-                GetEnum={getEnum}
-                GetAddlFields={() => { return () => { } }} />
-        </>
+                    <DefaultSelects.Meter
+                        Slice={MeterSlice}
+                        Selection={meterList}
+                        OnClose={(selected, conf) => {
+                            setFilter('None');
+                            if (conf)
+                                dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: selected, Stations: locationList }))
+                        }
+                        }
+                        Show={showFilter == 'Meter'}
+                        Type={'multiple'}
+                        Columns={[
+                            { key: 'AssetKey', field: 'AssetKey', label: 'Key', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'Name', field: 'Name', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'Location', field: 'Location', label: 'Substation', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'MappedAssets', field: 'MappedAssets', label: 'Assets', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'Make', field: 'Make', label: 'Make', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'Model', field: 'Model', label: 'Model', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
+                        ]}
+                        Title={"Filter by Meter"}
+                        GetEnum={getEnum}
+                        GetAddlFields={getAdditionalMeterFields} />
+                <DefaultSelects.Asset
+                        Slice={AssetSlice}
+                        Selection={assetList}
+                        OnClose={(selected, conf) => {
+                            setFilter('None');
+                            if (conf)
+                                dispatch(SetFilterLists({ Assets: selected, Groups: assetGroupList, Meters: meterList, Stations: locationList }))
+                        }}
+                        Show={showFilter == 'Asset'}
+                        Type={'multiple'}
+                        Columns={[
+                            { key: 'AssetKey', field: 'AssetKey', label: 'Key', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'AssetName', field: 'AssetName', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'AssetType', field: 'AssetType', label: 'Asset Type', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'VoltageKV', field: 'VoltageKV', label: 'Voltage (kV)', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'Meters', field: 'Meters', label: 'Meters', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'Locations', field: 'Locations', label: 'Substations', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } }
+                        ]}
+                        Title={"Filter by Asset"}
+                        GetEnum={getEnum}
+                        GetAddlFields={getAdditionalAssetFields} />
+                    <DefaultSelects.Location 
+                        Slice={LocationSlice}
+                        Selection={locationList}
+                        OnClose={(selected, conf) => {
+                            setFilter('None');
+                            if (conf)
+                                dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: meterList, Stations: selected }))
+                        }}
+                        Show={showFilter == 'Station'}
+                        Type={'multiple'}
+                        Columns={[
+                            { key: 'Name', field: 'Name', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                            { key: 'LocationKey', field: 'LocationKey', label: 'Key', headerStyle: { width: '30%' }, rowStyle: { width: '30%' } },
+                            //{ key: 'Type', field: 'Type', label: 'Type', headerStyle: { width: '10%' }, rowStyle: { width: '10%' } },
+                            { key: 'Meters', field: 'Meters', label: 'Meters', headerStyle: { width: '10%' }, rowStyle: { width: '10%' } },
+                            { key: 'Assets', field: 'Assets', label: 'Assets', headerStyle: { width: '10%' }, rowStyle: { width: '10%' } },
+                            { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
+                        ]}
+                        Title={"Filter by Location"}
+                    GetEnum={getEnum}
+                    GetAddlFields={() => { return () => { } }} />
+                <DefaultSelects.AssetGroup
+                    Slice={AssetGroupSlice}
+                    Selection={assetGroupList}
+                    OnClose={(selected, conf) => {
+                        setFilter('None');
+                        if (conf)
+                            dispatch(SetFilterLists({ Assets: assetList, Groups: selected, Meters: meterList, Stations: locationList }))
+                    }}
+                    Show={showFilter == 'AssetGroup'}
+                    Type={'multiple'}
+                    Columns={[
+                        { key: 'Name', field: 'Name', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                        { key: 'Assets', field: 'Assets', label: 'Assets', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                        { key: 'Meters', field: 'Meters', label: 'Meters', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                        { key: 'Users', field: 'Users', label: 'Users', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                        { key: 'AssetGroups', field: 'AssetGroups', label: 'SubGroups', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
+                        { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
+                    ]}
+                    Title={"Filter by Asset Group"}
+                    GetEnum={getEnum}
+                    GetAddlFields={() => { return () => { } }} />
+            </>
     );
 }
 
