@@ -28,14 +28,15 @@ import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SelectAssetGroupList, SelectAssetList, SelectCharacteristicFilter, SelectMeterList, SelectReset, SelectStationList, SelectTimeFilter, SelectTypeFilter, SetFilterLists } from './EventSearchSlice';
-import { ResetFilters,  SetFilters } from './EventSearchSlice';
+import { ResetFilters,  SetFilters, FetchEventSearches } from './EventSearchSlice';
 import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice, MagDurCurveSlice } from '../../Store';
 import { DefaultSelects } from '@gpa-gemstone/common-pages';
 import EventSearchFilterButton from './EventSearchbarFilterButton';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { Input, Select, EnumCheckBoxes } from '@gpa-gemstone/react-forms';
 import { Search } from '@gpa-gemstone/react-interactive';
-import { SEBrowser } from '../../Global';
+import { SEBrowser, Redux } from '../../Global';
+import { SetSettingsNumberResults, SelectSearchSettings } from './EventSearchSettingsSlice';
 
 
 interface IProps {
@@ -70,6 +71,9 @@ const EventSearchNavbar = (props: IProps) => {
 
     const lineNeutralOptions = [{ Value: 'LL', Label: 'LL' }, { Value: 'LN', Label: 'LN' }, { Value: 'both', Label: 'LL/LN' }];
 
+    const eventSearchSettingsState = useAppSelector(SelectSearchSettings)
+    const [eventSearchSettings, setEventSearchSettings] = React.useState<Redux.SettingsState>(eventSearchSettingsState)
+
     React.useEffect(() => {
         if (magDurStatus == 'changed' || magDurStatus == 'unintiated')
             dispatch(MagDurCurveSlice.Fetch());
@@ -87,7 +91,14 @@ const EventSearchNavbar = (props: IProps) => {
 
     React.useEffect(() => {
         setNewEventCharacteristicFilter(eventCharacteristicFilter);
-    }, [eventCharacteristicFilter])
+    }, [eventCharacteristicFilter]);
+
+    React.useEffect(() => {
+        dispatch(SetSettingsNumberResults({
+            numberResults: eventSearchSettings.NumberResults
+        }));
+        dispatch(FetchEventSearches())
+    }, [eventSearchSettings]);
 
     function formatWindowUnit(i: number) {
         if (i == 7)
@@ -542,7 +553,16 @@ const EventSearchNavbar = (props: IProps) => {
 
                         </fieldset>
                     </li>
-                 
+                    <li className="nav-item" style={{ width: '15%', paddingRight: 10 }}>
+                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>Settings:</legend>
+                            <div className={"row"}>
+                                <div className={'col'}>
+                                    <Input<Redux.SettingsState> Record={eventSearchSettings} Field='NumberResults' Setter={setEventSearchSettings} Valid={() => { return true }} Label='Number of Results:' Type='integer' />
+                                </div>
+                            </div>
+                        </fieldset>
+                    </li>
                 </ul>
                     <div className="btn-group-vertical float-right">
                         <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${(!reset ? 'warning' : 'primary')} btn-sm`} onClick={() => props.toggleVis()}>Hide Filters</button>

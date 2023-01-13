@@ -48,6 +48,7 @@ export namespace Redux {
         AssetGroup: IGenericSliceState<XDA.Types.AssetGroup>,
         Location: IGenericSliceState<SystemCenter.Types.DetailedLocation>,
         EventNote: NoteState
+        Settings: SettingsState
     }
 
     interface State<T> {
@@ -79,8 +80,12 @@ export namespace Redux {
         Ascending: boolean,
     }
 
+    interface SettingsState {
+        NumberResults: number,
+    }
 
-} 
+
+}
 export namespace SEBrowser {
     type Status = 'loading' | 'idle' | 'error' | 'changed' | 'unitiated';
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
@@ -89,7 +94,7 @@ export namespace SEBrowser {
     interface IEventCharacteristicFilters {
         durationMin: number, durationMax: number,
         Phase: { A: boolean, B: boolean, C: boolean },
-        transientMin: number, transientMax: number, transientType: ('LL'|'LN'|'both'),            
+        transientMin: number, transientMax: number, transientType: ('LL'|'LN'|'both'),
         sagMin: number, sagMax: number, sagType: ('LL' | 'LN' | 'both'),
         swellMin: number, swellMax: number, swellType: ('LL' | 'LN' | 'both'),
         curveID: number, curveInside: boolean, curveOutside: boolean

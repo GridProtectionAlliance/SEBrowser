@@ -28,6 +28,7 @@ import { ConfigurableTable, LoadingIcon } from '@gpa-gemstone/react-interactive'
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { OpenXDA, Redux, SEBrowser } from '../../global';
 import { SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
+import { SelectSearchNumberResults } from './EventSearchSettingsSlice';
 
 interface IProps {
     eventid: number,
@@ -51,6 +52,7 @@ export default function EventSearchList(props: IProps) {
     const ascending = useAppSelector(SelectEventSearchsAscending);
     const data = useAppSelector((state: Redux.StoreState) => SelectEventSearchs(state));
     const [cols, setCols] = React.useState<IColumn[]>([]);
+    const numberResults = useAppSelector(SelectSearchNumberResults)
 
     React.useEffect(() => {
         document.addEventListener("keydown", handleKeyPress, false);
@@ -75,7 +77,7 @@ export default function EventSearchList(props: IProps) {
 
         flds = Object.keys(data[0]).filter(item => item != "Time" && item != "DisturbanceID" && item != "EventID" && item != "EventID1" && item != 'MagDurDuration' && item != 'MagDurMagnitude').sort();
 
-        
+
         if (flds.length != cols.length)
             setCols(flds.map(item => ({
                 field: item, key: item, label: item, content: (item, key, fld, style) => ProcessWhitespace(item[fld]) })))
@@ -115,7 +117,7 @@ export default function EventSearchList(props: IProps) {
     }
 
     function setScrollBar() {
-      
+
         var rowHeight = $(ReactDOM.findDOMNode(ref.current)).find('tbody').children()[0].clientHeight;
         var index = data.map(a => a.EventID.toString()).indexOf(props.eventid.toString());
         var tableHeight = data.length * rowHeight;
@@ -135,11 +137,11 @@ export default function EventSearchList(props: IProps) {
         if (txt == null)
             return <>N/A</>
         let lines = txt.toString().split("<br>");
-    return lines.map((item, index) => {
-        if (index == 0)
-            return <> {item} </>
+        return lines.map((item, index) => {
+            if (index == 0)
+                return <> {item} </>
         return <> <br/> {item} </> 
-            })
+        })
     }
     return (
         <div ref={ref} style={{
@@ -147,8 +149,8 @@ export default function EventSearchList(props: IProps) {
             backgroundColor: (status == 'loading' ? '#00000' : undefined)
         }}>
             {status == 'loading' ? <div style={{ height: '40px', width: '40px', margin: 'auto' }}>
-                    <LoadingIcon Show={true} Size={40} />
-                </div> : null}
+                <LoadingIcon Show={true} Size={40} />
+            </div> : null}
             <ConfigurableTable<any>
                 cols={[{
                     field: "Time", key: "Time", label: "Time", content: (item, key, fld, style) => ProcessWhitespace(item[fld])
@@ -173,13 +175,13 @@ export default function EventSearchList(props: IProps) {
                 defaultColumns={["Event Type"]}
             />
             {status == 'loading' ? null :
-                    data.length >= 100 ?
-                        <div style={{padding: 10, backgroundColor: '#458EFF', color: 'white'}}>
-                            Only the first {data.length} results are shown - please narrow your search
-                        </div> :
-                        <div style={{padding: 10, backgroundColor: '#458EFF', color: 'white'}}>
-                            {data.length} results
-                        </div>}
+                data.length == numberResults ?
+                    <div style={{padding: 10, backgroundColor: '#458EFF', color: 'white'}}>
+                        Only the first {data.length} results are shown - please narrow your search or increase the number of results
+                    </div> :
+                    <div style={{padding: 10, backgroundColor: '#458EFF', color: 'white'}}>
+                        {data.length} results
+                    </div>}
         </div>
     );
 }
