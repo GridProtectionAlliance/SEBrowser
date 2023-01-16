@@ -186,6 +186,8 @@ const EventSearchNavbar = (props: IProps) => {
         };
     }
 
+    if (newEventCharacteristicFilter === null || newTimeFilter === null || newTypeFilter === null) return null;
+
     if (!props.showNav)
         return (
             <nav className="navbar navbar-expand-xl navbar-light bg-light">
@@ -201,8 +203,6 @@ const EventSearchNavbar = (props: IProps) => {
                 </div>
             </nav>
         );
-
-    if (newEventCharacteristicFilter === null || newTimeFilter === null || newTypeFilter === null) return null;
 
     return (
         <>
