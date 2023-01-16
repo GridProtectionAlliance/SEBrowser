@@ -26,6 +26,7 @@ import { GenericSlice } from '@gpa-gemstone/react-interactive';
 import { configureStore } from '@reduxjs/toolkit';
 import NoteSlice from './Components/EventSearch/EventNoteSlice';
 import EventSearchReducer from './Components/EventSearch/EventSearchSlice';
+import { SettingsReducer } from './Components/EventSearch/EventSearchSettingsSlice';
 import { SEBrowser,  } from './global';
 
 declare var homePath: string;
@@ -52,6 +53,7 @@ const reducer = {
     AssetGroup: AssetGroupSlice.Reducer,
     Location: LocationSlice.Reducer,
     EventNote: EventNoteSlice.Reducer,
+    Settings: SettingsReducer,
 }
 
 const store = configureStore({ reducer });

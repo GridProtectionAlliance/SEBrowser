@@ -24,7 +24,7 @@
 import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { SEBrowser, Redux } from '../../global';
 import * as _ from 'lodash';
-import {  ajax } from 'jquery';
+import { ajax } from 'jquery';
 import moment from 'moment';
 import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice } from '../../Store';
@@ -47,6 +47,8 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     const locationList = (getState() as any).EventSearch.SelectedStations as SystemCenter.Types.DetailedLocation[];
     const groupList = (getState() as any).EventSearch.SelectedGroups as OpenXDA.Types.AssetGroup[];
 
+    const settings = (getState() as any).Settings as Redux.SettingsState;
+
     const filter = {
         date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,
         faults: types.faults, sags: types.sags, swells: types.swells, interruptions: types.interruptions, breakerOps: types.breakerOps, transients: types.transients, relayTCE: types.relayTCE, others: types.others,
@@ -57,13 +59,21 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
         swellMin: characteristics.swellMin, swellMax: characteristics.swellMax, swellType: characteristics.swellType,
         curveID: characteristics.curveID, curveInside: characteristics.curveInside, curveOutside: characteristics.curveOutside,
         meterIDs: meterList.map(item => item.ID), assetIDs: assetList.map(item => item.ID),
-        groupIDs: groupList.map(item => item.ID), locationIDs: locationList.map(item => item.ID)
+        groupIDs: groupList.map(item => item.ID), locationIDs: locationList.map(item => item.ID),
+        numberResults: settings.NumberResults,
+    }
+
+    const additionalArguments = {
+        numberResults: settings.NumberResults
     }
 
     if (fetchHandle != null && fetchHandle.abort != null)
         fetchHandle.abort();
 
-    const handle = GetEventSearchs(filter);
+    const handle = GetEventSearchs({
+        ...filter,
+        ...additionalArguments
+    });
     fetchHandle = handle;
     signal.addEventListener('abort', () => {
         if (handle.abort !== undefined) handle.abort();
@@ -189,7 +199,7 @@ export const EventSearchsSlice = createSlice({
         ResetFilters: (state, action: PayloadAction<void>) => {
             state.EventCharacteristic = {
                 durationMax: 0, durationMin: 0, Phase: { A: true, B: true, C: true }, transientMin: 0, transientMax: 0, sagMin: 0, sagMax: 0, swellMin: 0, swellMax: 0, sagType: 'both', swellType: 'both', transientType: 'both',
-                    curveID: 1, curveInside: true, curveOutside: true
+                curveID: 1, curveInside: true, curveOutside: true
             };
 
             state.EventType = { breakerOps: true, faults: true, interruptions: true, others: true, relayTCE: true, swells: true, sags: true, transients: true };
@@ -219,9 +229,8 @@ export const EventSearchsSlice = createSlice({
             state.ActiveFetchID = state.ActiveFetchID.filter(id => id !== action.meta.requestId);
             state.Status = 'idle';
             state.Error = null;
-            if (action.payload.length > 100) alert("The query you submitted was too large (" + action.payload.length.toString() + " records) and only the first 100 records were return.  Please refine your search if necessary.")
             const sorted = _.orderBy(action.payload, [state.SortField], [state.Ascending ? "asc" : "desc"])
-            state.Data = sorted.slice(0,100);
+            state.Data = sorted
 
         });
         builder.addCase(FetchEventSearches.pending, (state, action) => {
@@ -260,15 +269,15 @@ export const SelectAssetGroupList = (state: Redux.StoreState) => state.EventSear
 export const SelectStationList = (state: Redux.StoreState) => state.EventSearch.SelectedStations;
 
 export const SelectQueryParam = createSelector(
-        (state: Redux.StoreState) => state.EventSearch.EventCharacteristic,
-        (state: Redux.StoreState) => state.EventSearch.EventType,
-        (state: Redux.StoreState) => state.EventSearch.TimeRange,
-        (state: Redux.StoreState) => state.EventSearch.SelectedAssets,
-        (state: Redux.StoreState) => state.EventSearch.SelectedGroups,
+    (state: Redux.StoreState) => state.EventSearch.EventCharacteristic,
+    (state: Redux.StoreState) => state.EventSearch.EventType,
+    (state: Redux.StoreState) => state.EventSearch.TimeRange,
+    (state: Redux.StoreState) => state.EventSearch.SelectedAssets,
+    (state: Redux.StoreState) => state.EventSearch.SelectedGroups,
     (state: Redux.StoreState) => state.EventSearch.SelectedMeters,
     (state: Redux.StoreState) => state.EventSearch.SelectedStations,
-        GenerateQueryParams
-    );
+    GenerateQueryParams
+);
 
 export const SelectEventList = createSelector(
     (state: Redux.StoreState) => state.EventSearch.Data,
@@ -400,7 +409,7 @@ function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type:
         result['PhaseB'] = false;
     if (!event.Phase.C)
         result['PhaseC'] = false;
-    
+
     result["date"] = time.date;
     result["time"] = time.time;
     result["windowSize"] = time.windowSize;
@@ -420,7 +429,7 @@ function parseList(key: string, object: any) {
     }
 
     return result;
-    
+
 }
 // #endregion
 
