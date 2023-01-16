@@ -50,9 +50,9 @@ const momentTimeFormat = "HH:mm:ss.SSS";
 
 const EventSearchNavbar = (props: IProps) => {
     const dispatch = useAppDispatch();
+    const eventCharacteristicFilter = useAppSelector(SelectCharacteristicFilter);
     const timeFilter = useAppSelector(SelectTimeFilter);
     const eventTypeFilter = useAppSelector(SelectTypeFilter);
-    const eventCharacteristicFilter = useAppSelector(SelectCharacteristicFilter);
     const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
     const magDurCurves = useAppSelector(MagDurCurveSlice.Data);
 
@@ -65,14 +65,20 @@ const EventSearchNavbar = (props: IProps) => {
     const reset = useAppSelector(SelectReset);
 
 
-
     const [showFilter, setFilter] = React.useState<('None' | 'Meter' | 'Asset' | 'AssetGroup' | 'Station')>('None');
-    const [newEventCharacteristicFilter, setNewEventCharacteristicFilter] = React.useState<SEBrowser.IEventCharacteristicFilters>(eventCharacteristicFilter);
-
+    const [newEventCharacteristicFilter, setNewEventCharacteristicFilter] = React.useState<SEBrowser.IEventCharacteristicFilters>(null);
+    const [newTimeFilter, setNewTimeFilter] = React.useState<SEBrowser.IReportTimeFilter>(null);
+    const [newTypeFilter, setNewTypeFilter] = React.useState<SEBrowser.IEventTypeFilters>(null);
     const lineNeutralOptions = [{ Value: 'LL', Label: 'LL' }, { Value: 'LN', Label: 'LN' }, { Value: 'both', Label: 'LL/LN' }];
 
     const eventSearchSettingsState = useAppSelector(SelectSearchSettings)
     const [eventSearchSettings, setEventSearchSettings] = React.useState<Redux.SettingsState>(eventSearchSettingsState)
+
+    React.useEffect(() => {
+        setNewEventCharacteristicFilter(eventCharacteristicFilter);
+        setNewTimeFilter(timeFilter);
+        setNewTypeFilter(eventTypeFilter);
+    }, []);
 
     React.useEffect(() => {
         if (magDurStatus == 'changed' || magDurStatus == 'unintiated')
@@ -80,18 +86,13 @@ const EventSearchNavbar = (props: IProps) => {
     }, [magDurStatus]);
 
     React.useEffect(() => {
-        if (!_.isEqual(eventCharacteristicFilter, newEventCharacteristicFilter))
+        if (!(newEventCharacteristicFilter === null || newTimeFilter === null || newTypeFilter === null))
             dispatch(SetFilters({
                 characteristics: newEventCharacteristicFilter,
-                time: timeFilter,
-                types: eventTypeFilter
+                time: newTimeFilter,
+                types: newTypeFilter
             }));
-
-    }, [newEventCharacteristicFilter]);
-
-    React.useEffect(() => {
-        setNewEventCharacteristicFilter(eventCharacteristicFilter);
-    }, [eventCharacteristicFilter]);
+    }, [newEventCharacteristicFilter, newTimeFilter, newTypeFilter]);
 
     React.useEffect(() => {
         dispatch(SetSettingsNumberResults({
@@ -196,13 +197,15 @@ const EventSearchNavbar = (props: IProps) => {
         };
     }
 
+    if (newEventCharacteristicFilter === null || newTimeFilter === null || newTypeFilter === null) return null;
+
     if (!props.showNav)
         return (
             <nav className="navbar navbar-expand-xl navbar-light bg-light">
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <div className="navbar-nav mr-auto">
                         <span className="navbar-text">
-                            {timeFilter.date} {timeFilter.time} +/- {timeFilter.windowSize} {formatWindowUnit(timeFilter.timeWindowUnits)}
+                            {newTimeFilter.date} {newTimeFilter.time} +/- {newTimeFilter.windowSize} {formatWindowUnit(newTimeFilter.timeWindowUnits)}
                         </span>
                     </div>
                     <div className="navbar-nav ml-auto" >
@@ -210,7 +213,7 @@ const EventSearchNavbar = (props: IProps) => {
                     </div>
                 </div>
             </nav>
-            );
+        );
 
     return (
         <>
@@ -219,127 +222,44 @@ const EventSearchNavbar = (props: IProps) => {
             <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                 <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                     <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
-                        <ReportTimeFilter filter={timeFilter} setFilter={(f) =>
-                            dispatch(SetFilters({
-                                characteristics: newEventCharacteristicFilter,
-                                time: f,
-                                types: eventTypeFilter
-                            }))} showQuickSelect={true} />
+                            <ReportTimeFilter filter={newTimeFilter} setFilter={setNewTimeFilter} showQuickSelect={true} />
                     </li>
                     <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
                         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                             <legend className="w-auto" style={{ fontSize: 'large' }}>Event Types:</legend>
                             <form>
                                 <ul style={{ listStyleType: 'none', padding: 0, width: '50%', position: 'relative', float: 'left' }}>
-                                    
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        dispatch(SetFilters({
-                                            characteristics: newEventCharacteristicFilter,
-                                            time: timeFilter,
-                                            types: {
-                                                ...eventTypeFilter,
-                                                faults: !eventTypeFilter.faults,
-                                            }
-                                        }));
-                                    }} checked={eventTypeFilter.faults} />  Faults </label></li>
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        dispatch(SetFilters({
-                                            characteristics: newEventCharacteristicFilter,
-                                            time: timeFilter,
-                                            types: {
-                                                ...eventTypeFilter,
-                                                sags: !eventTypeFilter.sags,
-                                            }
-                                        }));
-                                    }} checked={eventTypeFilter.sags} />  Sags</label></li>
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        dispatch(SetFilters({
-                                            characteristics: newEventCharacteristicFilter,
-                                            time: timeFilter,
-                                            types: {
-                                                ...eventTypeFilter,
-                                                swells: !eventTypeFilter.swells,
-                                            }
-                                        }));
-                                    }} checked={eventTypeFilter.swells} />  Swells</label></li>
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        dispatch(SetFilters({
-                                            characteristics: newEventCharacteristicFilter,
-                                            time: timeFilter,
-                                            types: {
-                                                ...eventTypeFilter,
-                                                interruptions: !eventTypeFilter.interruptions,
-                                            }
-                                        }));
-                                    }} checked={eventTypeFilter.interruptions} />  Interruptions</label></li>
-
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        dispatch(SetFilters({
-                                            characteristics: newEventCharacteristicFilter,
-                                            time: timeFilter,
-                                            types: {
-                                                ...eventTypeFilter,
-                                                breakerOps: !eventTypeFilter.breakerOps,
-                                            }
-                                        }));
-                                    }} checked={eventTypeFilter.breakerOps} />  Breaker Ops</label></li>
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        dispatch(SetFilters({
-                                            characteristics: newEventCharacteristicFilter,
-                                            time: timeFilter,
-                                            types: {
-                                                ...eventTypeFilter,
-                                                transients: !eventTypeFilter.transients,
-                                            }
-                                        }));
-                                    }} checked={eventTypeFilter.transients} />  Transients</label></li>
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        dispatch(SetFilters({
-                                            characteristics: newEventCharacteristicFilter,
-                                            time: timeFilter,
-                                            types: {
-                                                ...eventTypeFilter,
-                                                relayTCE: !eventTypeFilter.relayTCE,
-                                            }
-                                        }));
-                                        }} checked={eventTypeFilter.relayTCE} />  Breaker TCE</label></li>
-                                   
-                                    <li><label><input type="checkbox" onChange={() => {
-                                        dispatch(SetFilters({
-                                            characteristics: newEventCharacteristicFilter,
-                                            time: timeFilter,
-                                            types: {
-                                                ...eventTypeFilter,
-                                                others: !eventTypeFilter.others,
-                                            }
-                                        }));
-                                        }} checked={eventTypeFilter.others} />  Others</label></li>
+                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, faults: !newTypeFilter.faults })} checked={newTypeFilter.faults} />  Faults </label></li>
+                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, sags: !newTypeFilter.sags })} checked={newTypeFilter.sags} />  Sags</label></li>
+                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, swells: !newTypeFilter.swells })} checked={newTypeFilter.swells} />  Swells</label></li>
+                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, interruptions: !newTypeFilter.interruptions })} checked={newTypeFilter.interruptions} />  Interruptions</label></li>
+                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, breakerOps: !newTypeFilter.breakerOps })} checked={newTypeFilter.breakerOps} />  Breaker Ops</label></li>
+                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, transients: !newTypeFilter.transients })} checked={newTypeFilter.transients} />  Transients</label></li>
+                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, relayTCE: !newTypeFilter.relayTCE })} checked={newTypeFilter.relayTCE} />  Breaker TCE</label></li>
+                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, others: !newTypeFilter.others })} checked={newTypeFilter.others} />  Others</label></li>
                                 </ul>
                                 <ul style={{
                                         listStyleType: 'none', padding: 0, width: '50%', position: 'relative', float: 'right'
                                     }}>
                                         <li><label><input type="checkbox" onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                             var value = e.target.checked;
-                                            dispatch(SetFilters({
-                                                characteristics: newEventCharacteristicFilter,
-                                                time: timeFilter,
-                                                types: {
-                                                    faults: value,
-                                                    sags: value,
-                                                    swells: value,
-                                                    interruptions: value,
-                                                    breakerOps: value,
-                                                    transients: value,
-                                                    relayTCE: value,
-                                                    others: value
-                                                }
-                                            }))
-                                        }} checked={(eventTypeFilter.breakerOps && eventTypeFilter.faults && eventTypeFilter.interruptions && eventTypeFilter.others &&
-                                            eventTypeFilter.relayTCE && eventTypeFilter.sags && eventTypeFilter.swells && eventTypeFilter.transients) ||
-                                            !(eventTypeFilter.breakerOps || eventTypeFilter.faults || eventTypeFilter.interruptions || eventTypeFilter.others ||
-                                                eventTypeFilter.relayTCE || eventTypeFilter.sags || eventTypeFilter.swells || eventTypeFilter.transients)
-                                        } disabled={!(eventTypeFilter.breakerOps || eventTypeFilter.faults || eventTypeFilter.interruptions || eventTypeFilter.others ||
-                                            eventTypeFilter.relayTCE || eventTypeFilter.sags || eventTypeFilter.swells || eventTypeFilter.transients)} />  Select All </label></li>
+                                            setNewTypeFilter({
+                                                ...newTypeFilter,
+                                                faults: value,
+                                                sags: value,
+                                                swells: value,
+                                                interruptions: value,
+                                                breakerOps: value,
+                                                transients: value,
+                                                relayTCE: value,
+                                                others: value
+                                            });
+                                        }} checked={(newTypeFilter.breakerOps && newTypeFilter.faults && newTypeFilter.interruptions && newTypeFilter.others &&
+                                            newTypeFilter.relayTCE && newTypeFilter.sags && newTypeFilter.swells && newTypeFilter.transients) ||
+                                            !(newTypeFilter.breakerOps || newTypeFilter.faults || newTypeFilter.interruptions || newTypeFilter.others ||
+                                                newTypeFilter.relayTCE || newTypeFilter.sags || newTypeFilter.swells || newTypeFilter.transients)
+                                        } disabled={!(newTypeFilter.breakerOps || newTypeFilter.faults || newTypeFilter.interruptions || newTypeFilter.others ||
+                                            newTypeFilter.relayTCE || newTypeFilter.sags || newTypeFilter.swells || newTypeFilter.transients)} />  Select All </label></li>
                                 </ul>
                             </form>
                         </fieldset>
@@ -354,13 +274,13 @@ const EventSearchNavbar = (props: IProps) => {
                                         <div className="form-group">
                                             <div className='input-group input-group-sm'>
                                                 <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Field='durationMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                    <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Field='durationMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
                                                 </div>
                                                 <div className="input-group-append" style={{ height: '37px'}}>
                                                     <span className="input-group-text"> to </span>
                                                 </div>
                                                 <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Field='durationMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                    <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Field='durationMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
                                                 </div>
                                             </div>
                                             </div>
@@ -370,30 +290,18 @@ const EventSearchNavbar = (props: IProps) => {
                                     <form>
                                         <div className="form-group">
                                             <div className='input-group input-group-sm' style={{ width: '100%' }}>
-                                                    <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='Mag-Dur:' Field='curveID' Setter={setNewEventCharacteristicFilter}
+                                                <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='Mag-Dur:' Field='curveID' Setter={setNewEventCharacteristicFilter}
                                                     Options={magDurCurves.map((v) => (v.Area != undefined && v.Area.length > 0 ? { Value: v.ID.toString(), Label: v.Name } : null))} />
                                             </div>
                                             <div className='form-check form-check-inline'>
-                                                    <input className="form-check-input" disabled={!newEventCharacteristicFilter.curveOutside} type="checkbox" onChange={() => {
-                                                    dispatch(SetFilters({
-                                                        characteristics: {
-                                                            ...newEventCharacteristicFilter, curveInside: !newEventCharacteristicFilter.curveInside
-                                                        },
-                                                        time: timeFilter,
-                                                        types: eventTypeFilter,
-                                                    }));
+                                                <input className="form-check-input" disabled={!newEventCharacteristicFilter.curveOutside} type="checkbox" onChange={() => {
+                                                    setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, curveInside: !newEventCharacteristicFilter.curveInside });
                                                     }} checked={newEventCharacteristicFilter.curveInside} />
                                                 <label className="form-check-label">Inside</label>
                                             </div>
                                             <div className='form-check form-check-inline'>
-                                                    <input className="form-check-input" disabled={!newEventCharacteristicFilter.curveInside} type="checkbox" onChange={() => {
-                                                    dispatch(SetFilters({
-                                                        characteristics: {
-                                                            ...newEventCharacteristicFilter, curveOutside: !newEventCharacteristicFilter.curveOutside
-                                                        },
-                                                        time: timeFilter,
-                                                        types: eventTypeFilter,
-                                                    }));
+                                                <input className="form-check-input" disabled={!newEventCharacteristicFilter.curveInside} type="checkbox" onChange={() => {
+                                                    setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, curveOutside: !newEventCharacteristicFilter.curveOutside });
                                                     }} checked={newEventCharacteristicFilter.curveOutside} />
                                                 <label className="form-check-label">Outside</label>
                                             </div>
@@ -406,16 +314,16 @@ const EventSearchNavbar = (props: IProps) => {
                                             <div className="form-group">
                                                 <div className='input-group input-group-sm'>
                                                     <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.sags} Field='sagMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.sags} Field='sagMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
                                                     </div>
                                                     <div className="input-group-append" style={{ height: '37px' }}>
                                                         <span className="input-group-text"> to </span>
                                                     </div>
                                                     <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.sags} Field='sagMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.sags} Field='sagMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
                                                     </div>
                                                 </div>
-                                                <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.swells} Field='sagType' Setter={setNewEventCharacteristicFilter}
+                                                <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.swells} Field='sagType' Setter={setNewEventCharacteristicFilter}
                                                     Options={lineNeutralOptions} />
                                             </div>
                                         </form>
@@ -427,13 +335,14 @@ const EventSearchNavbar = (props: IProps) => {
                                                 <div className='form-check form-check-inline'>
                                                     <input className="form-check-input" type="checkbox" onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                                         var value = e.target.checked;
-                                                        dispatch(SetFilters({
-                                                            characteristics: {
-                                                                ...newEventCharacteristicFilter, Phase: { A: value, B: value, C: value }
-                                                            },
-                                                            time: timeFilter,
-                                                            types: eventTypeFilter
-                                                        }))
+                                                        setNewEventCharacteristicFilter({
+                                                            ...newEventCharacteristicFilter,
+                                                            Phase: {
+                                                                A: value,
+                                                                B: value,
+                                                                C: value
+                                                            }
+                                                        });
                                                     }} checked={(newEventCharacteristicFilter.Phase.A && newEventCharacteristicFilter.Phase.B && newEventCharacteristicFilter.Phase.C) ||
                                                         !(newEventCharacteristicFilter.Phase.A || newEventCharacteristicFilter.Phase.B || newEventCharacteristicFilter.Phase.C)}
                                                         disabled={!(newEventCharacteristicFilter.Phase.A || newEventCharacteristicFilter.Phase.B || newEventCharacteristicFilter.Phase.C)} />
@@ -443,60 +352,60 @@ const EventSearchNavbar = (props: IProps) => {
                                             <div className="form-group">
                                             <div className='form-check form-check-inline'>
                                                 <input className="form-check-input" type="checkbox" onChange={() => {
-                                                    dispatch(SetFilters({
-                                                        characteristics: {
-                                                            ...newEventCharacteristicFilter, Phase: { ...newEventCharacteristicFilter.Phase, A: !newEventCharacteristicFilter.Phase.A }
-                                                        },
-                                                        time: timeFilter,
-                                                        types: eventTypeFilter,
-                                                    }));
-                                                    }} checked={newEventCharacteristicFilter.Phase.A} />
+                                                    setNewEventCharacteristicFilter({
+                                                        ...newEventCharacteristicFilter,
+                                                        Phase: {
+                                                            ...newEventCharacteristicFilter.Phase,
+                                                            A: !newEventCharacteristicFilter.Phase.A
+                                                        }
+                                                    });
+                                                }} checked={newEventCharacteristicFilter.Phase.A} />
                                                 <label className="form-check-label">A</label>
                                             </div>
                                             <div className='form-check form-check-inline'>
                                                 <input className="form-check-input" type="checkbox" onChange={() => {
-                                                    dispatch(SetFilters({
-                                                        characteristics: {
-                                                            ...newEventCharacteristicFilter, Phase: { ...newEventCharacteristicFilter.Phase, B: !newEventCharacteristicFilter.Phase.B }
-                                                        },
-                                                        time: timeFilter,
-                                                        types: eventTypeFilter,
-                                                    }));
-                                                    }} checked={newEventCharacteristicFilter.Phase.B} />
+                                                    setNewEventCharacteristicFilter({
+                                                        ...newEventCharacteristicFilter,
+                                                        Phase: {
+                                                            ...newEventCharacteristicFilter.Phase,
+                                                            B: !newEventCharacteristicFilter.Phase.B
+                                                        }
+                                                    });
+                                                }} checked={newEventCharacteristicFilter.Phase.B} />
                                                 <label className="form-check-label">B</label>
                                             </div>
                                             <div className='form-check form-check-inline'>
                                                 <input className="form-check-input" type="checkbox" onChange={() => {
-                                                    dispatch(SetFilters({
-                                                        characteristics: {
-                                                            ...newEventCharacteristicFilter, Phase: { ...newEventCharacteristicFilter.Phase, C: !newEventCharacteristicFilter.Phase.C }
-                                                        },
-                                                        time: timeFilter,
-                                                        types: eventTypeFilter,
-                                                    }));
-                                                    }} checked={newEventCharacteristicFilter.Phase.C} />
+                                                    setNewEventCharacteristicFilter({
+                                                        ...newEventCharacteristicFilter,
+                                                        Phase: {
+                                                            ...newEventCharacteristicFilter.Phase,
+                                                            C: !newEventCharacteristicFilter.Phase.C
+                                                        }
+                                                    });
+                                                }} checked={newEventCharacteristicFilter.Phase.C} />
                                                 <label className="form-check-label">C</label>
-                                                </div>
-                                                </div>
-                                        </form>
-                                    </div>
+                                            </div>
+                                        </div>
+                                </form>
+                            </div>
                                     
                                 <div className={"col-4"}>
                                    <form>
                                         <label style={{ margin: 0 }}>Transients (p.u.):</label>
                                         <div className="form-group">
                                             <div className='input-group input-group-sm'>
-                                                    <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.transients} Field='transientMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                <div className='col' style={{ width: '45%' }}>
+                                                    <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.transients} Field='transientMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
                                                 </div>
                                                 <div className="input-group-append" style={{ height: '37px'}}>
                                                     <span className="input-group-text"> to </span>
                                                 </div>
                                                 <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.transients} Field='transientMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                    <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.transients} Field='transientMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
                                                 </div>
                                             </div>
-                                                <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.transients} Field='transientType' Setter={setNewEventCharacteristicFilter}
+                                            <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.transients} Field='transientType' Setter={setNewEventCharacteristicFilter}
                                                 Options={lineNeutralOptions}/>
                                         </div>
                                     </form>
@@ -507,16 +416,16 @@ const EventSearchNavbar = (props: IProps) => {
                                         <div className="form-group">
                                             <div className='input-group input-group-sm'>
                                                 <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.swells} Field='swellMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                    <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.swells} Field='swellMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
                                                 </div>
                                                 <div className="input-group-append" style={{ height: '37px'}}>
                                                     <span className="input-group-text"> to </span>
                                                 </div>
                                                 <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.swells} Field='swellMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                    <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.swells} Field='swellMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
                                                 </div>
                                             </div>
-                                                <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!eventTypeFilter.swells} Field='swellType' Setter={setNewEventCharacteristicFilter}
+                                            <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.swells} Field='swellType' Setter={setNewEventCharacteristicFilter}
                                                 Options={lineNeutralOptions}/>
                                         </div>
                                     </form>
