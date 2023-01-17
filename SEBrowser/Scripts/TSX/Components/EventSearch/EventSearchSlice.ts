@@ -47,7 +47,7 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     const locationList = (getState() as any).EventSearch.SelectedStations as SystemCenter.Types.DetailedLocation[];
     const groupList = (getState() as any).EventSearch.SelectedGroups as OpenXDA.Types.AssetGroup[];
 
-    const settings = (getState() as any).Settings as Redux.SettingsState;
+    const settings = (getState() as Redux.StoreState).Settings.eventSearch;
 
     const filter = {
         date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,

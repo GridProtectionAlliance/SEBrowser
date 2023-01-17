@@ -81,10 +81,12 @@ export namespace Redux {
     }
 
     interface SettingsState {
-        NumberResults: number,
+        eventSearch: IEventSearchSettings
     }
 
-
+    interface IEventSearchSettings {
+        NumberResults: number
+    }
 }
 export namespace SEBrowser {
     type Status = 'loading' | 'idle' | 'error' | 'changed' | 'unitiated';

@@ -36,8 +36,6 @@ import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { Input, Select, EnumCheckBoxes } from '@gpa-gemstone/react-forms';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { SEBrowser, Redux } from '../../Global';
-import { SetSettingsNumberResults, SelectSearchSettings } from './EventSearchSettingsSlice';
-
 
 interface IProps {
     toggleVis: () => void,
@@ -71,8 +69,6 @@ const EventSearchNavbar = (props: IProps) => {
     const [newTypeFilter, setNewTypeFilter] = React.useState<SEBrowser.IEventTypeFilters>(null);
     const lineNeutralOptions = [{ Value: 'LL', Label: 'LL' }, { Value: 'LN', Label: 'LN' }, { Value: 'both', Label: 'LL/LN' }];
 
-    const eventSearchSettingsState = useAppSelector(SelectSearchSettings)
-    const [eventSearchSettings, setEventSearchSettings] = React.useState<Redux.SettingsState>(eventSearchSettingsState)
 
     React.useEffect(() => {
         setNewEventCharacteristicFilter(eventCharacteristicFilter);
@@ -92,14 +88,7 @@ const EventSearchNavbar = (props: IProps) => {
                 time: newTimeFilter,
                 types: newTypeFilter
             }));
-    }, [newEventCharacteristicFilter, newTimeFilter, newTypeFilter]);
-
-    React.useEffect(() => {
-        dispatch(SetSettingsNumberResults({
-            numberResults: eventSearchSettings.NumberResults
-        }));
-        dispatch(FetchEventSearches())
-    }, [eventSearchSettings]);
+    }, [newEventCharacteristicFilter, newTimeFilter, newTypeFilter]);   
 
     function formatWindowUnit(i: number) {
         if (i == 7)
@@ -462,16 +451,7 @@ const EventSearchNavbar = (props: IProps) => {
 
                         </fieldset>
                     </li>
-                    <li className="nav-item" style={{ width: '15%', paddingRight: 10 }}>
-                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                            <legend className="w-auto" style={{ fontSize: 'large' }}>Settings:</legend>
-                            <div className={"row"}>
-                                <div className={'col'}>
-                                    <Input<Redux.SettingsState> Record={eventSearchSettings} Field='NumberResults' Setter={setEventSearchSettings} Valid={() => { return true }} Label='Number of Results:' Type='integer' />
-                                </div>
-                            </div>
-                        </fieldset>
-                    </li>
+                   
                 </ul>
                     <div className="btn-group-vertical float-right">
                         <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${(!reset ? 'warning' : 'primary')} btn-sm`} onClick={() => props.toggleVis()}>Hide Filters</button>

@@ -28,7 +28,7 @@ import { ConfigurableTable, LoadingIcon } from '@gpa-gemstone/react-interactive'
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { OpenXDA, Redux, SEBrowser } from '../../global';
 import { SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
-import { SelectSearchNumberResults } from './EventSearchSettingsSlice';
+import { SelectEventSearchSettings } from '../SettingsSlice';
 
 interface IProps {
     eventid: number,
@@ -52,7 +52,7 @@ export default function EventSearchList(props: IProps) {
     const ascending = useAppSelector(SelectEventSearchsAscending);
     const data = useAppSelector((state: Redux.StoreState) => SelectEventSearchs(state));
     const [cols, setCols] = React.useState<IColumn[]>([]);
-    const numberResults = useAppSelector(SelectSearchNumberResults)
+    const numberResults = useAppSelector((state: Redux.StoreState) => SelectEventSearchSettings(state).NumberResults)
 
     React.useEffect(() => {
         document.addEventListener("keydown", handleKeyPress, false);

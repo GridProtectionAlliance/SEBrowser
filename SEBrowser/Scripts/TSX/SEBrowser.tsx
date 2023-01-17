@@ -34,11 +34,14 @@ import CapBankReport from './Components/CapBankReport/CapBankReport';
 import DERAnalysisReport from './Components/DERAnalysisReport/DERAnalysisReport';
 
 import { SystemCenter } from '@gpa-gemstone/application-typings';
-import { Application, Page, Section } from '@gpa-gemstone/react-interactive';
+import { Application, Page, Section, Modal } from '@gpa-gemstone/react-interactive';
+import Settings from './Settings';
+import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 
 const SEBrowserMainPage = (props: {}) => {
     const [links, setLinks] = React.useState<SystemCenter.Types.ValueListItem[]>([]);
     const [ignored, forceUpdate] = React.useReducer(x => x + 1, 0); // integer state for resize renders
+    const [showSettings, setShowSettings] = React.useState<boolean>(false);
 
     React.useEffect(() => {
         let handle = $.ajax({
@@ -76,7 +79,23 @@ const SEBrowserMainPage = (props: {}) => {
     }
 
     return (
-        <Application HomePath={homePath} DefaultPath={"eventsearch"} Logo={homePath + "Images/SE Browser Spelled out - 40 high.png"} Version={version}>
+        <>
+            <Application
+                HomePath={homePath} DefaultPath={"eventsearch"}
+                Logo={homePath + "Images/SE Browser Spelled out - 40 high.png"}
+                Version={version}
+                NavBarContent={<ul className="navbar-nav mr-l">
+                    <li className="nav-item" style={{ width: '84px' }}>
+                        <button type="button" className="btn btn-primary" style={{
+                            borderRadius: "0.25rem",
+                            height: 30, paddingLeft: 6,
+                            paddingRight: 6, paddingTop: 2
+                        }}
+                            onClick={() => setShowSettings(true)}>
+                            {SVGIcons.Settings}
+                    </button>
+                </li> </ul>}
+            >
             <Page Name={'eventsearch'} Label={'Event Search'}>
                 <EventSearch />
             </Page>
@@ -86,7 +105,9 @@ const SEBrowserMainPage = (props: {}) => {
             <Section Label={"Custom Reports"}>
                 {links.map((item, i) => <Page key={i} Name={item.AltValue} Label={item.Value}>{createWidget(item.AltValue)}</Page>)}
             </Section>
-        </Application>
+            </Application>
+            <Settings Show={showSettings} Close={() => setShowSettings(false)} />
+        </>
     );
 }
 
