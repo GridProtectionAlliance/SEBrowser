@@ -40,7 +40,6 @@ import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 
 const SEBrowserMainPage = (props: {}) => {
     const [links, setLinks] = React.useState<SystemCenter.Types.ValueListItem[]>([]);
-    const [ignored, forceUpdate] = React.useReducer(x => x + 1, 0); // integer state for resize renders
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
 
     React.useEffect(() => {
@@ -57,15 +56,6 @@ const SEBrowserMainPage = (props: {}) => {
         handle.done(data => setLinks(data));
         return () => { if(handle.abort != undefined) handle.abort()}
     }, []);
-
-
-    React.useEffect(() => {
-        window.addEventListener('resize', (evt) => forceUpdate());
-
-        return () => {
-            window.removeEventListener('resize', (evt) => { });
-        }
-    }, [])
 
     const createWidget = (item: string) => {
         if (item === "breakerreport")
