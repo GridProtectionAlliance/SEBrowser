@@ -34,6 +34,7 @@ import EventSearchMagDur from './EventSearchMagDur';
 import { ProcessQuery, SelectEventList, SelectQueryParam } from './EventSearchSlice';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
+import { SplitSection, VerticalSplit } from '@gpa-gemstone/react-interactive';
 
 interface IProps { }
 
@@ -93,30 +94,33 @@ const EventSearch = (props: IProps) => {
                 toggleVis={() => setShowNav((c) => !c)}
                 showNav={showNav}
             />
-            <div style={{ width: '100%', height: (showNav ? 'calc(100% - 400px)' : 'calc( 100% - 52px)')}}>
-                <div style={{ width: '50%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
-                    <div style={{ width: 'calc(100% - 300px)', padding: 10, float: 'left' }}>
-                    </div>
-                    <div style={{ width: 120, float: 'right', padding: 10 }}>
-                        <EventSearchListedEventsNoteWindow />
-                    </div>
-                    <div style={{ width: 160, float: 'right', padding: 10 }}>
-                        <button className='btn btn-danger' onClick={() => setShowMagDur((c) => !c)} > View As {showMagDur ? 'List' : 'Mag/Dur'}</button>
-                    </div>
-                    {showMagDur ?
-                        <EventSearchMagDur Width={(window.innerWidth - 300) / 2}
-                            Height={window.innerHeight - ((showNav? 400 : 52) + 70)}
-                            EventID={eventId}
-                            OnSelect={(evt, point) => setEventId(point.EventID)}
-                        /> :
-                        <EventSearchList eventid={eventId} selectEvent={setEventId} height={window.innerHeight - ((showNav ? 390 : 52))}/>
-                    }
-                </div>
-                <div style={{ width: '50%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
-                    <EventPreviewPane EventID={eventId} InitialTab={initialTab} />
-                </div>
-
-            </div>
+                <VerticalSplit style={{ width: '100%', height: (showNav ? 'calc(100% - 400px)' : 'calc( 100% - 52px)') }}>
+                    <SplitSection width={50} minWidth={25} maxWidth={75}>
+                        <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
+                            <div style={{ width: 'calc(100% - 300px)', padding: 10, float: 'left' }}>
+                            </div>
+                            <div style={{ width: 120, float: 'right', padding: 10 }}>
+                                <EventSearchListedEventsNoteWindow />
+                            </div>
+                            <div style={{ width: 160, float: 'right', padding: 10 }}>
+                                <button className='btn btn-danger' onClick={() => setShowMagDur((c) => !c)} > View As {showMagDur ? 'List' : 'Mag/Dur'}</button>
+                            </div>
+                            {showMagDur ?
+                                <EventSearchMagDur Width={(window.innerWidth - 300) / 2}
+                                    Height={window.innerHeight - ((showNav ? 400 : 52) + 70)}
+                                    EventID={eventId}
+                                    OnSelect={(evt, point) => setEventId(point.EventID)}
+                                /> :
+                                <EventSearchList eventid={eventId} selectEvent={setEventId} height={window.innerHeight - ((showNav ? 390 : 52))} />
+                            }
+                        </div>
+                    </SplitSection>
+                    <SplitSection width={50} minWidth={25} maxWidth={75}>
+                        <div style={{ width: '100%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
+                            <EventPreviewPane EventID={eventId} InitialTab={initialTab} />
+                        </div>
+                    </SplitSection>
+                </VerticalSplit>
         </div>
     );
 }
