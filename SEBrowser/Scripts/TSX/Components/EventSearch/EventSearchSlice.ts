@@ -27,7 +27,7 @@ import * as _ from 'lodash';
 import { ajax } from 'jquery';
 import moment from 'moment';
 import queryString from 'querystring';
-import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice } from '../../Store';
+import { AssetGroupSlice, AssetSlice, EventTypeSlice, LocationSlice, MeterSlice } from '../../Store';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 
 
@@ -40,7 +40,7 @@ let fetchHandle: JQuery.jqXHR<any> | null = null;
 // #region [ Thunks ]
 export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (_, { signal, dispatch, getState }) => {
     const time = (getState() as any).EventSearch.TimeRange as SEBrowser.IReportTimeFilter;
-    const types = (getState() as any).EventSearch.EventType as SEBrowser.IEventTypeFilters;
+    const types = (getState() as any).EventSearch.EventType as number[];
     const characteristics = (getState() as any).EventSearch.EventCharacteristic as SEBrowser.IEventCharacteristicFilters;
     const meterList = (getState() as any).EventSearch.SelectedMeters as SystemCenter.Types.DetailedMeter[];
     const assetList = (getState() as any).EventSearch.SelectedAssets as SystemCenter.Types.DetailedAsset[];
@@ -51,7 +51,7 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
 
     const filter = {
         date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,
-        faults: types.faults, sags: types.sags, swells: types.swells, interruptions: types.interruptions, breakerOps: types.breakerOps, transients: types.transients, relayTCE: types.relayTCE, others: types.others,
+        typeIDs: types,
         durationMin: characteristics.durationMin, durationMax: characteristics.durationMax,
         PhaseA: characteristics.Phase.A, PhaseB: characteristics.Phase.B, PhaseC: characteristics.Phase.C,
         transientMin: characteristics.transientMin, transientMax: characteristics.transientMax, transientType: characteristics.transientType,
@@ -93,9 +93,14 @@ export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async 
     if (state.Location.Status == 'unintiated')
         await dispatch(LocationSlice.Fetch());
 
+    if (state.EventType.Status == 'unintiated')
+        await dispatch(EventTypeSlice.Fetch());
     state = getState() as Redux.StoreState;
     return dispatch(EventSearchsSlice.actions.ProcessQuery({
-        query, assets: state.Asset.Data, groups: state.AssetGroup.Data, locations: [], meters: state.Meter.Data
+        query, assets: state.Asset.Data, groups: state.AssetGroup.Data,
+        locations: state.Location.Data,
+        meters: state.Meter.Data,
+        typeIDs: state.EventType.Data
     }));
 });
 
@@ -116,7 +121,7 @@ export const EventSearchsSlice = createSlice({
             curveID: 1, curveInside: true, curveOutside: true
         },
         TimeRange: { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 10, timeWindowUnits: 5 },
-        EventType: { breakerOps: true, faults: true, interruptions: true, others: true, relayTCE: true, swells: true, sags: true, transients: true },
+        EventType: [],
         isReset: true,
         SelectedAssets: [],
         SelectedGroups: [],
@@ -139,7 +144,8 @@ export const EventSearchsSlice = createSlice({
         },
         ProcessQuery: (state, action: PayloadAction<{
             query: queryString.ParsedUrlQuery, assets: SystemCenter.Types.DetailedAsset[],
-            groups: OpenXDA.Types.AssetGroup[], locations: SystemCenter.Types.DetailedLocation[], meters: SystemCenter.Types.DetailedMeter[],
+            groups: OpenXDA.Types.AssetGroup[], locations: SystemCenter.Types.DetailedLocation[],
+            meters: SystemCenter.Types.DetailedMeter[], typeIDs: SEBrowser.EventType[]
         }>) => {
 
 
@@ -148,14 +154,7 @@ export const EventSearchsSlice = createSlice({
             state.TimeRange.windowSize = parseFloat(action.payload.query['windowSize']?.toString() ?? state.TimeRange.windowSize.toString());
             state.TimeRange.timeWindowUnits = parseInt(action.payload.query['timeWindowUnits']?.toString() ?? state.TimeRange.timeWindowUnits.toString());
 
-            state.EventType.faults = (action.payload.query['faults'] ?? 'true') == 'true';
-            state.EventType.sags = (action.payload.query['sags'] ?? 'true') == 'true';
-            state.EventType.swells = (action.payload.query['swells'] ?? 'true') == 'true';
-            state.EventType.interruptions = (action.payload.query['interruptions'] ?? 'true') == 'true';
-            state.EventType.breakerOps = (action.payload.query['breakerOps'] ?? 'true') == 'true';
-            state.EventType.transients = (action.payload.query['transients'] ?? 'true') == 'true';
-            state.EventType.relayTCE = (action.payload.query['relayTCE'] ?? 'true') == 'true';
-            state.EventType.others = (action.payload.query['others'] ?? 'true') == 'true';
+            state.EventType = parseList('types', action.payload.query)?.map(id => action.payload.typeIDs.find(item => item.ID == parseInt(id))).filter(item => item != null).map(t => t.ID) ?? action.payload.typeIDs.map(t => t.ID);
 
             state.SelectedAssets = parseList('assets', action.payload.query)?.map(id => action.payload.assets.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
             state.SelectedGroups = parseList('groups', action.payload.query)?.map(id => action.payload.groups.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
@@ -189,7 +188,7 @@ export const EventSearchsSlice = createSlice({
             state.isReset = computeReset(state);
             state.Status = 'changed';
         },
-        SetFilters: (state, action: PayloadAction<{ characteristics: SEBrowser.IEventCharacteristicFilters, types: SEBrowser.IEventTypeFilters, time: SEBrowser.IReportTimeFilter }>) => {
+        SetFilters: (state, action: PayloadAction<{ characteristics: SEBrowser.IEventCharacteristicFilters, types: number[], time: SEBrowser.IReportTimeFilter }>) => {
             state.Status = 'changed';
             state.TimeRange = action.payload.time;
             state.EventType = action.payload.types;
@@ -202,7 +201,7 @@ export const EventSearchsSlice = createSlice({
                 curveID: 1, curveInside: true, curveOutside: true
             };
 
-            state.EventType = { breakerOps: true, faults: true, interruptions: true, others: true, relayTCE: true, swells: true, sags: true, transients: true };
+            state.EventType = [];
             state.SelectedStations = [];
             state.SelectedMeters = [];
             state.SelectedGroups = [];
@@ -306,13 +305,13 @@ function computeReset(state: Redux.EventSearchState): boolean {
         state.EventCharacteristic.Phase.A && state.EventCharacteristic.Phase.B && state.EventCharacteristic.Phase.C &&
         state.EventCharacteristic.curveInside && state.EventCharacteristic.curveOutside;
 
-    const types = state.EventType.breakerOps && state.EventType.faults && state.EventType.interruptions && state.EventType.others
-        && state.EventType.relayTCE && state.EventType.swells && state.EventType.sags && state.EventType.transients;
+    const types = false; //state.EventType.breakerOps && state.EventType.faults && state.EventType.interruptions && state.EventType.others
+        //&& state.EventType.relayTCE && state.EventType.swells && state.EventType.sags && state.EventType.transients;
 
     return event && types && state.SelectedAssets.length == 0 && state.SelectedStations.length == 0 && state.SelectedMeters.length == 0 && state.SelectedGroups.length == 0;
 }
 
-function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: SEBrowser.IEventTypeFilters,
+function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: number[],
     time: SEBrowser.IReportTimeFilter, assets: SystemCenter.Types.DetailedAsset[], groups: OpenXDA.Types.AssetGroup[],
     meters: SystemCenter.Types.DetailedMeter[], stations: SystemCenter.Types.DetailedLocation[]): any {
     let result: any = {};
@@ -345,29 +344,13 @@ function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type:
         })
     }
 
-    if (!type.faults)
-        result['faults'] = false;
-
-    if (!type.sags)
-        result['sags'] = false;
-
-    if (!type.swells)
-        result['swells'] = false;
-
-    if (!type.interruptions)
-        result['interruptions'] = false;
-
-    if (!type.breakerOps)
-        result['breakerOps'] = false;
-
-    if (!type.transients)
-        result['transients'] = false;
-
-    if (!type.relayTCE)
-        result['relayTCE'] = false;
-
-    if (!type.others)
-        result['others'] = false;
+    if (type.length > 0 && type.length < 100) {
+        let i = 0;
+        type.forEach(ag => {
+            result["types" + i] = ag;
+            i = i + 1;
+        })
+    }
 
     if (event.durationMin != 0)
         result['durationMin'] = event.durationMin

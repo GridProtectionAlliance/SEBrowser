@@ -21,6 +21,7 @@
 //
 //******************************************************************************************************
 import { Application, SystemCenter, OpenXDA as XDA } from '@gpa-gemstone/application-typings';
+import { IGenericSlice } from '@gpa-gemstone/common-pages/lib/SliceInterfaces';
 import { IGenericSliceState } from '@gpa-gemstone/react-interactive';
 
 declare global {
@@ -47,8 +48,9 @@ export namespace Redux {
         Asset: IGenericSliceState<SystemCenter.Types.DetailedAsset>,
         AssetGroup: IGenericSliceState<XDA.Types.AssetGroup>,
         Location: IGenericSliceState<SystemCenter.Types.DetailedLocation>,
-        EventNote: NoteState
-        Settings: SettingsState
+        EventNote: NoteState,
+        Settings: SettingsState,
+        EventType: IGenericSliceState<SEBrowser.EventType>
     }
 
     interface State<T> {
@@ -62,7 +64,7 @@ export namespace Redux {
 
     interface EventSearchState extends Redux.State<any> {
         TimeRange: SEBrowser.IReportTimeFilter,
-        EventType: SEBrowser.IEventTypeFilters,
+        EventType: number[],
         EventCharacteristic: SEBrowser.IEventCharacteristicFilters,
         SelectedMeters: SystemCenter.Types.DetailedMeter[],
         SelectedAssets: SystemCenter.Types.DetailedAsset[],
@@ -101,7 +103,7 @@ export namespace SEBrowser {
         swellMin: number, swellMax: number, swellType: ('LL' | 'LN' | 'both'),
         curveID: number, curveInside: boolean, curveOutside: boolean
     }
-    interface IEventTypeFilters { faults: boolean, sags: boolean, swells: boolean, interruptions: boolean, breakerOps: boolean, transients: boolean, relayTCE: boolean, others: boolean}
+    
     interface MagDurCurve { ID: number, Name: string, XHigh: number, XLow: number, YHigh: number, YLow: number, UpperCurve: string, LowerCurve: string, Area: string }
 
     interface EventNote extends XDA.Types.Note {
@@ -109,6 +111,9 @@ export namespace SEBrowser {
         IDs: number[],
         NumEvents: number
     }
+
+    // Temporary until next gpa-gemstone update
+    interface EventType extends XDA.Types.EventType { ShowInFilter: boolean, Category?: string, Name: string }
 }
 
 export namespace OpenXDA {

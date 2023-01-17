@@ -29,7 +29,7 @@ import ReportTimeFilter from '../ReportTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SelectAssetGroupList, SelectAssetList, SelectCharacteristicFilter, SelectMeterList, SelectReset, SelectStationList, SelectTimeFilter, SelectTypeFilter, SetFilterLists } from './EventSearchSlice';
 import { ResetFilters,  SetFilters, FetchEventSearches } from './EventSearchSlice';
-import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice, MagDurCurveSlice } from '../../Store';
+import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice, MagDurCurveSlice, EventTypeSlice } from '../../Store';
 import { DefaultSelects } from '@gpa-gemstone/common-pages';
 import EventSearchFilterButton from './EventSearchbarFilterButton';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
@@ -60,15 +60,20 @@ const EventSearchNavbar = (props: IProps) => {
     const assetList = useAppSelector(SelectAssetList);
     const locationList = useAppSelector(SelectStationList);
 
+    const eventTypes = useAppSelector(EventTypeSlice.Data);
+    const evtTypeStatus = useAppSelector(EventTypeSlice.Status);
+
     const reset = useAppSelector(SelectReset);
 
-
+    
     const [showFilter, setFilter] = React.useState<('None' | 'Meter' | 'Asset' | 'AssetGroup' | 'Station')>('None');
     const [newEventCharacteristicFilter, setNewEventCharacteristicFilter] = React.useState<SEBrowser.IEventCharacteristicFilters>(null);
     const [newTimeFilter, setNewTimeFilter] = React.useState<SEBrowser.IReportTimeFilter>(null);
-    const [newTypeFilter, setNewTypeFilter] = React.useState<SEBrowser.IEventTypeFilters>(null);
+    const [newTypeFilter, setNewTypeFilter] = React.useState<number[]>(null);
     const lineNeutralOptions = [{ Value: 'LL', Label: 'LL' }, { Value: 'LN', Label: 'LN' }, { Value: 'both', Label: 'LL/LN' }];
 
+    React.useEffect(() => { setNewTypeFilter(eventTypeFilter) }, [eventTypeFilter])
+    React.useEffect(() => { setNewEventCharacteristicFilter(eventCharacteristicFilter) }, [eventCharacteristicFilter])
 
     React.useEffect(() => {
         setNewEventCharacteristicFilter(eventCharacteristicFilter);
@@ -82,6 +87,11 @@ const EventSearchNavbar = (props: IProps) => {
     }, [magDurStatus]);
 
     React.useEffect(() => {
+        if (evtTypeStatus == 'changed' || evtTypeStatus == 'unintiated')
+            dispatch(EventTypeSlice.Fetch());
+    }, [evtTypeStatus]);
+
+    React.useEffect(() => {
         if (!(newEventCharacteristicFilter === null || newTimeFilter === null || newTypeFilter === null))
             dispatch(SetFilters({
                 characteristics: newEventCharacteristicFilter,
@@ -90,6 +100,7 @@ const EventSearchNavbar = (props: IProps) => {
             }));
     }, [newEventCharacteristicFilter, newTimeFilter, newTypeFilter]);   
 
+    React.useEffect(() => { }, [])
     function formatWindowUnit(i: number) {
         if (i == 7)
             return "Years";
@@ -204,6 +215,11 @@ const EventSearchNavbar = (props: IProps) => {
             </nav>
         );
 
+    const evtTypeGrps = _.groupBy(eventTypes, (t) => t.Category);
+    const sagsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Sag')?.ID ?? -1) != null;
+    const swellsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Swell')?.ID ?? -1) != null;;
+    const transientsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Transient')?.ID ?? -1) != null;;
+
     return (
         <>
         <nav className="navbar navbar-expand-xl navbar-light bg-light">
@@ -213,45 +229,41 @@ const EventSearchNavbar = (props: IProps) => {
                     <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
                             <ReportTimeFilter filter={newTimeFilter} setFilter={setNewTimeFilter} showQuickSelect={true} />
                     </li>
-                    <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
-                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                            <legend className="w-auto" style={{ fontSize: 'large' }}>Event Types:</legend>
-                            <form>
-                                <ul style={{ listStyleType: 'none', padding: 0, width: '50%', position: 'relative', float: 'left' }}>
-                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, faults: !newTypeFilter.faults })} checked={newTypeFilter.faults} />  Faults </label></li>
-                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, sags: !newTypeFilter.sags })} checked={newTypeFilter.sags} />  Sags</label></li>
-                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, swells: !newTypeFilter.swells })} checked={newTypeFilter.swells} />  Swells</label></li>
-                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, interruptions: !newTypeFilter.interruptions })} checked={newTypeFilter.interruptions} />  Interruptions</label></li>
-                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, breakerOps: !newTypeFilter.breakerOps })} checked={newTypeFilter.breakerOps} />  Breaker Ops</label></li>
-                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, transients: !newTypeFilter.transients })} checked={newTypeFilter.transients} />  Transients</label></li>
-                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, relayTCE: !newTypeFilter.relayTCE })} checked={newTypeFilter.relayTCE} />  Breaker TCE</label></li>
-                                    <li><label><input type="checkbox" onChange={() => setNewTypeFilter({ ...newTypeFilter, others: !newTypeFilter.others })} checked={newTypeFilter.others} />  Others</label></li>
-                                </ul>
-                                <ul style={{
-                                        listStyleType: 'none', padding: 0, width: '50%', position: 'relative', float: 'right'
-                                    }}>
-                                        <li><label><input type="checkbox" onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                            var value = e.target.checked;
-                                            setNewTypeFilter({
-                                                ...newTypeFilter,
-                                                faults: value,
-                                                sags: value,
-                                                swells: value,
-                                                interruptions: value,
-                                                breakerOps: value,
-                                                transients: value,
-                                                relayTCE: value,
-                                                others: value
-                                            });
-                                        }} checked={(newTypeFilter.breakerOps && newTypeFilter.faults && newTypeFilter.interruptions && newTypeFilter.others &&
-                                            newTypeFilter.relayTCE && newTypeFilter.sags && newTypeFilter.swells && newTypeFilter.transients) ||
-                                            !(newTypeFilter.breakerOps || newTypeFilter.faults || newTypeFilter.interruptions || newTypeFilter.others ||
-                                                newTypeFilter.relayTCE || newTypeFilter.sags || newTypeFilter.swells || newTypeFilter.transients)
-                                        } disabled={!(newTypeFilter.breakerOps || newTypeFilter.faults || newTypeFilter.interruptions || newTypeFilter.others ||
-                                            newTypeFilter.relayTCE || newTypeFilter.sags || newTypeFilter.swells || newTypeFilter.transients)} />  Select All </label></li>
-                                </ul>
-                            </form>
-                        </fieldset>
+                        <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
+                            {Object.keys(evtTypeGrps).map((cat) => (
+                                <fieldset className="border" style={{ padding: '10px' }} key={cat}>
+                                    <legend className="w-auto" style={{ fontSize: 'large' }}>{(cat != null && cat.length > 0 ? cat : 'Other Types')}:
+                                        <a style={{ fontSize: 'small', color: '#0056b3', marginLeft: 2 }}
+                                            onClick={() => {
+                                                const isSelected = evtTypeGrps[cat].filter(item => newTypeFilter.find(i => i == item.ID) == null).length  == 0;
+                                                if (isSelected)
+                                                    setNewTypeFilter((d) => d.filter(t => evtTypeGrps[cat].find(i => i.ID == t) == null))
+                                                else
+                                                    setNewTypeFilter((d) => _.uniq([...d, ...evtTypeGrps[cat].map(i => i.ID)]))
+                                            }}>
+                                            ({evtTypeGrps[cat].filter(item => newTypeFilter.find(i => i == item.ID) == null).length == 0 ? 'un' : ''}select all)
+                                        </a>
+                                    </legend>
+                                    <form>
+                                        <ul style={{ listStyleType: 'none', padding: 0, position: 'relative', float: 'left' }}>
+                                            {evtTypeGrps[cat].map((item) => (
+                                                <li key={item.ID}>
+                                                    <label>
+                                                        <input type="checkbox"
+                                                            onChange={(e) => {
+                                                                if (e.target.checked)
+                                                                    setNewTypeFilter((d) => [...d,item.ID])
+                                                                else
+                                                                    setNewTypeFilter((d) => d.filter(t => t != item.ID))
+                                                            }} checked={newTypeFilter.find(i => i == item.ID) != null} />
+                                                        {item.Description}
+                                                    </label>
+                                                </li>
+                                                ))}
+                                        </ul>
+                                    </form>
+                                </fieldset>
+                                ))}                        
                     </li>
                     <li className="nav-item" style={{ width: '45%', paddingRight: 10 }}>
                         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
@@ -303,16 +315,16 @@ const EventSearchNavbar = (props: IProps) => {
                                             <div className="form-group">
                                                 <div className='input-group input-group-sm'>
                                                     <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.sags} Field='sagMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!sagsSelected} Field='sagMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
                                                     </div>
                                                     <div className="input-group-append" style={{ height: '37px' }}>
                                                         <span className="input-group-text"> to </span>
                                                     </div>
                                                     <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.sags} Field='sagMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!sagsSelected} Field='sagMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
                                                     </div>
                                                 </div>
-                                                <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.swells} Field='sagType' Setter={setNewEventCharacteristicFilter}
+                                                <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!sagsSelected} Field='sagType' Setter={setNewEventCharacteristicFilter}
                                                     Options={lineNeutralOptions} />
                                             </div>
                                         </form>
@@ -385,16 +397,16 @@ const EventSearchNavbar = (props: IProps) => {
                                         <div className="form-group">
                                             <div className='input-group input-group-sm'>
                                                 <div className='col' style={{ width: '45%' }}>
-                                                    <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.transients} Field='transientMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!transientsSelected} Field='transientMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
                                                 </div>
                                                 <div className="input-group-append" style={{ height: '37px'}}>
                                                     <span className="input-group-text"> to </span>
                                                 </div>
                                                 <div className='col' style={{ width: '45%' }}>
-                                                    <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.transients} Field='transientMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!transientsSelected} Field='transientMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
                                                 </div>
                                             </div>
-                                            <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.transients} Field='transientType' Setter={setNewEventCharacteristicFilter}
+                                            <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!transientsSelected} Field='transientType' Setter={setNewEventCharacteristicFilter}
                                                 Options={lineNeutralOptions}/>
                                         </div>
                                     </form>
@@ -405,16 +417,16 @@ const EventSearchNavbar = (props: IProps) => {
                                         <div className="form-group">
                                             <div className='input-group input-group-sm'>
                                                 <div className='col' style={{ width: '45%' }}>
-                                                    <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.swells} Field='swellMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!swellsSelected} Field='swellMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
                                                 </div>
                                                 <div className="input-group-append" style={{ height: '37px'}}>
                                                     <span className="input-group-text"> to </span>
                                                 </div>
-                                                <div className='col' style={{ width: '45%' }}>
-                                                    <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.swells} Field='swellMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                    <div className='col' style={{ width: '45%' }}>
+                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!swellsSelected} Field='swellMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
                                                 </div>
                                             </div>
-                                            <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!newTypeFilter.swells} Field='swellType' Setter={setNewEventCharacteristicFilter}
+                                                <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!swellsSelected} Field='swellType' Setter={setNewEventCharacteristicFilter}
                                                 Options={lineNeutralOptions}/>
                                         </div>
                                     </form>

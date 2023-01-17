@@ -66,14 +66,6 @@ namespace SEBrowser.Controllers
 
         public class EventSearchPostData
         {
-            public bool faults { get; set; }
-            public bool sags { get; set; }
-            public bool swells { get; set; }
-            public bool interruptions { get; set; }
-            public bool breakerOps { get; set; }
-            public bool transients { get; set; }
-            public bool relayTCE { get; set; }
-            public bool others { get; set; }
             public string date { get; set; }
             public string time { get; set; }
             public double windowSize { get; set; }
@@ -96,6 +88,7 @@ namespace SEBrowser.Controllers
             public string sagType { get; set; }
             public string swellType { get; set; }
             public List<int> meterIDs { get; set; }
+            public List<int> typeIDs { get; set; }
             public List<int> assetIDs { get; set; }
             public List<int> groupIDs { get; set; }
             public List<int> locationIDs { get; set; }
@@ -197,22 +190,16 @@ namespace SEBrowser.Controllers
         {
             List<string> eventTypes = new List<string>();
 
-            if (postData.sags)
-                eventTypes.Add("(SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name = 'Sag')");
-            if (postData.swells)
-                eventTypes.Add("(SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name  = 'Swell')");
-            if (postData.interruptions)
-                eventTypes.Add("(SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name  = 'Interruption')");
-            if (postData.transients)
-                eventTypes.Add("(SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name  = 'Transient')");
-            if (postData.faults)
-                eventTypes.Add("( Event.EventTypeID IN (SELECT ID FROM EventType WHERE Name = 'Fault' OR Name = 'RecloseIntoFault'))");
-            if (postData.breakerOps)
-                eventTypes.Add("(( Event.EventTypeID = (SELECT ID FROM EventType WHERE Name = 'Fault') AND (SELECT COUNT(*) FROM BreakerOperation WHERE BreakerOperation.EventID = Event.ID) > 0) OR (Event.EventTypeID = (SELECT ID FROM EventType WHERE Name = 'BreakerOpen')))");
-            if (postData.others)
-                eventTypes.Add("Event.EventTypeID IN (SELECT ID FROM EventType WHERE Name = 'Other' OR Name = 'Test' OR Name = 'Snapshot')");
-            if (postData.relayTCE)
-                eventTypes.Add("(SELECT COUNT(RelayPerformance.ID) FROM RelayPerformance WHERE RelayPerformance.EventID = Event.ID) > 0");
+            // The ELSE clause is required because TVA would like to be able to specify filters that make no sense... 
+            if (postData.typeIDs.Count() > 0)
+                eventTypes.Add($"(SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN ({string.Join(",", postData.typeIDs)})");
+            else
+                eventTypes.Add($"(SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (-1)");
+
+            if (postData.typeIDs.Count() > 0)
+                eventTypes.Add($"Event.EventTypeID IN ({string.Join(",", postData.typeIDs)})");
+            else
+                eventTypes.Add($"Event.EventTypeID IN (-1)");
 
             return string.Join(" OR ", eventTypes);
         }
