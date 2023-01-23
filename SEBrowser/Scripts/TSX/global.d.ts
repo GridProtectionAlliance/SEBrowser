@@ -93,7 +93,7 @@ export namespace SEBrowser {
     interface IReportTimeFilter { date: string, time: string, windowSize: number, timeWindowUnits: number }
     interface IEventCharacteristicFilters {
         durationMin: number, durationMax: number,
-        Phase: { A: boolean, B: boolean, C: boolean },
+        Phase: { AN: boolean, BN: boolean, CN: boolean, AB: boolean, BC: boolean, ABG: boolean, BCG: boolean, ABC: boolean, ABCG: boolean }
         transientMin: number, transientMax: number, transientType: ('LL'|'LN'|'both'),
         sagMin: number, sagMax: number, sagType: ('LL' | 'LN' | 'both'),
         swellMin: number, swellMax: number, swellType: ('LL' | 'LN' | 'both'),

@@ -80,9 +80,15 @@ namespace SEBrowser.Controllers
             public int timeWindowUnits { get; set; }
             public double durationMin { get; set; }
             public double durationMax { get; set; }
-            public bool PhaseA {get; set;}
-            public bool PhaseB { get; set; }
-            public bool PhaseC { get; set; }
+            public bool PhaseAN {get; set;}
+            public bool PhaseBN { get; set; }
+            public bool PhaseCN { get; set; }
+            public bool PhaseAB { get; set; }
+            public bool PhaseBC { get; set; }
+            public bool PhaseABG { get; set; }
+            public bool PhaseBCG { get; set; }
+            public bool PhaseABC { get; set; }
+            public bool PhaseABCG { get; set; }
             public double transientMin { get; set; }
             public double transientMax { get; set; }
             public double sagMin { get; set; }
@@ -220,29 +226,45 @@ namespace SEBrowser.Controllers
         private string getPhaseFilter(EventSearchPostData postData)
         {
             List<string> phase = new List<string>();
+            Dictionary<string, bool> phases = new Dictionary<string, bool> 
+            {
+                ["AN"] = postData.PhaseAN,
+                ["BN"] = postData.PhaseBN,
+                ["CN"] = postData.PhaseCN,
+                ["AB"] = postData.PhaseAB,
+                ["BC"] = postData.PhaseBC,
+                ["ABG"] = postData.PhaseABG,
+                ["BCG"] = postData.PhaseBCG,
+                ["ABC"] = postData.PhaseABC,
+                ["ABCG"] = postData.PhaseABCG
+            };
 
-            if (postData.PhaseA && postData.PhaseB && postData.PhaseC)
+            bool allTrue = true;
+            bool allFalse = true;
+            foreach (var value in phases.Values) 
+            {
+                if (value)
+                {
+                    allFalse = false;
+                }
+                else
+                {
+                    allTrue = false;
+                }
+            }
+            if (allTrue || allFalse)
+            {
                 return "";
-            if (!postData.PhaseA && !postData.PhaseB && !postData.PhaseC)
-                return "";
-
-            if (postData.PhaseA)
-            {
-                phase.Add("(SELECT Phase.Name FROM Disturbance LEFT JOIN Phase ON Disturbance.PhaseID = Phase.ID WHERE Disturbance.ID = EventWorstDisturbance.WorstDisturbanceID) IN ('AN','AB','CA')");
-                phase.Add("FaultSummary.FaultType IN ('AN','AB','CA', 'ABG', 'CAG', 'ABC', 'ABCG')");
-            }
-            if (postData.PhaseB)
-            {
-                phase.Add("(SELECT Phase.Name FROM Disturbance LEFT JOIN Phase ON Disturbance.PhaseID = Phase.ID WHERE Disturbance.ID = EventWorstDisturbance.WorstDisturbanceID) IN ('BN','AB','BC')");
-                phase.Add("FaultSummary.FaultType IN ('BN','AB','BC', 'ABG', 'BCG', 'ABC', 'ABCG')");
-            }
-            if (postData.PhaseC)
-            {
-                phase.Add("(SELECT Phase.Name FROM Disturbance LEFT JOIN Phase ON Disturbance.PhaseID = Phase.ID WHERE Disturbance.ID = EventWorstDisturbance.WorstDisturbanceID) IN ('CN','BC','CA')");
-                phase.Add("FaultSummary.FaultType IN ('CN','BC','CA', 'BCG', 'CAG', 'ABC', 'ABCG')");
             }
 
-
+            foreach (var item in phases) 
+            {
+                if (item.Value) 
+                {
+                    phase.Add($"(SELECT Phase.Name FROM Disturbance LEFT JOIN Phase ON Disturbance.PhaseID = Phase.ID WHERE Disturbance.ID = EventWorstDisturbance.WorstDisturbanceID) = '{item.Key}'");
+                    phase.Add($"FaultSummary.FaultType = '{item.Key}'");
+                }
+            }
 
             return string.Join(" OR ", phase);
         }
