@@ -336,7 +336,7 @@ const EventSearchNavbar = (props: IProps) => {
                                             <MultiCheckBoxSelect
                                                 Options={ newPhases }
                                                 OnChange={
-                                                    (Options: { Value: number; Text: string; Selected: boolean; }[]) => { 
+                                                    (evt, Options: { Value: number; Text: string; Selected: boolean; }[]) => { 
                                                         var records = [...newPhases]
                                                         for (const option of Options) {
                                                             const index = records.findIndex(r => r.Value == option.Value)
