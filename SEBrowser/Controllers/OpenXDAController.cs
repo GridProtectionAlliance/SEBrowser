@@ -138,52 +138,52 @@ namespace SEBrowser.Controllers
                 filters += $"{(string.IsNullOrEmpty(asset) ? "" : $"AND {asset}")}";
 
                 string query =
-                    $"SELECT  " +
-                    $"    [SEBrowser.EventSearchEventView].*, " +
-                    $"    [SEBrowser.EventSearchDetailsView].* " +
-                    $"FROM " +
-                    $"    ( " +
-                    $"        SELECT TOP {postData.numberResults ?? "100"} " +
-                    $"            Event.ID EventID, " +
-                    $"            EventWorstDisturbance.WorstDisturbanceID DisturbanceID, " +
-                    $"            FaultSummary.FaultNumber FaultID " +
-                    $"        FROM " +
-                    $"            Event JOIN " +
-                    $"            EventType ON Event.EventTypeID = EventType.ID LEFT OUTER JOIN " +
-                    $"            EventWorstDisturbance ON " +
-                    $"                EventWorstDisturbance.EventID = Event.ID AND " +
-                    $"                EventType.Name IN ('Sag', 'Swell', 'Interruption', 'Transient') LEFT OUTER JOIN " +
-                    $"            FaultGroup ON " +
-                    $"                FaultGroup.EventID = Event.ID AND " +
-                    $"                COALESCE(FaultGroup.FaultDetectionLogicResult, 0) <> 0 LEFT OUTER JOIN " +
-                    $"            FaultSummary ON " +
-                    $"                FaultSummary.EventID = Event.ID AND " +
-                    $"                FaultSummary.IsSelectedAlgorithm <> 0 AND " +
-                    $"                ( " +
-                    $"                    FaultGroup.ID IS NOT NULL OR " +
-                    $"                    ( " +
-                    $"                        FaultSummary.IsValid <> 0 AND " +
-                    $"                        FaultSummary.IsSuppressed = 0 " +
-                    $"                    ) " +
-                    $"                ) AND " +
-                    $"                EventType.Name IN ('Fault', 'RecloseIntoFault') " +
-                    $"        WHERE " +
-                    $"            ({getTimeFilter(postData)}) AND " +
-                    $"            ( " +
-                    $"                EventWorstDisturbance.ID IS NOT NULL OR " +
-                    $"                FaultSummary.ID IS NOT NULL OR " +
-                    $"                EventType.Name IN ('BreakerOpen', 'Other') " +
-                    $"            ) " +
-                    $"            {filters} " +
-                    $"    ) Main LEFT JOIN " +
-                    $"    [SEBrowser.EventSearchEventView] ON Main.EventID = [SEBrowser.EventSearchEventView].EventID Inner JOIN     " +
-                    $"    [SEBrowser.EventSearchDetailsView] ON " +
-                    $"        Main.EventID = [SEBrowser.EventSearchDetailsView].EventID AND " +
-                    $"        ( " +
-                    $"            (Main.DisturbanceID IS NOT NULL AND [SEBrowser.EventSearchDetailsView].DisturbanceID = Main.DisturbanceID) OR " +
-                    $"            (Main.FaultID IS NOT NULL AND [SEBrowser.EventSearchDetailsView].FaultID = Main.FaultID) OR " +
-                    $"            (COALESCE([SEBrowser.EventSearchDetailsView].DisturbanceID, Main.DisturbanceID) IS NULL AND COALESCE([SEBrowser.EventSearchDetailsView].FaultID, Main.FaultID) IS NULL) " +
-                    $"        )";
+                    $@"SELECT  
+                        [SEBrowser.EventSearchEventView].*, 
+                        [SEBrowser.EventSearchDetailsView].* 
+                    FROM 
+                        ( 
+                            SELECT TOP {postData.numberResults ?? "100"} 
+                                Event.ID EventID, 
+                                EventWorstDisturbance.WorstDisturbanceID DisturbanceID, 
+                                FaultSummary.FaultNumber FaultID 
+                            FROM 
+                                Event JOIN 
+                                EventType ON Event.EventTypeID = EventType.ID LEFT OUTER JOIN 
+                                EventWorstDisturbance ON 
+                                    EventWorstDisturbance.EventID = Event.ID AND 
+                                    EventType.Name IN ('Sag', 'Swell', 'Interruption', 'Transient') LEFT OUTER JOIN 
+                                FaultGroup ON 
+                                    FaultGroup.EventID = Event.ID AND 
+                                    COALESCE(FaultGroup.FaultDetectionLogicResult, 0) <> 0 LEFT OUTER JOIN 
+                                FaultSummary ON 
+                                    FaultSummary.EventID = Event.ID AND 
+                                    FaultSummary.IsSelectedAlgorithm <> 0 AND 
+                                    ( 
+                                        FaultGroup.ID IS NOT NULL OR 
+                                        ( 
+                                            FaultSummary.IsValid <> 0 AND 
+                                            FaultSummary.IsSuppressed = 0 
+                                        ) 
+                                    ) AND 
+                                    EventType.Name IN ('Fault', 'RecloseIntoFault') 
+                            WHERE 
+                                ({getTimeFilter(postData)}) AND 
+                                ( 
+                                    EventWorstDisturbance.ID IS NOT NULL OR 
+                                    FaultSummary.ID IS NOT NULL OR 
+                                    EventType.Name IN ('BreakerOpen', 'Other') 
+                                ) 
+                                {filters} 
+                        ) Main LEFT JOIN 
+                        [SEBrowser.EventSearchEventView] ON Main.EventID = [SEBrowser.EventSearchEventView].EventID Inner JOIN     
+                        [SEBrowser.EventSearchDetailsView] ON 
+                            Main.EventID = [SEBrowser.EventSearchDetailsView].EventID AND 
+                            ( 
+                                (Main.DisturbanceID IS NOT NULL AND [SEBrowser.EventSearchDetailsView].DisturbanceID = Main.DisturbanceID) OR 
+                                (Main.FaultID IS NOT NULL AND [SEBrowser.EventSearchDetailsView].FaultID = Main.FaultID) OR 
+                                (COALESCE([SEBrowser.EventSearchDetailsView].DisturbanceID, Main.DisturbanceID) IS NULL AND COALESCE([SEBrowser.EventSearchDetailsView].FaultID, Main.FaultID) IS NULL) 
+                            )";
 
                 DataTable table = connection.RetrieveData(query, dateTime);
 
@@ -225,7 +225,6 @@ namespace SEBrowser.Controllers
 
         private string getPhaseFilter(EventSearchPostData postData)
         {
-            List<string> phase = new List<string>();
             Dictionary<string, bool> phases = new Dictionary<string, bool> 
             {
                 ["AN"] = postData.PhaseAN,
@@ -257,16 +256,16 @@ namespace SEBrowser.Controllers
                 return "";
             }
 
+            string phaseCombined = "";
             foreach (var item in phases) 
             {
                 if (item.Value) 
                 {
-                    phase.Add($"(SELECT Phase.Name FROM Disturbance LEFT JOIN Phase ON Disturbance.PhaseID = Phase.ID WHERE Disturbance.ID = EventWorstDisturbance.WorstDisturbanceID) = '{item.Key}'");
-                    phase.Add($"FaultSummary.FaultType = '{item.Key}'");
+                    phaseCombined += ("\'" + item.Key + "\', ");
                 }
             }
-
-            return string.Join(" OR ", phase);
+            phaseCombined = phaseCombined.Substring(0, phaseCombined.Length - 2);
+            return $"Event.ID in (SELECT Disturbance.EventID FROM phase left join Disturbance ON Disturbance.phaseID = phase.ID WHERE phase.NAME IN ( {phaseCombined} ))";
         }
 
         private string getEventCharacteristicFilter(EventSearchPostData postData)
