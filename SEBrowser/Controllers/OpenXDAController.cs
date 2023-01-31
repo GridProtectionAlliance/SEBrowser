@@ -265,7 +265,7 @@ namespace SEBrowser.Controllers
                 }
             }
             phaseCombined = phaseCombined.Substring(0, phaseCombined.Length - 2);
-            return $"(SELECT Phase.Name FROM Disturbance LEFT JOIN Phase ON Disturbance.PhaseID = Phase.ID WHERE Disturbance.ID = EventWorstDisturbance.WorstDisturbanceID) IN ({phaseCombined}) OR FaultSummary.FaultType IN ({phaseCombined})";
+            return $"(Event.ID in (SELECT Disturbance.EventID FROM Disturbance WHERE Disturbance.PhaseID IN (SELECT Phase.ID FROM Phase WHERE Phase.Name IN ({phaseCombined}))) OR FaultSummary.FaultType IN ({phaseCombined}))";
         }
 
         private string getEventCharacteristicFilter(EventSearchPostData postData)
