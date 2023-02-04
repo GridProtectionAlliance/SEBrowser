@@ -28,7 +28,7 @@ import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SelectAssetGroupList, SelectAssetList, SelectCharacteristicFilter, SelectMeterList, SelectReset, SelectStationList, SelectTimeFilter, SelectTypeFilter, SetFilterLists } from './EventSearchSlice';
-import { ResetFilters,  SetFilters, FetchEventSearches } from './EventSearchSlice';
+import { ResetFilters,  SetFilters } from './EventSearchSlice';
 import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice, MagDurCurveSlice, EventTypeSlice } from '../../Store';
 import { DefaultSelects } from '@gpa-gemstone/common-pages';
 import EventSearchFilterButton from './EventSearchbarFilterButton';
@@ -36,10 +36,12 @@ import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { Input, Select, EnumCheckBoxes } from '@gpa-gemstone/react-forms';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { SEBrowser, Redux } from '../../Global';
+import EventSearchTypeFilters from './EventSearchTypeFilter';
 
 interface IProps {
     toggleVis: () => void,
     showNav: boolean,
+    setHeight: (h: number) => void
 }
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
@@ -47,6 +49,8 @@ const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
 
 const EventSearchNavbar = (props: IProps) => {
+    const navRef = React.useRef(null);
+
     const dispatch = useAppDispatch();
     const eventCharacteristicFilter = useAppSelector(SelectCharacteristicFilter);
     const timeFilter = useAppSelector(SelectTimeFilter);
@@ -65,12 +69,16 @@ const EventSearchNavbar = (props: IProps) => {
 
     const reset = useAppSelector(SelectReset);
 
+    const [height, setHeight] = React.useState<number>(0);
     
     const [showFilter, setFilter] = React.useState<('None' | 'Meter' | 'Asset' | 'AssetGroup' | 'Station')>('None');
     const [newEventCharacteristicFilter, setNewEventCharacteristicFilter] = React.useState<SEBrowser.IEventCharacteristicFilters>(null);
     const [newTimeFilter, setNewTimeFilter] = React.useState<SEBrowser.IReportTimeFilter>(null);
     const [newTypeFilter, setNewTypeFilter] = React.useState<number[]>(null);
     const lineNeutralOptions = [{ Value: 'LL', Label: 'LL' }, { Value: 'LN', Label: 'LN' }, { Value: 'both', Label: 'LL/LN' }];
+
+    React.useLayoutEffect(() => setHeight(navRef?.current?.offsetHeight ?? 0))
+    React.useEffect(() => props.setHeight(height), [height])
 
     React.useEffect(() => { setNewTypeFilter(eventTypeFilter) }, [eventTypeFilter])
     React.useEffect(() => { setNewEventCharacteristicFilter(eventCharacteristicFilter) }, [eventCharacteristicFilter])
@@ -222,49 +230,14 @@ const EventSearchNavbar = (props: IProps) => {
 
     return (
         <>
-        <nav className="navbar navbar-expand-xl navbar-light bg-light">
+            <nav className="navbar navbar-expand-xl navbar-light bg-light" ref={navRef}>
 
             <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                 <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                     <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
                             <ReportTimeFilter filter={newTimeFilter} setFilter={setNewTimeFilter} showQuickSelect={true} />
-                    </li>
-                        <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
-                            {Object.keys(evtTypeGrps).map((cat) => (
-                                <fieldset className="border" style={{ padding: '10px' }} key={cat}>
-                                    <legend className="w-auto" style={{ fontSize: 'large' }}>{(cat != null && cat.length > 0 ? cat : 'Other Types')}:
-                                        <a style={{ fontSize: 'small', color: '#0056b3', marginLeft: 2 }}
-                                            onClick={() => {
-                                                const isSelected = evtTypeGrps[cat].filter(item => newTypeFilter.find(i => i == item.ID) == null).length  == 0;
-                                                if (isSelected)
-                                                    setNewTypeFilter((d) => d.filter(t => evtTypeGrps[cat].find(i => i.ID == t) == null))
-                                                else
-                                                    setNewTypeFilter((d) => _.uniq([...d, ...evtTypeGrps[cat].map(i => i.ID)]))
-                                            }}>
-                                            ({evtTypeGrps[cat].filter(item => newTypeFilter.find(i => i == item.ID) == null).length == 0 ? 'un' : ''}select all)
-                                        </a>
-                                    </legend>
-                                    <form>
-                                        <ul style={{ listStyleType: 'none', padding: 0, position: 'relative', float: 'left' }}>
-                                            {evtTypeGrps[cat].map((item) => (
-                                                <li key={item.ID}>
-                                                    <label>
-                                                        <input type="checkbox"
-                                                            onChange={(e) => {
-                                                                if (e.target.checked)
-                                                                    setNewTypeFilter((d) => [...d,item.ID])
-                                                                else
-                                                                    setNewTypeFilter((d) => d.filter(t => t != item.ID))
-                                                            }} checked={newTypeFilter.find(i => i == item.ID) != null} />
-                                                        {item.Description}
-                                                    </label>
-                                                </li>
-                                                ))}
-                                        </ul>
-                                    </form>
-                                </fieldset>
-                                ))}                        
-                    </li>
+                        </li>
+                        <EventSearchTypeFilters Height={height} />
                     <li className="nav-item" style={{ width: '45%', paddingRight: 10 }}>
                         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                             <legend className="w-auto" style={{ fontSize: 'large' }}>Event Characteristics:</legend>
@@ -473,7 +446,7 @@ const EventSearchNavbar = (props: IProps) => {
             </nav>
 
                     <DefaultSelects.Meter
-                        Slice={MeterSlice}
+                        Slice={MeterSlice as any}
                         Selection={meterList}
                         OnClose={(selected, conf) => {
                             setFilter('None');
@@ -496,7 +469,7 @@ const EventSearchNavbar = (props: IProps) => {
                         GetEnum={getEnum}
                         GetAddlFields={getAdditionalMeterFields} />
                 <DefaultSelects.Asset
-                        Slice={AssetSlice}
+                        Slice={AssetSlice as any}
                         Selection={assetList}
                         OnClose={(selected, conf) => {
                             setFilter('None');
@@ -516,8 +489,8 @@ const EventSearchNavbar = (props: IProps) => {
                         Title={"Filter by Asset"}
                         GetEnum={getEnum}
                         GetAddlFields={getAdditionalAssetFields} />
-                    <DefaultSelects.Location 
-                        Slice={LocationSlice}
+            <DefaultSelects.Location
+                Slice={LocationSlice as any}
                         Selection={locationList}
                         OnClose={(selected, conf) => {
                             setFilter('None');
@@ -538,7 +511,7 @@ const EventSearchNavbar = (props: IProps) => {
                     GetEnum={getEnum}
                     GetAddlFields={() => { return () => { } }} />
                 <DefaultSelects.AssetGroup
-                    Slice={AssetGroupSlice}
+                    Slice={AssetGroupSlice as any}
                     Selection={assetGroupList}
                     OnClose={(selected, conf) => {
                         setFilter('None');

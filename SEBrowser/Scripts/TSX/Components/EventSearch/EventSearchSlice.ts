@@ -188,11 +188,14 @@ export const EventSearchsSlice = createSlice({
             state.isReset = computeReset(state);
             state.Status = 'changed';
         },
-        SetFilters: (state, action: PayloadAction<{ characteristics: SEBrowser.IEventCharacteristicFilters, types: number[], time: SEBrowser.IReportTimeFilter }>) => {
+        SetFilters: (state, action: PayloadAction<{ characteristics?: SEBrowser.IEventCharacteristicFilters, types?: number[], time?: SEBrowser.IReportTimeFilter}>) => {
             state.Status = 'changed';
-            state.TimeRange = action.payload.time;
-            state.EventType = action.payload.types;
-            state.EventCharacteristic = action.payload.characteristics;
+            if (action.payload.time !== undefined)
+                state.TimeRange = action.payload.time;
+            if(action.payload.types !== undefined)
+                state.EventType = action.payload.types;
+            if (action.payload.characteristics !== undefined)
+                state.EventCharacteristic = action.payload.characteristics;
             state.isReset = computeReset(state);
         },
         ResetFilters: (state, action: PayloadAction<void>) => {
