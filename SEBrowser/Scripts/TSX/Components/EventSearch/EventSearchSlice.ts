@@ -104,6 +104,30 @@ export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async 
     }));
 });
 
+export const SetFilters = createAsyncThunk('EventSearchs/SetFilters', async (args: {
+    characteristics?: SEBrowser.IEventCharacteristicFilters,
+    types?: number[],
+    time?: SEBrowser.IReportTimeFilter
+}, { dispatch, getState }) => {
+    let state = getState() as Redux.StoreState;
+    if (state.EventType.Status == 'unintiated')
+        await dispatch(EventTypeSlice.Fetch());
+    state = getState() as Redux.StoreState;
+    return dispatch(EventSearchsSlice.actions.SetFilters({ ...args, eventTypes: state.EventType.Data }));
+});
+
+export const SetFilterLists = createAsyncThunk('EventSearchs/SetFilterLists', async (args: {
+    Meters: SystemCenter.Types.DetailedMeter[],
+    Assets: SystemCenter.Types.DetailedAsset[],
+    Groups: OpenXDA.Types.AssetGroup[],
+    Stations: SystemCenter.Types.DetailedLocation[],
+}, { dispatch, getState }) => {
+    let state = getState() as Redux.StoreState;
+    if (state.EventType.Status == 'unintiated')
+        await dispatch(EventTypeSlice.Fetch());
+    state = getState() as Redux.StoreState;
+    return dispatch(EventSearchsSlice.actions.SetFilterLists({ ...args, eventTypes: state.EventType.Data }));
+});
 // #endregion
 
 // #region [ Slice ]
@@ -154,7 +178,7 @@ export const EventSearchsSlice = createSlice({
             state.TimeRange.windowSize = parseFloat(action.payload.query['windowSize']?.toString() ?? state.TimeRange.windowSize.toString());
             state.TimeRange.timeWindowUnits = parseInt(action.payload.query['timeWindowUnits']?.toString() ?? state.TimeRange.timeWindowUnits.toString());
 
-            state.EventType = parseList('types', action.payload.query)?.map(id => action.payload.typeIDs.find(item => item.ID == parseInt(id))).filter(item => item != null).map(t => t.ID) ?? action.payload.typeIDs.map(t => t.ID);
+            state.EventType = parseList('types', action.payload.query)?.map(id => action.payload.typeIDs.find(item => item.ID == parseInt(id))).filter(item => item != null).map(t => t.ID) ?? action.payload.typeIDs.filter(item => item.ShowInFilter).map(t => t.ID);
 
             state.SelectedAssets = parseList('assets', action.payload.query)?.map(id => action.payload.assets.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
             state.SelectedGroups = parseList('groups', action.payload.query)?.map(id => action.payload.groups.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
@@ -185,10 +209,10 @@ export const EventSearchsSlice = createSlice({
             state.EventCharacteristic.Phase.B = (action.payload.query['PhaseB'] ?? 'true') == 'true';
             state.EventCharacteristic.Phase.C = (action.payload.query['PhaseC'] ?? 'true') == 'true';
 
-            state.isReset = computeReset(state);
+            state.isReset = computeReset(state, action.payload.typeIDs);
             state.Status = 'changed';
         },
-        SetFilters: (state, action: PayloadAction<{ characteristics?: SEBrowser.IEventCharacteristicFilters, types?: number[], time?: SEBrowser.IReportTimeFilter}>) => {
+        SetFilters: (state, action: PayloadAction<{ eventTypes: SEBrowser.EventType[], characteristics?: SEBrowser.IEventCharacteristicFilters, types?: number[], time?: SEBrowser.IReportTimeFilter }>) => {
             state.Status = 'changed';
             if (action.payload.time !== undefined)
                 state.TimeRange = action.payload.time;
@@ -196,7 +220,7 @@ export const EventSearchsSlice = createSlice({
                 state.EventType = action.payload.types;
             if (action.payload.characteristics !== undefined)
                 state.EventCharacteristic = action.payload.characteristics;
-            state.isReset = computeReset(state);
+            state.isReset = computeReset(state, action.payload.eventTypes);
         },
         ResetFilters: (state, action: PayloadAction<void>) => {
             state.EventCharacteristic = {
@@ -214,14 +238,15 @@ export const EventSearchsSlice = createSlice({
         },
         SetFilterLists: (state, action: PayloadAction<{
             Meters: SystemCenter.Types.DetailedMeter[],
-            Assets: SystemCenter.Types.DetailedAsset[], Groups: OpenXDA.Types.AssetGroup[], Stations: SystemCenter.Types.DetailedLocation[]
+            Assets: SystemCenter.Types.DetailedAsset[], Groups: OpenXDA.Types.AssetGroup[], Stations: SystemCenter.Types.DetailedLocation[],
+            eventTypes: SEBrowser.EventType[]
         }>) => {
             state.SelectedStations = action.payload.Stations;
             state.SelectedMeters = action.payload.Meters;
             state.SelectedGroups = action.payload.Groups;
             state.SelectedAssets = action.payload.Assets;
 
-            state.isReset = computeReset(state);
+            state.isReset = computeReset(state, action.payload.eventTypes);
             state.Status = 'changed';
         }
     },
@@ -253,7 +278,7 @@ export const EventSearchsSlice = createSlice({
 // #endregion
 
 // #region [ Selectors ]
-export const { Sort, SetFilters, ResetFilters, SetFilterLists } = EventSearchsSlice.actions;
+export const { Sort, ResetFilters } = EventSearchsSlice.actions;
 
 export default EventSearchsSlice.reducer;
 export const SelectEventSearchs = (state: Redux.StoreState) => state.EventSearch.Data;
@@ -300,7 +325,7 @@ function GetEventSearchs(params: any): JQuery.jqXHR<any[]> {
     });
 }
 
-function computeReset(state: Redux.EventSearchState): boolean {
+function computeReset(state: Redux.EventSearchState, eventTypes: SEBrowser.EventType[]): boolean {
     const event = state.EventCharacteristic.durationMax == 0 && state.EventCharacteristic.durationMin == 0 &&
         state.EventCharacteristic.transientMin == 0 && state.EventCharacteristic.transientMax == 0 &&
         state.EventCharacteristic.sagMin == 0 && state.EventCharacteristic.sagMax == 0 &&
@@ -308,9 +333,7 @@ function computeReset(state: Redux.EventSearchState): boolean {
         state.EventCharacteristic.Phase.A && state.EventCharacteristic.Phase.B && state.EventCharacteristic.Phase.C &&
         state.EventCharacteristic.curveInside && state.EventCharacteristic.curveOutside;
 
-    const types = false; //state.EventType.breakerOps && state.EventType.faults && state.EventType.interruptions && state.EventType.others
-        //&& state.EventType.relayTCE && state.EventType.swells && state.EventType.sags && state.EventType.transients;
-
+    const types = eventTypes.length == eventTypes.filter(e => e.ShowInFilter).length;
     return event && types && state.SelectedAssets.length == 0 && state.SelectedStations.length == 0 && state.SelectedMeters.length == 0 && state.SelectedGroups.length == 0;
 }
 
