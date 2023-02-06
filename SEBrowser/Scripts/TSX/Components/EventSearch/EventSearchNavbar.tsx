@@ -75,7 +75,7 @@ const EventSearchNavbar = (props: IProps) => {
     const [eventSearchSettings, setEventSearchSettings] = React.useState<Redux.SettingsState>(eventSearchSettingsState)
 
     const phasesMultiSelect = ["AN", "BN", "CN", "AB", "BC", "CA", "ABG", "BCG", "ABC", "ABCG"].map((phase, i = 0) => ({ Value: i++, Text: phase, Selected: true }))
-    const [newPhasesMultiSelect, setNewPhasesMultiSelect] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>(phasesMultiSelect)
+    const [newPhases, setNewPhases] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>(phasesMultiSelect)
 
     React.useEffect(() => {
         setNewEventCharacteristicFilter(eventCharacteristicFilter);
@@ -95,7 +95,7 @@ const EventSearchNavbar = (props: IProps) => {
                 time: newTimeFilter,
                 types: newTypeFilter
             }));
-    }, [newEventCharacteristicFilter, newTimeFilter, newTypeFilter]);
+    }, [newEventCharacteristicFilter, newTimeFilter, newTypeFilter, newPhases]);
 
     React.useEffect(() => {
         dispatch(SetSettingsNumberResults({
@@ -333,28 +333,27 @@ const EventSearchNavbar = (props: IProps) => {
                                     </div>
                                     <div className={"col-4"}>
                                         <form>
+                                            <label style={{ margin: 0 }}>Phase:</label>
                                             <MultiCheckBoxSelect
-                                                Options= {newPhasesMultiSelect}
+                                                Options= {newPhases}
                                                 OnChange={
                                                     (evt, Options: { Value: number; Text: string; Selected: boolean; }[]) => { 
-                                                        var records = [...newPhasesMultiSelect]
-                                                        for (const option of Options) {
-                                                            const index = records.findIndex(r => r.Value == option.Value)
-                                                            records[index].Selected = !records[index].Selected
-                                                            const currentPhase = records[index].Text
-                                                            setNewEventCharacteristicFilter({
-                                                                ...newEventCharacteristicFilter,
-                                                                phases: {
-                                                                    ...newEventCharacteristicFilter.phases,
-                                                                    [currentPhase]: !newEventCharacteristicFilter.phases[currentPhase]
-                                                                }
-                                                            });
-                                                        }
-                                                        setNewPhasesMultiSelect(records)
+                                                        setNewPhases([...newPhases].map((record) => {
+                                                            if (Options.some(option => option.Value === record.Value)) {
+                                                                record.Selected = !record.Selected
+                                                                setNewEventCharacteristicFilter({
+                                                                    ...newEventCharacteristicFilter,
+                                                                    phases: {
+                                                                        ...newEventCharacteristicFilter.phases,
+                                                                        [record.Text]: !newEventCharacteristicFilter.phases[record.Text]
+                                                                    }
+                                                                })
+                                                            }
+                                                            return record
+                                                        }))
                                                     }
                                                 }
-                                            />
-                                            <label style={{ margin: 0 }}>Phase:</label>
+                                            /> 
                                         </form>   
                                     </div>
                                     
