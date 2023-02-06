@@ -182,7 +182,7 @@ export default function EventSearchOpenSEE(props: { EventID: number }) {
                     defaultTdomain={VLim}
                     legend={'right'}
                     Tlabel={'Time'}
-                    Ylabel={'Voltage (kV)'} showMouse={false} zoom={false} pan={false} useMetricFactors={false}>
+                    Ylabel={'Voltage (V)'} showMouse={false} zoom={false} pan={false} useMetricFactors={false}>
                     {VData.map((s, i) => <Line highlightHover={false} showPoints={false} lineStyle={'-'} color={getColor(s.label)} data={s.data} legend={s.label} key={i} />)}
                 </Plot> : null}
                 {IData.length > 0 ? < Plot height={250} width={Width} showBorder={false}
