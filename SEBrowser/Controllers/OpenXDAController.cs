@@ -257,7 +257,7 @@ namespace SEBrowser.Controllers
 
             string phaseCombined = string.Join(", ", phases.Where(item => item.Value).Select(item => "\'" + item.Key + "\'"));
 
-            return $"(Event.ID in (SELECT Disturbance.EventID FROM Disturbance WHERE Disturbance.PhaseID IN (SELECT Phase.ID FROM Phase WHERE Phase.Name IN ({phaseCombined}))) OR FaultSummary.FaultType IN ({phaseCombined}))";
+            return $"(EventWorstDisturbance.WorstDisturbanceID IN (SELECT Disturbance.ID FROM Disturbance WHERE Disturbance.PhaseID IN (Select Phase.ID FROM Phase Where Phase.Name IN ({phaseCombined}))) OR FaultSummary.FaultType IN ({phaseCombined}))";
         }
 
         private string getEventCharacteristicFilter(EventSearchPostData postData)
