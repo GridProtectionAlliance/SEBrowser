@@ -417,8 +417,6 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchFileInfo.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchNoteWindow.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchOpenSEE.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewD3Chart.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewD3ChartAxis.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewPane.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\LineParameters.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchTypeFilter.tsx" />
