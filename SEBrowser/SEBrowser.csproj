@@ -421,7 +421,8 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewD3ChartAxis.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewPane.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\LineParameters.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSettingsSlice.ts" />
+    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchTypeFilter.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\SettingsSlice.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventNoteSlice.ts" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\HECCO\InterruptionReport.tsx" />
@@ -430,6 +431,7 @@
     <None Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
     <None Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisReport.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\hooks.ts" />
+    <Content Include="Scripts\TSX\Settings.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Store.ts" />
   </ItemGroup>
   <PropertyGroup>

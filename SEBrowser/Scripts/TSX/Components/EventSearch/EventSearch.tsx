@@ -34,6 +34,7 @@ import EventSearchMagDur from './EventSearchMagDur';
 import { ProcessQuery, SelectEventList, SelectQueryParam } from './EventSearchSlice';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
+import { SplitSection, VerticalSplit } from '@gpa-gemstone/react-interactive';
 
 interface IProps { }
 
@@ -48,6 +49,7 @@ const EventSearch = (props: IProps) => {
     const [initialTab, setInitialTab] = React.useState<tab>(undefined);
     const [showMagDur, setShowMagDur] = React.useState<boolean>(false);
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
+    const [navHeight, setNavHeight] = React.useState<number>(0);
 
     const queryParam = useAppSelector(SelectQueryParam);
     const evtList = useAppSelector(SelectEventList);
@@ -92,31 +94,39 @@ const EventSearch = (props: IProps) => {
             <EventSearchNavbar
                 toggleVis={() => setShowNav((c) => !c)}
                 showNav={showNav}
+                setHeight={setNavHeight}
             />
-            <div style={{ width: '100%', height: (showNav ? 'calc(100% - 400px)' : 'calc( 100% - 52px)')}}>
-                <div style={{ width: '50%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
-                    <div style={{ width: 'calc(100% - 300px)', padding: 10, float: 'left' }}>
-                    </div>
-                    <div style={{ width: 120, float: 'right', padding: 10 }}>
-                        <EventSearchListedEventsNoteWindow />
-                    </div>
-                    <div style={{ width: 160, float: 'right', padding: 10 }}>
-                        <button className='btn btn-danger' onClick={() => setShowMagDur((c) => !c)} > View As {showMagDur ? 'List' : 'Mag/Dur'}</button>
-                    </div>
-                    {showMagDur ?
-                        <EventSearchMagDur Width={(window.innerWidth - 300) / 2}
-                            Height={window.innerHeight - ((showNav? 400 : 52) + 70)}
-                            EventID={eventId}
-                            OnSelect={(evt, point) => setEventId(point.EventID)}
-                        /> :
-                        <EventSearchList eventid={eventId} selectEvent={setEventId} height={window.innerHeight - ((showNav ? 390 : 52))}/>
-                    }
-                </div>
-                <div style={{ width: '50%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
-                    <EventPreviewPane EventID={eventId} InitialTab={initialTab} />
-                </div>
-
-            </div>
+            <VerticalSplit style={{ width: '100%', height: (showNav ? 'calc(100% - ' + navHeight + 'px)': 'calc( 100% - 52px)') }}>
+                    <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
+                        <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
+                            <div style={{ width: 'calc(100% - 300px)', padding: 10, float: 'left' }}>
+                            </div>
+                            <div style={{ width: 120, float: 'right', padding: 10 }}>
+                                <EventSearchListedEventsNoteWindow />
+                            </div>
+                            <div style={{ width: 160, float: 'right', padding: 10 }}>
+                            <button className='btn btn-danger' onClick={() => setShowMagDur((c) => !c)} >
+                                View As {showMagDur ? 'List' : 'Mag/Dur'}
+                            </button>
+                            </div>
+                            {showMagDur ?
+                                <EventSearchMagDur Width={(window.innerWidth - 300) / 2}
+                                Height={window.innerHeight - ((showNav ? navHeight : 52) + 70)}
+                                    EventID={eventId}
+                                    OnSelect={(evt, point) => setEventId(point.EventID)}
+                                /> :
+                            <EventSearchList eventid={eventId}
+                                selectEvent={setEventId}
+                                height={window.innerHeight - ((showNav ? navHeight : 52))} />
+                            }
+                        </div>
+                    </SplitSection>
+                    <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
+                        <div style={{ width: '100%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
+                            <EventPreviewPane EventID={eventId} InitialTab={initialTab} />
+                        </div>
+                    </SplitSection>
+                </VerticalSplit>
         </div>
     );
 }

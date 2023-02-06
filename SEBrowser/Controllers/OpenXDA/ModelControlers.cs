@@ -39,6 +39,9 @@ namespace SEBrowser.Controllers.OpenXDA
     [RoutePrefix("api/openXDA/AssetGroup")]
     public class OpenXDAAssetGroupController : ModelController<AssetGroupView> { }
 
+    [RoutePrefix("api/openXDA/EventType")]
+    public class EventTypeController : ModelController<EventType> { }
+
     [RoutePrefix("api/openXDA/Asset")]
     public class OpenXDAAssetController : DetailedAssetController<DetailedAsset> { }
 
