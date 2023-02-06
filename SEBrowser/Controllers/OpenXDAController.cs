@@ -80,15 +80,7 @@ namespace SEBrowser.Controllers
             public int timeWindowUnits { get; set; }
             public double durationMin { get; set; }
             public double durationMax { get; set; }
-            public bool PhaseAN {get; set;}
-            public bool PhaseBN { get; set; }
-            public bool PhaseCN { get; set; }
-            public bool PhaseAB { get; set; }
-            public bool PhaseBC { get; set; }
-            public bool PhaseABG { get; set; }
-            public bool PhaseBCG { get; set; }
-            public bool PhaseABC { get; set; }
-            public bool PhaseABCG { get; set; }
+            public Phase phases { get; set; }
             public double transientMin { get; set; }
             public double transientMax { get; set; }
             public double sagMin { get; set; }
@@ -118,6 +110,20 @@ namespace SEBrowser.Controllers
             Week,
             Month,
             Year
+        }
+
+        public class Phase
+        {
+            public bool AN { get; set; }
+            public bool BN { get; set; }
+            public bool CN { get; set; }
+            public bool AB { get; set; }
+            public bool BC { get; set; }
+            public bool CA { get; set; }
+            public bool ABG { get; set; }
+            public bool BCG { get; set; }
+            public bool ABC { get; set; }
+            public bool ABCG { get; set; }
         }
 
         [Route("GetEventSearchData"), HttpPost]
@@ -227,44 +233,30 @@ namespace SEBrowser.Controllers
         {
             Dictionary<string, bool> phases = new Dictionary<string, bool> 
             {
-                ["AN"] = postData.PhaseAN,
-                ["BN"] = postData.PhaseBN,
-                ["CN"] = postData.PhaseCN,
-                ["AB"] = postData.PhaseAB,
-                ["BC"] = postData.PhaseBC,
-                ["ABG"] = postData.PhaseABG,
-                ["BCG"] = postData.PhaseBCG,
-                ["ABC"] = postData.PhaseABC,
-                ["ABCG"] = postData.PhaseABCG
+                ["AN"] = postData.phases.AN,
+                ["BN"] = postData.phases.BN,
+                ["CN"] = postData.phases.CN,
+                ["AB"] = postData.phases.AB,
+                ["BC"] = postData.phases.BC,
+                ["CA"] = postData.phases.CA,
+                ["ABG"] = postData.phases.ABG,
+                ["BCG"] = postData.phases.BCG,
+                ["ABC"] = postData.phases.ABC,
+                ["ABCG"] = postData.phases.ABCG
             };
 
-            bool allTrue = true;
-            bool allFalse = true;
-            foreach (var value in phases.Values) 
-            {
-                if (value)
-                {
-                    allFalse = false;
-                }
-                else
-                {
-                    allTrue = false;
-                }
-            }
-            if (allTrue || allFalse)
+            if (!phases.Any(item => !item.Value))   // all are true
             {
                 return "";
             }
 
-            string phaseCombined = "";
-            foreach (var item in phases) 
+            if (!phases.Any(item => item.Value))    // all are false
             {
-                if (item.Value) 
-                {
-                    phaseCombined += ("\'" + item.Key + "\', ");
-                }
+                return "(1=0)";
             }
-            phaseCombined = phaseCombined.Substring(0, phaseCombined.Length - 2);
+
+            string phaseCombined = string.Join(", ", phases.Where(item => item.Value).Select(item => "\'" + item.Key + "\'"));
+
             return $"(Event.ID in (SELECT Disturbance.EventID FROM Disturbance WHERE Disturbance.PhaseID IN (SELECT Phase.ID FROM Phase WHERE Phase.Name IN ({phaseCombined}))) OR FaultSummary.FaultType IN ({phaseCombined}))";
         }
 

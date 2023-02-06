@@ -74,8 +74,8 @@ const EventSearchNavbar = (props: IProps) => {
     const eventSearchSettingsState = useAppSelector(SelectSearchSettings)
     const [eventSearchSettings, setEventSearchSettings] = React.useState<Redux.SettingsState>(eventSearchSettingsState)
 
-    const phases = ["AN", "BN", "CN", "AB", "BC", "ABG", "BCG", "ABC", "ABCG"].map((phase, i = 0) => ({ Value: i++, Text: phase, Selected: true }))
-    const [newPhases, setPhases] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>(phases)
+    const phasesMultiSelect = ["AN", "BN", "CN", "AB", "BC", "CA", "ABG", "BCG", "ABC", "ABCG"].map((phase, i = 0) => ({ Value: i++, Text: phase, Selected: true }))
+    const [newPhasesMultiSelect, setNewPhasesMultiSelect] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>(phasesMultiSelect)
 
     React.useEffect(() => {
         setNewEventCharacteristicFilter(eventCharacteristicFilter);
@@ -334,23 +334,23 @@ const EventSearchNavbar = (props: IProps) => {
                                     <div className={"col-4"}>
                                         <form>
                                             <MultiCheckBoxSelect
-                                                Options={ newPhases }
+                                                Options= {newPhasesMultiSelect}
                                                 OnChange={
                                                     (evt, Options: { Value: number; Text: string; Selected: boolean; }[]) => { 
-                                                        var records = [...newPhases]
+                                                        var records = [...newPhasesMultiSelect]
                                                         for (const option of Options) {
                                                             const index = records.findIndex(r => r.Value == option.Value)
                                                             records[index].Selected = !records[index].Selected
                                                             const currentPhase = records[index].Text
                                                             setNewEventCharacteristicFilter({
                                                                 ...newEventCharacteristicFilter,
-                                                                Phase: {
-                                                                    ...newEventCharacteristicFilter.Phase,
-                                                                    [currentPhase]: !newEventCharacteristicFilter.Phase[currentPhase]
+                                                                phases: {
+                                                                    ...newEventCharacteristicFilter.phases,
+                                                                    [currentPhase]: !newEventCharacteristicFilter.phases[currentPhase]
                                                                 }
                                                             });
                                                         }
-                                                        setPhases(records)
+                                                        setNewPhasesMultiSelect(records)
                                                     }
                                                 }
                                             />
