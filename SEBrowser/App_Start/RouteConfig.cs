@@ -37,6 +37,24 @@ namespace SEBrowser
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             routes.MapRoute(
+                name: "LoginRoute",
+                url: "Login",
+                defaults: new { controller = "Login", action = "Index" }
+            );
+
+            routes.MapRoute(
+                name: "AuthTestRoute",
+                url: "AuthTest",
+                defaults: new { controller = "Login", action = "AuthTest" }
+            );
+
+            routes.MapRoute(
+                name: "LogoutRoute",
+                url: "Logout",
+                defaults: new { controller = "Login", action = "Logout" }
+            );
+
+            routes.MapRoute(
                 name: "Default",
                 url: "{page}/{id}",
                 defaults: new { controller = "Home", action = "Home", page = UrlParameter.Optional, id = UrlParameter.Optional }

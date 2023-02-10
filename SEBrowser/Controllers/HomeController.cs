@@ -21,7 +21,6 @@
 //
 //******************************************************************************************************
 
-using GSF.Web.Security;
 using SEBrowser.Model;
 using System.Web.Mvc;
 
@@ -32,17 +31,14 @@ namespace SEBrowser.Controllers
     /// </summary>
     public class HomeController : Controller
     {
-
-        public HomeController() {
+        public HomeController()
+        {
             ViewData.Model = new AppModel();
         }
-        #region [ Methods ]
+
         public ActionResult Home()
         {
             return View("Index");
         }
-
-
-        #endregion
     }
 }

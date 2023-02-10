@@ -21,20 +21,6 @@
 //
 //******************************************************************************************************
 
-
-using GSF;
-using GSF.Data.Model;
-using GSF.Web;
-using GSF.Web.Model;
-using System;
-using System.Web;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using Path = System.Web.VirtualPathUtility;
-using System.Web.Routing;
-
 namespace SEBrowser.Model
 {
     /// <summary>
@@ -45,8 +31,6 @@ namespace SEBrowser.Model
     /// </remarks>
     public class AppModel
     {
-        #region [ Constructors ]
-
         /// <summary>
         /// Creates a new <see cref="AppModel"/>.
         /// </summary>
@@ -55,27 +39,18 @@ namespace SEBrowser.Model
             Global = MvcApplication.DefaultModel != null ? MvcApplication.DefaultModel.Global : new GlobalSettings();
         }
 
-        #endregion
-
-        #region [ Properties ]
-
         /// <summary>
         /// Gets global settings for application.
         /// </summary>
         public GlobalSettings Global { get; }
-        #endregion
-
-        #region [ Methods ]
 
         public bool IsDebug()
         {
-#if DEBUG 
+        #if DEBUG 
             return true;
-#else
+        #else
             return false;
-#endif
-
+        #endif
         }
-        #endregion
     }
 }
