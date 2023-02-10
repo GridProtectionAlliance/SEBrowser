@@ -91,6 +91,15 @@
 </head>
 <body>
     <div id="pageBody"></div>
+    <p>
+        @this.UserID() Is @(this.UserIsAuthenticated() ? "" : "Not") Authenticated
+        <br />
+        <br />
+        Is Admin: @this.UserIsAdmin()
+        <br />
+        Is Admin or Editor: @this.UserIsAdminOrEditor()
+        <br />
+    </p>
     <script>
         var xdaInstance = '@Html.Raw(ViewBag.xdaInstance)';
         var scInstance = '@Html.Raw(ViewBag.scInstance)';
