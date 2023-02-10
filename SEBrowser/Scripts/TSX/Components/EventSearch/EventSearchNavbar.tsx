@@ -74,13 +74,15 @@ const EventSearchNavbar = (props: IProps) => {
     const eventSearchSettingsState = useAppSelector(SelectSearchSettings)
     const [eventSearchSettings, setEventSearchSettings] = React.useState<Redux.SettingsState>(eventSearchSettingsState)
 
-    const phasesMultiSelect = ["AN", "BN", "CN", "AB", "BC", "CA", "ABG", "BCG", "ABC", "ABCG"].map((phase, i = 0) => ({ Value: i++, Text: phase, Selected: true }))
-    const [newPhases, setNewPhases] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>(phasesMultiSelect)
+    const [newPhases, setNewPhases] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([]);
 
     React.useEffect(() => {
         setNewEventCharacteristicFilter(eventCharacteristicFilter);
         setNewTimeFilter(timeFilter);
         setNewTypeFilter(eventTypeFilter);
+        let setupPhases: { Value: number, Text: string, Selected: boolean }[] = [];
+        Object.keys(eventCharacteristicFilter.phases).forEach((key, index) => setupPhases.push({ Value: index, Text: key, Selected: eventCharacteristicFilter.phases[key] }));
+        setNewPhases(setupPhases);
     }, []);
 
     React.useEffect(() => {
@@ -95,7 +97,7 @@ const EventSearchNavbar = (props: IProps) => {
                 time: newTimeFilter,
                 types: newTypeFilter
             }));
-    }, [newEventCharacteristicFilter, newTimeFilter, newTypeFilter, newPhases]);
+    }, [newEventCharacteristicFilter, newTimeFilter, newTypeFilter]);
 
     React.useEffect(() => {
         dispatch(SetSettingsNumberResults({
@@ -338,19 +340,15 @@ const EventSearchNavbar = (props: IProps) => {
                                                 Options= {newPhases}
                                                 OnChange={
                                                     (evt, Options: { Value: number; Text: string; Selected: boolean; }[]) => { 
-                                                        setNewPhases([...newPhases].map((record) => {
-                                                            if (Options.some(option => option.Value === record.Value)) {
-                                                                record.Selected = !record.Selected
-                                                                setNewEventCharacteristicFilter({
-                                                                    ...newEventCharacteristicFilter,
-                                                                    phases: {
-                                                                        ...newEventCharacteristicFilter.phases,
-                                                                        [record.Text]: !newEventCharacteristicFilter.phases[record.Text]
-                                                                    }
-                                                                })
-                                                            }
-                                                            return record
-                                                        }))
+                                                        let phaseList = [];
+                                                        let phaseFilter: SEBrowser.IPhaseFilters = { ...newEventCharacteristicFilter.phases };
+                                                        newPhases.forEach(phase => {
+                                                            const phaseSelected: boolean = phase.Selected != (Options.findIndex(option => phase.Value === option.Value) > -1);
+                                                            phaseList.push({ ...phase, Selected: phaseSelected });
+                                                            phaseFilter[phase.Text] = phaseSelected;
+                                                        })
+                                                        setNewPhases(phaseList);
+                                                        setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, phases: phaseFilter });
                                                     }
                                                 }
                                             /> 
