@@ -312,6 +312,7 @@
     <Content Include="Shared\Readme.txt" />
     <Content Include="Shared\Scripts\flot\LICENSE.txt" />
     <Content Include="Web.config" />
+    <Content Include="appsettings.json" />
     <None Include="webpack.config.js" />
   </ItemGroup>
   <ItemGroup>
