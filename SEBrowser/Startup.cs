@@ -49,13 +49,6 @@ public class Startup
 
         OwinLoaded = true;
 
-        //app.Use<AuthenticationMiddleware>(new AuthenticationOptions()
-        //{
-        //    SessionToken = "session",
-        //    AuthFailureRedirectResourceExpression = "(?!)",
-        //    AnonymousResourceExpression = "(?!)"
-        //});
-
         // Configure Web API for self-host. 
         HttpConfiguration config = new();
 

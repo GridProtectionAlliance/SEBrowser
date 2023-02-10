@@ -59,16 +59,16 @@ namespace SEBrowser.Controllers
             try
             {
                 DateTime start = DateTime.UtcNow;
-                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+                using (AdoDataConnection connection = new("systemSettings"))
                     start = connection.ExecuteScalar<DateTime>("SELECT StartTime FROM Event WHERE ID = {0} ", eventID);
 
-                List<Interruption> result = new List<Interruption>();
-                DataSet ds = new DataSet();
-                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                List<Interruption> result = new();
+                DataSet ds = new();
+                using (AdoDataConnection connection = new(SettingsCategory))
                 {
                     using (SqlCommand command = ((SqlConnection)connection.Connection).CreateCommand())
                     {
-                        using (SqlDataAdapter sda = new SqlDataAdapter(command))
+                        using (SqlDataAdapter sda = new(command))
                         {
                             command.CommandType = System.Data.CommandType.StoredProcedure;
                             command.CommandText = "iradmin.GetIncidentsByDateTimeRange";
@@ -87,7 +87,7 @@ namespace SEBrowser.Controllers
 
                     DataRow[] children = ds.Tables[1].Select($"ReportNumber = {recordNumber}");
 
-                    Interruption interruption = new Interruption()
+                    Interruption interruption = new()
                     {
                         TimeOut = DateTime.Parse(dr["TimeOut"].ToString()),
                         Class = dr["ClassType"].ToString(),

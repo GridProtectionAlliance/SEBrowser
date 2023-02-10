@@ -43,7 +43,7 @@ namespace PQDashboard.Controllers.BreakerReport
         #region [ Members ]
 
         // Fields
-        private DateTime m_epoch = new DateTime(1970, 1, 1);
+        private DateTime m_epoch = new(1970, 1, 1);
 
         #endregion
 
@@ -70,15 +70,15 @@ namespace PQDashboard.Controllers.BreakerReport
             DateTime startTime = DateTime.Parse(query["startDate"]);
             DateTime endTime = DateTime.Parse(query["endDate"]);
 
-            AllBreakersReport report = new AllBreakersReport(startTime, endTime);
+            AllBreakersReport report = new(startTime, endTime);
             byte[] pdf = report.CreatePDF();
-            using (MemoryStream stream = new MemoryStream())
+            using (MemoryStream stream = new())
             {
 
                 if (pdf == null) return BadRequest();
 
                 stream.WriteAsync(pdf, 0, pdf.Length);
-                HttpResponseMessage result = new HttpResponseMessage(HttpStatusCode.OK)
+                HttpResponseMessage result = new(HttpStatusCode.OK)
                 {
                     Content = new ByteArrayContent(stream.ToArray()),
                 };

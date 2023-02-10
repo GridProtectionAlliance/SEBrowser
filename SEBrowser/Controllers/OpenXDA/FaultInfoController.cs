@@ -52,7 +52,7 @@ namespace SEBrowser.Controllers.OpenXDA
         public IHttpActionResult Get(int eventID) {
             try
             {
-                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                using (AdoDataConnection connection = new(SettingsCategory))
                 {
 
                     string query = @"
@@ -94,7 +94,7 @@ namespace SEBrowser.Controllers.OpenXDA
 		{
 			try
 			{
-				using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+				using (AdoDataConnection connection = new(SettingsCategory))
 				{
 
 					string query = @"

@@ -53,7 +53,7 @@ namespace PQDashboard.Controllers.BreakerReport
         #region [ Members ]
 
         // Fields
-        private DateTime m_epoch = new DateTime(1970, 1, 1);
+        private DateTime m_epoch = new(1970, 1, 1);
 
         #endregion
 
@@ -75,10 +75,10 @@ namespace PQDashboard.Controllers.BreakerReport
         [Route, HttpGet]
         public DataTable Get()
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
 
-                DataTable table = new DataTable();
+                DataTable table = new();
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {

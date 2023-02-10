@@ -53,7 +53,7 @@ namespace PQDashboard.Controllers.BreakerReport
         #region [ Members ]
 
         // Fields
-        private DateTime m_epoch = new DateTime(1970, 1, 1);
+        private DateTime m_epoch = new(1970, 1, 1);
 
         public class FlotSeries
         {
@@ -65,7 +65,7 @@ namespace PQDashboard.Controllers.BreakerReport
             public string Phase;
             public string SeriesType;
             public string ChartLabel;
-            public List<double[]> DataPoints = new List<double[]>();
+            public List<double[]> DataPoints = new();
         }
         public class JsonReturn
         {
@@ -108,11 +108,11 @@ namespace PQDashboard.Controllers.BreakerReport
         [Route("GetSubstationData"), HttpGet]
         public DataTable GetSubstationData()
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
                 
                 
-                DataTable table = new DataTable();
+                DataTable table = new();
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
@@ -146,9 +146,9 @@ namespace PQDashboard.Controllers.BreakerReport
             Dictionary<string, string> query = Request.QueryParameters();
             int locationID = int.Parse(query["locationID"]);
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
-                DataTable table = new DataTable();
+                DataTable table = new();
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
@@ -181,9 +181,9 @@ namespace PQDashboard.Controllers.BreakerReport
             Dictionary<string, string> query = Request.QueryParameters();
             int lineID = int.Parse(query["lineID"]);
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
-                DataTable table = new DataTable();
+                DataTable table = new();
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
@@ -214,7 +214,7 @@ namespace PQDashboard.Controllers.BreakerReport
 
             string timeRestriction = $"TripInitiate Between DATEADD({timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}')";
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
                 if (channelID > 0)
                 {

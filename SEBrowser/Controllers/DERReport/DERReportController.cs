@@ -50,7 +50,7 @@ namespace SEBrowser.Controllers
         #region [ Members ]
 
         // Fields
-        private DateTime m_epoch = new DateTime(1970, 1, 1);
+        private DateTime m_epoch = new(1970, 1, 1);
 
         public class TrendSeries {
             public string color;
@@ -130,9 +130,9 @@ namespace SEBrowser.Controllers
         public IHttpActionResult GetSubstations()
         {
             try {
-                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+                using (AdoDataConnection connection = new("systemSettings"))
                 {
-                    DataTable table = new DataTable();
+                    DataTable table = new();
 
                     using (IDbCommand sc = connection.Connection.CreateCommand())
                     {
@@ -174,9 +174,9 @@ namespace SEBrowser.Controllers
         {
             try
             {
-                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+                using (AdoDataConnection connection = new("systemSettings"))
                 {
-                    DataTable table = new DataTable();
+                    DataTable table = new();
 
                     using (IDbCommand sc = connection.Connection.CreateCommand())
                     {
@@ -214,7 +214,7 @@ namespace SEBrowser.Controllers
         {
             try
             {
-                List<string> regulations = new List<string>() {
+                List<string> regulations = new() {
                 "7.1 Limitation of dc injection",
                 "7.2.2 Rapid Voltage Change (RVC)",
                 "7.2.3 Flicker",
@@ -245,9 +245,9 @@ namespace SEBrowser.Controllers
         [Route(""), HttpPost]
         public IHttpActionResult Get([FromBody]DERReportPostRequest content)
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
-                DataTable table = new DataTable();
+                DataTable table = new();
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
@@ -288,7 +288,7 @@ namespace SEBrowser.Controllers
             {
                 DERAnalyticResult result;
 
-                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+                using (AdoDataConnection connection = new("systemSettings"))
                 {
                     result = new TableOperations<DERAnalyticResult>(connection).QueryRecordWhere("ID = {0}", id);
                 };
@@ -312,8 +312,8 @@ namespace SEBrowser.Controllers
         #region [ Trending Data ]
 
         private IHttpActionResult GetTrendData(DERAnalyticResult result) {
-            using (HttpClientHandler handler = new HttpClientHandler())
-            using (HttpClient client = new HttpClient(handler))
+            using (HttpClientHandler handler = new())
+            using (HttpClient client = new(handler))
             {
                 DER der;
 
@@ -322,7 +322,7 @@ namespace SEBrowser.Controllers
                 string org = "";
                 string token = "";
                 ChannelDetail channel;
-                using(AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+                using(AdoDataConnection connection = new("systemSettings"))
                 {
                     host = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.Host'");
                     pointBucket = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.PointBucket'");
@@ -342,7 +342,7 @@ namespace SEBrowser.Controllers
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token",token);
-                DateTime start = new DateTime(result.Time.Year, result.Time.Month, result.Time.Day);
+                DateTime start = new(result.Time.Year, result.Time.Month, result.Time.Day);
                 DateTime end = start.AddDays(1).AddSeconds(-1);
                 try
                 {
@@ -385,7 +385,7 @@ namespace SEBrowser.Controllers
 
         private IHttpActionResult GetDistortionTrendData(DERAnalyticResult result)
         {
-            Regex expression = new Regex(@"^(?<lower>\d+)\s*<=\s*h\s*<\s*(?<upper>\d+)|Even,\s*h\s*>=\s*(?<threshold>\d+)$");
+            Regex expression = new(@"^(?<lower>\d+)\s*<=\s*h\s*<\s*(?<upper>\d+)|Even,\s*h\s*>=\s*(?<threshold>\d+)$");
             Match match = expression.Match(result.Parameter);
 
             if (match.Success)
@@ -406,8 +406,8 @@ namespace SEBrowser.Controllers
 
         private IHttpActionResult GetDistortionTrendData(DERAnalyticResult result, int lower, int upper)
         {
-            using (HttpClientHandler handler = new HttpClientHandler())
-            using (HttpClient client = new HttpClient(handler))
+            using (HttpClientHandler handler = new())
+            using (HttpClient client = new(handler))
             {
                 string host = "";
                 string pointBucket = "";
@@ -417,7 +417,7 @@ namespace SEBrowser.Controllers
 
                 List<Channel> harmonicChannels;
                 Channel rmsChannel;
-                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+                using (AdoDataConnection connection = new("systemSettings"))
                 {
                     host = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.Host'");
                     pointBucket = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.PointBucket'");
@@ -441,7 +441,7 @@ namespace SEBrowser.Controllers
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
-                DateTime start = new DateTime(result.Time.Year, result.Time.Month, result.Time.Day);
+                DateTime start = new(result.Time.Year, result.Time.Month, result.Time.Day);
                 DateTime end = start.AddDays(1).AddSeconds(-1);
                 try
                 {
@@ -480,8 +480,8 @@ namespace SEBrowser.Controllers
 
         private IHttpActionResult GetDistortionTrendData(DERAnalyticResult result, int threshold)
         {
-            using (HttpClientHandler handler = new HttpClientHandler())
-            using (HttpClient client = new HttpClient(handler))
+            using (HttpClientHandler handler = new())
+            using (HttpClient client = new(handler))
             {
                 string host = "";
                 string pointBucket = "";
@@ -491,7 +491,7 @@ namespace SEBrowser.Controllers
                 List<Channel> harmonicChannels;
                 Channel rmsChannel;
                 DER der;
-                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+                using (AdoDataConnection connection = new("systemSettings"))
                 {
                     host = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.Host'");
                     pointBucket = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.PointBucket'");
@@ -516,7 +516,7 @@ namespace SEBrowser.Controllers
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
-                DateTime start = new DateTime(result.Time.Year, result.Time.Month, result.Time.Day);
+                DateTime start = new(result.Time.Year, result.Time.Month, result.Time.Day);
                 DateTime end = start.AddDays(1).AddSeconds(-1);
                 try
                 {
@@ -557,7 +557,7 @@ namespace SEBrowser.Controllers
         private IHttpActionResult GetWaveformData(DERAnalyticResult result) {
             try
             {
-                using(AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+                using(AdoDataConnection connection = new("systemSettings"))
                 {
                     Meter meter = new TableOperations<Meter>(connection).QueryRecordWhere("ID = {0}", result.MeterID);
                     meter.ConnectionFactory = () => new AdoDataConnection("systemSettings");
@@ -604,7 +604,7 @@ namespace SEBrowser.Controllers
 
         private List<InfluxQueryTable> ParseCSV(string data)
         {
-            DataTable table = new DataTable();
+            DataTable table = new();
 
             string[] tableData = data.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
             string[] cols = tableData[0].Split(",".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
@@ -668,7 +668,7 @@ namespace SEBrowser.Controllers
             string otherFilter = ProcessFilter(query);
 
 
-            TrendingResponse result = new TrendingResponse()
+            TrendingResponse result = new()
             {
                 DeltaQ = new List<TrendSeries>(),
                 Irms = new List<TrendSeries>(),
@@ -705,12 +705,12 @@ namespace SEBrowser.Controllers
             };
 
             //Start with Events matching bankNumRestriction for each Phase....
-            Dictionary<string, string> phaseColor = new Dictionary<string, string>();
+            Dictionary<string, string> phaseColor = new();
             phaseColor.Add("AN", "#A30000");
             phaseColor.Add("BN", "#0029A3");
             phaseColor.Add("CN", "#007A29");
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
                 
                 foreach (KeyValuePair<string, string> phase in phaseColor)
@@ -1277,9 +1277,9 @@ namespace SEBrowser.Controllers
 
         private DataTable GettrendTable(string PhaseRestriction, string OtherRestriction, string CapBankRestriction, string NumRestriction, string timeRestriction)
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
-                List<string> restrictions = new List<string>();
+                List<string> restrictions = new();
 
                 if (!string.IsNullOrWhiteSpace(PhaseRestriction))
                     restrictions.Add("(" + PhaseRestriction + ")");

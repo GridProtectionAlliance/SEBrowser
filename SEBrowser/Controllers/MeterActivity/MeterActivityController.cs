@@ -71,7 +71,7 @@ namespace PQDashboard.Controllers.BreakerReport
         [Route("GetMostActiveMeterActivityData"), HttpGet]
         public DataTable GetMostActiveMeterActivityData()
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
                 Dictionary<string, string> query = Request.QueryParameters();
                 int numberOfResults = int.Parse(query["numresults"]);
@@ -84,7 +84,7 @@ namespace PQDashboard.Controllers.BreakerReport
                     default: column = " [AssetKey], [FileGroups24Hours] DESC, [Events24Hours] DESC ,[FileGroups7Days] DESC, [Events7Days] DESC, [FileGroups30Days] DESC, [Events30Days] DESC"; break;
                 }
 
-                DataTable table = new DataTable();
+                DataTable table = new();
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
@@ -126,7 +126,7 @@ namespace PQDashboard.Controllers.BreakerReport
         [Route("GetLeastActiveMeterActivityData"), HttpGet]
         public DataTable GetLeastActiveMeterActivityData()
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
                 Dictionary<string, string> query = Request.QueryParameters();
                 int numberOfResults = int.Parse(query["numresults"]);
@@ -139,7 +139,7 @@ namespace PQDashboard.Controllers.BreakerReport
                     default: column = "AssetKey"; break;
                 }
 
-                DataTable table = new DataTable();
+                DataTable table = new();
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
@@ -185,7 +185,7 @@ namespace PQDashboard.Controllers.BreakerReport
         [Route("GetFilesProcessedLast24Hrs"), HttpGet]
         public DataTable GetFilesProcessedLast24Hrs()
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
                 Dictionary<string, string> query = Request.QueryParameters();
                 //string column = query["column"];
@@ -195,7 +195,7 @@ namespace PQDashboard.Controllers.BreakerReport
                 //    default: column = "CreationTime"; break;
                 //}
 
-                DataTable table = new DataTable();
+                DataTable table = new();
 
                 DateTime now = DateTime.Now;
                 DateTime dateTime = now.AddHours(-24);
@@ -241,7 +241,7 @@ namespace PQDashboard.Controllers.BreakerReport
             Dictionary<string, string> query = Request.QueryParameters();
             int fileGroupID = int.Parse(query["FileGroupID"]);
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
                 return connection.RetrieveData("SELECT * FROM EventView WHERE FileGroupID = {0}", fileGroupID);
             }

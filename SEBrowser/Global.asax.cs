@@ -23,28 +23,21 @@
 
 using GSF;
 using GSF.Configuration;
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Identity;
 using GSF.Security;
 using GSF.Web.Embedded;
-using GSF.Web.Hubs;
 using GSF.Web.Model;
 using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Json;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using System.Threading;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Optimization;
 using System.Web.Routing;
 using System.IO;
 using SEBrowser.Model;
-using System.Web.Optimization;
 
 namespace SEBrowser
 {
@@ -53,7 +46,7 @@ namespace SEBrowser
         /// <summary>
         /// Gets the default model used for the application.
         /// </summary>
-        public static readonly AppModel DefaultModel = new AppModel();
+        public static readonly AppModel DefaultModel = new();
 
         protected void Application_Start()
         {
@@ -91,7 +84,7 @@ namespace SEBrowser
             global.PasswordRequirementsError = securityProvider["PasswordRequirementsError"].Value;
 
             // Load database driven model settings
-            using (DataContext dataContext = new DataContext(exceptionHandler: LogException))
+            using (DataContext dataContext = new(exceptionHandler: LogException))
             {
                 //EncryptScores(dataContext);
 
@@ -161,33 +154,34 @@ namespace SEBrowser
         }
 
 
-        private static ReaderWriterLockSlim LogFileReadWriteLock = new ReaderWriterLockSlim();
+        private static readonly ReaderWriterLockSlim LogFileReadWriteLock = new();
 
         public static void WriteToErrorLog(Exception ex, bool innerException = false)
         {
-            if (ex.InnerException != null) WriteToErrorLog(ex.InnerException, true);
+            if (ex.InnerException is not null)
+                WriteToErrorLog(ex.InnerException, true);
 
             string path = Path.Combine("C:\\Users\\Public\\Documents", "SEBrowser.ErrorLog.txt");
+            
             // Set Status to Locked
             LogFileReadWriteLock.EnterWriteLock();
+
             try
             {
-            
                 // Append text to the file
-                using (StreamWriter sw = File.AppendText(path))
-                {
-                    sw.WriteLine($"[{DateTime.Now}] ({(innerException ? "Inner Exception" : "Outer Excpetion")})");
-                    sw.WriteLine($"Exception Source:    {ex.Source}");
-                    sw.WriteLine($"Exception Message:    {ex.Message}");
-                    sw.WriteLine();
-                    sw.WriteLine("---- Stack Trace ----");
-                    sw.WriteLine();
-                    sw.WriteLine(ex.StackTrace);
-                    sw.WriteLine();
-                    sw.WriteLine();
+                using StreamWriter sw = File.AppendText(path);
 
-                    sw.Close();
-                }
+                sw.WriteLine($"[{DateTime.Now}] ({(innerException ? "Inner Exception" : "Outer Excpetion")})");
+                sw.WriteLine($"Exception Source:    {ex.Source}");
+                sw.WriteLine($"Exception Message:    {ex.Message}");
+                sw.WriteLine();
+                sw.WriteLine("---- Stack Trace ----");
+                sw.WriteLine();
+                sw.WriteLine(ex.StackTrace);
+                sw.WriteLine();
+                sw.WriteLine();
+
+                sw.Close();
             }
             finally
             {
@@ -195,7 +189,5 @@ namespace SEBrowser
                 LogFileReadWriteLock.ExitWriteLock();
             }
         }
-
-
     }
 }

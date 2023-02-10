@@ -39,8 +39,8 @@ namespace SEBrowser
         public string PasswordRequirementsError{ get; set; }
         public string BootstrapTheme{ get; set; }
 
-        public readonly Dictionary<string, string> ApplicationSettings = new Dictionary<string, string>();
-        public readonly Dictionary<string, string> LayoutSettings = new Dictionary<string, string>();
-        public readonly Dictionary<string, string> PageDefaults = new Dictionary<string, string>();
+        public readonly Dictionary<string, string> ApplicationSettings = new();
+        public readonly Dictionary<string, string> LayoutSettings = new();
+        public readonly Dictionary<string, string> PageDefaults = new();
     }
 }

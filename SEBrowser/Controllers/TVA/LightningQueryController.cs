@@ -36,8 +36,8 @@ namespace SEBrowser.Controllers
         public IHttpActionResult Get(int eventID) {
             try
             {
-                using (AdoDataConnection xdaConnection = new AdoDataConnection("systemSettings"))
-                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                using (AdoDataConnection xdaConnection = new("systemSettings"))
+                using (AdoDataConnection connection = new(SettingsCategory))
                 {
 
                     DateTime dateTime = xdaConnection.ExecuteScalar<DateTime>("SELECT StartTime FROM Event WHERE ID = {0}", eventID);

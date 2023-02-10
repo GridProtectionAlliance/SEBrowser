@@ -122,7 +122,7 @@ namespace SEBrowser.Controllers
         [Route("GetEventSearchData"), HttpPost]
         public DataTable GetEventSearchData(EventSearchPostData postData)
         {
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 DateTime dateTime = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
 
@@ -200,7 +200,7 @@ namespace SEBrowser.Controllers
 
         private string getEventTypeFilter(EventSearchPostData postData)
         {
-            List<string> eventTypes = new List<string>();
+            List<string> eventTypes = new();
 
             // The ELSE clause is required because TVA would like to be able to specify filters that make no sense... 
             if (postData.typeIDs.Count() > 0)
@@ -250,7 +250,7 @@ namespace SEBrowser.Controllers
         private string getEventCharacteristicFilter(EventSearchPostData postData)
         {
 
-            List<string> characteristics = new List<string>();
+            List<string> characteristics = new();
 
             //Min and Max Durations
             if (postData.durationMin > 0)
@@ -351,7 +351,7 @@ namespace SEBrowser.Controllers
 
         private string getAssetFilters(EventSearchPostData postData)
         {
-            List<string> assets = new List<string>();
+            List<string> assets = new();
 
             if (postData.meterIDs.Count() > 0)
                 assets.Add($"Event.MeterID IN ({string.Join(",", postData.meterIDs)})");
@@ -379,7 +379,7 @@ namespace SEBrowser.Controllers
         [Route("GetEventSearchAssetVoltageDisturbances"), HttpGet]
         public DataTable GetEventSearchAssetVoltageDisturbances()
         {
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 Dictionary<string, string> query = Request.QueryParameters();
                 int eventID = int.Parse(query["EventID"]);
@@ -413,7 +413,7 @@ namespace SEBrowser.Controllers
         [Route("GetEventSearchFaultSegments"), HttpGet]
         public DataTable GetEventSearchFaultSegments()
         {
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 Dictionary<string, string> query = Request.QueryParameters();
                 int eventID = int.Parse(query["EventID"]);
@@ -441,7 +441,7 @@ namespace SEBrowser.Controllers
         [Route("GetEventSearchHistory/{eventID:int}/{count:int}"), HttpGet]
         public DataTable GetEventSearchHistory(int eventID, int count = 10)
         {
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 DataTable table = connection.RetrieveData(@" 
                     SELECT
@@ -468,7 +468,7 @@ namespace SEBrowser.Controllers
         [Route("GetEventSearchHistoryStats/{eventID:int}"), HttpGet]
         public DataTable GetEventSearchHistoryStats(int eventID, int count = 10)
         {
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 DataTable table = connection.RetrieveData(@" 
                     SELECT
@@ -502,7 +502,7 @@ namespace SEBrowser.Controllers
         [Route("GetEventSearchMeterMakes"), HttpGet]
         public IHttpActionResult GetEventSearchMeterMakes()
         {
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
 
                 DataTable table = connection.RetrieveData(@"SELECT DISTINCT Make FROM Meter");
@@ -515,7 +515,7 @@ namespace SEBrowser.Controllers
         [Route("GetEventSearchMeterModels/{make}"), HttpGet]
         public IHttpActionResult GetEventSearchMeterModels(string make)
         {
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
 
                 DataTable table = connection.RetrieveData(@"SELECT DISTINCT Model FROM Meter WHERE Make = {0}", make);
@@ -572,7 +572,7 @@ namespace SEBrowser.Controllers
             int eventID = int.Parse(query["eventId"]);
 
             if (eventID <= 0) return new DataTable();
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 double timeTolerance = connection.ExecuteScalar<double>("SELECT Value FROM Setting WHERE Name = 'TimeTolerance'");
                 DateTime startTime = connection.ExecuteScalar<DateTime>("SELECT StartTime FROM Event WHERE ID = {0}", eventID);
@@ -587,7 +587,7 @@ namespace SEBrowser.Controllers
         [Route("GetFileName/{eventID:int}"), HttpGet]
         public IHttpActionResult GetFileName(int eventID)
         {
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 DataFile dataFile = new TableOperations<DataFile>(connection).QueryRecord("FileSize DESC", new RecordRestriction("FileGroupID = (SELECT FileGroupID FROM Event WHERE ID = {0})", eventID));
                 return Ok(dataFile.FilePath);
@@ -599,7 +599,7 @@ namespace SEBrowser.Controllers
         [Route("GetMeterConfiguration/{eventID:int}"), HttpGet]
         public IHttpActionResult GetMeterConfiguration(int eventID)
         {
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 const string SQL = @"
                 SELECT
@@ -624,7 +624,7 @@ namespace SEBrowser.Controllers
         [Route("GetMappedChannels/{eventID:int}"), HttpGet]
         public IHttpActionResult GetMappedChannels(int eventID)
         {
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 const string SQL = @"
                     SELECT
@@ -652,7 +652,7 @@ namespace SEBrowser.Controllers
         [Route("GetFaultInfo/{eventID:int}"), HttpGet]
         public IHttpActionResult GetFaultInfo(int eventID)
         {
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 try
                 {
@@ -693,7 +693,7 @@ namespace SEBrowser.Controllers
         [Route("GetLightningInfo/{eventID:int}/{timeWindow:int}"), HttpGet]
         public IHttpActionResult GetLightningInfo(int eventID, int timeWindow)
         {
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 try
                 {
@@ -726,7 +726,7 @@ namespace SEBrowser.Controllers
         [Route("LineParameters/{eventID:int}"), HttpGet]
         public IHttpActionResult GetLineParameters(int eventID)
         {
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 try
                 {
@@ -764,7 +764,7 @@ namespace SEBrowser.Controllers
             Dictionary<string, string> query = Request.QueryParameters();
             int eventID = int.Parse(query["eventId"]);
             if (eventID <= 0) return new DataTable();
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 Event evt = new TableOperations<Event>(connection).QueryRecordWhere("ID = {0}", eventID);
                 return RelayHistoryTable(evt.AssetID, -1);
@@ -778,7 +778,7 @@ namespace SEBrowser.Controllers
             Dictionary<string, string> query = Request.QueryParameters();
             int eventID = int.Parse(query["eventId"]);
             if (eventID <= 0) return new DataTable();
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 string sqlQuery = @"SELECT
                                             CBAnalyticResult.Id AS ID,
@@ -812,7 +812,7 @@ namespace SEBrowser.Controllers
         {
             DataTable dataTable;
 
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 if (eventID > 0) { dataTable = connection.RetrieveData("SELECT * FROM BreakerHistory WHERE BreakerID = {0} AND EventID = {1}", relayID, eventID); }
                 else { dataTable = connection.RetrieveData("SELECT * FROM BreakerHistory WHERE BreakerID = {0}", relayID); }
@@ -825,10 +825,10 @@ namespace SEBrowser.Controllers
         [Route("GetData"), HttpGet]
         public IHttpActionResult GetData()
         {
-            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            using (AdoDataConnection connection = new(SettingsCategory))
             {
                 Dictionary<string, string> query = Request.QueryParameters();
-                DateTime epoch = new DateTime(1970, 1, 1);
+                DateTime epoch = new(1970, 1, 1);
 
                 int eventId = int.Parse(query["eventId"]);
                 string type = query["type"];
@@ -848,7 +848,7 @@ namespace SEBrowser.Controllers
                 {
                     DataGroup dataGroup;
                     dataGroup = QueryDataGroup(eventId, meter);
-                    Dictionary<string, IEnumerable<double[]>> returnData = new Dictionary<string, IEnumerable<double[]>>();
+                    Dictionary<string, IEnumerable<double[]>> returnData = new();
                     bool hasVoltLN = dataGroup.DataSeries.Select(x => x.SeriesInfo.Channel.Phase.Name).Where(x => x.Contains("N")).Any();
                     foreach (var series in dataGroup.DataSeries)
                     {
@@ -893,7 +893,7 @@ namespace SEBrowser.Controllers
         {
             string target = $"DataGroup-{eventID}";
 
-            Task<DataGroup> dataGroupTask = new Task<DataGroup>(() =>
+            Task<DataGroup> dataGroupTask = new(() =>
             {
                 List<byte[]> data = ChannelData.DataFromEvent(eventID, () => new AdoDataConnection(SettingsCategory));
                 return ToDataGroup(meter, data);
@@ -912,16 +912,16 @@ namespace SEBrowser.Controllers
 
         private DataGroup ToDataGroup(Meter meter, List<byte[]> data)
         {
-            DataGroup dataGroup = new DataGroup();
+            DataGroup dataGroup = new();
             dataGroup.FromData(meter, data);
-            VIDataGroup vIDataGroup = new VIDataGroup(dataGroup);
+            VIDataGroup vIDataGroup = new(dataGroup);
             return vIDataGroup.ToDataGroup();
         }
 
         private List<double[]> Downsample(List<double[]> series, int maxSampleCount)
         {
-            List<double[]> data = new List<double[]>();
-            DateTime epoch = new DateTime(1970, 1, 1);
+            List<double[]> data = new();
+            DateTime epoch = new(1970, 1, 1);
             double startTime = series.First()[0];
             double endTime = series.Last()[0];
             int step = (int)(endTime * 1000 - startTime * 1000) / maxSampleCount;

@@ -37,7 +37,7 @@ namespace SEBrowser.Controllers
         public IHttpActionResult Get(int eventID) {
             try
             {
-                using(AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                using(AdoDataConnection connection = new(SettingsCategory))
                 {
 
                     DataTable table = connection.RetrieveData(@" 

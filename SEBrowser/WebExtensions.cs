@@ -34,7 +34,7 @@ namespace SEBrowser
     {
         public static Dictionary<string, string> LoadDatabaseSettings(this DataContext dataContext, string scope)
         {
-            Dictionary<string, string> settings = new Dictionary<string, string>();
+            Dictionary<string, string> settings = new();
 
             foreach (Settings setting in dataContext.Table<Settings>().QueryRecords("Name", new RecordRestriction("Scope = {0}", scope)))
             {

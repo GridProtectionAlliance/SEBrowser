@@ -32,7 +32,7 @@ namespace SEBrowser.Controllers
         public IHttpActionResult GetEventPreviewPaneSettings() {
             try
             {
-                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                using (AdoDataConnection connection = new(SettingsCategory))
                 {
                     return Ok(new TableOperations<EventPreviewPaneSetting>(connection).QueryRecords("OrderBy ASC"));
                 }
@@ -47,7 +47,7 @@ namespace SEBrowser.Controllers
         {
             try
             {
-                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                using (AdoDataConnection connection = new(SettingsCategory))
                 {
                     return Ok(connection.RetrieveData("SELECT * FROM [SEBrowser.Links] WHERE Name LIKE {0} + '%'", category));
                 }

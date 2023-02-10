@@ -21,6 +21,7 @@
 //
 //******************************************************************************************************
 
+using SEBrowser;
 using SEBrowser.Model;
 using System.Web.Mvc;
 
@@ -36,9 +37,13 @@ namespace SEBrowser.Controllers
             ViewData.Model = new AppModel();
         }
 
+        [Authorize]
         public ActionResult Home()
         {
-            return View("Index");
+            if (User?.Identity?.IsAuthenticated ?? false)
+                return View("Index");
+
+            return RedirectToAction("Index", "Login");
         }
     }
 }

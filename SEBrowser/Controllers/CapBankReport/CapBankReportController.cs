@@ -53,7 +53,7 @@ namespace PQDashboard.Controllers.CapBankReport
         #region [ Members ]
 
         // Fields
-        private DateTime m_epoch = new DateTime(1970, 1, 1);
+        private DateTime m_epoch = new(1970, 1, 1);
 
         public class TrendSeries {
             public string color;
@@ -132,11 +132,11 @@ namespace PQDashboard.Controllers.CapBankReport
         [Route("GetSubstationData"), HttpGet]
         public DataTable GetSubstationData()
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
 
 
-                DataTable table = new DataTable();
+                DataTable table = new();
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
@@ -170,9 +170,9 @@ namespace PQDashboard.Controllers.CapBankReport
             Dictionary<string, string> query = Request.QueryParameters();
             int locationID = int.Parse(query["locationID"]);
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
-                DataTable table = new DataTable();
+                DataTable table = new();
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
@@ -227,9 +227,9 @@ namespace PQDashboard.Controllers.CapBankReport
                 bankNumRestriction = "(CBAnalyticResult.EnergizedBanks = -1 AND CBAnalyticResult.DeEnergizedBanks = -1)";
             }
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
-                DataTable table = new DataTable();
+                DataTable table = new();
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
                 {
@@ -273,7 +273,7 @@ namespace PQDashboard.Controllers.CapBankReport
         {
             try
             {
-                using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+                using (AdoDataConnection connection = new("systemSettings"))
                 {
                     connection.ExecuteNonQuery($"UPDATE CBAnalyticResult SET EnergizedBanks = {bank} WHERE ID = {id}");
                 }
@@ -307,7 +307,7 @@ namespace PQDashboard.Controllers.CapBankReport
             string otherFilter = ProcessFilter(query);
 
 
-            TrendingResponse result = new TrendingResponse()
+            TrendingResponse result = new()
             {
                 DeltaQ = new List<TrendSeries>(),
                 Irms = new List<TrendSeries>(),
@@ -344,12 +344,12 @@ namespace PQDashboard.Controllers.CapBankReport
             };
 
             //Start with Events matching bankNumRestriction for each Phase....
-            Dictionary<string, string> phaseColor = new Dictionary<string, string>();
+            Dictionary<string, string> phaseColor = new();
             phaseColor.Add("AN", "#A30000");
             phaseColor.Add("BN", "#0029A3");
             phaseColor.Add("CN", "#007A29");
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
                 
                 foreach (KeyValuePair<string, string> phase in phaseColor)
@@ -916,9 +916,9 @@ namespace PQDashboard.Controllers.CapBankReport
 
         private DataTable GettrendTable(string PhaseRestriction, string OtherRestriction, string CapBankRestriction, string NumRestriction, string timeRestriction)
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new("systemSettings"))
             {
-                List<string> restrictions = new List<string>();
+                List<string> restrictions = new();
 
                 if (!string.IsNullOrWhiteSpace(PhaseRestriction))
                     restrictions.Add("(" + PhaseRestriction + ")");

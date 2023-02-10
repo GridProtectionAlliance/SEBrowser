@@ -49,7 +49,7 @@ namespace SEBrowser.Controllers
             try
             {
                 string url = $"http://opsptpsnet.cha.tva.gov:8025/TLI/StructureCrawler/FaultFinder.asp?Station={station}&Line={line}&Mileage={mileage}";
-                HtmlWeb webClient = new HtmlWeb();
+                HtmlWeb webClient = new();
                 webClient.PreRequest += HandlePreRequest;
                 HtmlDocument doc = webClient.Load(url);
                 string csv = doc.DocumentNode.InnerText.Trim();
@@ -67,7 +67,7 @@ namespace SEBrowser.Controllers
             byte[] data = Convert.FromBase64String(base64Encoded);
             string filePath = System.Text.ASCIIEncoding.UTF8.GetString(data);
            
-            HttpResponseMessage result = new HttpResponseMessage(HttpStatusCode.OK);
+            HttpResponseMessage result = new(HttpStatusCode.OK);
             FileStream fileStream = File.OpenRead(filePath);
             result.Content = new StreamContent(fileStream);
             result.Content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
@@ -87,7 +87,7 @@ namespace SEBrowser.Controllers
 
             string[] fields = lines[0].Split(',');
 
-            DataTable table = new DataTable();
+            DataTable table = new();
 
             foreach (string field in fields)
                 table.Columns.Add(field);

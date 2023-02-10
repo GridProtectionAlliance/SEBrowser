@@ -45,7 +45,7 @@ namespace SEBrowser.Controllers
         {
             get
             {
-                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                using (AdoDataConnection connection = new(SettingsCategory))
                     return connection.ExecuteScalar<string>($"SELECT Value From Setting Where Name = 'PQI.ClientID'") ?? "";
             }
         }
@@ -54,7 +54,7 @@ namespace SEBrowser.Controllers
         {
             get
             {
-                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                using (AdoDataConnection connection = new(SettingsCategory))
                     return connection.ExecuteScalar<string>($"SELECT Value From Setting Where Name = 'PQI.ClientSecret'") ?? "";
             }
         }
@@ -63,7 +63,7 @@ namespace SEBrowser.Controllers
         {
             get
             {
-                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                using (AdoDataConnection connection = new(SettingsCategory))
                     return connection.ExecuteScalar<string>($"SELECT Value From Setting Where Name = 'PQI.Username'") ?? "";
             }
         }
@@ -72,7 +72,7 @@ namespace SEBrowser.Controllers
         {
             get
             {
-                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                using (AdoDataConnection connection = new(SettingsCategory))
                     return connection.ExecuteScalar<string>($"SELECT Value From Setting Where Name = 'PQI.Password'") ?? "";
             }
         }
@@ -80,7 +80,7 @@ namespace SEBrowser.Controllers
         {
             get
             {
-                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                using (AdoDataConnection connection = new(SettingsCategory))
                     return connection.ExecuteScalar<string>($"SELECT Value From Setting Where Name = 'PQI.PingURL'") ?? "";
             }
         }
@@ -88,7 +88,7 @@ namespace SEBrowser.Controllers
         {
             get
             {
-                using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+                using (AdoDataConnection connection = new(SettingsCategory))
                     return connection.ExecuteScalar<string>($"SELECT Value From Setting Where Name = 'PQI.BaseURL'") ?? "";
             }
         }
@@ -100,16 +100,16 @@ namespace SEBrowser.Controllers
             {
                 string FetchAccessToken()
                 {
-                    NetworkCredential clientCredential = new NetworkCredential(ClientID, ClientSecret);
-                    NetworkCredential userCredential = new NetworkCredential(Username, Password);
-                    PingClient pingClient = new PingClient(PingURL);
+                    NetworkCredential clientCredential = new(ClientID, ClientSecret);
+                    NetworkCredential userCredential = new(Username, Password);
+                    PingClient pingClient = new(PingURL);
                     Task exchangeTask = pingClient.ExchangeAsync(clientCredential, userCredential);
                     exchangeTask.GetAwaiter().GetResult();
                     return pingClient.AccessToken;
                 }
 
-                PQIWSClient pqiwsClient = new PQIWSClient(BaseURL, FetchAccessToken);
-                PQIWSQueryHelper pqiwsQueryHelper = new PQIWSQueryHelper(() => new GSF.Data.AdoDataConnection(SettingsCategory), pqiwsClient);
+                PQIWSClient pqiwsClient = new(BaseURL, FetchAccessToken);
+                PQIWSQueryHelper pqiwsQueryHelper = new(() => new GSF.Data.AdoDataConnection(SettingsCategory), pqiwsClient);
 
                 return Ok(pqiwsQueryHelper.GetAllImpactedEquipmentAsync(eventID).Result);
             }

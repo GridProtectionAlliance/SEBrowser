@@ -69,7 +69,7 @@ namespace SEBrowser.Controllers.OpenXDA
                 if (sort != null && sort != string.Empty)
                     orderByExpression = $"{sort} {(ascending == 1 ? "ASC" : "DESC")}";
 
-                using (AdoDataConnection connection = new AdoDataConnection(Connection))
+                using (AdoDataConnection connection = new(Connection))
                 {
                     IEnumerable<AdditionalField> records = new TableOperations<AdditionalField>(connection).QueryRecords(orderByExpression, new RecordRestriction("ParentTable = {0}", openXDAParentTable));
                     if (!User.IsInRole("Administrator"))
@@ -94,7 +94,7 @@ namespace SEBrowser.Controllers.OpenXDA
         [HttpGet, Route("Group/{groupName}")]
         public IHttpActionResult GetValueListForGroup(string groupName)
         {
-            using (AdoDataConnection connection = new AdoDataConnection(Connection))
+            using (AdoDataConnection connection = new(Connection))
             {
                 string tableName = new TableOperations<ValueListGroup>(connection).TableName;
                 IEnumerable<ValueList> records = new TableOperations<ValueList>(connection).QueryRecordsWhere($"GroupID = ( SELECT ID FROM {tableName} WHERE Name = {{0}})", groupName);
