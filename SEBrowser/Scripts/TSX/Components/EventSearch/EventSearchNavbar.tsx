@@ -228,7 +228,6 @@ const EventSearchNavbar = (props: IProps) => {
             </nav>
         );
 
-    const evtTypeGrps = _.groupBy(eventTypes, (t) => t.Category);
     const sagsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Sag')?.ID ?? -1) != null;
     const swellsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Swell')?.ID ?? -1) != null;;
     const transientsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Transient')?.ID ?? -1) != null;;
@@ -273,17 +272,23 @@ const EventSearchNavbar = (props: IProps) => {
                                                     Options={magDurCurves.map((v) => (v.Area != undefined && v.Area.length > 0 ? { Value: v.ID.toString(), Label: v.Name } : null))} />
                                             </div>
                                             <div className='form-check form-check-inline'>
-                                                <input className="form-check-input" disabled={!newEventCharacteristicFilter.curveOutside} type="checkbox" onChange={() => {
-                                                    setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, curveInside: !newEventCharacteristicFilter.curveInside });
-                                                    }} checked={newEventCharacteristicFilter.curveInside} />
+                                                    <input className="form-check-input" type="radio" onChange={() => {
+                                                        setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, curveInside: true, curveOutside: false });
+                                                    }} checked={newEventCharacteristicFilter.curveInside && !eventCharacteristicFilter.curveOutside} />
                                                 <label className="form-check-label">Inside</label>
                                             </div>
                                             <div className='form-check form-check-inline'>
-                                                <input className="form-check-input" disabled={!newEventCharacteristicFilter.curveInside} type="checkbox" onChange={() => {
-                                                    setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, curveOutside: !newEventCharacteristicFilter.curveOutside });
-                                                    }} checked={newEventCharacteristicFilter.curveOutside} />
+                                                    <input className="form-check-input" type="radio" onChange={() => {
+                                                        setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, curveOutside: true, curveInside: false });
+                                                    }} checked={newEventCharacteristicFilter.curveOutside && !newEventCharacteristicFilter.curveInside} />
                                                 <label className="form-check-label">Outside</label>
-                                            </div>
+                                                </div>
+                                                <div className='form-check form-check-inline'>
+                                                    <input className="form-check-input" type="radio" onChange={() => {
+                                                        setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, curveOutside: true, curveInside: true });
+                                                    }} checked={newEventCharacteristicFilter.curveOutside && newEventCharacteristicFilter.curveInside} />
+                                                    <label className="form-check-label">Both</label>
+                                                </div>
                                         </div>
                                         </form>
                                     </div>
