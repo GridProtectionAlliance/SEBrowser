@@ -53,7 +53,10 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
         date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,
         typeIDs: types,
         durationMin: characteristics.durationMin, durationMax: characteristics.durationMax,
-        PhaseA: characteristics.Phase.A, PhaseB: characteristics.Phase.B, PhaseC: characteristics.Phase.C,
+        phases: {
+            AN: characteristics.phases.AN, BN: characteristics.phases.BN, CN: characteristics.phases.CN, AB: characteristics.phases.AB, BC: characteristics.phases.BC,
+            CA: characteristics.phases.CA, ABG: characteristics.phases.ABG, BCG: characteristics.phases.BCG, ABC: characteristics.phases.ABC, ABCG: characteristics.phases.ABCG,
+        },
         transientMin: characteristics.transientMin, transientMax: characteristics.transientMax, transientType: characteristics.transientType,
         sagMin: characteristics.sagMin, sagMax: characteristics.sagMax, sagType: characteristics.sagType,
         swellMin: characteristics.swellMin, swellMax: characteristics.swellMax, swellType: characteristics.swellType,
@@ -61,7 +64,7 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
         meterIDs: meterList.map(item => item.ID), assetIDs: assetList.map(item => item.ID),
         groupIDs: groupList.map(item => item.ID), locationIDs: locationList.map(item => item.ID),
         numberResults: settings.NumberResults,
-    }
+    } 
 
     const additionalArguments = {
         numberResults: settings.NumberResults
@@ -141,7 +144,9 @@ export const EventSearchsSlice = createSlice({
         Ascending: true,
         SearchText: '',
         EventCharacteristic: {
-            durationMax: 0, durationMin: 0, Phase: { A: true, B: true, C: true }, transientMin: 0, transientMax: 0, sagMin: 0, sagMax: 0, swellMin: 0, swellMax: 0, sagType: 'both', swellType: 'both', transientType: 'both',
+            durationMax: 0, durationMin: 0, phases: {
+                AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true
+            }, transientMin: 0, transientMax: 0, sagMin: 0, sagMax: 0, swellMin: 0, swellMax: 0, sagType: 'both', swellType: 'both', transientType: 'both',
             curveID: 1, curveInside: true, curveOutside: true
         },
         TimeRange: { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 10, timeWindowUnits: 5 },
@@ -205,9 +210,16 @@ export const EventSearchsSlice = createSlice({
             state.EventCharacteristic.curveInside = (action.payload.query['curveInside'] ?? 'true') == 'true';
             state.EventCharacteristic.curveOutside = (action.payload.query['curveOutside'] ?? 'true') == 'true';
 
-            state.EventCharacteristic.Phase.A = (action.payload.query['PhaseA'] ?? 'true') == 'true';
-            state.EventCharacteristic.Phase.B = (action.payload.query['PhaseB'] ?? 'true') == 'true';
-            state.EventCharacteristic.Phase.C = (action.payload.query['PhaseC'] ?? 'true') == 'true';
+            state.EventCharacteristic.phases.AN = (action.payload.query['PhaseAN'] ?? 'true') == 'true';
+            state.EventCharacteristic.phases.BN = (action.payload.query['PhaseBN'] ?? 'true') == 'true';
+            state.EventCharacteristic.phases.CN = (action.payload.query['PhaseCN'] ?? 'true') == 'true';
+            state.EventCharacteristic.phases.AB = (action.payload.query['PhaseAB'] ?? 'true') == 'true';
+            state.EventCharacteristic.phases.BC = (action.payload.query['PhaseBC'] ?? 'true') == 'true';
+            state.EventCharacteristic.phases.CA = (action.payload.query['PhaseCA'] ?? 'true') == 'true';
+            state.EventCharacteristic.phases.ABG = (action.payload.query['PhaseABG'] ?? 'true') == 'true';
+            state.EventCharacteristic.phases.BCG = (action.payload.query['PhaseBCG'] ?? 'true') == 'true';
+            state.EventCharacteristic.phases.ABC = (action.payload.query['PhaseABC'] ?? 'true') == 'true';
+            state.EventCharacteristic.phases.ABCG = (action.payload.query['PhaseABCG'] ?? 'true') == 'true';
 
             state.isReset = computeReset(state, action.payload.typeIDs);
             state.Status = 'changed';
@@ -224,7 +236,7 @@ export const EventSearchsSlice = createSlice({
         },
         ResetFilters: (state, action: PayloadAction<void>) => {
             state.EventCharacteristic = {
-                durationMax: 0, durationMin: 0, Phase: { A: true, B: true, C: true }, transientMin: 0, transientMax: 0, sagMin: 0, sagMax: 0, swellMin: 0, swellMax: 0, sagType: 'both', swellType: 'both', transientType: 'both',
+                durationMax: 0, durationMin: 0, phases: { AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true }, transientMin: 0, transientMax: 0, sagMin: 0, sagMax: 0, swellMin: 0, swellMax: 0, sagType: 'both', swellType: 'both', transientType: 'both',
                 curveID: 1, curveInside: true, curveOutside: true
             };
 
@@ -330,7 +342,7 @@ function computeReset(state: Redux.EventSearchState, eventTypes: SEBrowser.Event
         state.EventCharacteristic.transientMin == 0 && state.EventCharacteristic.transientMax == 0 &&
         state.EventCharacteristic.sagMin == 0 && state.EventCharacteristic.sagMax == 0 &&
         state.EventCharacteristic.swellMin == 0 && state.EventCharacteristic.swellMax == 0 &&
-        state.EventCharacteristic.Phase.A && state.EventCharacteristic.Phase.B && state.EventCharacteristic.Phase.C &&
+        state.EventCharacteristic.phases.AN && state.EventCharacteristic.phases.BN && state.EventCharacteristic.phases.CN && state.EventCharacteristic.phases.AB && state.EventCharacteristic.phases.BC && state.EventCharacteristic.phases.CA && state.EventCharacteristic.phases.ABG && state.EventCharacteristic.phases.BCG && state.EventCharacteristic.phases.ABC && state.EventCharacteristic.phases.ABCG &&
         state.EventCharacteristic.curveInside && state.EventCharacteristic.curveOutside;
 
     const types = eventTypes.length == eventTypes.filter(e => e.ShowInFilter).length;
@@ -412,12 +424,26 @@ function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type:
     if (!event.curveOutside)
         result['curveOutside'] = false;
 
-    if (!event.Phase.A)
-        result['PhaseA'] = false;
-    if (!event.Phase.B)
-        result['PhaseB'] = false;
-    if (!event.Phase.C)
-        result['PhaseC'] = false;
+    if (!event.phases.AN)
+        result['AN'] = false;
+    if (!event.phases.BN)
+        result['BN'] = false;
+    if (!event.phases.CN)
+        result['CN'] = false;
+    if (!event.phases.AB)
+        result['AB'] = false;
+    if (!event.phases.BC)
+        result['BC'] = false;
+    if (!event.phases.CA)
+        result['CA'] = false;
+    if (!event.phases.ABG)
+        result['ABG'] = false;
+    if (!event.phases.BCG)
+        result['BCG'] = false;
+    if (!event.phases.ABC)
+        result['ABC'] = false;
+    if (!event.phases.ABCG)
+        result['ABCG'] = false;
 
     result["date"] = time.date;
     result["time"] = time.time;

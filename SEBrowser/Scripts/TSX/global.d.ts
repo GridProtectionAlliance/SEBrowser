@@ -95,13 +95,14 @@ export namespace SEBrowser {
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
     interface EventPreviewPaneSetting { ID: number, Name: string, Show: boolean, OrderBy: number }
     interface IReportTimeFilter { date: string, time: string, windowSize: number, timeWindowUnits: number }
+    interface IPhaseFilters { AN: boolean, BN: boolean, CN: boolean, AB: boolean, BC: boolean, CA: boolean, ABG: boolean, BCG: boolean, ABC: boolean, ABCG: boolean }
     interface IEventCharacteristicFilters {
         durationMin: number, durationMax: number,
-        Phase: { A: boolean, B: boolean, C: boolean },
         transientMin: number, transientMax: number, transientType: ('LL'|'LN'|'both'),
         sagMin: number, sagMax: number, sagType: ('LL' | 'LN' | 'both'),
         swellMin: number, swellMax: number, swellType: ('LL' | 'LN' | 'both'),
         curveID: number, curveInside: boolean, curveOutside: boolean
+        phases: IPhaseFilters
     }
     
     interface MagDurCurve { ID: number, Name: string, XHigh: number, XLow: number, YHigh: number, YLow: number, UpperCurve: string, LowerCurve: string, Area: string }

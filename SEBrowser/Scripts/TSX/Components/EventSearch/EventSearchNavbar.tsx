@@ -33,7 +33,7 @@ import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice, MagDurCurveSlic
 import { DefaultSelects } from '@gpa-gemstone/common-pages';
 import EventSearchFilterButton from './EventSearchbarFilterButton';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
-import { Input, Select, EnumCheckBoxes } from '@gpa-gemstone/react-forms';
+import { Input, Select, EnumCheckBoxes, MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { SEBrowser, Redux } from '../../Global';
 import EventSearchTypeFilters from './EventSearchTypeFilter';
@@ -83,10 +83,15 @@ const EventSearchNavbar = (props: IProps) => {
     React.useEffect(() => { setNewTypeFilter(eventTypeFilter) }, [eventTypeFilter])
     React.useEffect(() => { setNewEventCharacteristicFilter(eventCharacteristicFilter) }, [eventCharacteristicFilter])
 
+    const [newPhases, setNewPhases] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([]);
+
     React.useEffect(() => {
         setNewEventCharacteristicFilter(eventCharacteristicFilter);
         setNewTimeFilter(timeFilter);
         setNewTypeFilter(eventTypeFilter);
+        let setupPhases: { Value: number, Text: string, Selected: boolean }[] = [];
+        Object.keys(eventCharacteristicFilter.phases).forEach((key, index) => setupPhases.push({ Value: index, Text: key, Selected: eventCharacteristicFilter.phases[key] }));
+        setNewPhases(setupPhases);
     }, []);
 
     React.useEffect(() => {
@@ -305,64 +310,24 @@ const EventSearchNavbar = (props: IProps) => {
                                     <div className={"col-4"}>
                                         <form>
                                             <label style={{ margin: 0 }}>Phase:</label>
-                                            <div className="form-group">
-                                                <div className='form-check form-check-inline'>
-                                                    <input className="form-check-input" type="checkbox" onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                                        var value = e.target.checked;
-                                                        setNewEventCharacteristicFilter({
-                                                            ...newEventCharacteristicFilter,
-                                                            Phase: {
-                                                                A: value,
-                                                                B: value,
-                                                                C: value
-                                                            }
-                                                        });
-                                                    }} checked={(newEventCharacteristicFilter.Phase.A && newEventCharacteristicFilter.Phase.B && newEventCharacteristicFilter.Phase.C) ||
-                                                        !(newEventCharacteristicFilter.Phase.A || newEventCharacteristicFilter.Phase.B || newEventCharacteristicFilter.Phase.C)}
-                                                        disabled={!(newEventCharacteristicFilter.Phase.A || newEventCharacteristicFilter.Phase.B || newEventCharacteristicFilter.Phase.C)} />
-                                                <label className="form-check-label">Select All</label>
-                                                </div>
-                                            </div>
-                                            <div className="form-group">
-                                            <div className='form-check form-check-inline'>
-                                                <input className="form-check-input" type="checkbox" onChange={() => {
-                                                    setNewEventCharacteristicFilter({
-                                                        ...newEventCharacteristicFilter,
-                                                        Phase: {
-                                                            ...newEventCharacteristicFilter.Phase,
-                                                            A: !newEventCharacteristicFilter.Phase.A
-                                                        }
-                                                    });
-                                                }} checked={newEventCharacteristicFilter.Phase.A} />
-                                                <label className="form-check-label">A</label>
-                                            </div>
-                                            <div className='form-check form-check-inline'>
-                                                <input className="form-check-input" type="checkbox" onChange={() => {
-                                                    setNewEventCharacteristicFilter({
-                                                        ...newEventCharacteristicFilter,
-                                                        Phase: {
-                                                            ...newEventCharacteristicFilter.Phase,
-                                                            B: !newEventCharacteristicFilter.Phase.B
-                                                        }
-                                                    });
-                                                }} checked={newEventCharacteristicFilter.Phase.B} />
-                                                <label className="form-check-label">B</label>
-                                            </div>
-                                            <div className='form-check form-check-inline'>
-                                                <input className="form-check-input" type="checkbox" onChange={() => {
-                                                    setNewEventCharacteristicFilter({
-                                                        ...newEventCharacteristicFilter,
-                                                        Phase: {
-                                                            ...newEventCharacteristicFilter.Phase,
-                                                            C: !newEventCharacteristicFilter.Phase.C
-                                                        }
-                                                    });
-                                                }} checked={newEventCharacteristicFilter.Phase.C} />
-                                                <label className="form-check-label">C</label>
-                                            </div>
-                                        </div>
-                                </form>
-                            </div>
+                                            <MultiCheckBoxSelect
+                                                Options= {newPhases}
+                                                OnChange={
+                                                    (evt, Options: { Value: number; Text: string; Selected: boolean; }[]) => { 
+                                                        let phaseList = [];
+                                                        let phaseFilter: SEBrowser.IPhaseFilters = { ...newEventCharacteristicFilter.phases };
+                                                        newPhases.forEach(phase => {
+                                                            const phaseSelected: boolean = phase.Selected != (Options.findIndex(option => phase.Value === option.Value) > -1);
+                                                            phaseList.push({ ...phase, Selected: phaseSelected });
+                                                            phaseFilter[phase.Text] = phaseSelected;
+                                                        })
+                                                        setNewPhases(phaseList);
+                                                        setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, phases: phaseFilter });
+                                                    }
+                                                }
+                                            /> 
+                                        </form>   
+                                    </div>
                                     
                                 <div className={"col-4"}>
                                    <form>
