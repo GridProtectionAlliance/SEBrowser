@@ -101,9 +101,6 @@ const EventSearch = (props: IProps) => {
                         <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
                             <div style={{ width: 'calc(100% - 300px)', padding: 10, float: 'left' }}>
                             </div>
-                            <div style={{ width: 120, float: 'right', padding: 10 }}>
-                                <EventSearchListedEventsNoteWindow />
-                            </div>
                             <div style={{ width: 160, float: 'right', padding: 10 }}>
                             <button className='btn btn-danger' onClick={() => setShowMagDur((c) => !c)} >
                                 View As {showMagDur ? 'List' : 'Mag/Dur'}
