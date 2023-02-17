@@ -87,20 +87,25 @@ namespace SEBrowser
             using (DataContext dataContext = new(exceptionHandler: LogException))
             {
                 //EncryptScores(dataContext);
+                Dictionary<string, string> appSetting;
 
-
-                // Load global web settings
-                Dictionary<string, string> appSetting = dataContext.LoadDatabaseSettings("app.setting");
-                global.ApplicationName = appSetting["applicationName"];
-                global.ApplicationDescription = appSetting["applicationDescription"];
-                global.ApplicationKeywords = appSetting["applicationKeywords"];
-                global.BootstrapTheme = appSetting["bootstrapTheme"];
-
+                try
+                {
+                    // Load global web settings
+                    appSetting = dataContext.LoadDatabaseSettings("app.setting");
+                    global.ApplicationName = appSetting["applicationName"];
+                    global.ApplicationDescription = appSetting["applicationDescription"];
+                    global.ApplicationKeywords = appSetting["applicationKeywords"];
+                    global.BootstrapTheme = appSetting["bootstrapTheme"];
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException($"Failed to load database connection, check ADO connection string in config file: {ex.Message}", ex);
+                }
 
                 // Cache application settings
                 foreach (KeyValuePair<string, string> item in appSetting)
                     global.ApplicationSettings.Add(item.Key, item.Value);
-
             }
 
             // Modify the JSON serializer to serialize dates as UTC -
