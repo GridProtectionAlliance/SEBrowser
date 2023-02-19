@@ -13,6 +13,9 @@ namespace SEBrowser
         public static string AnonymousResourceExpression => s_anonymousResourceExpression ??= GetAnonymousResourceExpression();
 
         private static string GetApplicationName() =>
+            // Try database configured application name (if loaded yet)
+            MvcApplication.DefaultModel.Global.ApplicationName ??
+            // Fall back on setting defined in web.config
             GetSettingValue("SecurityProvider", "ApplicationName", "GSF Authentication");
 
         private static string GetAnonymousResourceExpression() =>
