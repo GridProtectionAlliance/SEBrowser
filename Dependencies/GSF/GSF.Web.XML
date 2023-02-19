@@ -2254,6 +2254,16 @@
             <param name="logStatusMessageFunction">Delegate to use to log status messages, if any.</param>
             <param name="logExceptionFunction">Delegate to use to log exceptions, if any.</param>
         </member>
+        <member name="P:GSF.Web.Security.SecurityHub.AzureADSettings">
+            <summary>
+            Gets Azure AD settings.
+            </summary>
+        </member>
+        <member name="P:GSF.Web.Security.SecurityHub.GraphClient">
+            <summary>
+            Gets Graph client.
+            </summary>
+        </member>
         <member name="F:GSF.Web.Security.SecurityHub.DefaultNodeID">
             <summary>
             Gets current default Node ID for security.
@@ -2410,6 +2420,32 @@
             Gets the default NodeID based on the current configuration.
             </summary>
             <returns>Default NodeID based on the current configuration.</returns>
+        </member>
+        <member name="M:GSF.Web.Security.SecurityHub.GetAzureADUserList">
+            <summary>
+            Gets the list of Azure AD users that are defined.
+            </summary>
+            <returns>Azure AD user list.</returns>
+        </member>
+        <member name="M:GSF.Web.Security.SecurityHub.GetAzureADGroupList">
+            <summary>
+            Gets the list of Azure AD groups that are defined.
+            </summary>
+            <returns>Azure AD group list.</returns>
+        </member>
+        <member name="M:GSF.Web.Security.SecurityHub.IsValidAzureADUserName(System.String)">
+            <summary>
+            Gets flag that determines if specified user name can be found on Azure AD.
+            </summary>
+            <param name="userName">User name to lookup.</param>
+            <returns><c>true</c> if user name was found in Azure AD; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:GSF.Web.Security.SecurityHub.IsValidAzureADGroupName(System.String)">
+            <summary>
+            Gets flag that determines if specified group name can be found on Azure AD.
+            </summary>
+            <param name="groupName">Group name to lookup</param>
+            <returns><c>true</c> if group name was found in Azure AD; otherwise, <c>false</c>.</returns>
         </member>
         <member name="M:GSF.Web.Security.SecurityHub.QueryUserAccountCount(System.String)">
             <summary>
