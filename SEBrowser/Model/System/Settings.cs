@@ -31,13 +31,18 @@ namespace SEBrowser.Model.System
     {
         [PrimaryKey(true)]
         public int ID{ get; set; }
+
         [StringLength(64)]
         public string Scope{ get; set; }
+
         [StringLength(64)]
         public string Name{ get; set; }
+        
         [StringLength(512)]
         public string Value{ get; set; }
+        
         public bool ApplicationInstance{ get; set; }
+        
         [StringLength(200)]
         public string Roles{ get; set; }    
     }
