@@ -100,7 +100,17 @@ namespace SEBrowser
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException($"Failed to load database connection, check ADO connection string in config file: {ex.Message}", ex);
+                    LogException(ex);
+
+                    // Allow system to continue if database or settings table is not defined, this way a
+                    // more appropriate error message can be displayed to the user when the page loads
+                    appSetting = new Dictionary<string, string>();
+
+                    // Set some reasonable default values just to allow system to continue
+                    global.ApplicationName = "SEBrowser";
+                    global.ApplicationDescription = "SEBrowser Application";
+                    global.ApplicationKeywords = "SEBrowser";
+                    global.BootstrapTheme = "Content/bootstrap-theme.min.css";
                 }
 
                 // Cache application settings
@@ -149,12 +159,11 @@ namespace SEBrowser
         public static void LogException(Exception ex)
         {
             // TODO: Write exception to log with log4net, etc.
-#if DEBUG
-            ThreadPool.QueueUserWorkItem(state =>
-            {
-                Thread.Sleep(1500);
-            });
-#endif
+            //ThreadPool.QueueUserWorkItem(state =>
+            //{
+            //    // Log exception here
+            //});
+
             WriteToErrorLog(ex);
         }
 

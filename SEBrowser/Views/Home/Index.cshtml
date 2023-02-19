@@ -24,13 +24,26 @@
 @using GSF.Web.Shared
 @{
     Layout = "";
-    
-    using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
-    {
-        ViewBag.xdaInstance = connection.ExecuteScalar<string>("SELECT Value FROM [SEBrowser.Setting] WHERE Name = 'XDAInstance'");
-        ViewBag.scInstance = connection.ExecuteScalar<string>("SELECT Value FROM [SEBrowser.Setting] WHERE Name = 'SCInstance'");
-        ViewBag.openSEEInstance = connection.ExecuteScalar<string>("SELECT Value FROM [SEBrowser.Setting] WHERE Name = 'OpenSEEInstance'");
-        ViewBag.faultLocationInstance = connection.ExecuteScalar<string>("SELECT Value FROM [SEBrowser.Setting] WHERE Name = 'FaultLocationInstance'");
+
+    try {
+        using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+        {
+            ViewBag.xdaInstance = connection.ExecuteScalar<string>("SELECT Value FROM [SEBrowser.Setting] WHERE Name = 'XDAInstance'");
+            ViewBag.scInstance = connection.ExecuteScalar<string>("SELECT Value FROM [SEBrowser.Setting] WHERE Name = 'SCInstance'");
+            ViewBag.openSEEInstance = connection.ExecuteScalar<string>("SELECT Value FROM [SEBrowser.Setting] WHERE Name = 'OpenSEEInstance'");
+            ViewBag.faultLocationInstance = connection.ExecuteScalar<string>("SELECT Value FROM [SEBrowser.Setting] WHERE Name = 'FaultLocationInstance'");
+        }
+    }
+    catch (Exception ex) {
+        // Gracefully handle database issues
+        ViewBag.xdaInstance = "localhost";
+        ViewBag.scInstance = "localhost";
+        ViewBag.openSEEInstance = "localhost";
+        ViewBag.faultLocationInstance = "localhost";
+
+        // TODO: Check for exception in ViewBag and display error message at an appropriate location along with warning such as:
+        // Failed to connect to database or find 'SEBrowser.Setting' table, validate connection string
+        ViewBag.settingsException = ex;
     }
 
     Version assemblyVersionInfo = typeof(SEBrowser.MvcApplication).Assembly.GetName().Version;
