@@ -37,6 +37,7 @@ using Resources = GSF.Web.Shared.Resources;
 using AuthenticationOptions = GSF.Web.Security.AuthenticationOptions;
 using static SEBrowser.Common;
 
+// ReSharper disable MustUseReturnValue
 [assembly: OwinStartup(typeof(SEBrowser.Startup))]
 namespace SEBrowser;
 
@@ -46,11 +47,14 @@ public class Startup
     {
         // Enable GSF role-based security authentication
         app.UseAuthentication(s_authenticationOptions);
-
+        
         OwinLoaded = true;
-
+        
         // Configure Web API for self-host. 
         HttpConfiguration config = new();
+
+        // Enable GSF session management
+        config.EnableSessions(s_authenticationOptions);
 
         // Set configuration to use reflection to setup routes
         config.MapHttpAttributeRoutes(new CustomDirectRouteProvider());
@@ -60,11 +64,8 @@ public class Startup
 
     public class CustomDirectRouteProvider : DefaultDirectRouteProvider
     {
-        protected override IReadOnlyList<IDirectRouteFactory>
-            GetActionRouteFactories(HttpActionDescriptor actionDescriptor)
-        {
-            return actionDescriptor.GetCustomAttributes<IDirectRouteFactory>(inherit: true);
-        }
+        protected override IReadOnlyList<IDirectRouteFactory> GetActionRouteFactories(HttpActionDescriptor actionDescriptor) => 
+            actionDescriptor.GetCustomAttributes<IDirectRouteFactory>(inherit: true);
     }
 
     private static readonly AuthenticationOptions s_authenticationOptions;
