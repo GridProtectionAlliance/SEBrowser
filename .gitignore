@@ -23,6 +23,7 @@ bld/
 [Oo]bj/
 [Cc]onfiguration[Cc]ache/
 Publish
+SEBrowser/DynamicAssemblies/
 
 # Visual Studio 2015 cache/options directory
 .vs/
