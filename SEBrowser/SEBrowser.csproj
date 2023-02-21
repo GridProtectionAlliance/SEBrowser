@@ -407,9 +407,9 @@
     <Content Include="Shared\Content\Readme.txt" />
     <Content Include="Shared\Readme.txt" />
     <Content Include="Shared\Scripts\flot\LICENSE.txt" />
+    <Content Include="Views\Login\AuthTest.cshtml" />
     <Content Include="Web.config" />
     <Content Include="appsettings.json" />
-    <Content Include="Views\Login\AuthTest.cshtml" />
     <Content Include="Views\Login\Index.cshtml" />
     <Content Include="Views\Login\Logout.cshtml" />
     <None Include="webpack.config.js" />
