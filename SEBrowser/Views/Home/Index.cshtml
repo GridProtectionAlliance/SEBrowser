@@ -132,19 +132,5 @@
     <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/bootstrap4.js")"></script>
     <script src="~/Scripts/Lib/bootstrap4-datetimepicker.min.js"></script>
     <script src="@Url.Content("~/Scripts/SEBrowser.js")"></script>
-    <script>
-        const menuBlock = $("nav").eq(1).children(0).eq(0);
-        
-        menuBlock.after('<div id="logoutBlock" style="margin-bottom: 10px; margin-left: 65px;">' +
-            '<button id="logoutButton" type="button" class="btn btn-sm btn-info" data-tooltip="Log out @this.UserID()" hub-dependent>Log Out</button>' +
-            '<a href="https://www.gridprotectionalliance.org/" target="_blank" style="padding-left: 10px">' +
-            '<img alt="Grid Protection Alliance" src="@Resources.Root/Shared/Images/gpa-smalllock.png"></a></div>');
-
-        menuBlock.css({"height": "calc(100% - 35px - " + $("#logoutBlock").height() + "px)"});
-
-        $("#logoutButton").click(function () {
-            window.location = "/Logout";
-        });
-    </script>
 </body>
 </html>
