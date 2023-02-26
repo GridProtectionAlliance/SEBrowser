@@ -4,6 +4,13 @@
         <name>GSF.Security</name>
     </assembly>
     <members>
+        <member name="M:GSF.Security.AzureADPassthroughPrincipal.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:GSF.Security.AzureADPassthroughPrincipal" />
+            class representing an Azure AD user with a passthrough principal.
+            </summary>
+            <param name="name">The name of the user on whose behalf the code is running.</param>
+        </member>
         <member name="T:GSF.Security.AzureADSettings">
             <summary>
             Represents settings needed for Azure Active Directory (AD) authentication.
@@ -550,9 +557,9 @@
         </member>
         <member name="M:GSF.Security.AdoSecurityProvider.GetUserRoles(System.String)">
             <summary>
-            Gets a list of Roles for this user for a specified ApplicationId.
+            Gets a list of roles for this user for a specified application ID, i.e., target node ID.
             </summary>
-            <param name="applicationId">The applicationId for the roles to be returned.</param>
+            <param name="applicationId">The node ID for the roles to be returned.</param>
             <returns>The roles that the specified user has.</returns>
         </member>
         <member name="E:GSF.Security.AdoSecurityProvider.SecurityContextRefreshed">
@@ -1030,6 +1037,16 @@
         <member name="P:GSF.Security.OIDCUserData.Token">
             <summary>
             Gets or sets the <see cref="T:GSF.Security.TokenResponse"/> associated with this user.
+            </summary>
+        </member>
+        <member name="T:GSF.Security.TokenCacheHelper">
+            <summary>
+            Defines a helper class for token cache management.
+            </summary>
+        </member>
+        <member name="P:GSF.Security.TokenCacheHelper.CacheFilePath">
+            <summary>
+            Path to the token cache.
             </summary>
         </member>
         <member name="T:GSF.Security.UserRoleCache">
@@ -1799,6 +1816,11 @@
         <member name="P:GSF.Security.SecurityIdentity.Name">
             <summary>
             Gets the user's login name.
+            </summary>
+        </member>
+        <member name="P:GSF.Security.SecurityIdentity.Type">
+            <summary>
+            Gets the user type.
             </summary>
         </member>
         <member name="P:GSF.Security.SecurityIdentity.Provider">
