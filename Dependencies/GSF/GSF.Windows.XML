@@ -900,15 +900,5 @@
             InitializeComponent
             </summary>
         </member>
-        <member name="T:GSF.Windows.TokenCacheHelper">
-            <summary>
-            Defines a helper class for token cache management.
-            </summary>
-        </member>
-        <member name="P:GSF.Windows.TokenCacheHelper.CacheFilePath">
-            <summary>
-            Path to the token cache.
-            </summary>
-        </member>
     </members>
 </doc>
