@@ -22,6 +22,7 @@
 //******************************************************************************************************
 
 using System;
+using System.Threading;
 using System.Web.Mvc;
 using GSF.Web.Security;
 
@@ -49,6 +50,14 @@ public class LoginController : Controller
     [AllowAnonymous]
     public ActionResult Logout()
     {
+        return View();
+    }
+
+    [Route("~/UserInfo")]
+    [AuthorizeControllerRole]
+    public ActionResult UserInfo()
+    {
+        Thread.CurrentPrincipal = ViewBag.SecurityPrincipal = User;
         return View();
     }
 }

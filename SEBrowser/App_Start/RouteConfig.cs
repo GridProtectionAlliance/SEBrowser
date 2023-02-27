@@ -55,6 +55,12 @@ namespace SEBrowser
             );
 
             routes.MapRoute(
+                name: "UserInfoRoute",
+                url: "UserInfo",
+                defaults: new { controller = "Login", action = "UserInfo" }
+            );
+
+            routes.MapRoute(
                 name: "Default",
                 url: "{page}/{id}",
                 defaults: new { controller = "Home", action = "Home", page = UrlParameter.Optional, id = UrlParameter.Optional }
