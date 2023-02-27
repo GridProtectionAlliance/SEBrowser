@@ -26,13 +26,13 @@ using GSF.IO;
 using GSF.Web.Security;
 using Owin;
 using Microsoft.Owin;
+using System;
 using System.Web.Http;
 using System.Web.Http.Routing;
 using System.Collections.Generic;
 using System.Web.Http.Controllers;
 using System.IO;
 using System.Reflection;
-using System;
 using Resources = GSF.Web.Shared.Resources;
 using AuthenticationOptions = GSF.Web.Security.AuthenticationOptions;
 using static SEBrowser.Common;
@@ -47,9 +47,9 @@ public class Startup
     {
         // Enable GSF role-based security authentication
         app.UseAuthentication(s_authenticationOptions);
-        
+
         OwinLoaded = true;
-        
+
         // Configure Web API for self-host. 
         HttpConfiguration config = new();
 

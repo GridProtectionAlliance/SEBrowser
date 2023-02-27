@@ -2680,6 +2680,17 @@
             <param name="sessionToken">Token used for identifying the session ID in cookie headers.</param>
             <returns>Session ID string, if defined; otherwise, <c>null</c>.</returns>
         </member>
+        <member name="M:GSF.Web.Security.SessionHandler.SetCookie(System.Net.Http.HttpRequestMessage,System.Net.Http.HttpResponseMessage,System.String,System.String,System.String,System.Nullable{System.TimeSpan})">
+            <summary>
+            Gets the session state as defined in the request cookie header values.
+            </summary>
+            <param name="request">Request message.</param>
+            <param name="response">Response message.</param>
+            <param name="key">Cookie key.</param>
+            <param name="value">Cookie value.</param>
+            <param name="path">Cookie path.</param>
+            <param name="maxAge">Cookie max age.</param>
+        </member>
         <member name="T:GSF.Web.Security.HttpConfigurationExtensions">
             <summary>
             Represents <see cref="T:System.Web.Http.HttpConfiguration"/> extension functions for GSF authentication middle-ware.
@@ -2698,6 +2709,13 @@
             </summary>
             <param name="request">The HTTP request.</param>
             <returns>The authentication options.</returns>
+        </member>
+        <member name="M:GSF.Web.Security.HttpConfigurationExtensions.GetOwinContext(System.Net.Http.HttpRequestMessage)">
+            <summary>
+            Retrieves the OWIN context from the specified <paramref name="request"/>.
+            </summary>
+            <param name="request">The HTTP request.</param>
+            <returns><see cref="T:Microsoft.Owin.IOwinContext"/> if found; otherwise, <c>null</c>.</returns>
         </member>
         <member name="M:GSF.Web.Security.HttpConfigurationExtensions.GenerateRequestVerficationHeaderToken(System.Net.Http.HttpRequestMessage)">
             <summary>

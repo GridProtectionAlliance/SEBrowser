@@ -21,15 +21,16 @@
 //
 //******************************************************************************************************
 
-using SEBrowser;
 using SEBrowser.Model;
 using System.Web.Mvc;
+using GSF.Web.Security;
 
 namespace SEBrowser.Controllers
 {
     /// <summary>
     /// Represents a MVC controller for the site's main pages.
     /// </summary>
+    [AuthorizeControllerRole]
     public class HomeController : Controller
     {
         public HomeController()
@@ -37,7 +38,6 @@ namespace SEBrowser.Controllers
             ViewData.Model = new AppModel();
         }
 
-        [Authorize]
         public ActionResult Home()
         {
             if (User?.Identity?.IsAuthenticated ?? false)
