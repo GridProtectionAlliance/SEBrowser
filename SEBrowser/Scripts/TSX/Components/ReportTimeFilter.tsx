@@ -292,8 +292,8 @@ const ReportTimeFilter = (props: IProps) => {
             <legend className="w-auto" style={{ fontSize: 'large' }}>Time Window:</legend>
                 <div className="">
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Date: </label>
-                    <div className="form-group" style={{ height: 30 }}>
-                        <div className='col' style={{ width: 'auto', position: 'relative', float: "left" }}>
+                    <div className="row">
+                        <div className='col-6'>
                         <DatePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="date"
                             Setter={(r) => {
                                 setFilter(r);
@@ -301,7 +301,7 @@ const ReportTimeFilter = (props: IProps) => {
                             }} Label=''
                             Valid={(record) => { return true; }} Format="MM/DD/YYYY" />
                         </div>
-                    <div className='col' style={{ width: 'auto', position: 'relative', float: "left" }}>
+                    <div className='col-6'>
                         <TimePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="time"
                             Setter={(r) => {
                             setFilter(r);
@@ -312,15 +312,15 @@ const ReportTimeFilter = (props: IProps) => {
                     </div>
 
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
-                    <div className="form-group">
-                    <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
+                    <div className="row">
+                    <div className='col-6'>
                         <Input<SEBrowser.IReportTimeFilter> Record={filter} Field='windowSize' Setter={(r) => {
                             setFilter(r);
                             setActiveQP(-1);
                         }} Label='' Valid={(record) => { return true; }}
                             Type='number' />
                         </div>
-                        <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
+                        <div className='col-6'>
                         <Select<SEBrowser.IReportTimeFilter> Record={filter} Label=''
                             Field='timeWindowUnits'
                             Setter={(r) => {
