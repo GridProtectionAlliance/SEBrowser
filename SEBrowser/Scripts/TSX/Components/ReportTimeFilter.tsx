@@ -267,6 +267,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
 const ReportTimeFilter = (props: IProps) => {
     const [filter, setFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.filter)
     const timeZoneOffset = useSelector(SelectTimeZoneOffset);
+    const [activeQP, setActiveQP] = React.useState<number>(-1);
 
     React.useEffect(() => {
         if (isEqual(props.filter, filter))
@@ -293,20 +294,39 @@ const ReportTimeFilter = (props: IProps) => {
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Date: </label>
                     <div className="form-group" style={{ height: 30 }}>
                         <div className='col' style={{ width: 'auto', position: 'relative', float: "left" }}>
-                        <DatePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="date" Setter={setFilter} Label='' Valid={(record) => { return true; }}  Format="MM/DD/YYYY" />
+                        <DatePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="date"
+                            Setter={(r) => {
+                                setFilter(r);
+                                setActiveQP(-1);
+                            }} Label=''
+                            Valid={(record) => { return true; }} Format="MM/DD/YYYY" />
                         </div>
                     <div className='col' style={{ width: 'auto', position: 'relative', float: "left" }}>
-                        <TimePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="time" Setter={setFilter} Label='' Valid={(record) => { return true; }} Step={0.001} />
+                        <TimePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="time"
+                            Setter={(r) => {
+                            setFilter(r);
+                            setActiveQP(-1);
+                            }}
+                            Label='' Valid={(record) => { return true; }} Step={0.001} />
                         </div>
                     </div>
 
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
                     <div className="form-group">
                     <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
-                        <Input<SEBrowser.IReportTimeFilter> Record={filter} Field='windowSize' Setter={setFilter} Label='' Valid={(record) => { return true; }} Type='number' />
+                        <Input<SEBrowser.IReportTimeFilter> Record={filter} Field='windowSize' Setter={(r) => {
+                            setFilter(r);
+                            setActiveQP(-1);
+                        }} Label='' Valid={(record) => { return true; }}
+                            Type='number' />
                         </div>
                         <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
-                            <Select<SEBrowser.IReportTimeFilter> Record={filter} Label='' Field='timeWindowUnits' Setter={setFilter}
+                        <Select<SEBrowser.IReportTimeFilter> Record={filter} Label=''
+                            Field='timeWindowUnits'
+                            Setter={(r) => {
+                                setFilter(r);
+                                setActiveQP(-1);
+                            }}
                                 Options={[
                                     { Value: '7', Label: 'Year' },
                                     { Value: '6', Label: 'Month' },
@@ -329,13 +349,30 @@ const ReportTimeFilter = (props: IProps) => {
                             return (
                                 <div key={i} className={"col-3"} style={{ paddingLeft: (i %12 == 0 ? 15 : 0), paddingRight: (i % 12 == 9 ? 15 : 2), marginTop: 10 }}>
                                     <ul className="list-group" key={i}>
-                                        <li key={i} style={{ cursor: 'pointer' }} onClick={() => props.setFilter(AvailableQuickSelects[i].createFilter(timeZoneOffset))} className="item badge badge-secondary">{AvailableQuickSelects[i].label}</li>
+                                        <li key={i} style={{ cursor: 'pointer' }}
+                                            onClick={() => {
+                                                props.setFilter(AvailableQuickSelects[i].createFilter(timeZoneOffset));
+                                                setActiveQP(i);
+                                            }}
+                                            className={"item badge badge-" + (i == activeQP? "primary" : "secondary")}>{AvailableQuickSelects[i].label}
+                                        </li>
                                         {i + 1 < AvailableQuickSelects.length ?
-                                            <li key={i + 1} style={{ marginTop: 3, cursor: 'pointer' }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i + 1].createFilter(timeZoneOffset))}>
+                                            <li key={i + 1} style={{ marginTop: 3, cursor: 'pointer' }}
+                                                className={"item badge badge-" + (i+1 == activeQP ? "primary" : "secondary")}
+                                                onClick={() => {
+                                                    props.setFilter(AvailableQuickSelects[i + 1].createFilter(timeZoneOffset));
+                                                    setActiveQP(i+1)
+                                                }}>
                                             {AvailableQuickSelects[i+ 1].label}
                                         </li> : null}
                                         {i + 2 < AvailableQuickSelects.length ?
-                                            <li key={i + 2} style={{ marginTop: 3, cursor: 'pointer' }} className="item badge badge-secondary" onClick={() => props.setFilter(AvailableQuickSelects[i + 2].createFilter(timeZoneOffset))}>
+                                            <li key={i + 2}
+                                                style={{ marginTop: 3, cursor: 'pointer' }}
+                                                className={"item badge badge-" + (i+2 == activeQP ? "primary" : "secondary")}
+                                                onClick={() => {
+                                                    props.setFilter(AvailableQuickSelects[i + 2].createFilter(timeZoneOffset));
+                                                    setActiveQP(i + 2);
+                                                }}>
                                             {AvailableQuickSelects[i+ 2].label}
                                         </li> : null}
                                     </ul>
