@@ -37,8 +37,12 @@ import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { Application, Page, Section, Modal } from '@gpa-gemstone/react-interactive';
 import Settings from './Settings';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
+import { useAppDispatch } from './hooks';
+import { LoadSettings } from './Components/SettingsSlice';
 
 const SEBrowserMainPage = (props: {}) => {
+    const dispatch = useAppDispatch();
+
     const [links, setLinks] = React.useState<SystemCenter.Types.ValueListItem[]>([]);
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
 
@@ -56,6 +60,10 @@ const SEBrowserMainPage = (props: {}) => {
         handle.done(data => setLinks(data));
         return () => { if(handle.abort != undefined) handle.abort()}
     }, []);
+
+    React.useEffect(() => {
+        dispatch(LoadSettings());
+    }, [])
 
     const createWidget = (item: string) => {
         if (item === "breakerreport")

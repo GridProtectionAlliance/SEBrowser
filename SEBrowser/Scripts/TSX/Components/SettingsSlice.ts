@@ -22,31 +22,54 @@
 //       Cleaned up Settings code.
 //
 //******************************************************************************************************
-import { createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { Redux, SEBrowser } from '../global';
 
-const settingsSlice = createSlice({ 
+declare var homePath: string;
+
+export const LoadSettings = createAsyncThunk('Settings/LoadSettingsThunk', async () => {
+    return loadTimeZone();
+});
+
+
+const settingsSlice = createSlice({
     name: 'Settings',
 
     initialState: {
-        eventSearch: { NumberResults: 100 }
+        eventSearch: { NumberResults: 100 },
+        TimeZoneOffset: 0,
     } as Redux.SettingsState,
-    
+
     reducers: {
-        LoadSettings: (state) => {
-            let preserved = readSettings();
-            if (preserved != undefined) {
-                state.eventSearch = preserved.eventSearch;
-            }
-            else {
-                state.eventSearch = { NumberResults: 100 };
-            }
-            return state
-        },
         SetEventSearch: (state: Redux.SettingsState, action: { type: string, payload: Redux.IEventSearchSettings }) => {
             state.eventSearch = action.payload;
             saveSettings(state);
         },
+    },
+    extraReducers: (builder) => {
+
+        builder.addCase(LoadSettings.fulfilled, (state, action) => {
+            let preserved = readSettings();
+
+            if (preserved != undefined) {
+                state.eventSearch = preserved.eventSearch;
+            }
+            else
+                state.eventSearch = { NumberResults: 100 };
+
+            state.TimeZoneOffset = action.payload;
+        });    
+        
+        builder.addCase(LoadSettings.rejected, (state, action) => {
+            let preserved = readSettings();
+
+            if (preserved != undefined) {
+                state.eventSearch = preserved.eventSearch;
+            }
+            else
+                state.eventSearch = { NumberResults: 100 };
+            state.TimeZoneOffset = 0;
+        });
     }
 })
 
@@ -72,6 +95,18 @@ function saveSettings(state: Redux.SettingsState) {
     }
 }
 
+function loadTimeZone() {
+    return $.ajax({
+        type: "GET",
+        url: `${homePath}api/SEBrowser/GetTimeZone`,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        cache: true,
+        async: true
+    });
+
+}
 export const SettingsReducer = settingsSlice.reducer
 export const { SetEventSearch } = settingsSlice.actions
 export const SelectEventSearchSettings = (state: Redux.StoreState) => state.Settings.eventSearch
+export const SelectTimeZoneOffset = (state: Redux.StoreState) => state.Settings.TimeZoneOffset
