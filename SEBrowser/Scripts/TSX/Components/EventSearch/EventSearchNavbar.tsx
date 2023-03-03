@@ -105,15 +105,18 @@ const EventSearchNavbar = (props: IProps) => {
     }, [evtTypeStatus]);
 
     React.useEffect(() => {
+
+        const characteristics = validEventCharacteristicsFilter() ? newEventCharacteristicFilter : undefined;
+
         if (!(newEventCharacteristicFilter === null || newTimeFilter === null || newTypeFilter === null))
             dispatch(SetFilters({
-                characteristics: newEventCharacteristicFilter,
+                characteristics,
                 time: newTimeFilter,
                 types: newTypeFilter
             }));
     }, [newEventCharacteristicFilter, newTimeFilter, newTypeFilter]);   
 
-    React.useEffect(() => { }, [])
+
     function formatWindowUnit(i: number) {
         if (i == 7)
             return "Years";
@@ -210,6 +213,16 @@ const EventSearchNavbar = (props: IProps) => {
         };
     }
 
+    function validEventCharacteristicsFilter() {
+        let valid = newEventCharacteristicFilter != null;
+
+        valid = valid && newEventCharacteristicFilter.durationMin >= newEventCharacteristicFilter.durationMax;
+        valid = valid && newEventCharacteristicFilter.sagMin >= newEventCharacteristicFilter.sagMax;
+        valid = valid && newEventCharacteristicFilter.swellMin >= newEventCharacteristicFilter.swellMax;
+        valid = valid && newEventCharacteristicFilter.transientMin >= newEventCharacteristicFilter.transientMax;
+        return valid;
+    }
+
     if (newEventCharacteristicFilter === null || newTimeFilter === null || newTypeFilter === null) return null;
 
     if (!props.showNav)
@@ -298,7 +311,15 @@ const EventSearchNavbar = (props: IProps) => {
                                             <div className="form-group">
                                                 <div className='input-group input-group-sm'>
                                                     <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!sagsSelected} Field='sagMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                        <Input<SEBrowser.IEventCharacteristicFilters>
+                                                            Record={newEventCharacteristicFilter}
+                                                            Label='' Disabled={!sagsSelected}
+                                                            Field='sagMin'
+                                                            Setter={setNewEventCharacteristicFilter}
+                                                            Valid={() => { return true }}
+                                                            Type='number'
+                                                            
+                                                        />
                                                     </div>
                                                     <div className="input-group-append" style={{ height: '37px' }}>
                                                         <span className="input-group-text"> to </span>
