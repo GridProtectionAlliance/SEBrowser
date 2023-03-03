@@ -463,6 +463,8 @@ function parseList(key: string, object: any) {
         i = i + 1;
     }
 
+    if (result.length == 0)
+        return null;
     return result;
 
 }
