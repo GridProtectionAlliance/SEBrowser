@@ -107,8 +107,8 @@ const EventSearch = (props: IProps) => {
                             </button>
                             </div>
                             {showMagDur ?
-                                <EventSearchMagDur Width={(window.innerWidth - 300) / 2}
-                                Height={window.innerHeight - ((showNav ? navHeight : 52) + 70)}
+                                <EventSearchMagDur
+                                Height={window.innerHeight - ((showNav ? navHeight : 52) + 120)}
                                     EventID={eventId}
                                     OnSelect={(evt, point) => setEventId(point.EventID)}
                                 /> :

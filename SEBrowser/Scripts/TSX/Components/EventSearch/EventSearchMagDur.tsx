@@ -28,6 +28,7 @@ import { SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { OpenXDA, SEBrowser } from '../../global';
 import { MagDurCurveSlice } from '../../Store';
+import { Line, Plot, Circle, AggregatingCircles } from '@gpa-gemstone/react-graph';
 
 interface iCurve {
     ID: number,
@@ -44,7 +45,6 @@ interface iCurve {
 }
 
 interface IProps {
-    Width: number,
     Height: number,
     EventID: number,
     OnSelect: (evt: any, point: any) => void
@@ -56,19 +56,33 @@ const MagDurChart = (props: IProps) => {
 
     const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
     const magDurCurves = useAppSelector(MagDurCurveSlice.Data) as SEBrowser.MagDurCurve[];
-
+ 
     const [currentCurve, setCurrentCurve] = React.useState<SEBrowser.MagDurCurve>(null)
+
+    const [width, setWidth] = React.useState<number>(0);
+    const [x, setX] = React.useState<boolean>(false);
 
     const dispatch = useAppDispatch();
     const status = useAppSelector(SelectEventSearchsStatus);
     const points: any[] = useAppSelector(SelectEventSearchs);
 
+    // This needs to be used instead of a Layout effect since a Layout Effect would not get triggered since nothing is redrawn when
+    // size of the parent div changes.
+    React.useEffect(() => {
+        setWidth(chart?.current?.offsetWidth ?? 0)
+
+        const h = setTimeout(() => {
+            setX((a) => !a)
+        }, 500);
+
+        return () => { if (h !== null) clearTimeout(h); };
+
+    }, [x])
+
     React.useEffect(() => {
         if (status != 'unitiated' && status != 'changed') return;
-        dispatch(FetchEventSearches());
+         dispatch(FetchEventSearches());
 
-        return function () {
-        }
     }, [status]);
 
     React.useEffect(() => {
@@ -83,25 +97,27 @@ const MagDurChart = (props: IProps) => {
     }, [magDurCurves]);
 
     React.useEffect(() => {
-        Initialize();
-    }, [currentCurve, points, props.Height, props.Width])
+        //Initialize();
+    }, [currentCurve, points, props.Height])
 
-    function resetZoom(evt: any) {
-        Initialize();
-    }
+   
+    const baseColors = ["#A30000","#0029A3","#007A29", "#d3d3d3", "#edc240",
+             "#afd8f8", "#cb4b4b", "#4da74d", "#9440ed", "#BD9B33", "#EE2E2F",
+        "#008C48", "#185AA9", "#F47D23", "#662C91", "#A21D21", "#B43894",
+        "#737373"]
 
     function Initialize() {
 
         if (currentCurve == null)
             return; 
         const margin = { top: 15, right: 20, bottom: 60, left: 40 };
-        const svgWidth = props.Width - margin.left - margin.right;
+        const svgWidth = 0 - margin.left - margin.right;
         const svgHeight = props.Height - margin.top - margin.bottom;
        
      
         select(chart.current).selectAll('svg').remove();
         const svg = select(chart.current)
-            .append('svg').attr('width', props.Width).attr('height', props.Height);
+            .append('svg').attr('width', 0).attr('height', props.Height);
 
         let clip = svg.append("defs").append("svg:clipPath")
             .attr("id", "clip")
@@ -247,16 +263,38 @@ const MagDurChart = (props: IProps) => {
 
         svg.append('use').attr('xlink:href', '#chartdata');
     }
-    const svgWidth = props.Width - margin.left - margin.right;
+
+    function generateCurve(curve: SEBrowser.MagDurCurve) {
+       
+        if (curve.LowerCurve == null && curve.UpperCurve == null) {
+            let pt = curve.Area.split(',');
+            let cu = pt.map(point => { let s = point.trim().split(" "); return [parseFloat(s[0]), parseFloat(s[1])] as [number, number]; })
+            return cu;
+        }
+
+        return [];
+    }
     return (
-        <div ref={chart} style={{ height: props.Height, width: props.Width }}>
-            <div style={{ textAlign: 'center' }}>
-                {currentCurve == null ? null : magDurCurves.map(curve => <div key={curve.ID} className="form-check form-check-inline">
-                    <input className="form-check-input" type="radio" value={curve.ID} checked={curve.ID == currentCurve.ID} onChange={(evt) => setCurrentCurve(curve)} />
-                    <label className="form-check-label">{curve.Name}</label>
-                </div> )}             
-            </div>
-            <button style={{ position: 'absolute', top: 95, left: svgWidth - margin.right }} onClick={resetZoom}>Reset</button>
+        <div ref={chart} style={{ height: props.Height, width: '100%', display: 'inline-block' }}>
+            <Plot height={props.Height} width={width} showBorder={false}
+                defaultTdomain={[0.00001, 1000]}
+                defaultYdomain={[0,5]}
+                Tmax={1000}
+                Tmin={0.00001}
+                legend={'right'}
+                Tlabel={'Duration (s)'}
+                Ylabel={'Magnitude (pu)'}
+                showMouse={false}
+                showGrid={true}
+                zoomMode={'Rect'}
+                zoom={true} pan={false} useMetricFactors={false} XAxisType={'log'}>
+                {magDurCurves.map((s, i) => <Line highlightHover={false} showPoints={false} lineStyle={'-'} color={baseColors[i % baseColors.length]} data={generateCurve(s)} legend={s.Name} key={i} />)}
+                {points.map((p) => (<Circle
+                    data={[p['MagDurDuration'], p['MagDurMagnitude']]}
+                    color={'red'}
+                    radius={5}
+                />))}
+            </Plot> 
         </div>
     )
 }
