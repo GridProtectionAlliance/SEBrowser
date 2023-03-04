@@ -29,6 +29,7 @@ import moment from 'moment';
 import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, EventTypeSlice, LocationSlice, MeterSlice } from '../../Store';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
+import SEBrowserdService from '../../../TS/Services/SEBrowser';
 
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
@@ -107,6 +108,16 @@ export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async 
     }));
 });
 
+export const ResetFilters = createAsyncThunk('EventSearchs/ResetFilterThunk', async (_: void, { dispatch, getState }) => {
+    let state = getState() as Redux.StoreState;
+    
+    if (state.EventType.Status == 'unintiated')
+        await dispatch(EventTypeSlice.Fetch());
+    state = getState() as Redux.StoreState;
+    return dispatch(EventSearchsSlice.actions.ResetFilters({
+        types: state.EventType.Data
+    }));
+});
 export const SetFilters = createAsyncThunk('EventSearchs/SetFilters', async (args: {
     characteristics?: SEBrowser.IEventCharacteristicFilters,
     types?: number[],
@@ -230,19 +241,21 @@ export const EventSearchsSlice = createSlice({
             state.Status = 'changed';
             if (action.payload.time !== undefined)
                 state.TimeRange = action.payload.time;
-            if(action.payload.types !== undefined)
+            if (action.payload.types !== undefined)
                 state.EventType = action.payload.types;
             if (action.payload.characteristics !== undefined)
                 state.EventCharacteristic = action.payload.characteristics;
             state.isReset = computeReset(state, action.payload.eventTypes);
         },
-        ResetFilters: (state, action: PayloadAction<void>) => {
+        ResetFilters: (state, action: PayloadAction<{ types: SEBrowser.EventType[] }>) => {
             state.EventCharacteristic = {
-                durationMax: 0, durationMin: 0, phases: { AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true }, transientMin: 0, transientMax: 0, sagMin: 0, sagMax: 0, swellMin: 0, swellMax: 0, sagType: 'both', swellType: 'both', transientType: 'both',
+                durationMax: null, durationMin: null,
+                phases: { AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true }, 
+                transientMin: null, transientMax: null, sagMin: null, sagMax: null, swellMin: null, swellMax: null, sagType: 'both', swellType: 'both', transientType: 'both',
                 curveID: 1, curveInside: true, curveOutside: true
             };
 
-            state.EventType = [];
+            state.EventType = action.payload.types.filter(e => e.ShowInFilter).map(e => e.ID);
             state.SelectedStations = [];
             state.SelectedMeters = [];
             state.SelectedGroups = [];
@@ -292,7 +305,7 @@ export const EventSearchsSlice = createSlice({
 // #endregion
 
 // #region [ Selectors ]
-export const { Sort, ResetFilters } = EventSearchsSlice.actions;
+export const { Sort } = EventSearchsSlice.actions;
 
 export default EventSearchsSlice.reducer;
 export const SelectEventSearchs = (state: Redux.StoreState) => state.EventSearch.Data;
