@@ -99,11 +99,11 @@ export namespace SEBrowser {
     interface IPhaseFilters { AN: boolean, BN: boolean, CN: boolean, AB: boolean, BC: boolean, CA: boolean, ABG: boolean, BCG: boolean, ABC: boolean, ABCG: boolean }
     interface IEventCharacteristicFilters {
         durationMin: number, durationMax: number,
-        transientMin: number, transientMax: number, transientType: ('LL'|'LN'|'both'),
-        sagMin: number, sagMax: number, sagType: ('LL' | 'LN' | 'both'),
-        swellMin: number, swellMax: number, swellType: ('LL' | 'LN' | 'both'),
+        phases: IPhaseFilters,
+        transientMin?: number, transientMax?: number, transientType: ('LL'|'LN'|'both'),
+        sagMin?: number, sagMax?: number, sagType: ('LL' | 'LN' | 'both'),
+        swellMin?: number, swellMax?: number, swellType: ('LL' | 'LN' | 'both'),
         curveID: number, curveInside: boolean, curveOutside: boolean
-        phases: IPhaseFilters
     }
     
     interface MagDurCurve { ID: number, Name: string, XHigh: number, XLow: number, YHigh: number, YLow: number, UpperCurve: string, LowerCurve: string, Area: string }
