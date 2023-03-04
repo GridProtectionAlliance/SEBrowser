@@ -93,7 +93,7 @@ const SEBrowserMainPage = (props: {}) => {
                             {SVGIcons.Settings}
                     </button>
                 </li> </ul>}
-                OnSignOut={() => {window.location = "/Logout";}}
+                OnSignOut={() => { window.location.href = "/Logout";}}
             >
             <Page Name={'eventsearch'} Label={'Event Search'}>
                 <EventSearch />
