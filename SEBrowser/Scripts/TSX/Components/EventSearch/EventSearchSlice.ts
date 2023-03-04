@@ -245,6 +245,18 @@ export const EventSearchsSlice = createSlice({
                 state.EventType = action.payload.types;
             if (action.payload.characteristics !== undefined)
                 state.EventCharacteristic = action.payload.characteristics;
+
+            state.EventCharacteristic.durationMax = isNaN(state.EventCharacteristic.durationMax) ? null : state.EventCharacteristic.durationMax;
+            state.EventCharacteristic.durationMin = isNaN(state.EventCharacteristic.durationMin) ? null : state.EventCharacteristic.durationMin;
+
+            state.EventCharacteristic.transientMax = isNaN(state.EventCharacteristic.transientMax) ? null : state.EventCharacteristic.transientMax;
+            state.EventCharacteristic.transientMin = isNaN(state.EventCharacteristic.transientMin) ? null : state.EventCharacteristic.transientMin;
+            state.EventCharacteristic.sagMax = isNaN(state.EventCharacteristic.sagMax) ? null : state.EventCharacteristic.sagMax;
+            state.EventCharacteristic.sagMin = isNaN(state.EventCharacteristic.sagMin) ? null : state.EventCharacteristic.sagMin;
+            state.EventCharacteristic.swellMax = isNaN(state.EventCharacteristic.swellMax) ? null : state.EventCharacteristic.swellMax;
+            state.EventCharacteristic.swellMin = isNaN(state.EventCharacteristic.swellMin) ? null : state.EventCharacteristic.swellMin;
+
+
             state.isReset = computeReset(state, action.payload.eventTypes);
         },
         ResetFilters: (state, action: PayloadAction<{ types: SEBrowser.EventType[] }>) => {
