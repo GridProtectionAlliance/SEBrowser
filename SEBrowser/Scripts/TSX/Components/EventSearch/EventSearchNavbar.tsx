@@ -73,7 +73,6 @@ const EventSearchNavbar = (props: IProps) => {
     
     const [showFilter, setFilter] = React.useState<('None' | 'Meter' | 'Asset' | 'AssetGroup' | 'Station')>('None');
     const [newEventCharacteristicFilter, setNewEventCharacteristicFilter] = React.useState<SEBrowser.IEventCharacteristicFilters>(null);
-    const [newTimeFilter, setNewTimeFilter] = React.useState<SEBrowser.IReportTimeFilter>(null);
     const [newTypeFilter, setNewTypeFilter] = React.useState<number[]>(null);
     const lineNeutralOptions = [{ Value: 'LL', Label: 'LL' }, { Value: 'LN', Label: 'LN' }, { Value: 'both', Label: 'LL/LN' }];
 
@@ -87,7 +86,6 @@ const EventSearchNavbar = (props: IProps) => {
 
     React.useEffect(() => {
         setNewEventCharacteristicFilter(eventCharacteristicFilter);
-        setNewTimeFilter(timeFilter);
         setNewTypeFilter(eventTypeFilter);
         let setupPhases: { Value: number, Text: string, Selected: boolean }[] = [];
         Object.keys(eventCharacteristicFilter.phases).forEach((key, index) => setupPhases.push({ Value: index, Text: key, Selected: eventCharacteristicFilter.phases[key] }));
@@ -110,10 +108,9 @@ const EventSearchNavbar = (props: IProps) => {
 
         dispatch(SetFilters({
             characteristics,
-            time: newTimeFilter,
             types: newTypeFilter
         }));
-    }, [newEventCharacteristicFilter, newTimeFilter, newTypeFilter]);   
+    }, [newEventCharacteristicFilter, newTypeFilter]);   
 
 
     function formatWindowUnit(i: number) {
@@ -282,7 +279,8 @@ const EventSearchNavbar = (props: IProps) => {
 
         return true;
     }
-    if (newEventCharacteristicFilter === null || newTimeFilter === null || newTypeFilter === null) return null;
+
+    if (newEventCharacteristicFilter === null || timeFilter === null || newTypeFilter === null) return null;
 
     if (!props.showNav)
         return (
@@ -290,7 +288,7 @@ const EventSearchNavbar = (props: IProps) => {
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <div className="navbar-nav mr-auto">
                         <span className="navbar-text">
-                            {newTimeFilter.date} {newTimeFilter.time} +/- {newTimeFilter.windowSize} {formatWindowUnit(newTimeFilter.timeWindowUnits)}
+                            {timeFilter.date} {timeFilter.time} +/- {timeFilter.windowSize} {formatWindowUnit(timeFilter.timeWindowUnits)}
                         </span>
                     </div>
                     <div className="navbar-nav ml-auto" >
@@ -311,7 +309,7 @@ const EventSearchNavbar = (props: IProps) => {
             <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                 <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                     <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
-                            <ReportTimeFilter filter={newTimeFilter} setFilter={setNewTimeFilter} showQuickSelect={true} />
+                            <ReportTimeFilter filter={timeFilter} setFilter={(f) => dispatch(SetFilters({ time: f })) } showQuickSelect={true} />
                         </li>
                         <EventSearchTypeFilters Height={height} />
                     <li className="nav-item" style={{ width: '45%', paddingRight: 10 }}>
