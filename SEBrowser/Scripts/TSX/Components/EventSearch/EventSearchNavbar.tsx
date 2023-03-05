@@ -423,10 +423,9 @@ const EventSearchNavbar = (props: IProps) => {
                                         </form>
                                     </div>
                                     <div className={"col-4"}>
-                                        <form>
-                                            <label style={{ margin: 0 }}>Phase:</label>
                                             <MultiCheckBoxSelect
-                                                Options= {newPhases}
+                                            Options={newPhases}
+                                            Label={'Phases'}
                                                 OnChange={
                                                     (evt, Options: { Value: number; Text: string; Selected: boolean; }[]) => { 
                                                         let phaseList = [];
@@ -441,7 +440,6 @@ const EventSearchNavbar = (props: IProps) => {
                                                     }
                                                 }
                                             /> 
-                                        </form>   
                                     </div>
                                     
                                 <div className={"col-4"}>
