@@ -110,7 +110,7 @@ const EventSearch = (props: IProps) => {
                                 <EventSearchMagDur
                                 Height={window.innerHeight - ((showNav ? navHeight : 52) + 120)}
                                     EventID={eventId}
-                                    OnSelect={(evt, point) => setEventId(point.EventID)}
+                                SelectEvent={setEventId}
                                 /> :
                             <EventSearchList eventid={eventId}
                                 selectEvent={setEventId}
