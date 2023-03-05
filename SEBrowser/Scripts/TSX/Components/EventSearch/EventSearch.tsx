@@ -28,7 +28,6 @@ import EventSearchList from './EventSearchList';
 import { History } from 'history';
 import EventSearchNavbar from './EventSearchNavbar';
 import EventPreviewPane from './EventSearchPreview/EventSearchPreviewPane';
-import EventSearchListedEventsNoteWindow from './EventSearchListedEventsNoteWindow';
 import queryString from 'querystring';
 import EventSearchMagDur from './EventSearchMagDur';
 import { ProcessQuery, SelectEventList, SelectQueryParam } from './EventSearchSlice';
@@ -90,7 +89,7 @@ const EventSearch = (props: IProps) => {
     }
 
     return (
-        <div style={{ width: '100%', height: '100%' }}>
+        <div style={{ width: '100%', height: '100%' }} data-drawer={'eventPreviewPane'}>
             <EventSearchNavbar
                 toggleVis={() => setShowNav((c) => !c)}
                 showNav={showNav}
@@ -119,14 +118,14 @@ const EventSearch = (props: IProps) => {
                         </div>
                     </SplitSection>
                     <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
-                        <div style={{ width: '100%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
+                    <div style={{ width: '100%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
                         <EventPreviewPane
                             EventID={eventId}
                             InitialTab={initialTab}
                             Height={window.innerHeight - ((showNav ? navHeight : 52) + 62)} />
                         </div>
-                    </SplitSection>
-                </VerticalSplit>
+                </SplitSection>
+            </VerticalSplit>
         </div>
     );
 }

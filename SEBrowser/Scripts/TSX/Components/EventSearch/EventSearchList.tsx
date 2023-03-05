@@ -23,10 +23,9 @@
 
 import * as React from 'react';
 import ReactDOM from 'react-dom';
-import moment from 'moment';
-import { ConfigurableTable, LoadingIcon } from '@gpa-gemstone/react-interactive';
+import { ConfigurableTable, LoadingIcon, OverlayDrawer } from '@gpa-gemstone/react-interactive';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { OpenXDA, Redux, SEBrowser } from '../../global';
+import {  Redux } from '../../global';
 import { SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
 import { SelectEventSearchSettings } from '../SettingsSlice';
 
@@ -45,6 +44,7 @@ interface IColumn {
 
 export default function EventSearchList(props: IProps) {
     const ref = React.useRef();
+    const closureHandler = React.useRef<((o: boolean) => void)>(() => { })
     const count = React.useRef(null);
 
     const dispatch = useAppDispatch();
@@ -91,6 +91,10 @@ export default function EventSearchList(props: IProps) {
         setHCounter(count?.current?.offsetHeight ?? 0)
     });
 
+
+    function closeSettings(open: boolean) {
+        closureHandler.current(open);
+    }
 
     function handleKeyPress(event) {
         if (data.length == 0) return;
@@ -152,6 +156,7 @@ export default function EventSearchList(props: IProps) {
         })
     }
     return (
+        <>
         <div ref={ref} style={{
             width: '100%', maxHeight: props.height, overflowY: "hidden", opacity: (status == 'loading' ? 0.5 : undefined),
             backgroundColor: (status == 'loading' ? '#00000' : undefined)
@@ -160,28 +165,31 @@ export default function EventSearchList(props: IProps) {
                 <LoadingIcon Show={true} Size={40} />
             </div> : null}
             <ConfigurableTable<any>
-                cols={[{
-                    field: "Time", key: "Time", label: "Time", content: (item, key, fld, style) => ProcessWhitespace(item[fld])
-                }, ...cols]}
-                tableClass="table table-hover"
-                data={data}
-                sortKey={sortField as string}
-                ascending={ascending}
-                onSort={(d) => {
-                    if (d.colKey == sortField) dispatch(Sort({ Ascending: ascending, SortField: sortField }));
-                    else dispatch(Sort({ Ascending: true, SortField: d.colKey }));
-                }}
-                onClick={(item) => props.selectEvent(item.row.EventID)}
-                theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 60 }}
-                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - hCounter - 60 }}
-                rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
-                tableStyle={{ marginBottom: 0 }}
-                selected={(item) => {
-                    if (item.EventID == props.eventid) return true;
-                    else return false;
-                }}
-                requiredColumns={["Time"]}
-                defaultColumns={["Event Type"]}
+                    cols={[{
+                        field: "Time", key: "Time", label: "Time", content: (item, key, fld, style) => ProcessWhitespace(item[fld])
+                    }, ...cols]}
+                    tableClass="table table-hover"
+                    data={data}
+                    sortKey={sortField as string}
+                    ascending={ascending}
+                    onSort={(d) => {
+                        if (d.colKey == sortField) dispatch(Sort({ Ascending: ascending, SortField: sortField }));
+                        else dispatch(Sort({ Ascending: true, SortField: d.colKey }));
+                    }}
+                    onClick={(item) => props.selectEvent(item.row.EventID)}
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 60 }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - hCounter - 60 }}
+                    rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
+                    tableStyle={{ marginBottom: 0 }}
+                    selected={(item) => {
+                        if (item.EventID == props.eventid) return true;
+                        else return false;
+                    }}
+                    requiredColumns={["Time"]}
+                    defaultColumns={["Event Type"]}
+                    settingsPortal={'TableSettings'}
+                    onSettingsChange={closeSettings}
+                    localStorageKey={'SEbrowser.EventSearch.TableCols'}
             />
             {status == 'loading' ? null :
                 data.length == numberResults ?
@@ -191,7 +199,13 @@ export default function EventSearchList(props: IProps) {
                     <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
                         {data.length} results
                     </div>}
-        </div>
+            </div>
+            <OverlayDrawer Title={''} Open={false} Location={'right'} Target={'eventPreviewPane'} GetOverride={(s) => { closureHandler.current = s; }} HideHandle={true}>
+                <div id={'TableSettings'} style={{ height: 500, width: 800, opacity: 1, background: undefined, color: 'black' }}>
+
+                </div>
+            </OverlayDrawer>
+        </>
     );
 }
 
