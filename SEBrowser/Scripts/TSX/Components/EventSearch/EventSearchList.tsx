@@ -45,6 +45,8 @@ interface IColumn {
 
 export default function EventSearchList(props: IProps) {
     const ref = React.useRef();
+    const count = React.useRef(null);
+
     const dispatch = useAppDispatch();
 
     const status = useAppSelector(SelectEventSearchsStatus);
@@ -53,6 +55,7 @@ export default function EventSearchList(props: IProps) {
     const data = useAppSelector((state: Redux.StoreState) => SelectEventSearchs(state));
     const [cols, setCols] = React.useState<IColumn[]>([]);
     const numberResults = useAppSelector((state: Redux.StoreState) => SelectEventSearchSettings(state).NumberResults)
+    const [hCounter, setHCounter] = React.useState<number>(0);
 
     React.useEffect(() => {
         document.addEventListener("keydown", handleKeyPress, false);
@@ -83,6 +86,11 @@ export default function EventSearchList(props: IProps) {
                 field: item, key: item, label: item, content: (item, key, fld, style) => ProcessWhitespace(item[fld]) })))
 
     }, [data])
+
+    React.useLayoutEffect(() => {
+        setHCounter(count?.current?.offsetHeight ?? 0)
+    });
+
 
     function handleKeyPress(event) {
         if (data.length == 0) return;
@@ -164,9 +172,10 @@ export default function EventSearchList(props: IProps) {
                     else dispatch(Sort({ Ascending: true, SortField: d.colKey }));
                 }}
                 onClick={(item) => props.selectEvent(item.row.EventID)}
-                theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - 220 }}
+                theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 60 }}
+                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - hCounter - 60 }}
                 rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
+                tableStyle={{ marginBottom: 0 }}
                 selected={(item) => {
                     if (item.EventID == props.eventid) return true;
                     else return false;
@@ -176,10 +185,10 @@ export default function EventSearchList(props: IProps) {
             />
             {status == 'loading' ? null :
                 data.length == numberResults ?
-                    <div style={{padding: 10, backgroundColor: '#458EFF', color: 'white'}}>
+                    <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
                         Only the first {data.length} results are shown - please narrow your search or increase the number of results
                     </div> :
-                    <div style={{padding: 10, backgroundColor: '#458EFF', color: 'white'}}>
+                    <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
                         {data.length} results
                     </div>}
         </div>

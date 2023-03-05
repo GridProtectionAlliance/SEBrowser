@@ -114,13 +114,16 @@ const EventSearch = (props: IProps) => {
                                 /> :
                             <EventSearchList eventid={eventId}
                                 selectEvent={setEventId}
-                                height={window.innerHeight - ((showNav ? navHeight : 52))} />
+                                height={window.innerHeight - ((showNav ? navHeight : 52) + 120)} />
                             }
                         </div>
                     </SplitSection>
                     <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
                         <div style={{ width: '100%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
-                            <EventPreviewPane EventID={eventId} InitialTab={initialTab} />
+                        <EventPreviewPane
+                            EventID={eventId}
+                            InitialTab={initialTab}
+                            Height={window.innerHeight - ((showNav ? navHeight : 52) + 62)} />
                         </div>
                     </SplitSection>
                 </VerticalSplit>

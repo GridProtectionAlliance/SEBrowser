@@ -49,7 +49,13 @@ import { SelectEventSearchByID } from './../EventSearchSlice';
 import InterruptionReport from './HECCO/InterruptionReport';
 
 
-export default function EventPreviewPane(props: { EventID: number, InitialTab?: ('Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All') }) {
+interface IProps {
+    EventID: number,
+    InitialTab?: ('Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All'),
+    Height: number
+}
+
+export default function EventPreviewPane(props: IProps) {
     const dispatch = useAppDispatch();
 
     const [settings, setSettings] = React.useState<SEBrowser.EventPreviewPaneSetting[]>([]);
@@ -90,7 +96,7 @@ export default function EventPreviewPane(props: { EventID: number, InitialTab?: 
                         <a className={"nav-link" + (tab == "All" ? " active" : "")} onClick={() => setTab('All')}>All</a>
                     </li>
                 </ul>
-                <div style={{ height: 'calc(100% - 72px)', maxHeight: 'calc(100% - 72px)', overflowY: 'scroll'}}>
+                <div style={{ height: props.Height - 37.5, maxHeight: props.Height - 37.5, overflowY: 'scroll', overflowX: 'hidden' }}>
             {settings.filter(setting => setting.Show).map((setting, index) => {
             if (setting.Name.indexOf('EventSearchOpenSEE') >= 0 && (tab == "Waveform" || tab == "All"))
                 return <EventSearchOpenSEE key={index} EventID={props.EventID} />;
