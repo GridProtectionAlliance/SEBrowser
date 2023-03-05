@@ -179,6 +179,7 @@ export default function EventSearchOpenSEE(props: { EventID: number }) {
             <div className="card-header"><a href={openSEEInstance + '?eventid=' + props.EventID} target="_blank">View in OpenSEE</a></div>
             <div className="card-body" ref={divref}>
                 {VData.length > 0 ? < Plot height={250} width={Width} showBorder={false}
+                    legendWidth={150}
                     defaultTdomain={VLim}
                     legend={'right'}
                     Tlabel={'Time'}
@@ -187,6 +188,7 @@ export default function EventSearchOpenSEE(props: { EventID: number }) {
                 </Plot> : null}
                 {IData.length > 0 ? < Plot height={250} width={Width} showBorder={false}
                     defaultTdomain={ILim}
+                    legendWidth={150}
                     legend={'right'}
                     Tlabel={'Time'}
                     Ylabel={'Current (A)'} showMouse={false} zoom={false} pan={false} useMetricFactors={false}>
@@ -194,6 +196,7 @@ export default function EventSearchOpenSEE(props: { EventID: number }) {
                 </Plot> : null}
                 {TCEData.length > 0 ? < Plot height={250} width={Width} showBorder={false}
                     defaultTdomain={TCELim}
+                    legendWidth={150}
                     legend={'right'}
                     Tlabel={'Time'}
                     Ylabel={'Trip Coil Current (A)'} showMouse={false} zoom={false} pan={false} useMetricFactors={false}>
