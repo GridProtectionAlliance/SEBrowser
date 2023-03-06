@@ -24,69 +24,51 @@
 import React from 'react';
 import OpenSEEService from '../../../../TS/Services/OpenSEE';
 import moment from 'moment';
+import { SEBrowser } from '../../../global';
 
-export default class EventSearchRrelayPerformance extends React.Component<{ EventID: number }, {tableRows: Array<JSX.Element> }>{
-    openSEEService: OpenSEEService;
-    constructor(props, context) {
-        super(props, context);
+const EventSearchFileInfo: React.FC<SEBrowser.IWidget> = (props) => {
+    const [tableRows, setTableRows] = React.useState([]);
 
-        this.openSEEService = new OpenSEEService();
+    React.useEffect(() => {
+        if (props.eventID >= 0) {
+            createTableRows(props.eventID);
+        }
+    }, [props.eventID]);
 
-        this.state = {
-            tableRows: []
-        };
-    }
+    function createTableRows(eventID) {
+        const openSEEService = new OpenSEEService();
+        openSEEService.getRelayPerformance(eventID).done((data) => {
+            const rows = [];
 
-    componentDidMount() {
-        if (this.props.EventID >= 0)
-            this.createTableRows(this.props.EventID);
-    }
-    componentWillUnmount() {
-    }
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.eventId >= 0)
-            this.createTableRows(nextProps.eventId);
-    }
+            for (let index = 0; index < data.length; ++index) {
+                const row = data[index];
+                let background = 'default';
 
-
-    createTableRows(eventID: number) {
-        this.openSEEService.getRelayPerformance(this.props.EventID).done(data => {
-            var rows = [];
-
-            for (var index = 0; index < data.length; ++index) {
-                var row = data[index];
-                var background = 'default';
-
-                if (row.EventID == this.props.EventID)
+                if (row.EventID === props.eventID) {
                     background = 'lightyellow';
+                }
 
                 rows.push(Row(row, background));
             }
 
-            this.setState({ tableRows: rows });
+            setTableRows(rows);
         });
     }
 
-    render() {
-        return (
-            <div className="card">
-                <div className="card-header">Breaker Performance:</div>
+    return (
+        <div className="card">
+            <div className="card-header">Breaker Performance:</div>
 
-                <div className="card-body">
-                    <table className="table">
-                        <thead>
-                            <HeaderRow />
-                        </thead>
-                        <tbody>
-                            {this.state.tableRows}
-                        </tbody>
-
-                    </table>
-
-                </div>
+            <div className="card-body">
+                <table className="table">
+                    <thead>
+                        <HeaderRow />
+                    </thead>
+                    <tbody>{tableRows}</tbody>
+                </table>
             </div>
-        );
-    }
+        </div>
+    );
 }
 
 const Row = (row, background) => {
@@ -116,5 +98,7 @@ const HeaderRow = () => {
         </tr>
     );
 }
+
+export default EventSearchFileInfo;
 
 
