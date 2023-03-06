@@ -27,8 +27,10 @@ import { basemapLayer, dynamicMapLayer } from 'esri-leaflet';
 import proj4 from 'proj4';
 import 'proj4leaflet';
 import moment from 'moment';
+import { SEBrowser } from '../../../../global';
 
-export default class ESRIMap extends React.Component<{ EventID: number }, { Results: any, FaultInfo: Array<{ StationName: string, Inception: number, Latitude: number, Longitude: number, Distance: number, AssetName: string }>, Window: number }, {}>{
+const ESRIMap: React.FC<SEBrowser.IWidget> = (props) => {
+//export default class ESRIMap extends React.Component<{ EventID: number }, { Results: any, FaultInfo: Array<{ StationName: string, Inception: number, Latitude: number, Longitude: number, Distance: number, AssetName: string }>, Window: number }, {}>{
     map: leaflet.Map;
     constructor(props, context) {
         super(props, context);
@@ -167,8 +169,9 @@ export default class ESRIMap extends React.Component<{ EventID: number }, { Resu
         if (geometry.rings.length === 1) {
             outPut.features.push({ type: 'Feature', properties: { color: 'black', opacity: 1 }, geometry: { "type": "Polygon", "coordinates": geometry.rings }, crs: { type: "name", properties: { name: "EPSG:3857" } } });
         } else {
+        
             /*if it isn't that easy then we have to start checking ring direction, basically the ring goes clockwise its part of the polygon, if it goes counterclockwise it is a hole in the polygon, but geojson does it by haveing an array with the first element be the polygons and the next elements being holes in it*/
-            var ccc = this.dP(geometry.rings);
+            /*var ccc = this.dP(geometry.rings);
             var d = ccc[0];
             var dd = ccc[1];
             var r = [];
