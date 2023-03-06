@@ -22,76 +22,75 @@
 //******************************************************************************************************
 
 import React from 'react';
+import { SEBrowser } from '../../../../global';
 
-export default class StructureInfo extends React.Component<{ EventID: number }, { Index: number,StructureInfo: Array<{StrNumber: string, Latitude: string, Longitude: string, Imagepath: string, Drawing: string}> }, {}>{
-    constructor(props, context) {
-        super(props, context);
+const StructureInfo: React.FC<SEBrowser.IWidget> = (props) => {
+    const [structureInfo, setStructureInfo] = React.useState<Array<{ StrNumber: string, Latitude: number, Longitude: number, Imagepath: string }>>([]);
+    const [selectedIndex, setSelectedIndex] = React.useState<number>(-1);
 
-        this.state = {
-            StructureInfo: [],
-            Index: -1
-        };
-
-
-    }
-
-    GetFaultInfo(): JQuery.jqXHR<Array<{ StationName: string, Inception: number, Latitude: number, Longitude: number, Distance: number, AssetName: string}>>{
-        return $.ajax({
-            type: "GET",
-            url: `${homePath}api/OpenXDA/GetFaultInfo/${this.props.EventID}`,
-            contentType: "application/json; charset=utf-8",
+    const getFaultInfo = async (): Promise<Array<{ StationName: string, Inception: number, Latitude: number, Longitude: number, Distance: number, AssetName: string }>> => {
+        const res = await $.ajax({
+            type: 'GET',
+            url: `${homePath}api/OpenXDA/GetFaultInfo/${props.eventID}`,
+            contentType: 'application/json; charset=utf-8',
             dataType: 'json',
             cache: true,
-            async: true
+            async: true,
         });
-    }
+        return res;
+    };
 
-    GetNearestStructureInfo(station: string, line: string, mileage: number) {
-        return $.ajax({
-            type: "GET",
+    const getNearestStructureInfo = async (station: string, line: string, mileage: number): Promise<Array<{ StrNumber: string, Latitude: number, Longitude: number, Imagepath: string }>> => {
+        const res = await $.ajax({
+            type: 'GET',
             url: `${homePath}api/ESRIMap/NearestStructure/${station}/${line}?mileage=${mileage}`,
-            contentType: "application/json; charset=utf-8",
+            contentType: 'application/json; charset=utf-8',
             dataType: 'json',
             cache: true,
-            async: true
+            async: true,
         });
+        return res;
+    };
 
-    }
+    React.useEffect(() => {
+        const fetchData = async () => {
+            const faultInfo = await getFaultInfo();
+            const nearestStructure = await getNearestStructureInfo(faultInfo[0].StationName, faultInfo[0].AssetName, faultInfo[0].Distance);
+            setStructureInfo(nearestStructure);
+            setSelectedIndex(nearestStructure.length > 0 ? 0 : -1);
+        };
+        fetchData();
+    }, []);
 
-    async componentDidMount() {
-        const faultInfo = await this.GetFaultInfo();
-        const nearestStructure = await this.GetNearestStructureInfo(faultInfo[0].StationName, faultInfo[0].AssetName, faultInfo[0].Distance);
-        this.setState({ StructureInfo: nearestStructure, Index: (nearestStructure.length > 0? 0: null) });
-    }
+    const handleSelectedIndexChanged = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedIndex(parseInt(event.target.value));
+    };
 
+    let test = '\\\\Images\\noimage.jpg';
 
-    render() {
-        let test = '\\\\Images\\noimage.jpg';
-        return (
-            <div className="card">
-                <div className="card-header">
-                    Structure Info
-                    <select style={{ width: 100, position: "absolute", zIndex: 1000, top: 10, right: 10 }} value={this.state.Index} onChange={(evt) => this.setState({ Index: parseInt(evt.target.value) }, () => this.componentDidMount())}>
-                        {this.state.StructureInfo.map((si, index) => <option value={index}>{si.StrNumber}</option>)}
-                    </select>
-
-                </div>
-                <div className="card-body">
-                    <table className='table'>
-                        <thead><tr><th>Number</th><th>Lat</th><th>Lon</th></tr></thead>
-                        <tbody>
-                            <tr>
-                                <td>{this.state.StructureInfo[this.state.Index] == undefined ? '' : this.state.StructureInfo[this.state.Index].StrNumber}</td>
-                                <td>{this.state.StructureInfo[this.state.Index] == undefined ? '' : this.state.StructureInfo[this.state.Index].Latitude}</td>
-                                <td>{this.state.StructureInfo[this.state.Index] == undefined ? '' : this.state.StructureInfo[this.state.Index].Longitude}</td>
-                            </tr>
-                        </tbody>
-
-                    </table>
-                    <img src={`${homePath}api/ESRIMap/Image/${this.state.StructureInfo[this.state.Index] == undefined ? btoa(test) : btoa(this.state.StructureInfo[this.state.Index].Imagepath)}`} style={{ width: '100%' }} />
-                </div>
+    return (
+        <div className="card">
+            <div className="card-header">
+                Structure Info
+                <select style={{ width: 100, position: "absolute", zIndex: 1000, top: 10, right: 10 }} value={selectedIndex} onChange={handleSelectedIndexChanged}>
+                    {structureInfo.map((si, index) => <option value={index}>{si.StrNumber}</option>)}
+                </select>
             </div>
-        );
-    }
+            <div className="card-body">
+                <table className='table'>
+                    <thead><tr><th>Number</th><th>Lat</th><th>Lon</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td>{selectedIndex === -1 ? '' : structureInfo[selectedIndex]?.StrNumber}</td>
+                            <td>{selectedIndex === -1 ? '' : structureInfo[selectedIndex]?.Latitude}</td>
+                            <td>{selectedIndex === -1 ? '' : structureInfo[selectedIndex]?.Longitude}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <img src={`${homePath}api/ESRIMap/Image/${selectedIndex === -1 ? btoa(test) : btoa(structureInfo[selectedIndex].Imagepath)}`} style={{ width: '100%' }} />
+            </div>
+        </div>
+    );
+};
 
-}
+export default StructureInfo;
