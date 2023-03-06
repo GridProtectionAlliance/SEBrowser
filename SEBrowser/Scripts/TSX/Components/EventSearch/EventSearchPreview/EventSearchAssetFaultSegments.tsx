@@ -24,68 +24,65 @@
 import React from 'react';
 import SEBrowserService from './../../../../TS/Services/SEBrowser';
 import moment from 'moment';
+import { SEBrowser } from '../../../global';
 
-export default class EventSearchFaultSegments extends React.Component<{ EventID: number }, {tableRows: Array<JSX.Element>, count: number }>{
-    seBrowserService: SEBrowserService;
-    handle: JQuery.jqXHR;
-    constructor(props, context) {
-        super(props, context);
+const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget> = (props) => {
 
-        this.seBrowserService = new SEBrowserService();
+    const [tableRows, setTableRows] = React.useState<JSX.Element[]>([]);
+    const [count, setCount] = React.useState<number>(0);
+    const [handle, setHandle] = React.useState<JQuery.jqXHR>();
 
-        this.state = {
-            tableRows: [],
-            count: 0
+    const seBrowserService = new SEBrowserService();
+
+    React.useEffect(() => {
+        if (props.eventID >= 0) {
+            createTableRows(props.eventID);
+        }
+        return () => {
+            if (handle?.abort != undefined) {
+                handle.abort();
+            }
         };
+    }, [props.eventID]);
 
-        this.handle = null;
-    }
-
-    componentDidMount() {
-        if (this.props.EventID >= 0)
-            this.createTableRows(this.props.EventID);
-    }
-    componentWillUnmount() {
-        if (this.handle.abort != undefined) this.handle.abort();
-    }
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.EventID >= 0)
-            this.createTableRows(nextProps.EventID);
-    }
-
-
-    createTableRows(eventID: number) {
-        this.handle = this.seBrowserService.getEventSearchAsssetFaultSegmentsData(eventID).done(data => {
-            var rows = data.map((d,i) =>
+    const createTableRows = (eventID: number) => {
+        const handle = seBrowserService.getEventSearchAsssetFaultSegmentsData(eventID).done((data) => {
+            const rows = data.map((d, i) => (
                 <tr key={i}>
                     <td>{d.SegmentType}</td>
                     <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
                     <td>{moment(d.EndTime).format('HH:mm:ss.SSS')}</td>
-                    <td>{(moment(d.EndTime).diff(moment(d.StartTime))/16.66667).toFixed(1)}</td>
-                </tr>)
+                    <td>{(moment(d.EndTime).diff(moment(d.StartTime)) / 16.66667).toFixed(1)}</td>
+                </tr>
+            ));
 
-            this.setState({ tableRows: rows , count: rows.length});
+            setTableRows(rows);
+            setCount(rows.length);
         });
-    }
 
-    render() {
-        return (
-            <div className="card" style={{display: (this.state.count > 0 ? 'block': 'none')}}>
-                <div className="card-header">Fault Evolution Summary:</div>
+        setHandle(handle);
+    };
 
-                <div className="card-body">
-                    <table className="table">
-                        <thead>
-                            <tr><th>Evolution</th><th>Inception</th><th>End</th><th>Duration (c)</th></tr>
-                        </thead>
-                        <tbody>
-                            {this.state.tableRows}
-                        </tbody>
+    return (
+        <div className="card" style={{ display: count > 0 ? 'block' : 'none' }}>
+            <div className="card-header">Fault Evolution Summary:</div>
 
-                    </table>
-
-                </div>
+            <div className="card-body">
+                <table className="table">
+                    <thead>
+                        <tr>
+                            <th>Evolution</th>
+                            <th>Inception</th>
+                            <th>End</th>
+                            <th>Duration (c)</th>
+                        </tr>
+                    </thead>
+                    <tbody>{tableRows}</tbody>
+                </table>
             </div>
-        );
-    }
+        </div>
+    );
+
 }
+
+export default EventSearchAssetFaultSegments;
