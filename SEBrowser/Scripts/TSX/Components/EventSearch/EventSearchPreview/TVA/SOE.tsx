@@ -22,10 +22,11 @@
 //******************************************************************************************************
 
 import React from 'react';
+import { SEBrowser } from '../../../../global';
 
 type Status = 'ABNORMAL' | 'Close' | 'No' | 'NORMAL' | 'RECEIVED' | 'Start' | 'Trip' | 'Yes';
 
-const SOE = (props: { EventID: number }) => {
+const SOE: React.FC<SEBrowser.IWidget> = (props) => {
     const [soeInfo, setSOEInfo] = React.useState<Array<{ Time: string, Alarm: string, Status: string }>>([]);
     const [statusFilter, setStatusFilter] = React.useState<{ 'ABNORMAL': boolean, 'Close': boolean, 'No': boolean, 'NORMAL': boolean, 'RECEIVED': boolean, 'Start': boolean, 'Trip': boolean, 'Yes': boolean}>({ 'ABNORMAL':false, 'Close':false, 'No':false, 'NORMAL': false, 'RECEIVED': false, 'Start': false, 'Trip':false, 'Yes': false})
     const [timeWindow, setTimeWindow] = React.useState<number>(2);
@@ -33,12 +34,12 @@ const SOE = (props: { EventID: number }) => {
 
     React.useEffect(() => {
         return GetData();
-    }, [props.EventID, timeWindow, statusFilter]);
+    }, [props.eventID, timeWindow, statusFilter]);
 
     function GetData() {
         let handle = $.ajax({
             type: "GET",
-            url: `${homePath}api/SOE/${props.EventID}/${timeWindow}`,
+            url: `${homePath}api/SOE/${props.eventID}/${timeWindow}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
