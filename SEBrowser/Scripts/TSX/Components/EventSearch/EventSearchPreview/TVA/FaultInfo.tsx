@@ -23,19 +23,20 @@
 
 import React from 'react';
 import moment from 'moment';
+import { SEBrowser } from '../../../../global';
 
-const FaultInfo = (props: { EventID: number }) => {
+const FaultInfo: React.FC<SEBrowser.IWidget> = (props) => {
     const [hidden, setHidden] = React.useState<boolean>(true);
     const [faultInfo, setFaultInfo] = React.useState<{ FaultTime?: string, FaultDuration?: number, FaultType?: string, FaultDistance?: number, StationID?: string, StationName?: string, LineName?: string, LineAssetKey?: string, DblDist?: number, TreeFaultResistance?: number}>({});
     const [links, setLinks] = React.useState<Array<{ID: number, Name:string, Display: string, Value: string}>>([])
     React.useEffect(() => {
         return GetData();
-    }, [props.EventID]);
+    }, [props.eventID]);
 
     function GetData() {
         let handle = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/FaultInfo/${props.EventID}`,
+            url: `${homePath}api/OpenXDA/FaultInfo/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
