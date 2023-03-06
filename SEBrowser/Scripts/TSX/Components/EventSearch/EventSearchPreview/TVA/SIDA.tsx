@@ -22,17 +22,18 @@
 //******************************************************************************************************
 
 import React from 'react';
+import { SEBrowser } from '../../../../global';
 
-const SIDA = (props: { EventID: number }) => {
+const SIDA: React.FC<SEBrowser.IWidget> = (props) => {
     const [sidaInfo, setSIDAInfo] = React.useState < Array<{ ID: number, sidaeventnumber: number, equipmentname: string, Ins: string, kv: string, durationhr: number, durationmin: number, omoffice: string, causedescription: string, subcausedescription:string, eventtype: string, excludedrecord: string, internalexternal:string, eventtime: string}>>([]);
     React.useEffect(() => {
         return GetData();
-    }, [props.EventID]);
+    }, [props.eventID]);
 
     function GetData() {
         let handle = $.ajax({
             type: "GET",
-            url: `${homePath}api/SIDA/${props.EventID}`,
+            url: `${homePath}api/SIDA/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
