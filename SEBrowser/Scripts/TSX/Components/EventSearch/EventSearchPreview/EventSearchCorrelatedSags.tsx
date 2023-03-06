@@ -23,84 +23,70 @@
 
 import React from 'react';
 import moment from 'moment';
+import { SEBrowser } from '../../../global';
 
-export default class EventSearchHistory extends React.Component<{ EventID: number }, { tableRows: Array<JSX.Element> }>{
-    correlatedSagsHandle: JQuery.jqXHR;
-    constructor(props, context) {
-        super(props, context);
+const EventSearchCorrelatedSags: React.FC<SEBrowser.IWidget> = (props) => {
+    const [tableRows, setTableRows] = React.useState([]);
 
-        this.state = {
-            tableRows: []
-        };
-    }
+    let correlatedSagsHandle;
 
-    componentDidMount() {
-        if (this.props.EventID >= 0)
-            this.createTableRows(this.props.EventID);
-    }
-    componentWillUnmount() {
-    }
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.EventID >= 0)
-            this.createTableRows(nextProps.EventID);
-    }
+    function getTimeCorrelatedSags(eventid: number) {
+        if (correlatedSagsHandle !== undefined) {
+            correlatedSagsHandle.abort();
+        }
 
-    getTimeCorrelatedSags(eventid: number): JQuery.jqXHR {
-        if (this.correlatedSagsHandle !== undefined)
-            this.correlatedSagsHandle.abort();
-
-        this.correlatedSagsHandle = $.ajax({
-            type: "GET",
+        correlatedSagsHandle = $.ajax({
+            type: 'GET',
             url: `${homePath}api/OpenXDA/GetTimeCorrelatedSags?eventId=${eventid}`,
-            contentType: "application/json; charset=utf-8",
+            contentType: 'application/json; charset=utf-8',
             dataType: 'json',
             cache: true,
-            async: true
+            async: true,
         });
 
-        return this.correlatedSagsHandle;
+        return correlatedSagsHandle;
     }
 
+    function createTableRows(eventID: number) {
+        getTimeCorrelatedSags(props.eventID).done((data) => {
+            const rows = [];
 
-    createTableRows(eventID: number) {
-        this.getTimeCorrelatedSags(this.props.EventID).done(data => {
-            var rows = [];
+            for (let index = 0; index < data.length; ++index) {
+                const row = data[index];
+                let background = 'default';
 
-            for (var index = 0; index < data.length; ++index) {
-                var row = data[index];
-                var background = 'default';
-
-                if (row.EventID == this.props.EventID)
+                if (row.EventID === props.eventID) {
                     background = 'lightyellow';
+                }
 
                 rows.push(Row(row, background));
             }
 
-            this.setState({ tableRows: rows });
+            setTableRows(rows);
         });
     }
 
-    render() {
-        return (
-            <div className="card">
-                <div className="card-header">Correlated Sags:</div>
+    React.useEffect(() => {
+        if (props.eventID >= 0) {
+            createTableRows(props.eventID);
+        }
+    }, [props.eventID]);
 
-                <div className="card-body">
-                    <table className="table">
-                        <thead>
-                            <HeaderRow />
-                        </thead>
-                        <tbody>
-                            {this.state.tableRows}
-                        </tbody>
+    return (
+        <div className="card">
+            <div className="card-header">Correlated Sags:</div>
 
-                    </table>
-
-                </div>
+            <div className="card-body">
+                <table className="table">
+                    <thead>
+                        <HeaderRow />
+                    </thead>
+                    <tbody>{tableRows}</tbody>
+                </table>
             </div>
-        );
-    }
-}
+        </div>
+    );
+};
 
 const Row = (row, background) => {
 
@@ -131,4 +117,4 @@ const HeaderRow = () => {
     );
 }
 
-
+export default EventSearchCorrelatedSags;

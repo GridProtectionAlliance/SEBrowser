@@ -23,8 +23,9 @@
 
 import React from 'react';
 import moment from 'moment';
+import { SEBrowser } from '../../../global';
 
-const EventSearchHistory = (props: { EventID: number }) => {
+const EventSearchHistory: React.FC<SEBrowser.IWidget> = (props) => {
     const [historyData, setHistoryData] = React.useState<Array<any>>([]);
     const [statsData, setStatsData] = React.useState<any>({});
 
@@ -41,13 +42,13 @@ const EventSearchHistory = (props: { EventID: number }) => {
             if (handle2.abort != undefined) handle2.abort();
 
         }
-    }, [props.EventID, count]);
+    }, [props.eventID, count]);
 
 
     function getHistoryData() {
         return  $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/GetEventSearchHistory/${props.EventID}/${count}`,
+            url: `${homePath}api/OpenXDA/GetEventSearchHistory/${props.eventID}/${count}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -58,7 +59,7 @@ const EventSearchHistory = (props: { EventID: number }) => {
     function getStatsData() {
         return $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/GetEventSearchHistoryStats/${props.EventID}`,
+            url: `${homePath}api/OpenXDA/GetEventSearchHistoryStats/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,

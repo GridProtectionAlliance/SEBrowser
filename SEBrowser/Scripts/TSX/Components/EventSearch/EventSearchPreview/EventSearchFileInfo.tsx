@@ -22,8 +22,10 @@
 //******************************************************************************************************
 
 import React from 'react';
+import { SEBrowser } from '../../../global';
 
-function EventSearchFileInfo(props: { EventID: number }) {
+const EventSearchFileInfo: React.FC<SEBrowser.IWidget> = (props) => {
+
     const [fileName, setFileName] = React.useState<string>('');
     const [mappedChannels, setMappedChannels] = React.useState<Array<{ Channel: string, Mapping: string }>>([]);
     const [meterKey, setMeterKey] = React.useState<string>('');
@@ -31,12 +33,12 @@ function EventSearchFileInfo(props: { EventID: number }) {
 
     React.useEffect(() => {
         return GetData();
-    }, [props.EventID]);
+    }, [props.eventID]);
 
     function GetData() {
         let handle = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/GetFileName/${props.EventID}`,
+            url: `${homePath}api/OpenXDA/GetFileName/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -47,7 +49,7 @@ function EventSearchFileInfo(props: { EventID: number }) {
 
         let handle2 = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/GetMappedChannels/${props.EventID}`,
+            url: `${homePath}api/OpenXDA/GetMappedChannels/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -58,7 +60,7 @@ function EventSearchFileInfo(props: { EventID: number }) {
 
         let handle3 = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/GetMeterConfiguration/${props.EventID}`,
+            url: `${homePath}api/OpenXDA/GetMeterConfiguration/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
