@@ -22,10 +22,8 @@
 //******************************************************************************************************
 
 import React from 'react';
-import { SEBrowser } from '../../../global';
 
-const EventSearchFileInfo: React.FC<SEBrowser.IWidget> = (props) => {
-
+function EventSearchFileInfo(props: { EventID: number }) {
     const [fileName, setFileName] = React.useState<string>('');
     const [mappedChannels, setMappedChannels] = React.useState<Array<{ Channel: string, Mapping: string }>>([]);
     const [meterKey, setMeterKey] = React.useState<string>('');
@@ -33,12 +31,12 @@ const EventSearchFileInfo: React.FC<SEBrowser.IWidget> = (props) => {
 
     React.useEffect(() => {
         return GetData();
-    }, [props.eventID]);
+    }, [props.EventID]);
 
     function GetData() {
         let handle = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/GetFileName/${props.eventID}`,
+            url: `${homePath}api/OpenXDA/GetFileName/${props.EventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -49,7 +47,7 @@ const EventSearchFileInfo: React.FC<SEBrowser.IWidget> = (props) => {
 
         let handle2 = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/GetMappedChannels/${props.eventID}`,
+            url: `${homePath}api/OpenXDA/GetMappedChannels/${props.EventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -60,7 +58,7 @@ const EventSearchFileInfo: React.FC<SEBrowser.IWidget> = (props) => {
 
         let handle3 = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/GetMeterConfiguration/${props.eventID}`,
+            url: `${homePath}api/OpenXDA/GetMeterConfiguration/${props.EventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,

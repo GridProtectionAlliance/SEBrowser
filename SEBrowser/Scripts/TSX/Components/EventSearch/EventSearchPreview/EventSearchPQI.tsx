@@ -25,10 +25,9 @@ import React from 'react';
 import moment from 'moment';
 import Table from '@gpa-gemstone/react-table';
 import { PQI } from '@gpa-gemstone/application-typings';
-import { SEBrowser } from '../../../global';
 
 
-const EventSearchPQI: React.FC<SEBrowser.IWidget> = (props) => {
+const EventSearchPQI = (props: { EventID: number }) => {
     const [data, setData] = React.useState<PQI.Types.Equipment[]>([]);
     const [state, setState] = React.useState<('loading' | 'idle' | 'error')>('idle');
 
@@ -42,7 +41,7 @@ const EventSearchPQI: React.FC<SEBrowser.IWidget> = (props) => {
         setState('loading');
         return $.ajax({
             type: "GET",
-            url: `${homePath}api/PQI/GetEquipment/${props.eventID}`,
+            url: `${homePath}api/PQI/GetEquipment/${props.EventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
