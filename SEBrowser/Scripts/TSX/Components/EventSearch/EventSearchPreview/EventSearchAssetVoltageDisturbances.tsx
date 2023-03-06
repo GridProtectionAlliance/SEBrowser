@@ -24,64 +24,54 @@
 import React from 'react';
 import SEBrowserService from './../../../../TS/Services/SEBrowser';
 import moment from 'moment';
+import { SEBrowser } from '../../../global';
 
-export default class EventSearchAssetVoltageDisturbances extends React.Component<{ EventID: number }, {tableRows: Array<JSX.Element> }>{
-    seBrowserService: SEBrowserService;
-    constructor(props, context) {
-        super(props, context);
+const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget> = (props) => {
+    const [tableRows, setTableRows] = React.useState<JSX.Element[]>([]);
+    const seBrowserService = new SEBrowserService();
 
-        this.seBrowserService = new SEBrowserService();
+    React.useEffect(() => {
+        if (props.eventID >= 0) createTableRows(props.eventID);
+        return () => { };
+    }, [props.eventID]);
 
-        this.state = {
-            tableRows: []
-        };
-    }
-
-    componentDidMount() {
-        if (this.props.EventID >= 0)
-            this.createTableRows(this.props.EventID);
-    }
-    componentWillUnmount() {
-    }
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.EventID >= 0)
-            this.createTableRows(nextProps.EventID);
-    }
-
-
-    createTableRows(eventID: number) {
-        this.seBrowserService.getEventSearchAsssetVoltageDisturbancesData(eventID).done(data => {
-            var rows = data.map((d, i) => {
-                const style = { backgroundColor: (d.IsWorstDisturbance ? 'lightyellow' : 'transparent') }
-                return <tr key={i} style={style}>
-                    <td>{d.EventType}</td>
-                    <td>{d.Phase}</td>
-                    <td>{(d.PerUnitMagnitude * 100).toFixed(1)}</td>
-                    <td>{(d.DurationSeconds * 1000).toFixed(2)}</td>
-                    <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
-                </tr> 
-            })
-            this.setState({ tableRows: rows });
+    const createTableRows = (eventID: number) => {
+        seBrowserService.getEventSearchAsssetVoltageDisturbancesData(eventID).done((data) => {
+            const rows = data.map((d, i) => {
+                const style = { backgroundColor: d.IsWorstDisturbance ? 'lightyellow' : 'transparent' };
+                return (
+                    <tr key={i} style={style}>
+                        <td>{d.EventType}</td>
+                        <td>{d.Phase}</td>
+                        <td>{(d.PerUnitMagnitude * 100).toFixed(1)}</td>
+                        <td>{(d.DurationSeconds * 1000).toFixed(2)}</td>
+                        <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
+                    </tr>
+                );
+            });
+            setTableRows(rows);
         });
-    }
+    };
 
-    render() {
-        return (
-            <div className="card">
-                <div className="card-header">Voltage Disturbance in Waveform:</div>
-                <div className="card-body">
-                    <table className="table">
-                        <thead>
-                            <tr><th>Disturbance Type</th><th>Phase</th><th>Magnitude (%)</th><th>Duration (ms)</th><th>Start Time</th></tr>
-                        </thead>
-                        <tbody>
-                            {this.state.tableRows}
-                        </tbody>
-
-                    </table>
-
-                </div>
+    return (
+        <div className="card">
+            <div className="card-header">Voltage Disturbance in Waveform:</div>
+            <div className="card-body">
+                <table className="table">
+                    <thead>
+                        <tr>
+                            <th>Disturbance Type</th>
+                            <th>Phase</th>
+                            <th>Magnitude (%)</th>
+                            <th>Duration (ms)</th>
+                            <th>Start Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>{tableRows}</tbody>
+                </table>
             </div>
-        );
-    }
+        </div>
+    );
 }
+
+export default EventSearchAssetVoltageDisturbances;
