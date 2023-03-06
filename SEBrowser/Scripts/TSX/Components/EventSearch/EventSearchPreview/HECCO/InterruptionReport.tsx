@@ -24,6 +24,7 @@
 import Table from '@gpa-gemstone/react-table';
 import moment from 'moment';
 import React from 'react';
+import { SEBrowser } from '../../../../global';
 
 interface IInterruption {
     TimeOut: string,
@@ -35,7 +36,7 @@ interface IInterruption {
     CircuitInfo: string
 }
 
-const InterruptionReport = (props: { EventID: number }) => {
+const InterruptionReport: React.FC<SEBrowser.IWidget> = (props) => {
     const [data, setData] = React.useState<IInterruption[]>([]);
     const [state, setState] = React.useState<('loading' | 'idle' | 'error')>('idle');
     const [hours, setHours] = React.useState<number>(6);
@@ -50,7 +51,7 @@ const InterruptionReport = (props: { EventID: number }) => {
         setState('loading');
         return $.ajax({
             type: "GET",
-            url: `${homePath}api/InterruptionReport/GetEvents/${hours}/${props.EventID}`,
+            url: `${homePath}api/InterruptionReport/GetEvents/${hours}/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
