@@ -24,12 +24,13 @@
 import React from 'react';
 import { scaleLinear, line, extent, select, axisBottom, axisLeft } from 'd3';
 import moment from 'moment';
+import { SEBrowser } from '../../../../global';
 
-const TVALightningChart = (props: { EventID: number }) => {
+const TVALightningChart: React.FC<SEBrowser.IWidget> = (props) => {
     const svgWidth = (window.innerWidth - 300) / 2 - 17 - 40;
     const svgHeight = 200;
     const margin = { top: 0, right: 0, bottom: 20, left: 40 };
-    const width = svgWidth - margin.left - margin.right;
+    //const width = svgWidth - margin.left - margin.right;
     const height = svgHeight - margin.top - margin.bottom;
 
     const [paths, setPaths] = React.useState<Array<JSX.Element>>([]);
@@ -42,12 +43,12 @@ const TVALightningChart = (props: { EventID: number }) => {
         setHidden(true);
         setPaths([]);
         return GetData();
-    }, [props.EventID]);
+    }, [props.eventID]);
 
     function GetData() {
         let handle = $.ajax({
             type: "GET",
-            url: `${homePath}api/Lightning/${props.EventID}`,
+            url: `${homePath}api/Lightning/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
@@ -77,7 +78,7 @@ const TVALightningChart = (props: { EventID: number }) => {
     }
 
     function DrawChart(dict: { Day: { Data: Array<number> } }) {
-        let x = scaleLinear().rangeRound([0, width]);
+        let x = scaleLinear().rangeRound([0, props.width]);
         let y = scaleLinear().rangeRound([height, 0]);
 
         setHidden(Object.keys(dict).length == 0);
@@ -151,7 +152,7 @@ const TVALightningChart = (props: { EventID: number }) => {
             setXcoord(null);
         }
         else {
-            let x = scaleLinear().rangeRound([0, width]).domain(extent(tableData.Day.Data));
+            let x = scaleLinear().rangeRound([0, props.width]).domain(extent(tableData.Day.Data));
 
             let newIndex = tableData.Day.Data.map((a, i) => [Math.abs(a - x.invert(evt.nativeEvent.offsetX)), i]).sort(function (a, b) {
                 return a[0] - b[0];
@@ -185,10 +186,10 @@ const TVALightningChart = (props: { EventID: number }) => {
                         {paths}
                     </g>
                     <g id='xaxis' transform={`translate(${margin.left},${height})`}>
-                        <path stroke='#000' d={`M 0 0 h 0 ${width} v -${height} 0 h 0 -${width}`} fill='none'></path>
+                        <path stroke='#000' d={`M 0 0 h 0 ${props.width} v -${height} 0 h 0 -${props.width}`} fill='none'></path>
                         {
                             xaxis.map((a, i) => {
-                                let x = scaleLinear().rangeRound([0, width]).domain(extent(tableData.Day.Data));
+                                let x = scaleLinear().rangeRound([0, props.width]).domain(extent(tableData.Day.Data));
 
                                 return (
                                     <g key={i} className='tick' opacity='1' transform={`translate(${x(a)},0)`}>
