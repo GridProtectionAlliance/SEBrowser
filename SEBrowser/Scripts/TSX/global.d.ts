@@ -38,6 +38,7 @@ declare global {
         function stringify(obj: object, opts?: object): object
 
     }
+
 }
 
 export namespace Redux {
@@ -116,10 +117,20 @@ export namespace SEBrowser {
 
     // Temporary until next gpa-gemstone update
     interface EventType extends XDA.Types.EventType { ShowInFilter: boolean, Category?: string, Name: string }
+
+    interface IWidget extends React.Component {
+        setting: object,
+        width: number,
+        maxHeight: number,
+        eventID?: number,
+        disturbanceID?: number,
+        faultID?: number
+    }
 }
 
 export namespace OpenXDA {
     type AssetTypeName = 'Line' | 'Breaker' | 'Transformer' | 'CapacitorBank' | 'Bus';
     type EventTypeName = 'Fault' | 'RecloseIntoFault' | 'BreakerOpen' | 'Interruption' | 'Sag' | 'Swell' | 'Transient' | 'Other' | 'Test' | 'Breaker' | 'Snapshot';
 }
+
 
