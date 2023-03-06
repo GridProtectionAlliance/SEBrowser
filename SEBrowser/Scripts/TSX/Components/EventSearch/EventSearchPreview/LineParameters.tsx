@@ -22,19 +22,18 @@
 //******************************************************************************************************
 
 import React from 'react';
-import { SEBrowser } from '../../../global';
 
-const LineParameters: React.FC<SEBrowser.IWidget> = (props) => {
+const LineParameters = (props: { EventID: number }) => {
     const [hidden, setHidden] = React.useState<boolean>(true);
     const [lineParameters, setLineParameters] = React.useState<{ ID?: number, Length?: number,X0?: number, X1?: number, R1?: number, R0?: number}>(null);
     React.useEffect(() => {
         return GetData();
-    }, [props.eventID]);
+    }, [props.EventID]);
 
     function GetData() {
         let handle = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/LineParameters/${props.eventID}`,
+            url: `${homePath}api/OpenXDA/LineParameters/${props.EventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,

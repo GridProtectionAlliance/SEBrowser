@@ -23,70 +23,84 @@
 
 import React from 'react';
 import moment from 'moment';
-import { SEBrowser } from '../../../global';
 
-const EventSearchCorrelatedSags: React.FC<SEBrowser.IWidget> = (props) => {
-    const [tableRows, setTableRows] = React.useState([]);
+export default class EventSearchHistory extends React.Component<{ EventID: number }, { tableRows: Array<JSX.Element> }>{
+    correlatedSagsHandle: JQuery.jqXHR;
+    constructor(props, context) {
+        super(props, context);
 
-    let correlatedSagsHandle;
-
-    function getTimeCorrelatedSags(eventid: number) {
-        if (correlatedSagsHandle !== undefined) {
-            correlatedSagsHandle.abort();
-        }
-
-        correlatedSagsHandle = $.ajax({
-            type: 'GET',
-            url: `${homePath}api/OpenXDA/GetTimeCorrelatedSags?eventId=${eventid}`,
-            contentType: 'application/json; charset=utf-8',
-            dataType: 'json',
-            cache: true,
-            async: true,
-        });
-
-        return correlatedSagsHandle;
+        this.state = {
+            tableRows: []
+        };
     }
 
-    function createTableRows(eventID: number) {
-        getTimeCorrelatedSags(props.eventID).done((data) => {
-            const rows = [];
+    componentDidMount() {
+        if (this.props.EventID >= 0)
+            this.createTableRows(this.props.EventID);
+    }
+    componentWillUnmount() {
+    }
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.EventID >= 0)
+            this.createTableRows(nextProps.EventID);
+    }
 
-            for (let index = 0; index < data.length; ++index) {
-                const row = data[index];
-                let background = 'default';
+    getTimeCorrelatedSags(eventid: number): JQuery.jqXHR {
+        if (this.correlatedSagsHandle !== undefined)
+            this.correlatedSagsHandle.abort();
 
-                if (row.EventID === props.eventID) {
+        this.correlatedSagsHandle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/GetTimeCorrelatedSags?eventId=${eventid}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+
+        return this.correlatedSagsHandle;
+    }
+
+
+    createTableRows(eventID: number) {
+        this.getTimeCorrelatedSags(this.props.EventID).done(data => {
+            var rows = [];
+
+            for (var index = 0; index < data.length; ++index) {
+                var row = data[index];
+                var background = 'default';
+
+                if (row.EventID == this.props.EventID)
                     background = 'lightyellow';
-                }
 
                 rows.push(Row(row, background));
             }
 
-            setTableRows(rows);
+            this.setState({ tableRows: rows });
         });
     }
 
-    React.useEffect(() => {
-        if (props.eventID >= 0) {
-            createTableRows(props.eventID);
-        }
-    }, [props.eventID]);
+    render() {
+        return (
+            <div className="card">
+                <div className="card-header">Correlated Sags:</div>
 
-    return (
-        <div className="card">
-            <div className="card-header">Correlated Sags:</div>
+                <div className="card-body">
+                    <table className="table">
+                        <thead>
+                            <HeaderRow />
+                        </thead>
+                        <tbody>
+                            {this.state.tableRows}
+                        </tbody>
 
-            <div className="card-body">
-                <table className="table">
-                    <thead>
-                        <HeaderRow />
-                    </thead>
-                    <tbody>{tableRows}</tbody>
-                </table>
+                    </table>
+
+                </div>
             </div>
-        </div>
-    );
-};
+        );
+    }
+}
 
 const Row = (row, background) => {
 
@@ -117,4 +131,4 @@ const HeaderRow = () => {
     );
 }
 
-export default EventSearchCorrelatedSags;
+

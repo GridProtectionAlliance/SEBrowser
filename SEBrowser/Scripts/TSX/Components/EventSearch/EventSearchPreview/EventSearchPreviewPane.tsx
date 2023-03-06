@@ -58,14 +58,13 @@ interface IProps {
 export default function EventPreviewPane(props: IProps) {
     const dispatch = useAppDispatch();
 
-    const [widgets, setWidgets] = React.useState<SEBrowser.IWidget[]>([]);
     const [settings, setSettings] = React.useState<SEBrowser.EventPreviewPaneSetting[]>([]);
     const [tab, setTab] = React.useState<'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All'>(props.InitialTab == null ? 'Waveform' : props.InitialTab);
     const event: any = useAppSelector((state: Redux.StoreState) => SelectEventSearchByID(state,props.EventID));
     React.useEffect(() => {
         GetSettings();
     }, []);
-    
+
     function GetSettings() {
         $.ajax({
             type: "GET",
@@ -98,10 +97,7 @@ export default function EventPreviewPane(props: IProps) {
                     </li>
                 </ul>
                 <div style={{ height: 'calc(100% - 72px)', maxHeight: 'calc(100% - 72px)', overflowY: 'scroll'}}>
-                    {settings.filter(setting => setting.Show).map((setting, index) => {
-
-                if (tab === )
-                /**
+            {settings.filter(setting => setting.Show).map((setting, index) => {
             if (setting.Name.indexOf('EventSearchOpenSEE') >= 0 && (tab == "Waveform" || tab == "All"))
                 return <EventSearchOpenSEE key={index} EventID={props.EventID} />;
             else if (setting.Name.indexOf('pqi') >= 0 && (tab == "Configuration" || tab == "All"))
@@ -145,10 +141,8 @@ export default function EventPreviewPane(props: IProps) {
             else if (setting.Name.indexOf('EventSearchNoteWindow') >= 0 && (tab == "Configuration" || tab == "All"))
                     return <EventSearchNoteWindow key={index} EventID={props.EventID} />;
             else if (setting.Name.indexOf('HECCOIR') >= 0 && (tab == "Correlating" || tab == "All"))
-                    return <InterruptionReport key={index} EventID={props.EventID} />;
-                **/
-            }
-                    )}
+                return <InterruptionReport key={index} EventID={props.EventID} />;
+            })}
         </div>
         </>)
 }

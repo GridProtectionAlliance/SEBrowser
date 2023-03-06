@@ -23,7 +23,66 @@
 
 import React from 'react';
 import OpenSEEService from '../../../../TS/Services/OpenSEE';
-import { SEBrowser } from '../../../global';
+
+export default class EventSearchCapBankAnalyticOverview extends React.Component<{ EventID: number }, {tableRows: Array<JSX.Element> }>{
+    openSEEService: OpenSEEService;
+    constructor(props, context) {
+        super(props, context);
+
+        this.openSEEService = new OpenSEEService();
+
+        this.state = {
+            tableRows: []
+        };
+    }
+
+    componentDidMount() {
+        if (this.props.EventID >= 0)
+            this.createTableRows(this.props.EventID);
+    }
+    componentWillUnmount() {
+    }
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.eventId >= 0)
+            this.createTableRows(nextProps.eventId);
+    }
+
+
+    createTableRows(eventID: number) {
+        this.openSEEService.getCapBankAnalytic(this.props.EventID).done(data => {
+            var rows = [];
+
+            for (var index = 0; index < data.length; ++index) {
+                var row = data[index];
+                
+                rows.push(Row(row));
+            }
+
+            this.setState({ tableRows: rows });
+        });
+    }
+
+    render() {
+        return (
+            <div className="card">
+                <div className="card-header">EPRI CapBank Analytic:</div>
+
+                <div className="card-body">
+                    <table className="table">
+                        <thead>
+                            <HeaderRow />
+                        </thead>
+                        <tbody>
+                            {this.state.tableRows}
+                        </tbody>
+
+                    </table>
+
+                </div>
+            </div>
+        );
+    }
+}
 
 const Row = (row) => {
     return (
@@ -52,51 +111,5 @@ const HeaderRow = () => {
         </tr>
     );
 }
-
-const EventSearchCapBankAnalyticOverview: React.FC<SEBrowser.IWidget> = (props) => {
-    const [tableRows, setTableRows] = React.useState<Array<JSX.Element>>([]);
-    const service = new OpenSEEService();
-
-    React.useEffect(() => {
-        if (props.eventID >= 0)
-            createTableRows(props.eventID);
-    });
-
-    function createTableRows(eventID: number) {
-        
-        service.getCapBankAnalytic(props.eventID).done(data => {
-            var rows = [];
-
-            for (var index = 0; index < data.length; ++index) {
-                var row = data[index];
-
-                rows.push(Row(row));
-            }
-
-            setTableRows(rows);
-        });
-    }
-
-        return (
-            <div className="card">
-                <div className="card-header">EPRI CapBank Analytic:</div>
-                <div className="card-body">
-                    <table className="table">
-                        <thead>
-                            <HeaderRow />
-                        </thead>
-                        <tbody>
-                            {tableRows}
-                        </tbody>
-                    </table>
-
-                </div>
-            </div>
-        );
-}
-
-export default EventSearchCapBankAnalyticOverview;
-
-
 
 

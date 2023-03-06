@@ -22,7 +22,6 @@
 //******************************************************************************************************
 import { Line, Plot } from '@gpa-gemstone/react-graph';
 import React from 'react';
-import { SEBrowser } from '../../../global';
 
 interface ISeries { label: string, color: string, data: [number, number][] }
 interface IPartialOpenseeSettings {
@@ -43,7 +42,7 @@ interface IPartialOpenseeSettings {
     }
 }
 
-const EventSearchOpenSEE: React.FC<SEBrowser.IWidget> = (props) => {
+export default function EventSearchOpenSEE(props: { EventID: number }) {
     const divref = React.useRef(null);
 
     const [VData, setVData] = React.useState<ISeries[]>([]);
@@ -72,7 +71,7 @@ const EventSearchOpenSEE: React.FC<SEBrowser.IWidget> = (props) => {
             if (TCEhandle != null && TCEhandle.abort != null)
                 TCEhandle.abort();
         }
-    }, [props.eventID]);
+    }, [props.EventID]);
 
     React.useEffect(() => {
         let min = 0;
@@ -108,7 +107,7 @@ const EventSearchOpenSEE: React.FC<SEBrowser.IWidget> = (props) => {
     function GetData(type: ('Voltage' | 'Current' | 'TripCoilCurrent'), datasetter: (d: ISeries[]) => void) {
         return $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/GetData?eventId=${props.eventID}` +
+            url: `${homePath}api/OpenXDA/GetData?eventId=${props.EventID}` +
                 `&pixels=${1200}` +
                 `&type=${type}` +
                 `&dataType=Time`,
@@ -177,7 +176,7 @@ const EventSearchOpenSEE: React.FC<SEBrowser.IWidget> = (props) => {
 
     return (
         <div className="card">
-            <div className="card-header"><a href={openSEEInstance + '?eventid=' + props.eventID} target="_blank">View in OpenSEE</a></div>
+            <div className="card-header"><a href={openSEEInstance + '?eventid=' + props.EventID} target="_blank">View in OpenSEE</a></div>
             <div className="card-body" ref={divref}>
                 {VData.length > 0 ? < Plot height={250} width={Width} showBorder={false}
                     legendWidth={150}
@@ -207,5 +206,3 @@ const EventSearchOpenSEE: React.FC<SEBrowser.IWidget> = (props) => {
         </div>
 )
 }
-
-export default EventSearchOpenSEE;
