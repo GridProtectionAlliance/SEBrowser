@@ -22,6 +22,7 @@
 //******************************************************************************************************
 
 import React from 'react';
+import { SEBrowser } from '../../../../global';
 
 interface LSC {
     Facility: string,
@@ -36,16 +37,16 @@ interface LSC {
     EventID: number
 }
 
-const LSC = (props: { EventID: number }) => {
+const LSC: React.FC<SEBrowser.IWidget> = (props) => {
     const [lscInfo, setLSCInfo] = React.useState<Array<LSC>>([]);
     React.useEffect(() => {
         return GetData();
-    }, [props.EventID, ]);
+    }, [props.eventID, ]);
 
     function GetData() {
         let handle = $.ajax({
             type: "GET",
-            url: `${homePath}api/LSC/${props.EventID}`,
+            url: `${homePath}api/LSC/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
