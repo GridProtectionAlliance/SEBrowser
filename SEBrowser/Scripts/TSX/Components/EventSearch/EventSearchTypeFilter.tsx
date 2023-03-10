@@ -104,7 +104,7 @@ const EventSearchTypeFilters = (props: IProps) => {
 
         return <li className="nav-item"
             style={{ width: (20 / nCol).toFixed(0) + '%', paddingRight: 10, height: evtTypeCategories.some(c => c.height == 0) ? 5 : '100%', overflow: 'hidden' }}>
-            {flts.map(c => (<EventSearchTypeCategory Label={c.label} SelectedID={eventTypeFilter}
+            {flts.map(c => (<EventSearchTypeCategory key={c.label} Label={c.label} SelectedID={eventTypeFilter}
                 SelectAll={(selected) => {
                     dispatch(SetFilters({
                         types: (selected ? eventTypeFilter.filter(id => eventTypes.find(t => id == t.ID && t.Category == c.label) == null) : _.uniq([...eventTypeFilter, ...eventTypes.filter(t => t.Category == c.label).map(i => i.ID)]))

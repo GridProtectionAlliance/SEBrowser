@@ -857,25 +857,29 @@ namespace SEBrowser.Controllers
                         {
                             if (series.SeriesInfo.Channel.MeasurementType.Name == "Voltage" && series.SeriesInfo.Channel.MeasurementCharacteristic.Name == "Instantaneous" && series.SeriesInfo.Channel.Phase.Name.Contains("N"))
                             {
-                                returnData.Add("V" + series.SeriesInfo.Channel.Phase.Name, Downsample(data, pixels));
+                                if (!returnData.ContainsKey("V" + series.SeriesInfo.Channel.Phase.Name))
+                                    returnData.Add("V" + series.SeriesInfo.Channel.Phase.Name, Downsample(data, pixels));
                             }
                             else if (series.SeriesInfo.Channel.MeasurementType.Name == "Voltage" && series.SeriesInfo.Channel.MeasurementCharacteristic.Name == "Instantaneous" && !hasVoltLN)
                             {
-                                returnData.Add("V" + series.SeriesInfo.Channel.Phase.Name, Downsample(data, pixels));
+                                if (!returnData.ContainsKey("V" + series.SeriesInfo.Channel.Phase.Name))
+                                    returnData.Add("V" + series.SeriesInfo.Channel.Phase.Name, Downsample(data, pixels));
                             }
 
                         }
                         else if (type == "TripCoilCurrent") {
                             if (series.SeriesInfo.Channel.MeasurementType.Name == "TripCoilCurrent" && series.SeriesInfo.Channel.MeasurementCharacteristic.Name == "Instantaneous")
                             {
-                                returnData.Add("TCE" + series.SeriesInfo.Channel.Phase.Name, Downsample(data, pixels));
+                                if (!returnData.ContainsKey("TCE" + series.SeriesInfo.Channel.Phase.Name))
+                                    returnData.Add("TCE" + series.SeriesInfo.Channel.Phase.Name, Downsample(data, pixels));
                             }
                         }
                         else
                         {
                             if (series.SeriesInfo.Channel.MeasurementType.Name == "Current" && series.SeriesInfo.Channel.MeasurementCharacteristic.Name == "Instantaneous")
                             {
-                                returnData.Add("I" + series.SeriesInfo.Channel.Phase.Name, Downsample(data, pixels));
+                                if (!returnData.ContainsKey("I" + series.SeriesInfo.Channel.Phase.Name))
+                                    returnData.Add("I" + series.SeriesInfo.Channel.Phase.Name, Downsample(data, pixels));
                             }
                         }
 

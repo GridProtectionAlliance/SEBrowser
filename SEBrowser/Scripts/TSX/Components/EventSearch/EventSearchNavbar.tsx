@@ -73,7 +73,6 @@ const EventSearchNavbar = (props: IProps) => {
     
     const [showFilter, setFilter] = React.useState<('None' | 'Meter' | 'Asset' | 'AssetGroup' | 'Station')>('None');
     const [newEventCharacteristicFilter, setNewEventCharacteristicFilter] = React.useState<SEBrowser.IEventCharacteristicFilters>(null);
-    const [newTimeFilter, setNewTimeFilter] = React.useState<SEBrowser.IReportTimeFilter>(null);
     const [newTypeFilter, setNewTypeFilter] = React.useState<number[]>(null);
     const lineNeutralOptions = [{ Value: 'LL', Label: 'LL' }, { Value: 'LN', Label: 'LN' }, { Value: 'both', Label: 'LL/LN' }];
 
@@ -87,7 +86,6 @@ const EventSearchNavbar = (props: IProps) => {
 
     React.useEffect(() => {
         setNewEventCharacteristicFilter(eventCharacteristicFilter);
-        setNewTimeFilter(timeFilter);
         setNewTypeFilter(eventTypeFilter);
         let setupPhases: { Value: number, Text: string, Selected: boolean }[] = [];
         Object.keys(eventCharacteristicFilter.phases).forEach((key, index) => setupPhases.push({ Value: index, Text: key, Selected: eventCharacteristicFilter.phases[key] }));
@@ -105,15 +103,16 @@ const EventSearchNavbar = (props: IProps) => {
     }, [evtTypeStatus]);
 
     React.useEffect(() => {
-        if (!(newEventCharacteristicFilter === null || newTimeFilter === null || newTypeFilter === null))
-            dispatch(SetFilters({
-                characteristics: newEventCharacteristicFilter,
-                time: newTimeFilter,
-                types: newTypeFilter
-            }));
-    }, [newEventCharacteristicFilter, newTimeFilter, newTypeFilter]);   
 
-    React.useEffect(() => { }, [])
+        const characteristics = validEventCharacteristicsFilter() ? newEventCharacteristicFilter : undefined;
+
+        dispatch(SetFilters({
+            characteristics,
+            types: newTypeFilter
+        }));
+    }, [newEventCharacteristicFilter, newTypeFilter]);   
+
+
     function formatWindowUnit(i: number) {
         if (i == 7)
             return "Years";
@@ -210,7 +209,78 @@ const EventSearchNavbar = (props: IProps) => {
         };
     }
 
-    if (newEventCharacteristicFilter === null || newTimeFilter === null || newTypeFilter === null) return null;
+    function validEventCharacteristicsFilter() {
+        let valid = newEventCharacteristicFilter != null;
+
+        if (!valid)
+            return valid;
+
+        valid = valid && validMinMax('durationMin');
+        valid = valid && validMinMax('durationMax');
+
+        valid = valid && validMinMax('sagMin');
+        valid = valid && validMinMax('sagMax');
+
+        valid = valid && validMinMax('swellMin');
+        valid = valid && validMinMax('swellMax');
+
+        valid = valid && validMinMax('transientMin');
+        valid = valid && validMinMax('transientMax');
+
+        return valid;
+    }
+
+    function NullOrNaN(val) {
+        return val == null || isNaN(val);
+    }
+
+    function validMinMax(field: keyof SEBrowser.IEventCharacteristicFilters) {
+        if (field == 'durationMin')
+            return NullOrNaN(newEventCharacteristicFilter.durationMin) || (
+                newEventCharacteristicFilter.durationMin >= 0 && newEventCharacteristicFilter.durationMin < 100 &&
+                (NullOrNaN(newEventCharacteristicFilter.durationMax) ||
+                    newEventCharacteristicFilter.durationMax >= newEventCharacteristicFilter.durationMin))
+        if (field == 'durationMax')
+            return NullOrNaN(newEventCharacteristicFilter.durationMax) || (
+                newEventCharacteristicFilter.durationMax >= 0 && newEventCharacteristicFilter.durationMax < 100 &&
+                (NullOrNaN(newEventCharacteristicFilter.durationMin) ||
+                    newEventCharacteristicFilter.durationMax >= newEventCharacteristicFilter.durationMin))
+        if (field == 'sagMin')
+            return NullOrNaN(newEventCharacteristicFilter.sagMin) || (
+                newEventCharacteristicFilter.sagMin >= 0 && newEventCharacteristicFilter.sagMin < 1 &&
+                (NullOrNaN(newEventCharacteristicFilter.sagMax) ||
+                    newEventCharacteristicFilter.sagMax >= newEventCharacteristicFilter.sagMin))
+        if (field == 'sagMax')
+            return NullOrNaN(newEventCharacteristicFilter.sagMax) || (
+                newEventCharacteristicFilter.sagMax >= 0 && newEventCharacteristicFilter.sagMax < 1 &&
+                (NullOrNaN(newEventCharacteristicFilter.sagMax) ||
+                    newEventCharacteristicFilter.sagMax >= newEventCharacteristicFilter.sagMax))
+        if (field == 'swellMin')
+            return NullOrNaN(newEventCharacteristicFilter.swellMin) || (
+                newEventCharacteristicFilter.swellMin >= 0 && newEventCharacteristicFilter.swellMin < 9999 &&
+                (NullOrNaN(newEventCharacteristicFilter.swellMax) ||
+                    newEventCharacteristicFilter.swellMax >= newEventCharacteristicFilter.swellMin))
+        if (field == 'swellMax')
+            return NullOrNaN(newEventCharacteristicFilter.swellMax) || (
+                newEventCharacteristicFilter.swellMax >= 0 && newEventCharacteristicFilter.swellMax < 9999 &&
+                (NullOrNaN(newEventCharacteristicFilter.swellMin) ||
+                    newEventCharacteristicFilter.swellMax >= newEventCharacteristicFilter.swellMin))
+        if (field == 'transientMin')
+            return NullOrNaN(newEventCharacteristicFilter.transientMin) || (
+                newEventCharacteristicFilter.transientMin >= 0 && newEventCharacteristicFilter.transientMin < 9999 &&
+                (NullOrNaN(newEventCharacteristicFilter.transientMax) ||
+                    newEventCharacteristicFilter.transientMax >= newEventCharacteristicFilter.transientMin))
+        if (field == 'transientMax')
+            return NullOrNaN(newEventCharacteristicFilter.transientMax) || (
+                newEventCharacteristicFilter.transientMax >= 0 && newEventCharacteristicFilter.transientMax < 9999 &&
+                (NullOrNaN(newEventCharacteristicFilter.transientMin) ||
+                    newEventCharacteristicFilter.transientMax >= newEventCharacteristicFilter.transientMin))
+
+
+        return true;
+    }
+
+    if (newEventCharacteristicFilter === null || timeFilter === null || newTypeFilter === null) return null;
 
     if (!props.showNav)
         return (
@@ -218,7 +288,7 @@ const EventSearchNavbar = (props: IProps) => {
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <div className="navbar-nav mr-auto">
                         <span className="navbar-text">
-                            {newTimeFilter.date} {newTimeFilter.time} +/- {newTimeFilter.windowSize} {formatWindowUnit(newTimeFilter.timeWindowUnits)}
+                            {timeFilter.date} {timeFilter.time} +/- {timeFilter.windowSize} {formatWindowUnit(timeFilter.timeWindowUnits)}
                         </span>
                     </div>
                     <div className="navbar-nav ml-auto" >
@@ -228,7 +298,6 @@ const EventSearchNavbar = (props: IProps) => {
             </nav>
         );
 
-    const evtTypeGrps = _.groupBy(eventTypes, (t) => t.Category);
     const sagsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Sag')?.ID ?? -1) != null;
     const swellsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Swell')?.ID ?? -1) != null;;
     const transientsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Transient')?.ID ?? -1) != null;;
@@ -240,31 +309,14 @@ const EventSearchNavbar = (props: IProps) => {
             <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                 <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                     <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
-                            <ReportTimeFilter filter={newTimeFilter} setFilter={setNewTimeFilter} showQuickSelect={true} />
+                            <ReportTimeFilter filter={timeFilter} setFilter={(f) => dispatch(SetFilters({ time: f })) } showQuickSelect={true} />
                         </li>
                         <EventSearchTypeFilters Height={height} />
                     <li className="nav-item" style={{ width: '45%', paddingRight: 10 }}>
                         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                             <legend className="w-auto" style={{ fontSize: 'large' }}>Event Characteristics:</legend>
                             <div className="row">
-                                <div className={"col-4"}>
-                                    <form>
-                                        <label style={{ margin: 0 }}>Duration (cycle):</label>
-                                        <div className="form-group">
-                                            <div className='input-group input-group-sm'>
-                                                <div className='col' style={{ width: '45%' }}>
-                                                    <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Field='durationMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
-                                                </div>
-                                                <div className="input-group-append" style={{ height: '37px'}}>
-                                                    <span className="input-group-text"> to </span>
-                                                </div>
-                                                <div className='col' style={{ width: '45%' }}>
-                                                    <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Field='durationMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
-                                                </div>
-                                            </div>
-                                            </div>
-                                        </form>
-                                </div>
+                                
                                 <div className={"col-4"}>
                                     <form>
                                         <div className="form-group">
@@ -273,33 +325,96 @@ const EventSearchNavbar = (props: IProps) => {
                                                     Options={magDurCurves.map((v) => (v.Area != undefined && v.Area.length > 0 ? { Value: v.ID.toString(), Label: v.Name } : null))} />
                                             </div>
                                             <div className='form-check form-check-inline'>
-                                                <input className="form-check-input" disabled={!newEventCharacteristicFilter.curveOutside} type="checkbox" onChange={() => {
-                                                    setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, curveInside: !newEventCharacteristicFilter.curveInside });
-                                                    }} checked={newEventCharacteristicFilter.curveInside} />
+                                                    <input className="form-check-input" type="radio" onChange={() => {
+                                                        setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, curveInside: true, curveOutside: false });
+                                                    }} checked={newEventCharacteristicFilter.curveInside && !eventCharacteristicFilter.curveOutside} />
                                                 <label className="form-check-label">Inside</label>
                                             </div>
                                             <div className='form-check form-check-inline'>
-                                                <input className="form-check-input" disabled={!newEventCharacteristicFilter.curveInside} type="checkbox" onChange={() => {
-                                                    setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, curveOutside: !newEventCharacteristicFilter.curveOutside });
-                                                    }} checked={newEventCharacteristicFilter.curveOutside} />
+                                                    <input className="form-check-input" type="radio" onChange={() => {
+                                                        setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, curveOutside: true, curveInside: false });
+                                                    }} checked={newEventCharacteristicFilter.curveOutside && !newEventCharacteristicFilter.curveInside} />
                                                 <label className="form-check-label">Outside</label>
-                                            </div>
+                                                </div>
+                                                <div className='form-check form-check-inline'>
+                                                    <input className="form-check-input" type="radio" onChange={() => {
+                                                        setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, curveOutside: true, curveInside: true });
+                                                    }} checked={newEventCharacteristicFilter.curveOutside && newEventCharacteristicFilter.curveInside} />
+                                                    <label className="form-check-label">Both</label>
+                                                </div>
                                         </div>
                                         </form>
                                     </div>
+                                    <div className={"col-4"}>
+                                    <form>
+                                        <label style={{ margin: 0 }}>Duration (cycle):</label>
+                                        <div className="form-group">
+                                                <div className='input-group input-group-sm'>
+                                                    <div className='col' style={{ width: '45%', paddingRight: 0, paddingLeft: 0 }}>
+                                                        <Input<SEBrowser.IEventCharacteristicFilters>
+                                                            Record={newEventCharacteristicFilter}
+                                                            Label='' Field='durationMin'
+                                                            Setter={setNewEventCharacteristicFilter}
+                                                            Valid={validMinMax}
+                                                            Feedback={'Invalid Min'}
+                                                            Type='number'
+                                                            Size={'small'}
+                                                            AllowNull={true}
+                                                        />
+                                                </div>
+                                                <div className="input-group-append" style={{ height: '37px'}}>
+                                                    <span className="input-group-text"> to </span>
+                                                    </div>
+                                                    <div className='col' style={{ width: '45%', paddingLeft: 0, paddingRight: 0 }}>
+                                                        <Input<SEBrowser.IEventCharacteristicFilters>
+                                                            Record={newEventCharacteristicFilter}
+                                                            Label='' Field='durationMax'
+                                                            Setter={setNewEventCharacteristicFilter}
+                                                            Valid={validMinMax}
+                                                            Feedback={'Invalid Max'}
+                                                            Type='number'
+                                                            Size={'small'}
+                                                            AllowNull={true}
+                                                        />
+                                                </div>
+                                            </div>
+                                            </div>
+                                        </form>
+                                </div>
                                 <div className={"col-4"}>
                                         <form>
                                             <label style={{ margin: 0 }}>Sags (p.u.):</label>
                                             <div className="form-group">
                                                 <div className='input-group input-group-sm'>
-                                                    <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!sagsSelected} Field='sagMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                    <div className='col' style={{ width: '45%', paddingLeft: 0, paddingRight: 0 }}>
+                                                        <Input<SEBrowser.IEventCharacteristicFilters>
+                                                            Record={newEventCharacteristicFilter}
+                                                            Label='' Disabled={!sagsSelected}
+                                                            Field='sagMin'
+                                                            Setter={setNewEventCharacteristicFilter}
+                                                            Valid={validMinMax}
+                                                            Feedback={'Invalid Min'}
+                                                            Type='number'
+                                                            Size={'small'}
+                                                            AllowNull={true}
+                                                        />
                                                     </div>
                                                     <div className="input-group-append" style={{ height: '37px' }}>
                                                         <span className="input-group-text"> to </span>
                                                     </div>
-                                                    <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!sagsSelected} Field='sagMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                    <div className='col' style={{ width: '45%', paddingLeft: 0, paddingRight: 0 }}>
+                                                        <Input<SEBrowser.IEventCharacteristicFilters>
+                                                            Record={newEventCharacteristicFilter}
+                                                            Label=''
+                                                            Disabled={!sagsSelected}
+                                                            Field='sagMax'
+                                                            Setter={setNewEventCharacteristicFilter}
+                                                            Valid={validMinMax}
+                                                            Feedback={'Invalid Max'}
+                                                            Type='number'
+                                                            Size={'small'}
+                                                            AllowNull={true}
+                                                        />
                                                     </div>
                                                 </div>
                                                 <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!sagsSelected} Field='sagType' Setter={setNewEventCharacteristicFilter}
@@ -308,10 +423,9 @@ const EventSearchNavbar = (props: IProps) => {
                                         </form>
                                     </div>
                                     <div className={"col-4"}>
-                                        <form>
-                                            <label style={{ margin: 0 }}>Phase:</label>
                                             <MultiCheckBoxSelect
-                                                Options= {newPhases}
+                                            Options={newPhases}
+                                            Label={'Phases'}
                                                 OnChange={
                                                     (evt, Options: { Value: number; Text: string; Selected: boolean; }[]) => { 
                                                         let phaseList = [];
@@ -326,7 +440,6 @@ const EventSearchNavbar = (props: IProps) => {
                                                     }
                                                 }
                                             /> 
-                                        </form>   
                                     </div>
                                     
                                 <div className={"col-4"}>
@@ -334,14 +447,33 @@ const EventSearchNavbar = (props: IProps) => {
                                         <label style={{ margin: 0 }}>Transients (p.u.):</label>
                                         <div className="form-group">
                                             <div className='input-group input-group-sm'>
-                                                <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!transientsSelected} Field='transientMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                    <div className='col' style={{ width: '45%', paddingLeft: 0, paddingRight: 0 }}>
+                                                        <Input<SEBrowser.IEventCharacteristicFilters>
+                                                            Record={newEventCharacteristicFilter} Label=''
+                                                            Disabled={!transientsSelected} Field='transientMin'
+                                                            Setter={setNewEventCharacteristicFilter}
+                                                            Valid={validMinMax}
+                                                            Feedback={'Invalid Min'}
+                                                            Type='number'
+                                                            Size={'small'}
+                                                            AllowNull={true}
+                                                        />
                                                 </div>
                                                 <div className="input-group-append" style={{ height: '37px'}}>
                                                     <span className="input-group-text"> to </span>
                                                 </div>
-                                                <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!transientsSelected} Field='transientMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                    <div className='col' style={{ width: '45%', paddingLeft: 0, paddingRight: 0 }}>
+                                                        <Input<SEBrowser.IEventCharacteristicFilters>
+                                                            Record={newEventCharacteristicFilter}
+                                                            Label=''
+                                                            Disabled={!transientsSelected}
+                                                            Field='transientMax'
+                                                            Setter={setNewEventCharacteristicFilter}
+                                                            Valid={validMinMax}
+                                                            Feedback={'Invalid Max'}
+                                                            Size={'small'}
+                                                            AllowNull={true}
+                                                            Type='number' />
                                                 </div>
                                             </div>
                                             <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!transientsSelected} Field='transientType' Setter={setNewEventCharacteristicFilter}
@@ -354,17 +486,40 @@ const EventSearchNavbar = (props: IProps) => {
                                         <label style={{ margin: 0 }}>Swells (p.u.):</label>
                                         <div className="form-group">
                                             <div className='input-group input-group-sm'>
-                                                <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!swellsSelected} Field='swellMin' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                    <div className='col' style={{ width: '45%', paddingLeft: 0, paddingRight: 0 }}>
+                                                        <Input<SEBrowser.IEventCharacteristicFilters>
+                                                            Record={newEventCharacteristicFilter}
+                                                            Label='' Disabled={!swellsSelected}
+                                                            Field='swellMin'
+                                                            Setter={setNewEventCharacteristicFilter}
+                                                            Valid={validMinMax}
+                                                            Feedback={'Invalid Min'}
+                                                            Type='number'
+                                                            Size={'small'}
+                                                            AllowNull={true}
+                                                        />
                                                 </div>
                                                 <div className="input-group-append" style={{ height: '37px'}}>
                                                     <span className="input-group-text"> to </span>
                                                 </div>
-                                                    <div className='col' style={{ width: '45%' }}>
-                                                        <Input<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!swellsSelected} Field='swellMax' Setter={setNewEventCharacteristicFilter} Valid={() => { return true }} Type='number' />
+                                                    <div className='col' style={{ width: '45%', paddingLeft: 0, paddingRight: 0 }}>
+                                                        <Input<SEBrowser.IEventCharacteristicFilters>
+                                                            Record={newEventCharacteristicFilter}
+                                                            Label='' Disabled={!swellsSelected}
+                                                            Field='swellMax'
+                                                            Setter={setNewEventCharacteristicFilter}
+                                                            Valid={validMinMax}
+                                                            Feedback={'Invalid Max'}
+                                                            Type='number'
+                                                            Size={'small'}
+                                                            AllowNull={true}
+                                                        />
                                                 </div>
                                             </div>
-                                                <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!swellsSelected} Field='swellType' Setter={setNewEventCharacteristicFilter}
+                                                <Select<SEBrowser.IEventCharacteristicFilters>
+                                                    Record={newEventCharacteristicFilter}
+                                                    Label='' Disabled={!swellsSelected}
+                                                    Field='swellType' Setter={setNewEventCharacteristicFilter}
                                                 Options={lineNeutralOptions}/>
                                         </div>
                                     </form>

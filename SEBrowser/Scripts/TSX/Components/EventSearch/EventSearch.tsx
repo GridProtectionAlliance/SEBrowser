@@ -28,7 +28,6 @@ import EventSearchList from './EventSearchList';
 import { History } from 'history';
 import EventSearchNavbar from './EventSearchNavbar';
 import EventPreviewPane from './EventSearchPreview/EventSearchPreviewPane';
-import EventSearchListedEventsNoteWindow from './EventSearchListedEventsNoteWindow';
 import queryString from 'querystring';
 import EventSearchMagDur from './EventSearchMagDur';
 import { ProcessQuery, SelectEventList, SelectQueryParam } from './EventSearchSlice';
@@ -90,7 +89,7 @@ const EventSearch = (props: IProps) => {
     }
 
     return (
-        <div style={{ width: '100%', height: '100%' }}>
+        <div style={{ width: '100%', height: '100%' }} data-drawer={'eventPreviewPane'}>
             <EventSearchNavbar
                 toggleVis={() => setShowNav((c) => !c)}
                 showNav={showNav}
@@ -107,23 +106,26 @@ const EventSearch = (props: IProps) => {
                             </button>
                             </div>
                             {showMagDur ?
-                                <EventSearchMagDur Width={(window.innerWidth - 300) / 2}
-                                Height={window.innerHeight - ((showNav ? navHeight : 52) + 70)}
+                                <EventSearchMagDur
+                                Height={window.innerHeight - ((showNav ? navHeight : 52) + 120)}
                                     EventID={eventId}
-                                    OnSelect={(evt, point) => setEventId(point.EventID)}
+                                SelectEvent={setEventId}
                                 /> :
                             <EventSearchList eventid={eventId}
                                 selectEvent={setEventId}
-                                height={window.innerHeight - ((showNav ? navHeight : 52))} />
+                                height={window.innerHeight - ((showNav ? navHeight : 52) + 120)} />
                             }
                         </div>
                     </SplitSection>
                     <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
-                        <div style={{ width: '100%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
-                            <EventPreviewPane EventID={eventId} InitialTab={initialTab} />
+                    <div style={{ width: '100%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
+                        <EventPreviewPane
+                            EventID={eventId}
+                            InitialTab={initialTab}
+                            Height={window.innerHeight - ((showNav ? navHeight : 52) + 62)} />
                         </div>
-                    </SplitSection>
-                </VerticalSplit>
+                </SplitSection>
+            </VerticalSplit>
         </div>
     );
 }

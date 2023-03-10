@@ -29,6 +29,7 @@ import moment from 'moment';
 import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, EventTypeSlice, LocationSlice, MeterSlice } from '../../Store';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
+import SEBrowserdService from '../../../TS/Services/SEBrowser';
 
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
@@ -52,14 +53,14 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     const filter = {
         date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,
         typeIDs: types,
-        durationMin: characteristics.durationMin, durationMax: characteristics.durationMax,
+        durationMin: characteristics.durationMin ?? 0, durationMax: characteristics.durationMax ?? 0,
         phases: {
             AN: characteristics.phases.AN, BN: characteristics.phases.BN, CN: characteristics.phases.CN, AB: characteristics.phases.AB, BC: characteristics.phases.BC,
             CA: characteristics.phases.CA, ABG: characteristics.phases.ABG, BCG: characteristics.phases.BCG, ABC: characteristics.phases.ABC, ABCG: characteristics.phases.ABCG,
         },
-        transientMin: characteristics.transientMin, transientMax: characteristics.transientMax, transientType: characteristics.transientType,
-        sagMin: characteristics.sagMin, sagMax: characteristics.sagMax, sagType: characteristics.sagType,
-        swellMin: characteristics.swellMin, swellMax: characteristics.swellMax, swellType: characteristics.swellType,
+        transientMin: characteristics.transientMin ?? 0, transientMax: characteristics.transientMax ?? 0, transientType: characteristics.transientType,
+        sagMin: characteristics.sagMin ?? 0, sagMax: characteristics.sagMax ?? 0, sagType: characteristics.sagType,
+        swellMin: characteristics.swellMin ?? 0, swellMax: characteristics.swellMax ?? 0, swellType: characteristics.swellType,
         curveID: characteristics.curveID, curveInside: characteristics.curveInside, curveOutside: characteristics.curveOutside,
         meterIDs: meterList.map(item => item.ID), assetIDs: assetList.map(item => item.ID),
         groupIDs: groupList.map(item => item.ID), locationIDs: locationList.map(item => item.ID),
@@ -107,6 +108,16 @@ export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async 
     }));
 });
 
+export const ResetFilters = createAsyncThunk('EventSearchs/ResetFilterThunk', async (_: void, { dispatch, getState }) => {
+    let state = getState() as Redux.StoreState;
+    
+    if (state.EventType.Status == 'unintiated')
+        await dispatch(EventTypeSlice.Fetch());
+    state = getState() as Redux.StoreState;
+    return dispatch(EventSearchsSlice.actions.ResetFilters({
+        types: state.EventType.Data
+    }));
+});
 export const SetFilters = createAsyncThunk('EventSearchs/SetFilters', async (args: {
     characteristics?: SEBrowser.IEventCharacteristicFilters,
     types?: number[],
@@ -144,12 +155,14 @@ export const EventSearchsSlice = createSlice({
         Ascending: true,
         SearchText: '',
         EventCharacteristic: {
-            durationMax: 0, durationMin: 0, phases: {
+            durationMax: null, durationMin: null, phases: {
                 AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true
-            }, transientMin: 0, transientMax: 0, sagMin: 0, sagMax: 0, swellMin: 0, swellMax: 0, sagType: 'both', swellType: 'both', transientType: 'both',
+            },
+            transientMin: null, transientMax: null, sagMin: null, sagMax: null, swellMin: null, swellMax: null,
+            sagType: 'both', swellType: 'both', transientType: 'both',
             curveID: 1, curveInside: true, curveOutside: true
         },
-        TimeRange: { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 10, timeWindowUnits: 5 },
+        TimeRange: { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 7, timeWindowUnits: 4 },
         EventType: [],
         isReset: true,
         SelectedAssets: [],
@@ -190,17 +203,17 @@ export const EventSearchsSlice = createSlice({
             state.SelectedMeters = parseList('meters', action.payload.query)?.map(id => action.payload.meters.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
             state.SelectedStations = parseList('stations', action.payload.query)?.map(id => action.payload.locations.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
 
-            state.EventCharacteristic.durationMin = parseFloat(action.payload.query['durationMin']?.toString() ?? '0');
-            state.EventCharacteristic.durationMax = parseFloat(action.payload.query['durationMax']?.toString() ?? '0');
+            state.EventCharacteristic.durationMin = parseFloat(action.payload.query['durationMin']?.toString() ?? null);
+            state.EventCharacteristic.durationMax = parseFloat(action.payload.query['durationMax']?.toString() ?? null);
 
-            state.EventCharacteristic.transientMin = parseFloat(action.payload.query['transientMin']?.toString() ?? '0');
-            state.EventCharacteristic.transientMax = parseFloat(action.payload.query['transientMax']?.toString() ?? '0');
+            state.EventCharacteristic.transientMin = parseFloat(action.payload.query['transientMin']?.toString() ?? null);
+            state.EventCharacteristic.transientMax = parseFloat(action.payload.query['transientMax']?.toString() ?? null);
 
-            state.EventCharacteristic.sagMin = parseFloat(action.payload.query['sagMin']?.toString() ?? '0');
-            state.EventCharacteristic.sagMax = parseFloat(action.payload.query['sagMax']?.toString() ?? '0');
+            state.EventCharacteristic.sagMin = parseFloat(action.payload.query['sagMin']?.toString() ?? null);
+            state.EventCharacteristic.sagMax = parseFloat(action.payload.query['sagMax']?.toString() ?? null);
 
-            state.EventCharacteristic.swellMax = parseFloat(action.payload.query['swellMax']?.toString() ?? '0');
-            state.EventCharacteristic.swellMin = parseFloat(action.payload.query['swellMin']?.toString() ?? '0');
+            state.EventCharacteristic.swellMax = parseFloat(action.payload.query['swellMax']?.toString() ?? null);
+            state.EventCharacteristic.swellMin = parseFloat(action.payload.query['swellMin']?.toString() ?? null);
 
             state.EventCharacteristic.sagType = (action.payload.query['sagType'] ?? 'both') as ('both' | 'LL' | 'LN');
             state.EventCharacteristic.swellType = (action.payload.query['swellType'] ?? 'both') as ('both' | 'LL' | 'LN');
@@ -228,19 +241,33 @@ export const EventSearchsSlice = createSlice({
             state.Status = 'changed';
             if (action.payload.time !== undefined)
                 state.TimeRange = action.payload.time;
-            if(action.payload.types !== undefined)
+            if (action.payload.types !== undefined)
                 state.EventType = action.payload.types;
             if (action.payload.characteristics !== undefined)
                 state.EventCharacteristic = action.payload.characteristics;
+
+            state.EventCharacteristic.durationMax = isNaN(state.EventCharacteristic.durationMax) ? null : state.EventCharacteristic.durationMax;
+            state.EventCharacteristic.durationMin = isNaN(state.EventCharacteristic.durationMin) ? null : state.EventCharacteristic.durationMin;
+
+            state.EventCharacteristic.transientMax = isNaN(state.EventCharacteristic.transientMax) ? null : state.EventCharacteristic.transientMax;
+            state.EventCharacteristic.transientMin = isNaN(state.EventCharacteristic.transientMin) ? null : state.EventCharacteristic.transientMin;
+            state.EventCharacteristic.sagMax = isNaN(state.EventCharacteristic.sagMax) ? null : state.EventCharacteristic.sagMax;
+            state.EventCharacteristic.sagMin = isNaN(state.EventCharacteristic.sagMin) ? null : state.EventCharacteristic.sagMin;
+            state.EventCharacteristic.swellMax = isNaN(state.EventCharacteristic.swellMax) ? null : state.EventCharacteristic.swellMax;
+            state.EventCharacteristic.swellMin = isNaN(state.EventCharacteristic.swellMin) ? null : state.EventCharacteristic.swellMin;
+
+
             state.isReset = computeReset(state, action.payload.eventTypes);
         },
-        ResetFilters: (state, action: PayloadAction<void>) => {
+        ResetFilters: (state, action: PayloadAction<{ types: SEBrowser.EventType[] }>) => {
             state.EventCharacteristic = {
-                durationMax: 0, durationMin: 0, phases: { AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true }, transientMin: 0, transientMax: 0, sagMin: 0, sagMax: 0, swellMin: 0, swellMax: 0, sagType: 'both', swellType: 'both', transientType: 'both',
+                durationMax: null, durationMin: null,
+                phases: { AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true }, 
+                transientMin: null, transientMax: null, sagMin: null, sagMax: null, swellMin: null, swellMax: null, sagType: 'both', swellType: 'both', transientType: 'both',
                 curveID: 1, curveInside: true, curveOutside: true
             };
 
-            state.EventType = [];
+            state.EventType = action.payload.types.filter(e => e.ShowInFilter).map(e => e.ID);
             state.SelectedStations = [];
             state.SelectedMeters = [];
             state.SelectedGroups = [];
@@ -290,7 +317,7 @@ export const EventSearchsSlice = createSlice({
 // #endregion
 
 // #region [ Selectors ]
-export const { Sort, ResetFilters } = EventSearchsSlice.actions;
+export const { Sort } = EventSearchsSlice.actions;
 
 export default EventSearchsSlice.reducer;
 export const SelectEventSearchs = (state: Redux.StoreState) => state.EventSearch.Data;
@@ -338,14 +365,14 @@ function GetEventSearchs(params: any): JQuery.jqXHR<any[]> {
 }
 
 function computeReset(state: Redux.EventSearchState, eventTypes: SEBrowser.EventType[]): boolean {
-    const event = state.EventCharacteristic.durationMax == 0 && state.EventCharacteristic.durationMin == 0 &&
-        state.EventCharacteristic.transientMin == 0 && state.EventCharacteristic.transientMax == 0 &&
-        state.EventCharacteristic.sagMin == 0 && state.EventCharacteristic.sagMax == 0 &&
-        state.EventCharacteristic.swellMin == 0 && state.EventCharacteristic.swellMax == 0 &&
+    const event = state.EventCharacteristic.durationMax == null && state.EventCharacteristic.durationMin == null &&
+        state.EventCharacteristic.transientMin == null && state.EventCharacteristic.transientMax == null &&
+        state.EventCharacteristic.sagMin == null && state.EventCharacteristic.sagMax == null &&
+        state.EventCharacteristic.swellMin == null && state.EventCharacteristic.swellMax == null &&
         state.EventCharacteristic.phases.AN && state.EventCharacteristic.phases.BN && state.EventCharacteristic.phases.CN && state.EventCharacteristic.phases.AB && state.EventCharacteristic.phases.BC && state.EventCharacteristic.phases.CA && state.EventCharacteristic.phases.ABG && state.EventCharacteristic.phases.BCG && state.EventCharacteristic.phases.ABC && state.EventCharacteristic.phases.ABCG &&
         state.EventCharacteristic.curveInside && state.EventCharacteristic.curveOutside;
 
-    const types = eventTypes.length == eventTypes.filter(e => e.ShowInFilter).length;
+    const types = eventTypes.filter(e => e.ShowInFilter).length == state.EventType.length;
     return event && types && state.SelectedAssets.length == 0 && state.SelectedStations.length == 0 && state.SelectedMeters.length == 0 && state.SelectedGroups.length == 0;
 }
 
@@ -463,6 +490,8 @@ function parseList(key: string, object: any) {
         i = i + 1;
     }
 
+    if (result.length == 0)
+        return null;
     return result;
 
 }

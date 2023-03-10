@@ -7,6 +7,7 @@ using openXDA.Model;
 using SEBrowser.Model.System;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Globalization;
 using System.IO;
@@ -58,6 +59,17 @@ namespace SEBrowser.Controllers
             }
         }
 
+        [Route("GetTimeZone"), HttpGet]
+        public IHttpActionResult GetTimeZoneOffset()
+        {
+            using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
+            {
+                string systemTime = connection.ExecuteScalar<string>("SELECT TOP 1 [Value] FROM [Setting] WHERE Name = 'System.XDATimeZone'");
+                if (string.IsNullOrEmpty(systemTime))
+                    return Ok(0);
+                return Ok(TimeZoneInfo.FindSystemTimeZoneById(systemTime).BaseUtcOffset);
+            }
+        }
         #endregion
 
     }
