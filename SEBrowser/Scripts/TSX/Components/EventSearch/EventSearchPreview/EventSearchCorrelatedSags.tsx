@@ -25,7 +25,7 @@ import React from 'react';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
 
-const EventSearchCorrelatedSags: React.FC<SEBrowser.IWidget> = (props) => {
+const EventSearchCorrelatedSags: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [tableRows, setTableRows] = React.useState([]);
 
     let correlatedSagsHandle;
