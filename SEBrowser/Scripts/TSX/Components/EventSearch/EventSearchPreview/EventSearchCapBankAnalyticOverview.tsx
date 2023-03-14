@@ -53,7 +53,7 @@ const HeaderRow = () => {
     );
 }
 
-const EventSearchCapBankAnalyticOverview: React.FC<SEBrowser.IWidget> = (props) => {
+const EventSearchCapBankAnalyticOverview: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [tableRows, setTableRows] = React.useState<Array<JSX.Element>>([]);
     const service = new OpenSEEService();
 
