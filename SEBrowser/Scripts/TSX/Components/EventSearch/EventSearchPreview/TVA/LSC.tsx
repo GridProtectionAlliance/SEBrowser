@@ -37,7 +37,7 @@ interface LSC {
     EventID: number
 }
 
-const LSC: React.FC<SEBrowser.IWidget> = (props) => {
+const LSC: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [lscInfo, setLSCInfo] = React.useState<Array<LSC>>([]);
     React.useEffect(() => {
         return GetData();
