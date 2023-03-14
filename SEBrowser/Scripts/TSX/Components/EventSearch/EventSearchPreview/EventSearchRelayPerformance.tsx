@@ -26,7 +26,7 @@ import OpenSEEService from '../../../../TS/Services/OpenSEE';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
 
-const EventSearchFileInfo: React.FC<SEBrowser.IWidget> = (props) => {
+const EventSearchFileInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [tableRows, setTableRows] = React.useState([]);
 
     React.useEffect(() => {
