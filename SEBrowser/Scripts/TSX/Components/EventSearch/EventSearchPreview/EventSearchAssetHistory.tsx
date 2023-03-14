@@ -25,7 +25,7 @@ import React from 'react';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
 
-const EventSearchHistory: React.FC<SEBrowser.IWidget> = (props) => {
+const EventSearchHistory: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [historyData, setHistoryData] = React.useState<Array<any>>([]);
     const [statsData, setStatsData] = React.useState<any>({});
 
