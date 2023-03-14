@@ -25,7 +25,7 @@ import React from 'react';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
 
-const EventSearchNoteWindow: React.FC<SEBrowser.IWidget> = (props) => {
+const EventSearchNoteWindow: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [tableRows, setTableRows] = React.useState<Array<JSX.Element>>([]);
     const [note, setNote] = React.useState<string>('');
     const [count, setCount] = React.useState<number>(0);
