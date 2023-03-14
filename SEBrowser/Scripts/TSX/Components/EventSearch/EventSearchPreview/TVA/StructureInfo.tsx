@@ -24,7 +24,7 @@
 import React from 'react';
 import { SEBrowser } from '../../../../global';
 
-const StructureInfo: React.FC<SEBrowser.IWidget> = (props) => {
+const StructureInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [structureInfo, setStructureInfo] = React.useState<Array<{ StrNumber: string, Latitude: number, Longitude: number, Imagepath: string }>>([]);
     const [selectedIndex, setSelectedIndex] = React.useState<number>(-1);
 
