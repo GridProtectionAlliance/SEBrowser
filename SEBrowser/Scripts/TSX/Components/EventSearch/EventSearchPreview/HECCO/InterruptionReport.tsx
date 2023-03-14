@@ -36,7 +36,7 @@ interface IInterruption {
     CircuitInfo: string
 }
 
-const InterruptionReport: React.FC<SEBrowser.IWidget> = (props) => {
+const InterruptionReport: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [data, setData] = React.useState<IInterruption[]>([]);
     const [state, setState] = React.useState<('loading' | 'idle' | 'error')>('idle');
     const [hours, setHours] = React.useState<number>(6);
