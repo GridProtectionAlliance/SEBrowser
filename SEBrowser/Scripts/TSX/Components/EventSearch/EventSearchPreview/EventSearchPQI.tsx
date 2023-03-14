@@ -28,7 +28,7 @@ import { PQI } from '@gpa-gemstone/application-typings';
 import { SEBrowser } from '../../../global';
 
 
-const EventSearchPQI: React.FC<SEBrowser.IWidget> = (props) => {
+const EventSearchPQI: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [data, setData] = React.useState<PQI.Types.Equipment[]>([]);
     const [state, setState] = React.useState<('loading' | 'idle' | 'error')>('idle');
 
