@@ -26,7 +26,7 @@ import SEBrowserService from './../../../../TS/Services/SEBrowser';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
 
-const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget> = (props) => {
+const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [tableRows, setTableRows] = React.useState<JSX.Element[]>([]);
     const seBrowserService = new SEBrowserService();
 
