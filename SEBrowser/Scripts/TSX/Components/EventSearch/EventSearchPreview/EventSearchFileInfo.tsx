@@ -24,7 +24,7 @@
 import React from 'react';
 import { SEBrowser } from '../../../global';
 
-const EventSearchFileInfo: React.FC<SEBrowser.IWidget> = (props) => {
+const EventSearchFileInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
 
     const [fileName, setFileName] = React.useState<string>('');
     const [mappedChannels, setMappedChannels] = React.useState<Array<{ Channel: string, Mapping: string }>>([]);
