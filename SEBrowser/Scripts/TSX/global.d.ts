@@ -118,13 +118,14 @@ export namespace SEBrowser {
     // Temporary until next gpa-gemstone update
     interface EventType extends XDA.Types.EventType { ShowInFilter: boolean, Category?: string, Name: string }
 
-    interface IWidget extends React.Component {
-        setting: object,
-        width: number,
-        maxHeight: number,
-        eventID?: number,
+    interface IWidget<T> {
+        eventID: number,
+        setting?: T,
+        width?: number,
+        maxHeight?: number,
         disturbanceID?: number,
-        faultID?: number
+        faultID?: number,
+        startTime?: number
     }
 }
 
