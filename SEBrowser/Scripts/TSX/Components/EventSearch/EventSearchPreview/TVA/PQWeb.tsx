@@ -25,11 +25,11 @@ import React from 'react';
 import moment from 'moment';
 import { SEBrowser } from '../../../../global';
 
-const PQWeb: React.FC<SEBrowser.IWidget> = (props: SEBrowser.IWidget, StartTime: number) => {
+const PQWeb: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [tab, setTab] = React.useState<'LSC' | 'All'>('LSC');
 
     React.useEffect(() => {
-    }, [StartTime ]);
+    }, [props.startTime]);
 
     return (
         <div className="card">
@@ -46,10 +46,10 @@ const PQWeb: React.FC<SEBrowser.IWidget> = (props: SEBrowser.IWidget, StartTime:
 
                 <div className="tab-content">
                     <div style={{ height: 400, maxHeight: 400, overflowY: 'hidden' }} className={"tab-pane fade" + (tab == 'LSC' ? " show active" : "")}>
-                        <iframe style={{ height: 'inherit', width: '100%'}} src={`${faultLocationInstance}/pqwebreport.asp?sitefilter=LSC&t=${moment(StartTime).format('YYYY-MM-DD HH:mm:ss')}`}/>
+                        <iframe style={{ height: 'inherit', width: '100%'}} src={`${faultLocationInstance}/pqwebreport.asp?sitefilter=LSC&t=${moment(props.startTime).format('YYYY-MM-DD HH:mm:ss')}`}/>
                     </div>
                     <div style={{ height: 400, maxHeight: 400, overflowY: 'hidden' }} className={"tab-pane fade" + (tab == 'All' ? " show active" : "")}>
-                        <iframe style={{ height: 'inherit', width: '100%' }} src={`${faultLocationInstance}/pqwebreport.asp?t=${moment(StartTime).format('YYYY-MM-DD HH:mm:ss')}`}/>
+                        <iframe style={{ height: 'inherit', width: '100%' }} src={`${faultLocationInstance}/pqwebreport.asp?t=${moment(props.startTime).format('YYYY-MM-DD HH:mm:ss')}`}/>
                     </div>
                 </div>
             </div>
