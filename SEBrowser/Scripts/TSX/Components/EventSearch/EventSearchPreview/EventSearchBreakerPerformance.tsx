@@ -26,7 +26,7 @@ import OpenSEEService from '../../../../TS/Services/OpenSEE';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
 
-const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget> = (props) => {
+const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [showRelayHistory, setShowRelayHistory] = React.useState(false);
     const service = new OpenSEEService();
 
