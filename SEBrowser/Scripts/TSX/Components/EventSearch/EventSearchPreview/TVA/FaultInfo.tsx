@@ -80,12 +80,12 @@ const FaultInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
             <div className="card-body">
                 <table className='table'>
                     <tbody>
-                        <tr><td>Fault Inception Time: </td><td>{moment(faultInfo.FaultTime).format('YYYY-MM-DD HH:mm:ss.SSS')} (Central Time)</td></tr>
-                        <tr><td>Fault Duration: </td><td>{faultInfo.FaultDuration} cycles / {(faultInfo.FaultDuration == undefined ? '': (faultInfo.FaultDuration * 16.6).toFixed(2))} ms</td></tr>
-                        <tr><td>Fault Type: </td><td>{faultInfo.FaultType}</td></tr>
-                        <tr><td>Location: </td><td>{faultInfo.FaultDistance}  miles from {faultInfo.StationName}({faultInfo.StationID}) on {faultInfo.LineName}({faultInfo.LineAssetKey})</td></tr>
-                        <tr hidden={faultInfo.DblDist == undefined}><td>Double Ended Location: </td><td>{faultInfo.DblDist}  miles from {faultInfo.StationName}</td></tr>
-                        <tr><td>Tree Probability: </td><td>{TreeProbability(faultInfo.TreeFaultResistance)}</td></tr>
+                        <tr><td>Fault Inception Time: </td><td>{faultInfo ? moment(faultInfo.FaultTime).format('YYYY-MM-DD HH:mm:ss.SSS') : ''} (Central Time)</td></tr>
+                        <tr><td>Fault Duration: </td><td>{faultInfo ? faultInfo.FaultDuration : ''} cycles / {faultInfo ? (faultInfo.FaultDuration == undefined ? '': (faultInfo.FaultDuration * 16.6).toFixed(2)) : ''} ms : ''</td></tr>
+                        <tr><td>Fault Type: </td><td>{faultInfo ? faultInfo.FaultType : ''}</td></tr>
+                        <tr><td>Location: </td><td>{faultInfo ? faultInfo.FaultDistance : ''}  miles from {faultInfo ? faultInfo.StationName : ''}({faultInfo ? faultInfo.StationID : ''}) on {faultInfo ? faultInfo.LineName : ''}({faultInfo ? faultInfo.LineAssetKey : ''})</td></tr>
+                        <tr hidden={!faultInfo || faultInfo.DblDist == undefined}><td>Double Ended Location: </td><td>{faultInfo ? faultInfo.DblDist : ''}  miles from {faultInfo ? faultInfo.StationName : ''}</td></tr>
+                        <tr><td>Tree Probability: </td><td>{faultInfo ? TreeProbability(faultInfo.TreeFaultResistance) : ''}</td></tr>
                         <tr><td>View:</td><td>{links.map(a => {
                             if (a.Name == 'FaultInfo.Miles')
                                 return <a style={{ paddingRight: 5 }} key={a.Name} href={a.Value + `?Station=${faultInfo.StationID}&Line=${faultInfo.LineAssetKey}&Mileage=${faultInfo.FaultDistance}`} target='_blank'>{a.Display}</a>
