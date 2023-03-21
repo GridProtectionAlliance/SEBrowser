@@ -81,18 +81,22 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
-            async: true
+            async: true,
+            error: function (response, ajaxOptions, thrownError) {
+                console.error('StringError: ' + ajaxOptions + '\n\nthrownError: ' + JSON.stringify(thrownError) + '\n\nResponse: ' + JSON.stringify(response));
+            }
         }).done((d) => { setFaultInfo(d); });
         return () => {
             if (handle != null && handle.abort != null) handle.abort();
         }
+
     }, [props.eventID])
 
     /* Create map and add layers */
     React.useEffect(() => {
         if (div == null) return;
         const setting: ISettings = props.setting == undefined ? defaultSettings : props.setting;
-        map.current = leaflet.map('map', { center: setting.Center, zoom: setting.Zoom, });
+        map.current = leaflet.map(div.current, { center: setting.Center, zoom: setting.Zoom, });
         basemapLayer('Gray').addTo(map.current);
 
         const transmissionLayer = dynamicMapLayer({ url: '', opacity: 0.3, f: 'image' });
@@ -115,8 +119,7 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
 
     /* Radar Current */
     React.useEffect(() => {
-        if (faultInfo == null) return;
-
+        if (faultInfo == null || faultInfo.length == 0) return;
         const time = moment(faultInfo[0]?.Inception);
         const timestring = time.utc().format('YYYY-MM-DDTHH') + ':' + (time.minutes() - time.minutes() % 5).toString();
 
@@ -290,6 +293,7 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
                         </select>
                     </div>
                 </div>
+                <link rel="stylesheet" href="node_modules/leaflet/dist/leaflet.css" />
                 <div className="row">
                     <div className="col">
                         <div ref={div} style={{ height: 400, padding: 5, border: 'solid 1px gray' }}></div>
@@ -324,7 +328,7 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
                         </div>
                 </div>
             </div>
-        </div>
+            </div>
     );
 }
 
