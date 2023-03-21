@@ -55,6 +55,7 @@ const StructureInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
     React.useEffect(() => {
         const fetchData = async () => {
             const faultInfo = await getFaultInfo();
+            if (faultInfo == null || faultInfo.length == 0) return;
             const nearestStructure = await getNearestStructureInfo(faultInfo[0].StationName, faultInfo[0].AssetName, faultInfo[0].Distance);
             setStructureInfo(nearestStructure);
             setSelectedIndex(nearestStructure.length > 0 ? 0 : -1);
