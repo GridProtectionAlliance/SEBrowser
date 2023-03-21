@@ -53,9 +53,9 @@ namespace SEBrowser.Controllers.OpenXDA
     public class OpenXDALocationController : DetailedLocationController<DetailedLocation> { }
 
     [RoutePrefix("api/openXDA/Widget")]
-    public class WidgetController : ModelController<WidgetView> { }
+    public class WidgetController : ModelController<Widget> { }
 
-    [RoutePrefix("api/openXDA/WidgetCategory")]
+    [RoutePrefix("api/OpenXDA/WidgetCategory")]
     public class WidgetCategoryController : ModelController<WidgetCategory> { }
 
     [RoutePrefix("api/openXDA/AdditionalField")]
