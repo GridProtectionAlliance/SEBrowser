@@ -28,7 +28,7 @@ import { Redux, SEBrowser } from '../global';
 declare var homePath: string;
 
 export const LoadSettings = createAsyncThunk('Settings/LoadSettingsThunk', async () => {
-    return loadTimeZone();
+    return Promise.all([loadTimeZone(), loadWidgetCategories()])
 });
 
 
@@ -36,7 +36,10 @@ const settingsSlice = createSlice({
     name: 'Settings',
 
     initialState: {
-        eventSearch: { NumberResults: 100 },
+        eventSearch: {
+            NumberResults: 100,
+            WidgetCategories: []
+            },
         TimeZoneOffset: 0,
     } as Redux.SettingsState,
 
@@ -55,9 +58,10 @@ const settingsSlice = createSlice({
                 state.eventSearch = preserved.eventSearch;
             }
             else
-                state.eventSearch = { NumberResults: 100 };
+                state.eventSearch = { NumberResults: 100, WidgetCategories: [] };
 
-            state.TimeZoneOffset = action.payload;
+            state.TimeZoneOffset = action.payload[0];
+            state.eventSearch.WidgetCategories = action.payload[1];
         });    
         
         builder.addCase(LoadSettings.rejected, (state, action) => {
@@ -67,10 +71,11 @@ const settingsSlice = createSlice({
                 state.eventSearch = preserved.eventSearch;
             }
             else
-                state.eventSearch = { NumberResults: 100 };
+                state.eventSearch = { NumberResults: 100, WidgetCategories: [] };
             state.TimeZoneOffset = 0;
         });
     }
+    
 })
 
 function readSettings() {
@@ -106,7 +111,21 @@ function loadTimeZone() {
     });
 
 }
+
+function loadWidgetCategories() {
+    return $.ajax({
+        type: "GET",
+        url: `${homePath}api/openXDA/WidgetCategory`,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        cache: true,
+        async: true
+    });
+}
+
+
 export const SettingsReducer = settingsSlice.reducer
 export const { SetEventSearch } = settingsSlice.actions
 export const SelectEventSearchSettings = (state: Redux.StoreState) => state.Settings.eventSearch
 export const SelectTimeZoneOffset = (state: Redux.StoreState) => state.Settings.TimeZoneOffset
+export const SelectWidgetCategories = (state: Redux.StoreState) => state.Settings.eventSearch.WidgetCategories
