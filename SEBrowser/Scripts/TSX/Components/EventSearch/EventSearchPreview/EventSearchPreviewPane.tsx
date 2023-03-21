@@ -47,24 +47,33 @@ import { useAppDispatch, useAppSelector } from '../../../hooks';
 import EventSearchCapBankAnalyticOverview from './EventSearchCapBankAnalyticOverview';
 import { SelectEventSearchByID } from './../EventSearchSlice';
 import InterruptionReport from './HECCO/InterruptionReport';
+import { SelectWidgetCategories } from '../../SettingsSlice';
+import { TabSelector } from '@gpa-gemstone/react-interactive';
 
 
 interface IProps {
     EventID: number,
-    InitialTab?: ('Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All'),
+    InitialTab?: string,
     Height: number
 }
 
 export default function EventPreviewPane(props: IProps) {
     const dispatch = useAppDispatch();
 
-    const [widgets, setWidgets] = React.useState<SEBrowser.IWidget[]>([]);
+    const categories = useAppSelector(SelectWidgetCategories);
     const [settings, setSettings] = React.useState<SEBrowser.EventPreviewPaneSetting[]>([]);
-    const [tab, setTab] = React.useState<'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All'>(props.InitialTab == null ? 'Waveform' : props.InitialTab);
+    const [tab, setTab] = React.useState<string>(props.InitialTab == null || props.InitialTab == undefined ? 'All' : props.InitialTab);
+    const [widgets, setWidgets] = React.useState<SEBrowser.IWidgetView[]>([]);
     const event: any = useAppSelector((state: Redux.StoreState) => SelectEventSearchByID(state,props.EventID));
     React.useEffect(() => {
         GetSettings();
     }, []);
+
+    React.useEffect(() => {
+        loadWidgetCategories();
+        console.log(tab);
+        console.log(widgets);
+    }, [tab])
     
     function GetSettings() {
         $.ajax({
@@ -76,80 +85,74 @@ export default function EventPreviewPane(props: IProps) {
             async: true
         }).done((settings: Array<SEBrowser.EventPreviewPaneSetting>) => setSettings(settings));
     }
+
+    function loadWidgetCategories() {
+        return $.ajax({
+            type: "GET",
+            url: `${homePath}api/openXDA/Widget/${tab}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        }).done((d) => { setWidgets(d) });
+    }
+
+
         if (event == undefined || settings.length == 0) return <div></div>;
 
         return (
             <>
-                <ul className="nav nav-tabs">
-                    <li className="nav-item">
-                        <a className={"nav-link" + (tab == "Waveform" ? " active" : "")} onClick={() => setTab('Waveform')}>Waveform Analysis</a>
-                    </li>
-                    <li className="nav-item">
-                        <a className={"nav-link" + (tab == "Fault" ? " active" : "")} onClick={() => setTab('Fault')}>Fault</a>
-                    </li>
-                    <li className="nav-item">
-                        <a className={"nav-link" + (tab == "Correlating" ? " active" : "")} onClick={() =>  setTab('Correlating')}>Correlating Events</a>
-                    </li>
-                    <li className="nav-item">
-                        <a className={"nav-link" + (tab == "Configuration" ? " active" : "")} onClick={() =>  setTab('Configuration')}>Configuration</a>
-                    </li>
-                    <li className="nav-item">
-                        <a className={"nav-link" + (tab == "All" ? " active" : "")} onClick={() => setTab('All')}>All</a>
-                    </li>
-                </ul>
-                <div style={{ height: 'calc(100% - 72px)', maxHeight: 'calc(100% - 72px)', overflowY: 'scroll'}}>
-                    {settings.filter(setting => setting.Show).map((setting, index) => {
+                <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={categories.map(t => {
+                    return { Id: t.ID.toString(), Label: t.Name }
+                }) } />
 
-                if (tab === )
-                /**
-            if (setting.Name.indexOf('EventSearchOpenSEE') >= 0 && (tab == "Waveform" || tab == "All"))
-                return <EventSearchOpenSEE key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('pqi') >= 0 && (tab == "Configuration" || tab == "All"))
-                return <EventSearchPQI key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchFaultSegments') >= 0 && (tab == "Waveform" || tab == "All"))
-                return <EventSearchFaultSegments key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchAssetVoltageDisturbances') >= 0 && (tab == "Waveform" || tab == "All"))
-                return <EventSearchAssetVoltageDisturbances key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchCorrelatedSags') >= 0 && (tab == "Correlating" || tab == "All"))
-                return <EventSearchCorrelatedSags key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('TVAESRIMap') >= 0 && (tab == "Fault" || tab == "All"))
-                return <TVAESRIMap key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('TVAFaultInfo') >= 0 && event.AssetType == 'Line' && (event.EventType == 'Fault' || event.EventType == "RecloseIntoFault") && (tab == "Fault" || tab == "All"))
-                return <TVAFaultInfo key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('LineParameters') >= 0 && event.AssetType == 'Line' && (event.EventType == 'Fault' || event.EventType == "RecloseIntoFault") && (tab == "Fault" || tab == "All"))
-                return <LineParameters key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('TVALightning') >= 0 && (tab == "Fault" || tab == "All"))
-                return <TVALightningChart key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('TVASIDA') >= 0 && (tab == "Correlating" || tab == "All"))
-                return <TVASIDA key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('TVASOE') >= 0 && (tab == "Correlating" || tab == "All"))
-                return <TVASOE key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('TVALSC') >= 0 && (tab == "Correlating" || tab == "All"))
-                return <TVALSC key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('TVAPQWeb') >= 0 && (tab == "Correlating" || tab == "All"))
-                return <TVAPQWeb key={index} EventID={props.EventID} StartTime={event.FileStartTime} />;
+                {widgets.filter(widget => widget.Enabled).map((widget, index) => {
+                    if (widget.Name === 'EventSearchOpenSEE')
+                        return <EventSearchOpenSEE key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'pqi')
+                        return <EventSearchPQI key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'EventSearchFaultSegments')
+                        return <EventSearchFaultSegments key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'EventSearchAssetVoltageDisturbances')
+                        return <EventSearchAssetVoltageDisturbances key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'EventSearchCorrelatedSags')
+                        return <EventSearchCorrelatedSags key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'TVAESRIMap')
+                        return <TVAESRIMap key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'TVAFaultInfo')
+                        return <TVAFaultInfo key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'LineParameters')
+                        return <LineParameters key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'TVALightning')
+                        return <TVALightningChart key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'TVASIDA')
+                        return <TVASIDA key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'TVASOE')
+                        return <TVASOE key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'TVALSC')
+                        return <TVALSC key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'TVAPQWeb')
+                        return <TVAPQWeb key={index} eventID={props.EventID} startTime={event.FileStartTime} />;
 
-            else if (setting.Name.indexOf('TVAStructureInfo') >= 0 && (tab == "Fault" || tab == "All"))
-                return <StructureInfo key={index} EventID={props.EventID} />;
+                    else if (widget.Name === 'TVAStructureInfo')
+                        return <StructureInfo key={index} eventID={props.EventID} />;
 
-            else if (setting.Name.indexOf('EventSearchFileInfo') >= 0 && (tab == "Configuration" || tab == "All"))
-                return <EventSearchFileInfo key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchHistory') >= 0 && (tab == "Fault" || tab == "All"))
-                return <EventSearchHistory key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchRelayPerformance') >= 0 && event.AssetType == 'Breaker' && ( tab == "All"))
-                return <EventSearchRelayPerformance key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchBreakerPerformance') >= 0 && event.AssetType == 'Breaker' && (tab == "All"))
-                return <EventSearchBreakerPerformance key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchCapBankAnalyticOverview') >= 0 && event.AssetType == 'CapacitorBank' && (tab == "All"))
-                return <EventSearchCapBankAnalyticOverview key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('EventSearchNoteWindow') >= 0 && (tab == "Configuration" || tab == "All"))
-                    return <EventSearchNoteWindow key={index} EventID={props.EventID} />;
-            else if (setting.Name.indexOf('HECCOIR') >= 0 && (tab == "Correlating" || tab == "All"))
-                    return <InterruptionReport key={index} EventID={props.EventID} />;
-                **/
-            }
-                    )}
-        </div>
+                    else if (widget.Name === 'EventSearchFileInfo')
+                        return <EventSearchFileInfo key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'EventSearchHistory')
+                        return <EventSearchHistory key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'EventSearchRelayPerformance')
+                        return <EventSearchRelayPerformance key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'EventSearchBreakerPerformance')
+                        return <EventSearchBreakerPerformance key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'EventSearchCapBankAnalyticOverview')
+                        return <EventSearchCapBankAnalyticOverview key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'EventSearchNoteWindow')
+                        return <EventSearchNoteWindow key={index} eventID={props.EventID} />;
+                    else if (widget.Name === 'HECCOIR')
+                        return <InterruptionReport key={index} eventID={props.EventID} />;
+                })}
+
         </>)
 }
 
