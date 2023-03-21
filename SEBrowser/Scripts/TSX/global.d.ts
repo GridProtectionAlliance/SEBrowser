@@ -89,7 +89,8 @@ export namespace Redux {
     }
 
     interface IEventSearchSettings {
-        NumberResults: number
+        NumberResults: number,
+        WidgetCategories: SEBrowser.IWidgetCategory[]
     }
 }
 export namespace SEBrowser {
@@ -127,6 +128,10 @@ export namespace SEBrowser {
         faultID?: number,
         startTime?: number
     }
+
+    interface IWidgetCategory { ID: number, Name: string, OrderBy: number }
+
+    interface IWidgetView { ID: number, CategoryID: number, Name: string, setting: object, Enabled: boolean }
 }
 
 export namespace OpenXDA {
