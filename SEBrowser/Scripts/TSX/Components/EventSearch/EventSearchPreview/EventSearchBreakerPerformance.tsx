@@ -27,6 +27,11 @@ import moment from 'moment';
 import { SEBrowser } from '../../../global';
 
 const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) => {
+    const TTwindow = React.useRef(null);
+    const PTwindow = React.useRef(null);
+    const TCCwindow = React.useRef(null);
+    const L1window = React.useRef(null);
+    const L2window = React.useRef(null);
     const [showRelayHistory, setShowRelayHistory] = React.useState(false);
     const service = new OpenSEEService();
 
@@ -243,12 +248,13 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) 
     }
 
     function getData(props) {
+        /*
         $(this.refs.TTwindow).children().remove();
         $(this.refs.PTwindow).children().remove();
         $(this.refs.TCCwindow).children().remove();
         $(this.refs.L1window).children().remove();
         $(this.refs.L2window).children().remove();
-
+        */
         var pixels = (window.innerWidth - 300 - 40) / 2;
 
         service.getStatisticData(props.eventid, pixels, "History").then(data => {
@@ -291,12 +297,12 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) 
         <div className="card" >
             <div className="card-header">Historic Breaker Performance</div>
             <div className="card-body">
-                <div ref="TTwindow" style={{
+                <div ref={TTwindow} style={{
                     height: 150, width: 'calc(100%)', /*, margin: '0x', padding: '0px'*/  display: showRelayHistory ? 'block' : 'none' }}></div>
-                    <div ref="PTwindow" style={{ height: 150, width: 'calc(100%)', /*, margin: '0x', padding: '0px'*/  display: showRelayHistory ? 'block' : 'none' }}></div>
-                    <div ref="TCCwindow" style={{ height: 150, width: 'calc(100%)', /*, margin: '0x', padding: '0px'*/  display: showRelayHistory ? 'block' : 'none' }}></div>
-                    <div ref="L1window" style={{ height: 150, width: 'calc(100%)', /*, margin: '0x', padding: '0px'*/  display: showRelayHistory ? 'block' : 'none' }}></div>
-                    <div ref="L2window" style={{ height: 150, width: 'calc(100%)', /*, margin: '0x', padding: '0px'*/  display: showRelayHistory ? 'block' : 'none' }}></div>
+                    <div ref={PTwindow} style={{ height: 150, width: 'calc(100%)', /*, margin: '0x', padding: '0px'*/  display: showRelayHistory ? 'block' : 'none' }}></div>
+                    <div ref={TCCwindow} style={{ height: 150, width: 'calc(100%)', /*, margin: '0x', padding: '0px'*/  display: showRelayHistory ? 'block' : 'none' }}></div>
+                    <div ref={L1window} style={{ height: 150, width: 'calc(100%)', /*, margin: '0x', padding: '0px'*/  display: showRelayHistory ? 'block' : 'none' }}></div>
+                    <div ref={L2window} style={{ height: 150, width: 'calc(100%)', /*, margin: '0x', padding: '0px'*/  display: showRelayHistory ? 'block' : 'none' }}></div>
                 </div>
             </div>
         );
