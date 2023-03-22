@@ -66,8 +66,8 @@ const AvailableQuickSelects: IQuickSelect[] = [
     },
     {
         label: 'Last 60 Minutes', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('minute').subtract(1, 'hour');
-            t.add(30, 'minutes');
+            const t = moment.utc().add(offset, 'hour').startOf('minute').add(1, 'minute');
+            t.subtract(30, 'minutes');
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
@@ -101,8 +101,8 @@ const AvailableQuickSelects: IQuickSelect[] = [
         } },
     {
         label: 'Last 24 Hours', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').subtract(24, 'hours');
-            t.add(12, 'hours');
+            const t = moment.utc().add(offset, 'hour').startOf('hour').add(1, 'hour');
+            t.subtract(12, 'hours');
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
@@ -137,7 +137,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     },
     {
         label: 'Last 7 Days', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('day');
+            const t = moment.utc().add(offset, 'hour').startOf('day').add(1, 'day');
             t.subtract(3.5*24, 'hours');
             return {
                 date: t.format(momentDateFormat),
@@ -173,7 +173,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     },
     {
         label: 'Last 30 Days', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('day');
+            const t = moment.utc().add(offset, 'hour').startOf('day').add(1, 'day');
             t.subtract(15, 'days');
             return {
                 date: t.format(momentDateFormat),
@@ -215,7 +215,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     },
     {
         label: 'Last 90 Days', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('day');
+            const t = moment.utc().add(offset, 'hour').startOf('day').add(1, 'day');
             t.subtract(45, 'days');
             return {
                 date: t.format(momentDateFormat),
@@ -251,7 +251,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     },
     {
         label: 'Last 365 Days', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('day');
+            const t = moment.utc().add(offset, 'hour').startOf('day').add(1, 'day');
             t.subtract(182.5, 'days');
             return {
                 date: t.format(momentDateFormat),
