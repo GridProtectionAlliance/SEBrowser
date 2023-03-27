@@ -47,7 +47,7 @@ namespace SEBrowser.Controllers
                             alarmdatetime as Time,
                             stationname + ' ' + alarmpoint as Alarm,
                             alarmstatus as Status 
-                        FROM soealarmdetailwithhierarchy 
+                        FROM soealarmdetails 
                         WHERE alarmdatetime between {0} and {1}
                     ", eventTime.AddSeconds(-1*timeWindow), eventTime.AddSeconds(timeWindow) );
                     return Ok(table);
