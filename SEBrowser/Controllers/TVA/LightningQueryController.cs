@@ -18,79 +18,154 @@
 //  ----------------------------------------------------------------------------------------------------
 //  04/01/2020 - Billy Ernest
 //       Generated original version of source code.
+//  03/28/2023 - Stephen C. Wills
+//       Overhaul to fix time zone conversions.
 //
 //******************************************************************************************************
 
-using GSF.Data;
 using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 using System.Web.Http;
+using GSF.Collections;
+using GSF.Data;
 
 namespace SEBrowser.Controllers
 {
     [RoutePrefix("api/Lightning")]
     public class LightningQueryController : ApiController
     {
-        const string SettingsCategory = "dbLightning";
+        private class VaisalaCounter
+        {
+            public VaisalaCounter(string serviceName, string tableName)
+            {
+                ServiceName = serviceName;
+                TableName = tableName;
+            }
+
+            public string ServiceName { get; }
+            public string TableName { get; }
+            public string StrokeColumnName => $"{ServiceName} - Stroke";
+            public string FlashColumnName => $"{ServiceName} - Flash";
+
+            public Dictionary<DateTime, int> StrokeLookup { get; }
+                = new Dictionary<DateTime, int>();
+
+            public Dictionary<DateTime, int> FlashLookup { get; }
+                = new Dictionary<DateTime, int>();
+        }
+
+        private const string SettingsCategory = "dbLightning";
 
         [Route("{eventID:int}"), HttpGet]
-        public IHttpActionResult Get(int eventID) {
-            try
+        public IHttpActionResult Get(int eventID)
+        {
+            TimeZoneInfo xdaTimeZone;
+            DateTime eventTime;
+
+            using (AdoDataConnection xdaConnection = new("systemSettings"))
             {
-                using (AdoDataConnection xdaConnection = new("systemSettings"))
-                using (AdoDataConnection connection = new(SettingsCategory))
-                {
-
-                    DateTime dateTime = xdaConnection.ExecuteScalar<DateTime>("SELECT StartTime FROM Event WHERE ID = {0}", eventID);
-
-#if DEBUG
-                    return Ok(connection.RetrieveData("SELECT * FROM Data",""));
-#else
-                    string query = @"
-                        DECLARE @EndOfPeriodUTC DATETIME2 = DATEADD(HOUR,30, CAST(CAST({0} as DATE) as DATETIME2))
-                        DECLARE @BeginningOfPeriodUTC DATETIME2 = DATEADD(DAY,-30, @EndOfPeriodUTC)
-
-                        SELECT *
-                        FROM (
-                            SELECT CAST(eventtime as Date) as Day , Count(*) as cnt, 'Vaisala - Stroke' as Service
-                            FROM TX_Lightning.VAISALAREALTIMEPOINT
-                            WHERE eventutctime >= @BeginningOfPeriodUTC and eventtime < @EndOfPeriodUTC
-                            GROUP BY CAST(eventtime as Date)
-                            UNION
-                            SELECT CAST(eventtime as Date) as Day , Count(*) as cnt, 'Vaisala - Flash' as Service
-                            FROM (select distinct eventutctime, eventtime from TX_Lightning.VAISALAREALTIMEPOINT) t
-                            WHERE eventutctime >= @BeginningOfPeriodUTC and eventtime < @EndOfPeriodUTC
-                            GROUP BY CAST(eventtime as Date)
-                            UNION
-                            SELECT CAST(DATEADD(HOUR, -6, eventutctime)as Date) as Day , Count(*) as cnt, 'Vaisala Reprocess - Stroke' as Service
-                            FROM TX_Lightning.VAISALAREPROCESSEDELLIPSE
-                            WHERE eventutctime >= @BeginningOfPeriodUTC and eventutctime < @EndOfPeriodUTC
-                            GROUP BY CAST(DATEADD(HOUR, -6, eventutctime)as Date)
-                            UNION
-                            SELECT CAST(DATEADD(HOUR, -6, eventutctime)as Date) as Day , Count(*) as cnt, 'Vaisala Reprocess - Flash' as Service
-                            FROM (select distinct eventutctime from TX_Lightning.VAISALAREPROCESSEDELLIPSE)t
-                            WHERE eventutctime >= @BeginningOfPeriodUTC and eventutctime < @EndOfPeriodUTC
-                            GROUP BY CAST(DATEADD(HOUR, -6, eventutctime)as Date)
-                            UNION
-                            SELECT CAST(eventtime as Date) as Day , Count(*) as cnt, 'Weatherbug' as Service
-                            FROM TX_Lightning.LIGHTNING_WEATHERBUG
-                            WHERE eventutctime >= @BeginningOfPeriodUTC and eventtime < @EndOfPeriodUTC
-                            GROUP BY CAST(eventtime as Date)
-                        ) as tbl
-                        PIVOT
-                        (
-	                        SUM(cnt)
-	                        FOR Service IN ([Vaisala - Stroke], [Vaisala - Flash], [Vaisala Reprocess - Stroke], [Vaisala Reprocess - Flash], [Weatherbug])
-                        )as pvt
-                        Order BY Day
-                    ";
-                    return Ok(connection.RetrieveData(query, dateTime.ToUniversalTime()));
-#endif
-                }
+                string systemTime = xdaConnection.ExecuteScalar<string>("SELECT TOP 1 Value FROM Setting WHERE Name = 'System.XDATimeZone'");
+                xdaTimeZone = TimeZoneInfo.FindSystemTimeZoneById(systemTime);
+                eventTime = xdaConnection.ExecuteScalar<DateTime>("SELECT StartTime FROM Event WHERE ID = {0}", eventID);
             }
-            catch (Exception ex) {
-                return InternalServerError(ex);
+
+            VaisalaCounter[] counters = new[]
+            {
+                new VaisalaCounter("Vaisala", "GIS.VAISALAREALTIMEPOINT"),
+                new VaisalaCounter("Vaisala Reprocess", "GIS.VAISALAREPROCESSEDELLIPSE")
+            };
+
+            using (AdoDataConnection connection = new(SettingsCategory))
+            {
+                Func<string, IEnumerable<DateTime>> queryFunc = CreateQueryFunc(connection, xdaTimeZone, eventTime);
+                PopulateCounters(counters, queryFunc);
+            }
+
+            DataTable table = AsDataTable(counters);
+            return Ok(table);
+        }
+
+        private Func<string, IEnumerable<DateTime>> CreateQueryFunc(AdoDataConnection connection, TimeZoneInfo timeZone, DateTime eventTime)
+        {
+            const string QueryFormat =
+                "SELECT eventutctime " +
+                "FROM {0} " +
+                "WHERE {{0}} <= eventutctime AND eventutctime <= {{1}} " +
+                "ORDER BY eventutctime";
+
+            DateTime eventTimeUTC = TimeZoneInfo.ConvertTimeToUtc(eventTime, timeZone);
+            DateTime endTime = eventTimeUTC.AddHours(30);
+            DateTime startTime = endTime.AddDays(-30);
+
+            return tableName =>
+            {
+                string query = string.Format(QueryFormat, tableName);
+                IDataReader ExecuteQuery() => connection.ExecuteReader(query, startTime, endTime);
+                return AsEnumerable(ExecuteQuery).Select(dt => TimeZoneInfo.ConvertTimeFromUtc(dt, timeZone));
+            };
+        }
+
+        private IEnumerable<DateTime> AsEnumerable(Func<IDataReader> queryFunc)
+        {
+            using IDataReader reader = queryFunc();
+
+            while (reader.Read())
+                yield return reader.GetDateTime(0);
+        }
+
+        private void PopulateCounters(IEnumerable<VaisalaCounter> counters, Func<string, IEnumerable<DateTime>> queryFunc)
+        {
+            foreach (var counter in counters)
+            {
+                DateTime previousTime = DateTime.MinValue;
+
+                foreach (DateTime strikeTime in queryFunc(counter.TableName))
+                {
+                    DateTime strikeDate = strikeTime.Date;
+                    counter.StrokeLookup.AddOrUpdate(strikeDate, 0, (_, count) => count + 1);
+
+                    if (strikeTime != previousTime)
+                        counter.FlashLookup.AddOrUpdate(strikeDate, 0, (_, count) => count + 1);
+
+                    previousTime = strikeTime;
+                }
             }
         }
 
+        private DataTable AsDataTable(IEnumerable<VaisalaCounter> counters)
+        {
+            DataTable table = new DataTable();
+            table.Columns.Add("Day", typeof(DateTime));
+
+            foreach (var counter in counters)
+            {
+                table.Columns.Add(counter.StrokeColumnName, typeof(int));
+                table.Columns.Add(counter.FlashColumnName, typeof(int));
+            }
+
+            IEnumerable<DateTime> days = counters
+                .SelectMany(counter => new[] { counter.StrokeLookup, counter.FlashLookup })
+                .SelectMany(kvp => kvp.Keys)
+                .Distinct();
+
+            foreach (DateTime day in days)
+            {
+                DataRow row = table.NewRow();
+                row["Day"] = day;
+
+                foreach (var counter in counters)
+                {
+                    if (counter.StrokeLookup.TryGetValue(day, out int strokeCount))
+                        row[counter.StrokeColumnName] = strokeCount;
+
+                    if (counter.FlashLookup.TryGetValue(day, out int flashCount))
+                        row[counter.FlashColumnName] = flashCount;
+                }
+            }
+
+            return table;
+        }
     }
 }
