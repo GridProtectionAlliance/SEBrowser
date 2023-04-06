@@ -114,4 +114,9 @@ namespace SEBrowser.Controllers.OpenXDA
 
     }
 
+    [RoutePrefix("api/openXDA/Phase")]
+    public class PhaseController : ModelController<Phase> { }
+
+    [RoutePrefix("api/openXDA/ChannelGroup")]
+    public class ChannelGroupController : ModelController<ChannelGroup> { }
 }

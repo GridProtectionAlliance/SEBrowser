@@ -21,6 +21,8 @@
     </IISExpressSSLPort>
     <IISExpressAnonymousAuthentication>disabled</IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>enabled</IISExpressWindowsAuthentication>
+    <IISExpressUseClassicPipelineMode>
+    </IISExpressUseClassicPipelineMode>
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -438,6 +440,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\MeterActivity\MeterActivityController.cs" />
+    <Compile Include="Controllers\OpenXDA\TrendChannelController.cs" />
     <Compile Include="Controllers\OpenXDA\ModelControlers.cs" />
     <Compile Include="Controllers\RoleController.cs" />
     <Compile Include="EventWidgets\Controller\AssetFaultSegments.cs" />
@@ -556,11 +559,14 @@
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\PQICurves.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\SOE.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\StructureInfo.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\Common\NavbarFilterButton.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\SettingsSlice.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
     <None Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
     <None Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisReport.tsx" />
+    <Content Include="Scripts\TSX\Components\TrendData\TrendData.tsx" />
+    <Content Include="Scripts\TSX\Components\TrendData\TrendDataNavbar.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\hooks.ts" />
     <Content Include="Scripts\TSX\Settings.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Store.ts" />

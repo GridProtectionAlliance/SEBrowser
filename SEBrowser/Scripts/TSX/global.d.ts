@@ -54,6 +54,8 @@ export namespace Redux {
         MeterNote: IGenericSliceState<XDA.Types.Note>,
         AssetNote: IGenericSliceState<XDA.Types.Note>,
         LocationNote: IGenericSliceState<XDA.Types.Note>,
+        Phase: IGenericSliceState<XDA.Types.Phase>,
+        ChannelGroup: IGenericSliceState<SEBrowser.ChannelGroup>
     }
 
     interface State<T> {
@@ -116,6 +118,11 @@ export namespace SEBrowser {
     }
 
     // Temporary until next gpa-gemstone update
+    interface ChannelGroup {
+        ID: number,
+        Name: string,
+        Description: string
+    }
     interface IWidgetCategory { ID: number, Name: string, OrderBy: number }
 }
 
@@ -123,5 +130,3 @@ export namespace OpenXDA {
     type AssetTypeName = 'Line' | 'Breaker' | 'Transformer' | 'CapacitorBank' | 'Bus';
     type EventTypeName = 'Fault' | 'RecloseIntoFault' | 'BreakerOpen' | 'Interruption' | 'Sag' | 'Swell' | 'Transient' | 'Other' | 'Test' | 'Breaker' | 'Snapshot';
 }
-
-
