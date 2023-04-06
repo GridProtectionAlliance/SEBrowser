@@ -1,4 +1,4 @@
-﻿//******************************************************************************************************
+//******************************************************************************************************
 //  EventSearchNavbar.tsx - Gbtc
 //
 //  Copyright © 2019, Grid Protection Alliance.  All Rights Reserved.
@@ -30,7 +30,7 @@ import { SelectAssetGroupList, SelectAssetList, SelectCharacteristicFilter, Sele
 import { ResetFilters,  SetFilters } from './EventSearchSlice';
 import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice, MagDurCurveSlice, EventTypeSlice } from '../../Store';
 import { DefaultSelects } from '@gpa-gemstone/common-pages';
-import EventSearchFilterButton from './EventSearchbarFilterButton';
+import NavbarFilterButton from '../Common/NavbarFilterButton';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { Input, Select, MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { Search } from '@gpa-gemstone/react-interactive';
@@ -603,22 +603,22 @@ const EventSearchNavbar = (props: IProps) => {
                             <legend className="w-auto" style={{ fontSize: 'large' }}>Other Filters:</legend>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<SystemCenter.Types.DetailedMeter> Type={'Meter'} OnClick={() => setFilter('Meter')} Data={meterList} />
+                                        <NavbarFilterButton<SystemCenter.Types.DetailedMeter> Type={'Meter'} OnClick={() => setFilter('Meter')} Data={meterList} />
                                     </div>
                                 </div>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<SystemCenter.Types.DetailedAsset> Type={'Asset'} OnClick={() => setFilter('Asset')} Data={assetList} />
+                                        <NavbarFilterButton<SystemCenter.Types.DetailedAsset> Type={'Asset'} OnClick={() => setFilter('Asset')} Data={assetList} />
                                     </div>
                                 </div>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<OpenXDA.Types.AssetGroup> Type={'AssetGroup'}  OnClick={() => setFilter('AssetGroup')} Data={assetGroupList} />
+                                        <NavbarFilterButton<OpenXDA.Types.AssetGroup> Type={'AssetGroup'} OnClick={() => setFilter('AssetGroup')} Data={assetGroupList} />
                                     </div>
                                 </div>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<SystemCenter.Types.DetailedLocation> Type={'Station'} OnClick={() => setFilter('Station')} Data={locationList} />
+                                        <NavbarFilterButton<SystemCenter.Types.DetailedLocation> Type={'Station'} OnClick={() => setFilter('Station')} Data={locationList} />
                                     </div>
                                 </div>
 

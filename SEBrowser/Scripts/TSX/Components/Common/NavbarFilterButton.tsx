@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  EventSearchFilterButton.tsx - Gbtc
+//  NavbarFilterButton.tsx - Gbtc
 //
 //  Copyright © 2019, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -32,7 +32,7 @@ interface IProps<T extends S> {
 }
 
 
-function EventSearchFilterButton<T extends S>(props: IProps<T>) {
+function NavbarFilterButton<T extends S>(props: IProps<T>) {
     const [hover, setHover] = React.useState<boolean>(false);
     const [rows, setRows] = React.useState<JSX.Element[]>([]);
     const [header, setHeader] = React.useState<JSX.Element>(null);
@@ -126,4 +126,4 @@ function typeToString(Type: 'Meter' | 'Asset' | 'AssetGroup' | 'Station'): strin
 
 
 
-export default EventSearchFilterButton;
+export default NavbarFilterButton;
