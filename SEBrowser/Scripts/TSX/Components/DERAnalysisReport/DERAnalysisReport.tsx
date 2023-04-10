@@ -25,12 +25,12 @@ import { MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import Table from '@gpa-gemstone/react-table';
 
 import { OpenXDA } from '@gpa-gemstone/application-typings';
-import * as queryString from 'querystring';
+import queryString from 'querystring';
 import moment from 'moment';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { orderBy } from 'lodash';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -50,13 +50,13 @@ interface DERAnalyticResult {
 }
 
 function DERAnalysisReport() {
-    let navigate = useNavigate();
-    let query = queryString.decode(navigate['location'].search.slice(1));
+    const history = useLocation();
+    const navigate = useNavigate();
 
-    const [date, setDate] = React.useState<string>(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat));
-    const [time, setTime] = React.useState<string>(query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat));
-    const [windowSize, setWindowSize] = React.useState<number>(query['windowSize'] != undefined ? parseInt(query['windowSize'] as string) : 1);
-    const [timeWindowUnits, setTimeWindowUnits] = React.useState<number>(query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'] as string) : 4);
+    const [date, setDate] = React.useState<string>(moment().format(momentDateFormat));
+    const [time, setTime] = React.useState<string>(moment().format(momentTimeFormat));
+    const [windowSize, setWindowSize] = React.useState<number>(1);
+    const [timeWindowUnits, setTimeWindowUnits] = React.useState<number>(4);
     const [regulations, setRegulations] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([])
     const [stations, setStations] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([]);
     const [ders, setDERs] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([]);
@@ -64,6 +64,28 @@ function DERAnalysisReport() {
     const [ascending, setAscending] = React.useState<boolean>(true);
     const [sortKey, setSortKey] = React.useState<keyof DERAnalyticResult>('Time');
     const [selectedData, setSelectedData] = React.useState<DERAnalyticResult>(null);
+
+    React.useEffect(() => {
+        var query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
+
+        setTime(query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat))
+        setDate(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat))
+        setWindowSize(query['windowSize'] != undefined ? parseInt(query['windowSize'] as string) : 1);
+        setTimeWindowUnits(query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'] as string) : 4);
+    }, []);
+
+
+    React.useEffect(() => {
+        const queryParam = {
+            time,
+            date,
+            windowSize,
+            timeWindowUnits
+        };
+        let q = queryString.stringify(queryParam, "&", "=", { encodeURIComponent: queryString.escape });
+        let handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
+        return (() => { clearTimeout(handle); })
+    }, [time, date, windowSize, timeWindowUnits])
 
     React.useEffect(() => {
         let handle1 = $.ajax({
