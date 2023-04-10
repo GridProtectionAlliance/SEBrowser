@@ -64,7 +64,7 @@ interface ITrendChannel {
     Description: string,
     AssetKey: string,
     AssetName: string,
-    MeterAssetKey: string,
+    MeterKey: string,
     MeterName: string,
     Phase: string,
     ChannelGroup: string,
@@ -73,6 +73,8 @@ interface ITrendChannel {
 
 const TrendSearchNavbar = (props: IProps) => {
     const navRef = React.useRef(null);
+    const timeRef = React.useRef(null);
+    const filtRef = React.useRef(null);
     const dispatch = useAppDispatch();
 
     const phaseStatus = useAppSelector(PhaseSlice.Status);
@@ -81,23 +83,28 @@ const TrendSearchNavbar = (props: IProps) => {
     const channelGroupStatus = useAppSelector(ChannelGroupSlice.Status);
     const allChannelGroups = useAppSelector(ChannelGroupSlice.Data);
 
-    const [height, setHeight] = React.useState<number>(0);
     const [showFilter, setShowFilter] = React.useState<('None' | 'Meter' | 'Asset')>('None');
 
-    const [isReset, setIsReset] = React.useState<boolean>(true);
     const [trendFilter, setTrendFilter] = React.useState<ITrendDataFilter>(null);
     const [phaseOptions, setPhaseOptions] = React.useState<IMultiCheckboxOption[]>([]);
     const [channelGroupOptions, setChannelGroupOptions] = React.useState<IMultiCheckboxOption[]>([]);
 
     const [trendChannels, setTrendChannels] = React.useState<ITrendChannel[]>([]);
+    const [sortField, setSortField] = React.useState<string>('Name');
+    const [ascending, setAscending] = React.useState<boolean>(true);
+    const [tableHeight, setTableHeight] = React.useState<number>(100);
 
     const momentDateFormat = "MM/DD/YYYY";
 
     const baseTimeFilter = { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 7, timeWindowUnits: 4 }
 
     // Page effects
-    React.useLayoutEffect(() => setHeight(navRef?.current?.offsetHeight ?? 0))
-    React.useEffect(() => props.SetHeight(height), [height])
+    React.useLayoutEffect(() => {
+        props.SetHeight(navRef?.current?.offsetHeight ?? 0);
+        let timeHeight = timeRef?.current?.offsetHeight ?? 0;
+        let filtHeight = timeRef?.current?.offsetHeight ?? 0;
+        setTableHeight(timeHeight > filtRef ? timeHeight : filtHeight);
+    });
 
     // Multicheckbox Options Updates
     React.useEffect(() => {
@@ -121,8 +128,6 @@ const TrendSearchNavbar = (props: IProps) => {
 
     React.useEffect(() => {
         if (trendFilter === null) return;
-        // See if the filter is reset
-        IsReset();
         // Get the data from the filter
         let handle = GetTrendChannels();
         return () => {
@@ -131,8 +136,12 @@ const TrendSearchNavbar = (props: IProps) => {
     }, [trendFilter]);
 
     React.useEffect(() => {
+        setTrendChannels(_.orderBy(trendChannels, sortField, ascending));
+    }, [sortField, ascending]);
+
+    React.useEffect(() => {
         // Todo: get filter from memory
-        ResetFilter();
+        InitFilter();
     }, []);
 
     function makeKeyValuePairs(allKeys: { ID: number, Name: string, Description: string }[]): IKeyValuePair[] {
@@ -173,17 +182,7 @@ const TrendSearchNavbar = (props: IProps) => {
         });
     }
 
-    function IsReset() {
-        if (trendFilter === null) setIsReset(true);
-        if (trendFilter.Phases.findIndex(phase => !phase.Value) > -1) setIsReset(false);
-        if (trendFilter.ChannelGroups.findIndex(group => !group.Value) > -1) setIsReset(false);
-        if (Object.keys(trendFilter.TimeFilter).findIndex(key => trendFilter.TimeFilter[key] !== baseTimeFilter[key]) > -1) setIsReset(false);
-        if (trendFilter.AssetList.length !== 0) setIsReset(false);
-        if (trendFilter.MeterList.length !== 0) setIsReset(false);
-        setIsReset(true);
-    }
-
-    function ResetFilter() {
+    function InitFilter() {
         setTrendFilter({
             Phases: makeKeyValuePairs(allPhases),
             ChannelGroups: makeKeyValuePairs(allChannelGroups),
@@ -303,7 +302,7 @@ const TrendSearchNavbar = (props: IProps) => {
                         </span>
                     </div>
                     <div className="navbar-nav ml-auto" >
-                        <button type="button" className={`btn btn-${(!isReset ? 'warning' : 'primary')} btn-sm`} onClick={() => props.ToggleVis()}>Show Filters</button>
+                        <button type="button" className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}>Show Channels</button>
                     </div>
                 </div>
             </nav>
@@ -314,12 +313,12 @@ const TrendSearchNavbar = (props: IProps) => {
             <nav className="navbar navbar-expand-xl navbar-light bg-light" ref={navRef}>
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
-                        <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
+                        <li className="nav-item" style={{ width: '30%', paddingRight: 10 }} ref={timeRef}>
                             <ReportTimeFilter filter={trendFilter.TimeFilter} setFilter={(f) => setTrendFilter({ ...trendFilter, TimeFilter: f})} showQuickSelect={true} />
                         </li>
-                        <li className="nav-item" style={{ width: '15%', paddingRight: 10 }}>
+                        <li className="nav-item" style={{ width: '15%', paddingRight: 10 }} ref={filtRef}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Characteristic Filters:</legend>
+                                <legend className="w-auto" style={{ fontSize: 'large' }}>Channel Filters:</legend>
                                 <label style={{ width: '100%', position: 'relative', float: "left" }}>Phase Filter: </label>
                                 <div className="row">
                                     <div className={"col"}>
@@ -340,12 +339,6 @@ const TrendSearchNavbar = (props: IProps) => {
                                         />
                                     </div>
                                 </div>
-                            </fieldset>
-                        </li>
-
-                        <li className="nav-item" style={{ width: '15%', paddingRight: 10 }}>
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Other Filters:</legend>
                                 <div className={"row"}>
                                     <div className={'col'}>
                                         <NavbarFilterButton<SystemCenter.Types.DetailedMeter> Type={'Meter'} OnClick={() => setShowFilter('Meter')} Data={trendFilter.MeterList} />
@@ -359,7 +352,7 @@ const TrendSearchNavbar = (props: IProps) => {
                             </fieldset>
                         </li>
 
-                        <li className="nav-item" style={{ width: '40%', paddingRight: 10, height: `500px` }}>
+                        <li className="nav-item" style={{ width: '55%', paddingRight: 10, height: tableHeight }}>
                             <ConfigurableTable<ITrendChannel>
                                 defaultColumns={["Name", "Description", "Phase", "ChannelGroup"]}
                                 requiredColumns={["Name", "Phase", "ChannelGroup"]}
@@ -368,28 +361,34 @@ const TrendSearchNavbar = (props: IProps) => {
                                     { key: "Description", field: "Description", label: "Description" },
                                     { key: "AssetKey", field: "AssetKey", label: "Asset Key" },
                                     { key: "AssetName", field: "AssetName", label: "Asset Name" },
-                                    { key: "MeterAssetKey", field: "MeterAssetKey", label: "Meter Asset Key" },
+                                    { key: "MeterKey", field: "MeterKey", label: "Meter Key" },
                                     { key: "MeterName", field: "MeterName", label: "Meter Name" },
                                     { key: "Phase", field: "Phase", label: "Phase" },
                                     { key: "ChannelGroup", field: "ChannelGroup", label: "Channel Group" },
                                     { key: "ChannelGroupType", field: "ChannelGroupType", label: "Channel Group Type" }
                                 ]}
                                 data={trendChannels}
-                                sortKey={''}
-                                ascending={false}
-                                onSort={(d) => { }}
+                                sortKey={sortField}
+                                ascending={ascending}
+                                onSort={(d) => {
+                                    if (d.colKey === 'undefined')
+                                        return
+                                    if (d.colField === sortField)
+                                        setAscending(!ascending);
+                                    else
+                                        setSortField(d.colField);
+                                }}
                                 onClick={(item) => { }}
                                 selected={(item) => false}
                                 theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                                tbodyStyle={{ display: 'block', overflowY: 'scroll', height: '470px' }}
+                                tbodyStyle={{ display: 'block', overflowY: 'scroll', height: tableHeight - 30 }}
                                 rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
                             />
                         </li>
                    
                     </ul>
                     <div className="btn-group-vertical float-right">
-                        <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${(!isReset ? 'warning' : 'primary')} btn-sm`} onClick={() => props.ToggleVis()}>Hide Filters</button>
-                        <button type="button" className="btn btn-danger btn-sm" disabled={isReset} onClick={() => ResetFilter()}>Reset Filters</button>
+                        <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}>Hide Channels</button>
                     </div>
                 </div>
             </nav>

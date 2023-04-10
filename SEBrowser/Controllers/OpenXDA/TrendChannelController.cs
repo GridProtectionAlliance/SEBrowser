@@ -70,7 +70,7 @@ namespace SEBrowser.Controllers.OpenXDA
 	                    Channel.Description,
 	                    Asset.AssetKey,
 	                    Asset.AssetName,
-	                    Meter.AssetKey AS MeterAssetKey,
+	                    Meter.AssetKey AS MeterKey,
 	                    Meter.Name AS MeterName,
 	                    Phase.Name AS Phase,
 	                    ChannelGroup.Name AS ChannelGroup,
