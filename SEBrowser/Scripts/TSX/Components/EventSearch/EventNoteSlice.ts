@@ -28,7 +28,7 @@ import { Redux, SEBrowser } from '../../global';
 declare var homePath: string;
 
 
-type NoteType = 'Event' | 'Asset' | 'Meter' | 'Location' | 'Customer' 
+export type NoteType = 'Event' | 'Asset' | 'Meter' | 'Location' | 'Customer' 
 
 
 

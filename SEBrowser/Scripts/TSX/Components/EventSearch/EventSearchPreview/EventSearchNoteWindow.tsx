@@ -24,113 +24,186 @@
 import React from 'react';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
+import { AssetNoteSlice, EventNoteSlice, LocationNoteSlice, MeterNoteSlice } from '../../../Store';
+import { OpenXDA } from '@gpa-gemstone/application-typings';
+import { Note } from '@gpa-gemstone/common-pages';
+import { NoteType } from '../EventNoteSlice';
+import { MultiCheckBoxSelect, Select } from '@gpa-gemstone/react-forms';
 
-const EventSearchNoteWindow: React.FC<SEBrowser.IWidget<any>> = (props) => {
-    const [tableRows, setTableRows] = React.useState<Array<JSX.Element>>([]);
-    const [note, setNote] = React.useState<string>('');
-    const [count, setCount] = React.useState<number>(0);
-
-    React.useEffect(() => {
-        return createTableRows();
-    }, [props.eventID]);
-
-    function createTableRows() {
-        let handle = getNotes(props.eventID);
-        handle.done(data => {
-            var rows = data.map(d => <tr key={d.ID}><td>{d.Note}</td><td>{moment(d.Timestamp).format("MM/DD/YYYY HH:mm")}</td><td>{d.UserAccount}</td><td>
-                <button className="btn btn-sm" onClick={(e) => handleEdit(d)}><span><i className="fa fa-pencil"></i></span></button>
-                <button className="btn btn-sm" onClick={(e) => handleDelete(d)}><span><i className="fa fa-times"></i></span></button>
-            </td></tr>)
-
-            setTableRows(rows);
-            setCount(rows.length);
-        });
-
-        return function () {
-            if (handle.abort != undefined) handle.abort();
-        }
-    }
-
-    function getNotes(eventid: number): JQuery.jqXHR {
-        return $.ajax({
-            type: "GET",
-            url: `${homePath}api/OpenXDA/Note/${eventid}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: false,
-            async: true
-        });
-    }
-
-
-    function addNote(note): JQuery.jqXHR{
-        return $.ajax({
-            type: "POST",
-            url: `${homePath}api/OpenXDA/Note`,
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(note),
-            cache: false,
-            async: true,
-            processData: false,
-            error: function (jqXhr, textStatus, errorThrown) {
-                console.log(errorThrown);
-            }
-        });
-    }
-
-    function deleteNote(note): any {
-        return $.ajax({
-            type: "DELETE",
-            url: `${homePath}api/OpenXDA/Note`,
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(note),
-            cache: false,
-            async: true,
-            processData: false,
-            error: function (jqXhr, textStatus, errorThrown) {
-                console.log(errorThrown);
-            }
-        });
-    }
-
-
-    function handleAdd() {
-        addNote({ ID: 0, EventID: props.eventID, Note: note }).done(e => {
-            setNote('');
-            createTableRows();
-        });
-    }
-
-    function handleDelete(d) {
-        deleteNote(d).done(() => createTableRows());
-    }
-
-    function handleEdit(d) {
-        setNote(d.Note);
-        deleteNote(d).done(() => createTableRows());
-    }
-
-    return (
-        <div className="card">
-            <div className="card-header">Notes:</div>
-            <div className="card-body">
-                <table className="table">
-                    <thead>
-                        <tr><th style={{ width: '50%' }}>Note</th><th>Time</th><th>User</th><th></th></tr>
-                    </thead>
-                    <tbody>
-                        {tableRows}
-                    </tbody>
-
-                </table>
-                <textarea className="form-control" rows={4} value={note} onChange={(e) => setNote((e.target as any).value)}></textarea>
-                
-
-            </div>
-            <div className="card-footer"><button className="btn btn-primary" onClick={handleAdd} disabled={note.length == 0}>Add Note</button></div>
-
-        </div>
-    );
+interface ISetting {
+    NoteTypes: string[],
+    NoteTags: string[]
 }
 
-export default EventSearchNoteWindow;
+interface IValue<T> { Value: T }
+
+const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
+    const [noteType, setNoteType] = React.useState<OpenXDA.Types.NoteType>({ ID: -1, Name: 'Event', ReferenceTableName: 'Event' });
+    const [selectedTags, setSelectedTags] = React.useState<number[]>([]);
+    const [noteApp, setNoteApp] = React.useState<OpenXDA.Types.NoteApplication>({ ID: -1, Name: 'SEbrowser' });
+
+    const [noteTypes, setNoteTypes] = React.useState<OpenXDA.Types.NoteType[]>([]);
+    const [noteTags, setNoteTags] = React.useState<OpenXDA.Types.NoteTag[]>([]);
+
+    const [ids, setIDs] = React.useState<{ EventID: number, MeterID: number, AssetID: number, LocationID: number }>({ EventID: props.eventID, MeterID: -1, AssetID: -1, LocationID: -1 });
+
+   
+    React.useEffect(() => {
+        let idHandle = getIDs();
+        return () => { if (idHandle != null && idHandle.abort != null) idHandle.abort(); }
+    }, [props.eventID])
+
+    React.useEffect(() => {
+        let typeHandle = getNoteType();
+        return () => { if (typeHandle != null && typeHandle.abort != null) typeHandle.abort(); }
+    }, []);
+
+    React.useEffect(() => {
+        let tagHandle = getNoteTag();
+        return () => { if (tagHandle != null && tagHandle.abort != null) tagHandle.abort(); }
+    }, []);
+
+    React.useEffect(() => {
+        let appHandle = getNoteApp();
+        return () => { if (appHandle != null && appHandle.abort != null) appHandle.abort(); }
+    }, []);
+
+    React.useEffect(() => {
+        if (noteType == null && noteTypes.length > 0)
+            setNoteType(noteTypes[0]);
+    }, [noteTypes, noteType])
+    function getNoteType(): JQuery.jqXHR<OpenXDA.Types.NoteType[]> {
+        let handle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/NoteType`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+
+        handle.done((d: OpenXDA.Types.NoteType[]) => {
+
+            if (props.setting == null || props.setting.NoteTypes.length == 0)
+                setNoteTypes(d);
+            else
+                setNoteTypes(props.setting.NoteTypes.map((t) => d.find((d) => d.Name.toLocaleLowerCase() == t.toLocaleLowerCase())));
+        });
+
+        return handle;
+    }
+
+    function getNoteApp(): JQuery.jqXHR<OpenXDA.Types.NoteApplication[]> {
+        let handle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/NoteApp`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+
+        handle.done((d: OpenXDA.Types.NoteApplication[]) => {
+            let record = d.find(r => r.Name == "SEbrowser")
+            setNoteApp(record);
+        });
+
+        return handle;
+    }
+
+    function getNoteTag(): JQuery.jqXHR<OpenXDA.Types.NoteTag[]> {
+        let handle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/NoteTag`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+
+        handle.done((d: OpenXDA.Types.NoteTag[]) => {
+            if (props.setting == null || props.setting.NoteTags.length == 0)
+                setNoteTags(d);
+            else
+                setNoteTags(props.setting.NoteTags.map((t) => d.find((d) => d.Name.toLocaleLowerCase() == t.toLocaleLowerCase())));
+        });
+
+        return handle;
+    }
+
+    function getIDs(): JQuery.jqXHR {
+        let handle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/GetEventInformation/${props.eventID}`,
+            cache: true,
+            async: true,
+        }).done((d) => {
+            setIDs({
+                AssetID: d['Asset'],
+                EventID: props.eventID,
+                LocationID: d['Location'],
+                MeterID: d['Meter']
+            })
+        })
+
+        return handle;
+    }
+
+    let slice;
+    if (ids == null || noteType == null)
+        return null;
+    if (noteType.Name == 'Event')
+        slice = EventNoteSlice;
+    else if (noteType.Name == 'Meter')
+        slice = MeterNoteSlice;
+    else if (noteType.Name == 'Asset')
+        slice = AssetNoteSlice;
+    else if (noteType.Name == 'Location')
+        slice = LocationNoteSlice;
+    else
+        return null;
+    let id;
+    if (noteType.Name == 'Event')
+        id = props.eventID;
+    else if (noteType.Name == 'Meter')
+        id = ids.MeterID;
+    else if (noteType.Name == 'Asset')
+        id = ids.AssetID;
+    else if (noteType.Name == 'Location')
+        id = ids.LocationID;
+
+    return (
+        <div className='card'>
+            <div className='card-header'>Notes</div>
+            <div className='row'>
+                <div className='col'>
+                    <MultiCheckBoxSelect Label={'Categories'}
+                        Options={noteTags.map(t => ({ Selected: selectedTags.find(i => i == t.ID) != null, Text: t.Name, Value: t.ID }))}
+                        OnChange={(evt, options) => { setSelectedTags(options.map(t => t.Value)); }}
+                    />
+                    <Select<OpenXDA.Types.NoteType>
+                        Record={noteType}
+                        Label={'Type'}
+                        Options={noteTypes.map(t => ({ Label: t.Name, Value: t.ID.toString() }))}
+                        Setter={(r) => setNoteType(noteTypes.find((t) => t.ID == r.ID))}
+                        Field={'ID'} />
+                </div>
+            </div>
+            <Note
+                MaxHeight={window.innerHeight - 215}
+                ReferenceTableID={id}
+                NoteApplications={[noteApp]}
+                NoteTags={noteTags.filter((t) => selectedTags.find(i => i == t.ID) != null)}
+                NoteTypes={[noteType]}
+                NoteSlice={slice}
+                AllowAdd={true}
+                Title={''}
+                AllowEdit={true}
+                AllowRemove={false}
+            />
+        </div>
+    );
+
+}
+
+export default NoteWidget;

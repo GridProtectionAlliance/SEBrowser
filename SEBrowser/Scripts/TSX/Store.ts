@@ -43,10 +43,11 @@ export const AssetSlice = new GenericSlice<SystemCenter.Types.DetailedAsset>("As
 export const LocationSlice = new GenericSlice<SystemCenter.Types.DetailedLocation>("Location", `${homePath}api/OpenXDA/Location`, "LocationKey", true);
 export const EventTypeSlice = new GenericSlice<SEBrowser.EventType>("EventType", `${homePath}api/OpenXDA/EventType`, "Category", true);
 
-export const EventNoteSlice = new NoteSlice('Event');
-export const MeterNoteSlice = new NoteSlice('Meter');
-export const AssetNoteSlice = new NoteSlice('Asset');
-export const LocationNoteSlice = new NoteSlice('Location');
+export const EventNoteSlice = new GenericSlice<OpenXDA.Types.Note>("EventNote", `${homePath}api/OpenXDA/Note`, "Timestamp", true);
+
+export const MeterNoteSlice = new GenericSlice<OpenXDA.Types.Note>("MeterNote", `${homePath}api/OpenXDA/Note`, "Timestamp", true);
+export const AssetNoteSlice = new GenericSlice<OpenXDA.Types.Note>("AssetNote", `${homePath}api/OpenXDA/Note`, "Timestamp", true);
+export const LocationNoteSlice = new GenericSlice<OpenXDA.Types.Note>("LocationNote", `${homePath}api/OpenXDA/Note`, "Timestamp", true);
 
 const reducer = {
     EventSearch: EventSearchReducer,

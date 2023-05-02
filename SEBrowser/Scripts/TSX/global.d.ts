@@ -51,10 +51,10 @@ export namespace Redux {
         Location: IGenericSliceState<SystemCenter.Types.DetailedLocation>,
         Settings: SettingsState,
         EventType: IGenericSliceState<SEBrowser.EventType>,
-        EventNote: NoteState,
-        MeterNote: NoteState,
-        AssetNote: NoteState,
-        LocationNote: NoteState,
+        EventNote: IGenericSliceState<XDA.Types.Note>,
+        MeterNote: IGenericSliceState<XDA.Types.Note>,
+        AssetNote: IGenericSliceState<XDA.Types.Note>,
+        LocationNote: IGenericSliceState<XDA.Types.Note>,
     }
 
 
