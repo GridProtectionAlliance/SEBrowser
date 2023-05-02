@@ -67,7 +67,7 @@ namespace SEBrowser.Controllers
                 string systemTime = connection.ExecuteScalar<string>("SELECT TOP 1 [Value] FROM [Setting] WHERE Name = 'System.XDATimeZone'");
                 if (string.IsNullOrEmpty(systemTime))
                     return Ok(0);
-                return Ok(TimeZoneInfo.FindSystemTimeZoneById(systemTime).BaseUtcOffset);
+                return Ok(TimeZoneInfo.FindSystemTimeZoneById(systemTime).DisplayName);
             }
         }
         #endregion

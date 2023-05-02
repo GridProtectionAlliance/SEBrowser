@@ -39,8 +39,8 @@ const settingsSlice = createSlice({
         eventSearch: {
             NumberResults: 100,
             WidgetCategories: []
-            },
-        TimeZoneOffset: 0,
+        },
+        timeZone: 'UTC',
     } as Redux.SettingsState,
 
     reducers: {
@@ -60,7 +60,7 @@ const settingsSlice = createSlice({
             else
                 state.eventSearch = { NumberResults: 100, WidgetCategories: [] };
 
-            state.TimeZoneOffset = action.payload[0];
+            state.timeZone = action.payload[0];
             state.eventSearch.WidgetCategories = action.payload[1];
         });    
         
@@ -72,7 +72,7 @@ const settingsSlice = createSlice({
             }
             else
                 state.eventSearch = { NumberResults: 100, WidgetCategories: [] };
-            state.TimeZoneOffset = 0;
+            state.timeZone = 'UTC';
         });
     }
     
@@ -127,5 +127,5 @@ function loadWidgetCategories() {
 export const SettingsReducer = settingsSlice.reducer
 export const { SetEventSearch } = settingsSlice.actions
 export const SelectEventSearchSettings = (state: Redux.StoreState) => state.Settings.eventSearch
-export const SelectTimeZoneOffset = (state: Redux.StoreState) => state.Settings.TimeZoneOffset
+export const SelectTimeZone = (state: Redux.StoreState) => state.Settings.timeZone
 export const SelectWidgetCategories = (state: Redux.StoreState) => state.Settings.eventSearch.WidgetCategories

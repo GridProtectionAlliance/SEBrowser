@@ -85,7 +85,7 @@ export namespace Redux {
 
     interface SettingsState {
         eventSearch: IEventSearchSettings,
-        TimeZoneOffset: number
+        timeZone: string
     }
 
     interface IEventSearchSettings {
