@@ -43,7 +43,10 @@ export const AssetSlice = new GenericSlice<SystemCenter.Types.DetailedAsset>("As
 export const LocationSlice = new GenericSlice<SystemCenter.Types.DetailedLocation>("Location", `${homePath}api/OpenXDA/Location`, "LocationKey", true);
 export const EventTypeSlice = new GenericSlice<SEBrowser.EventType>("EventType", `${homePath}api/OpenXDA/EventType`, "Category", true);
 
-export const EventNoteSlice = new NoteSlice();
+export const EventNoteSlice = new NoteSlice('Event');
+export const MeterNoteSlice = new NoteSlice('Meter');
+export const AssetNoteSlice = new NoteSlice('Asset');
+export const LocationNoteSlice = new NoteSlice('Location');
 
 const reducer = {
     EventSearch: EventSearchReducer,
@@ -52,9 +55,12 @@ const reducer = {
     Asset: AssetSlice.Reducer,
     AssetGroup: AssetGroupSlice.Reducer,
     Location: LocationSlice.Reducer,
-    EventNote: EventNoteSlice.Reducer,
     Settings: SettingsReducer,
-    EventType: EventTypeSlice.Reducer
+    EventType: EventTypeSlice.Reducer,
+    EventNote: EventNoteSlice.Reducer,
+    MeterNote: MeterNoteSlice.Reducer,
+    AssetNote: AssetNoteSlice.Reducer,
+    LocationNote: LocationNoteSlice.Reducer,
 }
 
 const store = configureStore({ reducer });

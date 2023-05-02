@@ -49,9 +49,21 @@ export namespace Redux {
         Asset: IGenericSliceState<SystemCenter.Types.DetailedAsset>,
         AssetGroup: IGenericSliceState<XDA.Types.AssetGroup>,
         Location: IGenericSliceState<SystemCenter.Types.DetailedLocation>,
-        EventNote: NoteState,
         Settings: SettingsState,
-        EventType: IGenericSliceState<SEBrowser.EventType>
+        EventType: IGenericSliceState<SEBrowser.EventType>,
+        EventNote: NoteState,
+        MeterNote: NoteState,
+        AssetNote: NoteState,
+        LocationNote: NoteState,
+    }
+
+
+    interface NoteState {
+        Status: Application.Types.Status,
+        Data: OpenXDA.Types.Note[],
+        SortField: keyof OpenXDA.Types.Note,
+        Ascending: boolean,
+        ParentID: (number | null),
     }
 
     interface State<T> {
@@ -75,14 +87,7 @@ export namespace Redux {
         ActiveFetchID: string[]
     }
 
-    interface NoteState {
-        Status: Application.Types.Status,
-        Data: SEBrowser.EventNote[],
-        ParentID: (number[] | null),
-        SortField: keyof XDA.Types.Note,
-        Ascending: boolean,
-    }
-
+ 
     interface SettingsState {
         eventSearch: IEventSearchSettings,
         timeZone: string

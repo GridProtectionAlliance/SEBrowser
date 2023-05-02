@@ -19,7 +19,7 @@
     <Use64BitIISExpress />
     <IISExpressSSLPort>
     </IISExpressSSLPort>
-    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
+    <IISExpressAnonymousAuthentication>disabled</IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>enabled</IISExpressWindowsAuthentication>
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
@@ -481,7 +481,6 @@
     <None Include="Scripts\TSX\Components\BreakerReport\BreakerReportNavbar.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearch.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchList.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchListedEventsNoteWindow.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchNavbar.tsx" />
     <None Include="Scripts\TSX\Components\MeterActivity.tsx" />
     <None Include="Scripts\TSX\Components\SEDashboardNavbar.tsx" />

@@ -28,61 +28,61 @@ import { Redux, SEBrowser } from '../../global';
 declare var homePath: string;
 
 
+type NoteType = 'Event' | 'Asset' | 'Meter' | 'Location' | 'Customer' 
+
+
 
 export default class NoteSlice {
     Name: string = "";
     APIPath: string = "";
+    NoteType: NoteType;
     Slice: (Slice<Redux.NoteState>);
-    Fetch: (AsyncThunk<any, void | number[], {}>);
-    DBAction: (AsyncThunk<any, { verb: 'POST' | 'DELETE' | 'PATCH', record: SEBrowser.EventNote }, {}>);
-    Sort: ActionCreatorWithPayload<{ SortField: keyof SEBrowser.EventNote, Ascending: boolean }, string>;
+    Fetch: (AsyncThunk<any, void | number, {}>);
+    DBAction: (AsyncThunk<any, { verb: 'POST' | 'DELETE' | 'PATCH', record: OpenXDA.Types.Note }, {}>);
+    Sort: ActionCreatorWithPayload<{ SortField: keyof OpenXDA.Types.Note, Ascending: boolean }, string>;
     Reducer: any;
     SetSelectedEvents: ActionCreatorWithPayload<number[], string>;
 
 
-    constructor() {
-        this.Name = 'EventNote';
+    constructor(name: NoteType) {
+        this.NoteType = name;
+        this.Name = name + 'Note';
         this.APIPath = `${homePath}api/OpenXDA/Note`;
 
-        const fetch = createAsyncThunk(`${this.Name} / Fetch${this.Name}`, async (eventIDs: number[], { getState }) => {
+        const fetch = createAsyncThunk(`${this.Name} / Fetch${this.Name}`, async (parentID: number, { getState }) => {
             const sortfield = ((getState() as any)[this.Name]).SortField
             const asc = ((getState() as any)[this.Name]).Ascending
-            const handle = this.GetNotes(eventIDs, sortfield, asc);
+            const handle = this.GetNotes(parentID, sortfield, asc);
             return await handle;
         });
 
-        const dBAction = createAsyncThunk(`${this.Name}/DBAction${this.Name}`, async (args: { verb: 'POST' | 'DELETE' | 'PATCH', record: SEBrowser.EventNote }, {}) => {
-
-            const handle = args.record.IDs.map((id, i) => this.Action(args.verb, { ...args.record, ReferenceTableID: args.record.EventIDs[i], ID: id }));
-
-            return await Promise.all(handle)
+        const dBAction = createAsyncThunk(`${this.Name}/DBAction${this.Name}`, async (args: { verb: 'POST' | 'DELETE' | 'PATCH', record: OpenXDA.Types.Note }, { }) => {
+            const handle = this.Action(args.verb, args.record);
+            return await handle
         });
 
         const slice = createSlice({
             name: this.Name,
             initialState: {
                 Status: 'unintiated',
-                Data: [] as SEBrowser.EventNote[],
+                SearchStatus: 'unintiated',
+                Error: null,
+                Data: [] as OpenXDA.Types.Note[],
                 SortField: 'Timestamp',
                 Ascending: false,
-                ParentID: [],
+                ParentID: null,
+                SearchResults: [],
+                Filter: []
             } as Redux.NoteState,
             reducers: {
-                Sort: (state: any, action: PayloadAction<{ SortField: keyof SEBrowser.EventNote, Ascending: boolean }>) => {
+                Sort: (state: any, action: PayloadAction<{ SortField: keyof OpenXDA.Types.Note, Ascending: boolean }>) => {
                     if (state.SortField === action.payload.SortField)
                         state.Ascending = !action.payload.Ascending;
                     else
-                        state.SortField = action.payload.SortField as Draft<keyof SEBrowser.EventNote>;
+                        state.SortField = action.payload.SortField as Draft<keyof OpenXDA.Types.Note>;
 
-                    if (state.SortField == 'EventIDs' || state.SortField == 'IDs')
-                        return
-                    else
                     state.Data = _.orderBy(state.Data, [state.SortField], [state.Ascending ? "asc" : "desc"])
-                },
-                SetSelectedEvents: (state: any, action: PayloadAction<number[]>) => {
-                    state.ParentID = action.payload;
-                    state.Status = 'changed';
-                },
+                }
             },
             extraReducers: (builder) => {
 
@@ -93,7 +93,7 @@ export default class NoteSlice {
                     state.Data = _.orderBy(state.Data, [state.SortField], [state.Ascending ? "asc" : "desc"]);
                 });
                 builder.addCase(fetch.pending, (state, action) => {
-                    state.ParentID = (action.meta.arg == null ? [] : action.meta.arg as number[]);
+                    state.ParentID = (action.meta.arg == null ? 0 : action.meta.arg as number);
                     state.Status = 'loading';
                 });
 
@@ -117,19 +117,18 @@ export default class NoteSlice {
         this.Fetch = fetch;
         this.DBAction = dBAction;
         this.Slice = slice;
-        const { Sort, SetSelectedEvents } = slice.actions
+        const { Sort } = slice.actions
         this.Sort = Sort;
-        this.SetSelectedEvents = SetSelectedEvents;
         this.Reducer = slice.reducer;
     }
 
-    private GetNotes(parentID: number[], sortField: keyof OpenXDA.Types.Note, Ascending: boolean): JQuery.jqXHR<string> {
+    private GetNotes(parentID: number | void, sortField: keyof OpenXDA.Types.Note, Ascending: boolean): JQuery.jqXHR<string> {
 
         const filter = [
-            { FieldName: 'NoteTypeID', SearchText: "(SELECT ID FROM NoteType WHERE ReferenceTableName = 'Event')", Operator: '=', Type: 'integer', isPivotColumn: false },
-            { FieldName: 'ReferenceTableID', SearchText: '(' + (parentID.length > 0? parentID.join(',') : "-1") + ')', Operator: 'IN', Type: 'integer', isPivotColumn: false },
-            { FieldName: 'NoteApplicationID', SearchText: "(SELECT ID From NoteApplication WHERE Name = 'SEbrowser')", Operator: '=', Type: 'integer', isPivotColumn: false },
-            { FieldName: 'NoteTagID', SearchText: "(SELECT ID From NoteTag WHERE Name = 'General')", Operator: '=', Type: 'integer', isPivotColumn: false }
+            { FieldName: 'NoteTypeID', SearchText: "(SELECT ID FROM NoteType WHERE ReferenceTableName = '" + this.NoteType + "')", Operator: '=', Type: 'integer', isPivotColumn: false },
+            { FieldName: 'ReferenceTableID', SearchText: parentID, Operator: '=', Type: 'integer', isPivotColumn: false },
+            { FieldName: 'NoteApplicationID', SearchText: "(SELECT ID From NoteApplication WHERE Name = 'SystemCenter')", Operator: '=', Type: 'integer', isPivotColumn: false },
+            { FieldName: 'NoteTagID', SearchText: "(SELECT ID From NoteTag WHERE Name = 'Configuration')", Operator: '=', Type: 'integer', isPivotColumn: false }
         ]
 
         return $.ajax({
@@ -161,7 +160,7 @@ export default class NoteSlice {
         });
     }
 
-    public Data = (state: any) => state[this.Name].Data as SEBrowser.EventNote[];
+    public Data = (state: any) => state[this.Name].Data as OpenXDA.Types.Note[];
     public Status = (state: any) => state[this.Name].Status as Application.Types.Status;
     public SortField = (state: any) => state[this.Name].SortField as keyof OpenXDA.Types.Note;
     public Ascending = (state: any) => state[this.Name].Ascending as boolean;
