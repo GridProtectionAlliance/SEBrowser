@@ -44,7 +44,7 @@ namespace SEBrowser.Controllers
 {
     [RoutePrefix("api/OpenXDA")]
 
-    public class OpenXDAController: ApiController
+    public class OpenXDAController : ApiController
     {
         #region [ Members ]
         const string SettingsCategory = "systemSettings";
@@ -218,7 +218,7 @@ namespace SEBrowser.Controllers
 
         private string getPhaseFilter(EventSearchPostData postData)
         {
-            Dictionary<string, bool> phases = new Dictionary<string, bool> 
+            Dictionary<string, bool> phases = new Dictionary<string, bool>
             {
                 ["AN"] = postData.phases.AN,
                 ["BN"] = postData.phases.BN,
@@ -407,7 +407,7 @@ namespace SEBrowser.Controllers
                     ", eventID
                     );
                 return table;
-            } 
+            }
         }
 
         [Route("GetEventSearchFaultSegments"), HttpGet]
@@ -445,7 +445,7 @@ namespace SEBrowser.Controllers
             {
                 DataTable table = connection.RetrieveData(@" 
                     SELECT
-                        TOP " +count.ToString() + @"
+                        TOP " + count.ToString() + @"
 	                    EventType.Name as EventType,
 	                    Event.StartTime,
 	                    Event.ID
@@ -682,7 +682,8 @@ namespace SEBrowser.Controllers
                     return Ok(dataTable);
 
                 }
-                catch (Exception ex) {
+                catch (Exception ex)
+                {
                     return InternalServerError(ex);
                 }
 
@@ -867,7 +868,8 @@ namespace SEBrowser.Controllers
                             }
 
                         }
-                        else if (type == "TripCoilCurrent") {
+                        else if (type == "TripCoilCurrent")
+                        {
                             if (series.SeriesInfo.Channel.MeasurementType.Name == "TripCoilCurrent" && series.SeriesInfo.Channel.MeasurementCharacteristic.Name == "Instantaneous")
                             {
                                 if (!returnData.ContainsKey("TCE" + series.SeriesInfo.Channel.Phase.Name))
@@ -892,6 +894,24 @@ namespace SEBrowser.Controllers
             }
 
         }
+
+        // getEventInformation
+        [Route("GetEventInformation/{eventID:int}"), HttpGet]
+        public IHttpActionResult GetEventInformation(int eventID)
+        {
+            using (AdoDataConnection connection = new(SettingsCategory))
+            {
+                int meterID = connection.ExecuteScalar<int>("SELECT MeterID FROM Event WHERE ID = {0}", eventID);
+                var ids = new
+                {
+                    Meter = meterID,
+                    Asset = connection.ExecuteScalar<int>("SELECT AssetID FROM Event WHERE ID = {0}", eventID),
+                    Location = connection.ExecuteScalar<int>("SELECT LocationID FROM Meter WHERE ID = {0}", meterID)
+                };
+                return Ok(ids);
+            }
+        }
+
 
         private DataGroup QueryDataGroup(int eventID, Meter meter)
         {
