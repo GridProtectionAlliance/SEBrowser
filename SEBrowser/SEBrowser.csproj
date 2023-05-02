@@ -526,7 +526,6 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchBreakerPerformance.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchCapBankAnalyticOverview.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchCorrelatedSags.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchEsriMap.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchFileInfo.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchNoteWindow.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchOpenSEE.tsx" />
