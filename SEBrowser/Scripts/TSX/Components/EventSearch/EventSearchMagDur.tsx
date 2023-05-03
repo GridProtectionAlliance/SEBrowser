@@ -55,6 +55,7 @@ const MagDurChart = (props: IProps) => {
     const status = useAppSelector(SelectEventSearchsStatus);
     const points: any[] = useAppSelector(SelectEventSearchs);
     const [data, setData] = React.useState<any[]>([]);
+    const settings = useAppSelector(SelectEventSearchSettings);
 
     // This needs to be used instead of a Layout effect since a Layout Effect would not get triggered since nothing is redrawn when
     // size of the parent div changes.
@@ -144,6 +145,11 @@ const MagDurChart = (props: IProps) => {
         const r = d1.radius + d2.radius;
         return (Math.pow(dx,2) + Math.pow(dy,2) < Math.pow(r,2));
     }
+
+    function IsSame (d1, d2) {
+        return d1.data[0] == d2.data[0] && d1.data[1] == d2.data[1];
+    }
+
     return (
         <div ref={chart} style={{ height: props.Height, width: '100%', display: 'inline-block' }}>
             <Plot height={props.Height - hCounter} width={width} showBorder={false}
@@ -162,7 +168,7 @@ const MagDurChart = (props: IProps) => {
                 zoom={true} pan={true} useMetricFactors={false} XAxisType={'log'} onSelect={() => { } }>
                 {magDurCurves.map((s, i) => <Line highlightHover={false} showPoints={false} lineStyle={'-'} color={baseColors[i % baseColors.length]} data={generateCurve(s)} legend={s.Name} key={i} />)}
                 <AggregatingCircles data={data}
-                    canAggregate={CanAggregate}
+                    canAggregate={settings.AggregateMagDur ? CanAggregate : IsSame}
                     onAggregation={AggregateCurves} />
                 {points.filter(e => e['EventID'] == props.EventID).map((p) => (<Circle
                     data={[p['MagDurDuration'], p['MagDurMagnitude']]}

@@ -95,7 +95,8 @@ export namespace Redux {
 
     interface IEventSearchSettings {
         NumberResults: number,
-        WidgetCategories: SEBrowser.IWidgetCategory[]
+        WidgetCategories: SEBrowser.IWidgetCategory[],
+        AggregateMagDur: boolean
     }
 }
 export namespace SEBrowser {

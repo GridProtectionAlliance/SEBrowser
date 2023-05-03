@@ -23,7 +23,7 @@
 //
 //******************************************************************************************************
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { Redux, SEBrowser } from '../global';
+import { Redux } from '../global';
 
 declare var homePath: string;
 
@@ -38,7 +38,8 @@ const settingsSlice = createSlice({
     initialState: {
         eventSearch: {
             NumberResults: 100,
-            WidgetCategories: []
+            WidgetCategories: [],
+            AggregateMagDur: true,
         },
         timeZone: 'UTC',
     } as Redux.SettingsState,
@@ -58,7 +59,7 @@ const settingsSlice = createSlice({
                 state.eventSearch = preserved.eventSearch;
             }
             else
-                state.eventSearch = { NumberResults: 100, WidgetCategories: [] };
+                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true };
 
             state.timeZone = action.payload[0];
             state.eventSearch.WidgetCategories = action.payload[1];
@@ -71,7 +72,7 @@ const settingsSlice = createSlice({
                 state.eventSearch = preserved.eventSearch;
             }
             else
-                state.eventSearch = { NumberResults: 100, WidgetCategories: [] };
+                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true };
             state.timeZone = 'UTC';
         });
     }
