@@ -159,7 +159,7 @@ const MagDurChart = (props: IProps) => {
                 showMouse={false}
                 showGrid={true}
                 zoomMode={'Rect'}
-                zoom={true} pan={false} useMetricFactors={false} XAxisType={'log'} onSelect={() => { } }>
+                zoom={true} pan={true} useMetricFactors={false} XAxisType={'log'} onSelect={() => { } }>
                 {magDurCurves.map((s, i) => <Line highlightHover={false} showPoints={false} lineStyle={'-'} color={baseColors[i % baseColors.length]} data={generateCurve(s)} legend={s.Name} key={i} />)}
                 <AggregatingCircles data={data}
                     canAggregate={CanAggregate}
