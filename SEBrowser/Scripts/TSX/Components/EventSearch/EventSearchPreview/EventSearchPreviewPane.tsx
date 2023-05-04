@@ -66,17 +66,22 @@ export default function EventPreviewPane(props: IProps) {
     const [widgets, setWidgets] = React.useState<SEBrowser.IWidgetView[]>([]);
     const event: any = useAppSelector((state: Redux.StoreState) => SelectEventSearchByID(state,props.EventID));
     React.useEffect(() => {
-        GetSettings();
+        const h = GetSettings();
+        return () => { if (h != null && h.abort != null) h.abort(); }
     }, []);
 
     React.useEffect(() => {
-        loadWidgetCategories();
-        console.log(tab);
-        console.log(widgets);
+        const h = loadWidgetCategories();
+        return () => { if (h != null && h.abort != null) h.abort(); }
     }, [tab])
-    
+
+    React.useEffect(() => {
+        if (settings.length > 0 && settings.findIndex(s => s.ID.toString() == tab) == -1)
+            setTab(settings[0].ID.toString());
+    }, [tab, settings])
+
     function GetSettings() {
-        $.ajax({
+        return $.ajax({
             type: "GET",
             url: `${homePath}api/SEBrowser/GetEventPreviewPaneSettings`,
             contentType: "application/json; charset=utf-8",
