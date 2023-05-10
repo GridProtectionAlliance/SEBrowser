@@ -200,6 +200,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
                 Title={''}
                 AllowEdit={true}
                 AllowRemove={false}
+                ShowCard={false}
             />
         </div>
     );
