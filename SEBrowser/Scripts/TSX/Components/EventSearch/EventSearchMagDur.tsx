@@ -23,7 +23,7 @@
 
 import * as React from 'react';
 import * as _ from 'lodash';
-import { SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
+import { SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs, SelectCharacteristicFilter } from './EventSearchSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { OpenXDA, Redux, SEBrowser } from '../../global';
 import { MagDurCurveSlice } from '../../Store';
@@ -56,6 +56,9 @@ const MagDurChart = (props: IProps) => {
     const points: any[] = useAppSelector(SelectEventSearchs);
     const [data, setData] = React.useState<any[]>([]);
     const settings = useAppSelector(SelectEventSearchSettings);
+
+    const selectedCurve = useAppSelector((state: Redux.StoreState) => SelectCharacteristicFilter(state).curveID);
+    const showSelectedCurve = useAppSelector((state: Redux.StoreState) => SelectCharacteristicFilter(state).curveInside != SelectCharacteristicFilter(state).curveOutside);
 
     // This needs to be used instead of a Layout effect since a Layout Effect would not get triggered since nothing is redrawn when
     // size of the parent div changes.
@@ -133,7 +136,7 @@ const MagDurChart = (props: IProps) => {
             radius: r,
             opacity: 0.5,
             onClick: ({ setTDomain, setYDomain }) => {
-                setTDomain([XInverseTransformation(xmax), XInverseTransformation(xmin)]);
+                setTDomain([XInverseTransformation(xmin), XInverseTransformation(xmax)]);
                 setYDomain([YInverseTransformation(ymax), YInverseTransformation(ymin)]);
             }
         };
@@ -157,17 +160,19 @@ const MagDurChart = (props: IProps) => {
                 lineStyle={'-'}
                 color={baseColors[i % baseColors.length]}
                 data={generateCurve(s)}
-                legend={s.Name} key={i} />),
-            ...points.filter(e => e['EventID'] == props.EventID).map((p) => <Circle
-                data={[p['MagDurDuration'], p['MagDurMagnitude']]}
-                color={'blue'}
-                radius={5} />),
+                legend={s.Name} key={i}
+                width={showSelectedCurve && selectedCurve == s.ID? 5 : 3}
+            />),
             <AggregatingCircles data={data}
                 canAggregate={settings.AggregateMagDur ? CanAggregate : IsSame}
                 onAggregation={AggregateCurves}
-            />
+            />,
+            ...points.filter(e => e['EventID'] == props.EventID).map((p) => <Circle
+                data={[p['MagDurDuration'], p['MagDurMagnitude']]}
+                color={'blue'}
+                radius={5} />)
         ]
-    }, [magDurCurves, points, props.EventID, data, settings.AggregateMagDur])
+    }, [magDurCurves, points, props.EventID, data, settings.AggregateMagDur, showSelectedCurve, selectedCurve])
 
     return (
         <div ref={chart} style={{ height: props.Height, width: '100%', display: 'inline-block' }}>
