@@ -23,12 +23,14 @@
 
 import * as React from 'react';
 import * as _ from 'lodash';
-import { SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs, SelectCharacteristicFilter } from './EventSearchSlice';
+import { SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs, SelectCharacteristicFilter, SelectEventSearchsSortField, SelectEventSearchsAscending, Sort } from './EventSearchSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { OpenXDA, Redux, SEBrowser } from '../../global';
 import { MagDurCurveSlice } from '../../Store';
 import { Line, Plot, Circle, AggregatingCircles } from '@gpa-gemstone/react-graph';
-import { SelectEventSearchSettings } from '../SettingsSlice';
+import { SelectEventSearchSettings, SetEventSearch } from '../SettingsSlice';
+import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
+import Table, { Column } from '@gpa-gemstone/react-table';
 
 
 interface IProps {
@@ -55,6 +57,8 @@ const MagDurChart = (props: IProps) => {
     const status = useAppSelector(SelectEventSearchsStatus);
     const points: any[] = useAppSelector(SelectEventSearchs);
     const [data, setData] = React.useState<any[]>([]);
+    const [selectedMag, setSelectedMag] = React.useState<number>(0);
+    const [selectedDur, setSelectedDur] = React.useState<number>(0);
     const settings = useAppSelector(SelectEventSearchSettings);
 
     const selectedCurve = useAppSelector((state: Redux.StoreState) => SelectCharacteristicFilter(state).curveID);
@@ -99,7 +103,11 @@ const MagDurChart = (props: IProps) => {
             data: [p['MagDurDuration'], p['MagDurMagnitude']],
             color: 'red',
             radius: 5,
-            onClick: () => { props.SelectEvent(p['EventID'] as number) }
+            onClick: () => {
+                props.SelectEvent(p['EventID'] as number)
+                setSelectedDur(0);
+                setSelectedMag(0);
+            }
         })))
     }, [points])
 
@@ -126,7 +134,18 @@ const MagDurChart = (props: IProps) => {
         const ymin = Math.min(...d.map(c => YTransformation(c.data[1]))) - 5;
         const xcenter = 0.5*(xmax + xmin);
         const ycenter = 0.5 * (ymax + ymin);
-        const r = Math.max(Math.abs(xmax - xcenter), Math.abs(xmin - xcenter), Math.abs(ymax - ycenter), Math.abs(ymin - ycenter) )
+        const r = Math.max(Math.abs(xmax - xcenter), Math.abs(xmin - xcenter), Math.abs(ymax - ycenter), Math.abs(ymin - ycenter))
+        let handler = ({ setTDomain, setYDomain }) => {
+            setTDomain([XInverseTransformation(xmin), XInverseTransformation(xmax)]);
+            setYDomain([YInverseTransformation(ymax), YInverseTransformation(ymin)]);
+            setSelectedDur(0);
+            setSelectedMag(0);
+        };
+        if (Math.abs(xmin - xmax) < 11 && Math.abs(ymin - ymax) < 11)
+            handler = () => {
+                setSelectedDur(d[0].data[0]);
+                setSelectedMag(d[0].data[1]);
+            }
         return {
             data: [XInverseTransformation(xcenter), YInverseTransformation(ycenter)] as [number, number],
             color: 'rgb(108, 117, 125)',
@@ -135,10 +154,7 @@ const MagDurChart = (props: IProps) => {
             text: d.length.toString(),
             radius: r,
             opacity: 0.5,
-            onClick: ({ setTDomain, setYDomain }) => {
-                setTDomain([XInverseTransformation(xmin), XInverseTransformation(xmax)]);
-                setYDomain([YInverseTransformation(ymax), YInverseTransformation(ymin)]);
-            }
+            onClick: handler
         };
     }
 
@@ -150,7 +166,7 @@ const MagDurChart = (props: IProps) => {
     }
 
     function IsSame (d1, d2) {
-        return d1.data[0] == d2.data[0] && d1.data[1] == d2.data[1];
+        return Math.abs(d1.data[0] - d2.data[0]) < 0.0001 && Math.abs(d1.data[1] - d2.data[1]) < 1E-10;
     }
 
     const plotContent = React.useMemo(() => {
@@ -175,7 +191,8 @@ const MagDurChart = (props: IProps) => {
     }, [magDurCurves, points, props.EventID, data, settings.AggregateMagDur, showSelectedCurve, selectedCurve])
 
     return (
-        <div ref={chart} style={{ height: props.Height, width: '100%', display: 'inline-block' }}>
+        <>
+            <div ref={chart} style={{ height: props.Height, width: '100%', display: 'inline-block' }}>
             <Plot height={props.Height - hCounter} width={width} showBorder={false}
                 defaultTdomain={[0.00001, 1000]}
                 defaultYdomain={[0, 5]}
@@ -200,8 +217,96 @@ const MagDurChart = (props: IProps) => {
                     <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
                         {data.length} results
                     </div>}
-        </div>
+            </div>
+            <EventList Height={props.Height} Select={props.SelectEvent} Magnitude={selectedMag} Duration={selectedDur} Width={width} />
+        </>
     )
 }
 
 export default MagDurChart;
+
+interface IEventListProps {
+    Select: (evt: number) => void;
+    Magnitude: number;
+    Duration: number;
+    Height: number;
+    Width: number;
+};
+
+const EventList = (props: IEventListProps) => {
+    const closureHandler = React.useRef<((o: boolean) => void)>(() => { });
+
+    const dataFilter = React.useCallback((state: Redux.StoreState) => SelectEventSearchs(state).filter(p =>
+        Math.abs(p['MagDurDuration'] - props.Duration) < 1E-10 && Math.abs(p['MagDurMagnitude'] - props.Magnitude) < 0.0001),
+        [props.Magnitude, props.Duration])
+
+    const dispatch = useAppDispatch();
+
+    const sortField = useAppSelector(SelectEventSearchsSortField);
+    const ascending = useAppSelector(SelectEventSearchsAscending);
+    const data = useAppSelector(dataFilter);
+    const [collumns, setCollumns] = React.useState<Column<any>[]>([]);
+
+    React.useEffect(() => {
+        if (props.Magnitude !== 0 && props.Duration !== 0) {
+            closureHandler.current(true);
+            LoadColumns();
+        }
+        else {
+            closureHandler.current(false);
+        }
+    }, [props.Magnitude, props.Duration])
+
+    function ProcessWhitespace(txt: string | number): React.ReactNode {
+        if (txt == null)
+            return <>N/A</>
+        let lines = txt.toString().split("<br>");
+        return lines.map((item, index) => {
+            if (index == 0)
+                return <> {item} </>
+            return <> <br /> {item} </>
+        })
+    }
+
+    function LoadColumns() {
+        let c = [{ field: "Time", key: "Time", label: "Time", content: (item, key, fld, style) => ProcessWhitespace(item[fld]) }];
+        const flds = Object.keys(data[0]).filter(item => item != "Time" && item != "DisturbanceID" && item != "EventID" && item != "EventID1" && item != 'MagDurDuration' && item != 'MagDurMagnitude').sort();
+
+        let keys = [];
+        const currentState = localStorage.getItem('SEbrowser.EventSearch.TableCols');
+        if (currentState !== null)
+            keys = currentState.split(",");
+
+        c = c.concat(flds.filter(f => keys.includes(f)).map(f => ({ field: f, key: f, label: f, content: (item, key, fld, style) => ProcessWhitespace(item[fld]) })));
+       
+        setCollumns(c);
+    }
+    return <OverlayDrawer Title={''} Open={false} Location={'right'} Target={'eventPreviewPane'} GetOverride={(s) => { closureHandler.current = s; }} HideHandle={true}>
+
+        <div style={{ width: props.Width, height: props.Height }} className={'magDurChartSelection'}>
+            <div style={{ width: 160, float: 'right', padding: 10 }}>
+                <button className='btn btn-primary' onClick={() => closureHandler.current(false)} >
+                    Close
+                </button>
+            </div>
+            <Table<any>
+                cols={collumns}
+                tableClass="table table-hover"
+                data={data}
+                sortKey={sortField as string}
+                ascending={ascending}
+                onSort={(d) => {
+                    if (d.colKey == sortField) dispatch(Sort({ Ascending: ascending, SortField: sortField }));
+                    else dispatch(Sort({ Ascending: true, SortField: d.colKey }));
+                }}
+                onClick={(item) => { closureHandler.current(false); props.Select(item.row.EventID) }}
+                theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '250px', height: 60 }}
+                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.Height - 60 - 160 }}
+                rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
+                tableStyle={{ marginBottom: 0 }}
+                selected={() => false}
+            />
+
+        </div>
+    </OverlayDrawer>
+}
