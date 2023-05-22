@@ -40,6 +40,13 @@ declare global {
 
 }
 
+//Todo: Move to gemstone?
+export interface IMultiCheckboxOption {
+    Value: number,
+    Text: string,
+    Selected: boolean
+}
+
 export namespace Redux {
     interface StoreState {
         EventSearch: EventSearchState,
@@ -123,6 +130,20 @@ export namespace SEBrowser {
         Name: string,
         Description: string
     }
+
+    interface ITrendChannel {
+        ID: number,
+        Name: string,
+        Description: string,
+        AssetKey: string,
+        AssetName: string,
+        MeterKey: string,
+        MeterName: string,
+        Phase: string,
+        ChannelGroup: string,
+        ChannelGroupType: string
+    }
+
     interface IWidgetCategory { ID: number, Name: string, OrderBy: number }
 }
 

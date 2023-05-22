@@ -23,14 +23,20 @@
 
 import React from 'react';
 import TrendSearchNavbar from './TrendDataNavbar';
-import { VerticalSplit } from '@gpa-gemstone/react-interactive';
+import { TrendPlot, ITrendPlot } from './ChartContainer/TrendPlot';
+import { OverlayDrawer, VerticalSplit } from '@gpa-gemstone/react-interactive';
+import { CreateGuid } from '@gpa-gemstone/helper-functions';
+import { SEBrowser } from '../../global';
 
 interface IProps { }
 
 const TrendData = (props: IProps) => {
+    const closureHandler = React.useRef<((o: boolean) => void)>(() => { });
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
     const [navHeight, setNavHeight] = React.useState<number>(0);
-
+    const [plotList, setPlotList] = React.useState<ITrendPlot[]>([]);
+    const overlayPortalID: string = "TrendDataChartPortal";
+    const overlayDrawer: string = "TrendDataNavbar";
 
     function getShowNav(): boolean {
         if (localStorage.hasOwnProperty('SEbrowser.TrendData.ShowNav'))
@@ -39,15 +45,46 @@ const TrendData = (props: IProps) => {
             return true;
     }
 
+    function removePlot(ID: string): void {
+        const index = plotList.findIndex(item => item.ID === ID);
+        const newList = [...plotList];
+        newList.splice(index, 1);
+        setPlotList(newList);
+    }
+
+    function changePlot(plot: ITrendPlot): void {
+        const index = plotList.findIndex(item => item.ID === plot.ID);
+        const newList = [...plotList];
+        newList.splice(index, 1, plot);
+        setPlotList(newList);
+    }
+
+    function appendNewContainer(newContainerProps: ITrendPlot): void {
+        setPlotList([...plotList, newContainerProps]);
+    }
+
+    function closeSettings(open: boolean) {
+        closureHandler.current(open);
+    }
+
     return (
-        <div style={{ width: '100%', height: '100%' }}>
+        <div style={{ width: '100%', height: '100%' }} data-drawer={overlayDrawer}>
             <TrendSearchNavbar
                 ToggleVis={() => setShowNav((c) => !c)}
                 ShowNav={showNav}
                 SetHeight={setNavHeight}
+                AddNewChart={appendNewContainer}
             />
-            <VerticalSplit style={{ width: '100%', height: (showNav ? 'calc(100% - ' + navHeight + 'px)' : 'calc( 100% - 52px)') }}>
-            </VerticalSplit>
+            <div style={{ width: '100%', height: (showNav ? 'calc(100% - ' + navHeight + 'px)' : 'calc( 100% - 52px)'), overflowY: 'scroll' }}>
+                {plotList.map(element => <TrendPlot key={element.ID}
+                    PlotValues={element} SetPlotValues={changePlot} RemovePlot={removePlot}
+                    OverlayPortalID={overlayPortalID} HandleOverlay={closeSettings}/>)}
+            </div>
+            <OverlayDrawer Title={''} Open={false} Location={'top'} Target={overlayDrawer} GetOverride={(s) => { closureHandler.current = s; }} HideHandle={true}>
+                <div id={overlayPortalID} style={{opacity: 0.8, background: undefined, color: 'black' }}>
+
+                </div>
+            </OverlayDrawer>
         </div>
     );
 }

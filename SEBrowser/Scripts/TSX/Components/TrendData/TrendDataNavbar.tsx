@@ -25,18 +25,22 @@ import _ from 'lodash';
 import moment from 'moment';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { AssetSlice, MeterSlice, PhaseSlice, ChannelGroupSlice } from '../../Store';
-import { SEBrowser } from '../../Global';
+import { SEBrowser, IMultiCheckboxOption } from '../../Global';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { DefaultSelects } from '@gpa-gemstone/common-pages';
 import { ConfigurableTable, Search } from '@gpa-gemstone/react-interactive';
+import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
+import { CreateGuid } from '@gpa-gemstone/helper-functions';
 import ReportTimeFilter from '../ReportTimeFilter';
 import NavbarFilterButton from '../Common/NavbarFilterButton';
+import { ITrendPlot } from './ChartContainer/TrendPlot';
 
 interface IProps {
     ToggleVis: () => void,
     ShowNav: boolean,
-    SetHeight: (h: number) => void
+    SetHeight: (h: number) => void,
+    AddNewChart: (chartData: ITrendPlot) => void
 }
 
 interface IKeyValuePair {
@@ -44,31 +48,11 @@ interface IKeyValuePair {
     Value: boolean
 }
 
-interface IMultiCheckboxOption {
-    Value: number,
-    Text: string,
-    Selected: boolean
-}
-
 interface ITrendDataFilter {
     Phases: IKeyValuePair[],
     ChannelGroups: IKeyValuePair[],
-    TimeFilter: SEBrowser.IReportTimeFilter,
     MeterList: SystemCenter.Types.DetailedMeter[],
     AssetList: SystemCenter.Types.DetailedAsset[]
-}
-
-interface ITrendChannel {
-    ID: number,
-    Name: string,
-    Description: string,
-    AssetKey: string,
-    AssetName: string,
-    MeterKey: string,
-    MeterName: string,
-    Phase: string,
-    ChannelGroup: string,
-    ChannelGroupType: string
 }
 
 const TrendSearchNavbar = (props: IProps) => {
@@ -85,24 +69,29 @@ const TrendSearchNavbar = (props: IProps) => {
 
     const [showFilter, setShowFilter] = React.useState<('None' | 'Meter' | 'Asset')>('None');
 
+    const [timeFilter, setTimeFilter] = React.useState<SEBrowser.IReportTimeFilter>(null);
+
     const [trendFilter, setTrendFilter] = React.useState<ITrendDataFilter>(null);
     const [phaseOptions, setPhaseOptions] = React.useState<IMultiCheckboxOption[]>([]);
     const [channelGroupOptions, setChannelGroupOptions] = React.useState<IMultiCheckboxOption[]>([]);
+    const [linePlotOptions, setLinePlotOptions] = React.useState<IMultiCheckboxOption[]>([{ Value: 0, Text: "Minimum", Selected: true }, { Value: 1, Text: "Maximum", Selected: true }, { Value: 2, Text: "Average", Selected: true }]);
 
-    const [trendChannels, setTrendChannels] = React.useState<ITrendChannel[]>([]);
+    const [trendChannels, setTrendChannels] = React.useState<SEBrowser.ITrendChannel[]>([]);
     const [sortField, setSortField] = React.useState<string>('Name');
     const [ascending, setAscending] = React.useState<boolean>(true);
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
+    const [selectedChannels, setSelectedChannels] = React.useState<SEBrowser.ITrendChannel[]>([]);
+
     const momentDateFormat = "MM/DD/YYYY";
 
-    const baseTimeFilter = { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 7, timeWindowUnits: 4 }
+    const baseTimeFilter = { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 12, timeWindowUnits: 3 }
 
     // Page effects
     React.useLayoutEffect(() => {
         props.SetHeight(navRef?.current?.offsetHeight ?? 0);
         let timeHeight = timeRef?.current?.offsetHeight ?? 0;
-        let filtHeight = timeRef?.current?.offsetHeight ?? 0;
+        let filtHeight = filtRef?.current?.offsetHeight ?? 0;
         setTableHeight(timeHeight > filtRef ? timeHeight : filtHeight);
     });
 
@@ -140,8 +129,14 @@ const TrendSearchNavbar = (props: IProps) => {
     }, [sortField, ascending]);
 
     React.useEffect(() => {
-        // Todo: get filter from memory
-        InitFilter();
+        // Todo: get filters from memory
+        setTrendFilter({
+            Phases: makeKeyValuePairs(allPhases),
+            ChannelGroups: makeKeyValuePairs(allChannelGroups),
+            MeterList: [],
+            AssetList: []
+        });
+        setTimeFilter(baseTimeFilter);
     }, []);
 
     function makeKeyValuePairs(allKeys: { ID: number, Name: string, Description: string }[]): IKeyValuePair[] {
@@ -177,18 +172,9 @@ const TrendSearchNavbar = (props: IProps) => {
             dataType: 'json',
             cache: true,
             async: true
-        }).done((data: ITrendChannel[]) => {
+        }).done((data: SEBrowser.ITrendChannel[]) => {
             setTrendChannels(data);
-        });
-    }
-
-    function InitFilter() {
-        setTrendFilter({
-            Phases: makeKeyValuePairs(allPhases),
-            ChannelGroups: makeKeyValuePairs(allChannelGroups),
-            TimeFilter: baseTimeFilter,
-            MeterList: [],
-            AssetList: []
+            setSelectedChannels([]);
         });
     }
 
@@ -290,106 +276,148 @@ const TrendSearchNavbar = (props: IProps) => {
         };
     }
 
-    if (trendFilter === null) return null;
+    if (trendFilter === null || timeFilter === null) return null;
 
+    let navBody;
     if (!props.ShowNav)
-        return (
-            <nav className="navbar navbar-expand-xl navbar-light bg-light">
-                <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
-                    <div className="navbar-nav mr-auto">
-                        <span className="navbar-text">
-                            {trendFilter.TimeFilter.date} {trendFilter.TimeFilter.time} +/- {trendFilter.TimeFilter.windowSize} {formatWindowUnit(trendFilter.TimeFilter.timeWindowUnits)}
-                        </span>
-                    </div>
-                    <div className="navbar-nav ml-auto" >
-                        <button type="button" className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}>Show Channels</button>
-                    </div>
+        navBody = (
+            <>
+                <div className="navbar-nav mr-auto">
+                    <span className="navbar-text">
+                        {timeFilter.date} {timeFilter.time} +/- {timeFilter.windowSize} {formatWindowUnit(timeFilter.timeWindowUnits)}
+                    </span>
                 </div>
-            </nav>
-        );
+                <div className="navbar-nav ml-auto" >
+                    <button type="button" className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}>
+                        <span>{SVGIcons.ArrowDropDown}</span>
+                    </button>
+                </div>
+            </>);
+    else
+        navBody = (
+            <>
+                <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
+                    <li className="nav-item" style={{ width: '30%', paddingRight: 10 }} ref={timeRef}>
+                        <ReportTimeFilter filter={timeFilter} setFilter={setTimeFilter} showQuickSelect={true} />
+                    </li>
+                    <li className="nav-item" style={{ width: '15%', paddingRight: 10 }} ref={filtRef}>
+                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>Channel Filters:</legend>
+                            <label style={{ width: '100%', position: 'relative', float: "left" }}>Phase Filter: </label>
+                            <div className="row">
+                                <div className={"col"}>
+                                    <MultiCheckBoxSelect
+                                        Options={phaseOptions}
+                                        Label={''}
+                                        OnChange={(evt, Options: IMultiCheckboxOption[]) => multiCheckboxUpdate("Phases", Options, phaseOptions, setPhaseOptions)}
+                                    />
+                                </div>
+                            </div>
+                            <label style={{ width: '100%', position: 'relative', float: "left" }}>Channel Group Filter: </label>
+                            <div className="row">
+                                <div className={"col"}>
+                                    <MultiCheckBoxSelect
+                                        Options={channelGroupOptions}
+                                        Label={''}
+                                        OnChange={(evt, Options: IMultiCheckboxOption[]) => multiCheckboxUpdate("ChannelGroups", Options, channelGroupOptions, setChannelGroupOptions)}
+                                    />
+                                </div>
+                            </div>
+                            <label style={{ width: '100%', position: 'relative', float: "left" }}>Lines Plotted: </label>
+                            <div className="row">
+                                <div className={"col"}>
+                                    <MultiCheckBoxSelect
+                                        Options={linePlotOptions}
+                                        Label={''}
+                                        OnChange={(evt, newOptions: IMultiCheckboxOption[]) => {
+                                            let options: IMultiCheckboxOption[] = [];
+                                            linePlotOptions.forEach(item => {
+                                                const selected: boolean = item.Selected != (newOptions.findIndex(option => item.Value === option.Value) > -1);
+                                                options.push({ ...item, Selected: selected });
+                                            })
+                                            setLinePlotOptions(options);
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            <div className={"row"}>
+                                <div className={'col'}>
+                                    <NavbarFilterButton<SystemCenter.Types.DetailedMeter> Type={'Meter'} OnClick={() => setShowFilter('Meter')} Data={trendFilter.MeterList} />
+                                </div>
+                            </div>
+                            <div className={"row"}>
+                                <div className={'col'}>
+                                    <NavbarFilterButton<SystemCenter.Types.DetailedAsset> Type={'Asset'} OnClick={() => setShowFilter('Asset')} Data={trendFilter.AssetList} />
+                                </div>
+                            </div>
+                        </fieldset>
+                    </li>
+
+                    <li className="nav-item" style={{ width: '55%', paddingRight: 10, height: tableHeight }}>
+                        <ConfigurableTable<SEBrowser.ITrendChannel>
+                            defaultColumns={["Name", "Description", "Phase", "ChannelGroup"]}
+                            requiredColumns={["Name", "Phase", "ChannelGroup"]}
+                            cols={[
+                                { key: "Name", field: "Name", label: "Name" },
+                                { key: "Description", field: "Description", label: "Description" },
+                                { key: "AssetKey", field: "AssetKey", label: "Asset Key" },
+                                { key: "AssetName", field: "AssetName", label: "Asset Name" },
+                                { key: "MeterKey", field: "MeterKey", label: "Meter Key" },
+                                { key: "Meter Name", field: "MeterName", label: "Meter Name" },
+                                { key: "Phase", field: "Phase", label: "Phase" },
+                                { key: "ChannelGroup", field: "ChannelGroup", label: "Channel Group" },
+                                { key: "ChannelGroupType", field: "ChannelGroupType", label: "Channel Group Type" }
+                            ]}
+                            data={trendChannels}
+                            sortKey={sortField}
+                            ascending={ascending}
+                            onSort={(d) => {
+                                if (d.colKey === 'undefined')
+                                    return
+                                if (d.colField === sortField)
+                                    setAscending(!ascending);
+                                else
+                                    setSortField(d.colField);
+                            }}
+                            onClick={(item) => {
+                                const newChanList = selectedChannels.filter(chan => chan.ID !== item.row.ID);
+                                if (newChanList.length === selectedChannels.length)
+                                    setSelectedChannels([...selectedChannels, item.row]);
+                                else
+                                    setSelectedChannels(newChanList)
+                            }}
+                            selected={(item) => selectedChannels.findIndex(chan => item.ID === chan.ID) >= 0}
+                            theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                            tbodyStyle={{ display: 'block', overflowY: 'scroll', height: tableHeight - 30 }}
+                            rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
+                        />
+                    </li>
+
+                </ul>
+                <div className="btn-group-vertical float-right">
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}>
+                        <span>{SVGIcons.ArrowDropUp}</span>
+                    </button>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => props.AddNewChart({ TimeFilter: timeFilter, Type: 'Line', Channels: selectedChannels, ID: CreateGuid(), PlotFilter: linePlotOptions })}>
+                        <span>{SVGIcons.DataContainer}</span>
+                    </button>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => { }}>
+                        <span>{SVGIcons.Alert}</span>
+                    </button>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => { }}>
+                        <span>{SVGIcons.Alert}</span>
+                    </button>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => { }}>
+                        <span>{SVGIcons.Alert}</span>
+                    </button>
+                </div>
+            </>);
 
     return (
         <>
-            <nav className="navbar navbar-expand-xl navbar-light bg-light" ref={navRef}>
+            <nav className="navbar navbar-expand-xl navbar-light bg-light" ref={navRef} id={"TrendDataNavbar"}>
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
-                    <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
-                        <li className="nav-item" style={{ width: '30%', paddingRight: 10 }} ref={timeRef}>
-                            <ReportTimeFilter filter={trendFilter.TimeFilter} setFilter={(f) => setTrendFilter({ ...trendFilter, TimeFilter: f})} showQuickSelect={true} />
-                        </li>
-                        <li className="nav-item" style={{ width: '15%', paddingRight: 10 }} ref={filtRef}>
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Channel Filters:</legend>
-                                <label style={{ width: '100%', position: 'relative', float: "left" }}>Phase Filter: </label>
-                                <div className="row">
-                                    <div className={"col"}>
-                                        <MultiCheckBoxSelect
-                                            Options={phaseOptions}
-                                            Label={''}
-                                            OnChange={(evt, Options: IMultiCheckboxOption[]) => multiCheckboxUpdate("Phases", Options, phaseOptions, setPhaseOptions)}
-                                        />
-                                    </div>
-                                </div>
-                                <label style={{ width: '100%', position: 'relative', float: "left" }}>Channel Group Filter: </label>
-                                <div className="row">
-                                    <div className={"col"}>
-                                        <MultiCheckBoxSelect
-                                            Options={channelGroupOptions}
-                                            Label={''}
-                                            OnChange={(evt, Options: IMultiCheckboxOption[]) => multiCheckboxUpdate("ChannelGroups", Options, channelGroupOptions, setChannelGroupOptions)}
-                                        />
-                                    </div>
-                                </div>
-                                <div className={"row"}>
-                                    <div className={'col'}>
-                                        <NavbarFilterButton<SystemCenter.Types.DetailedMeter> Type={'Meter'} OnClick={() => setShowFilter('Meter')} Data={trendFilter.MeterList} />
-                                    </div>
-                                </div>
-                                <div className={"row"}>
-                                    <div className={'col'}>
-                                        <NavbarFilterButton<SystemCenter.Types.DetailedAsset> Type={'Asset'} OnClick={() => setShowFilter('Asset')} Data={trendFilter.AssetList} />
-                                    </div>
-                                </div>
-                            </fieldset>
-                        </li>
-
-                        <li className="nav-item" style={{ width: '55%', paddingRight: 10, height: tableHeight }}>
-                            <ConfigurableTable<ITrendChannel>
-                                defaultColumns={["Name", "Description", "Phase", "ChannelGroup"]}
-                                requiredColumns={["Name", "Phase", "ChannelGroup"]}
-                                cols={[
-                                    { key: "Name", field: "Name", label: "Name" },
-                                    { key: "Description", field: "Description", label: "Description" },
-                                    { key: "AssetKey", field: "AssetKey", label: "Asset Key" },
-                                    { key: "AssetName", field: "AssetName", label: "Asset Name" },
-                                    { key: "MeterKey", field: "MeterKey", label: "Meter Key" },
-                                    { key: "MeterName", field: "MeterName", label: "Meter Name" },
-                                    { key: "Phase", field: "Phase", label: "Phase" },
-                                    { key: "ChannelGroup", field: "ChannelGroup", label: "Channel Group" },
-                                    { key: "ChannelGroupType", field: "ChannelGroupType", label: "Channel Group Type" }
-                                ]}
-                                data={trendChannels}
-                                sortKey={sortField}
-                                ascending={ascending}
-                                onSort={(d) => {
-                                    if (d.colKey === 'undefined')
-                                        return
-                                    if (d.colField === sortField)
-                                        setAscending(!ascending);
-                                    else
-                                        setSortField(d.colField);
-                                }}
-                                onClick={(item) => { }}
-                                selected={(item) => false}
-                                theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                                tbodyStyle={{ display: 'block', overflowY: 'scroll', height: tableHeight - 30 }}
-                                rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
-                            />
-                        </li>
-                   
-                    </ul>
-                    <div className="btn-group-vertical float-right">
-                        <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}>Hide Channels</button>
-                    </div>
+                    {navBody}
                 </div>
             </nav>
             <DefaultSelects.Meter
