@@ -58,13 +58,6 @@ export namespace Redux {
     }
 
 
-    interface NoteState {
-        Status: Application.Types.Status,
-        Data: OpenXDA.Types.Note[],
-        SortField: keyof OpenXDA.Types.Note,
-        Ascending: boolean,
-        ParentID: (number | null),
-    }
 
     interface State<T> {
         Status: SEBrowser.Status,
