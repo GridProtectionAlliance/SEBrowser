@@ -80,6 +80,9 @@
   <ItemGroup>
     <!-- .NET References -->
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="openXDA.APIAuthentication">
+      <HintPath>..\Dependencies\OpenXDA\openXDA.APIAuthentication.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -567,6 +570,8 @@
     <None Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisReport.tsx" />
     <Content Include="Scripts\TSX\Components\TrendData\TrendData.tsx" />
     <Content Include="Scripts\TSX\Components\TrendData\TrendDataNavbar.tsx" />
+    <Content Include="Scripts\TSX\Components\TrendData\ChartContainer\TrendPlot.tsx" />
+    <Content Include="Scripts\TSX\Components\TrendData\ChartContainer\LineGraph.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\hooks.ts" />
     <Content Include="Scripts\TSX\Settings.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Store.ts" />
