@@ -57,8 +57,6 @@ export namespace Redux {
         LocationNote: IGenericSliceState<XDA.Types.Note>,
     }
 
-
-
     interface State<T> {
         Status: SEBrowser.Status,
         Data: T[],
@@ -80,7 +78,6 @@ export namespace Redux {
         ActiveFetchID: string[]
     }
 
- 
     interface SettingsState {
         eventSearch: IEventSearchSettings,
         timeZone: string

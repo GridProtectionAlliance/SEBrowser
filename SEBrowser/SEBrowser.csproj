@@ -534,7 +534,6 @@
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchTypeFilter.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\SettingsSlice.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventNoteSlice.ts" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\HECCO\InterruptionReport.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPQI.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
