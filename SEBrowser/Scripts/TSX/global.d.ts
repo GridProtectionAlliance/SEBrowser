@@ -49,9 +49,12 @@ export namespace Redux {
         Asset: IGenericSliceState<SystemCenter.Types.DetailedAsset>,
         AssetGroup: IGenericSliceState<XDA.Types.AssetGroup>,
         Location: IGenericSliceState<SystemCenter.Types.DetailedLocation>,
-        EventNote: NoteState,
         Settings: SettingsState,
-        EventType: IGenericSliceState<SEBrowser.EventType>
+        EventType: IGenericSliceState<SEBrowser.EventType>,
+        EventNote: IGenericSliceState<XDA.Types.Note>,
+        MeterNote: IGenericSliceState<XDA.Types.Note>,
+        AssetNote: IGenericSliceState<XDA.Types.Note>,
+        LocationNote: IGenericSliceState<XDA.Types.Note>,
     }
 
     interface State<T> {
@@ -75,22 +78,15 @@ export namespace Redux {
         ActiveFetchID: string[]
     }
 
-    interface NoteState {
-        Status: Application.Types.Status,
-        Data: SEBrowser.EventNote[],
-        ParentID: (number[] | null),
-        SortField: keyof XDA.Types.Note,
-        Ascending: boolean,
-    }
-
     interface SettingsState {
         eventSearch: IEventSearchSettings,
-        TimeZoneOffset: number
+        timeZone: string
     }
 
     interface IEventSearchSettings {
         NumberResults: number,
-        WidgetCategories: SEBrowser.IWidgetCategory[]
+        WidgetCategories: SEBrowser.IWidgetCategory[],
+        AggregateMagDur: boolean
     }
 }
 export namespace SEBrowser {

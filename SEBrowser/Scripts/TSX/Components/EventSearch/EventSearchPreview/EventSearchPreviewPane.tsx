@@ -66,17 +66,22 @@ export default function EventPreviewPane(props: IProps) {
     const [widgets, setWidgets] = React.useState<SEBrowser.IWidgetView[]>([]);
     const event: any = useAppSelector((state: Redux.StoreState) => SelectEventSearchByID(state,props.EventID));
     React.useEffect(() => {
-        GetSettings();
+        const h = GetSettings();
+        return () => { if (h != null && h.abort != null) h.abort(); }
     }, []);
 
     React.useEffect(() => {
-        loadWidgetCategories();
-        console.log(tab);
-        console.log(widgets);
+        const h = loadWidgetCategories();
+        return () => { if (h != null && h.abort != null) h.abort(); }
     }, [tab])
-    
+
+    React.useEffect(() => {
+        if (settings.length > 0 && settings.findIndex(s => s.ID.toString() == tab) == -1)
+            setTab(settings[0].ID.toString());
+    }, [tab, settings])
+
     function GetSettings() {
-        $.ajax({
+        return $.ajax({
             type: "GET",
             url: `${homePath}api/SEBrowser/GetEventPreviewPaneSettings`,
             contentType: "application/json; charset=utf-8",
@@ -105,54 +110,54 @@ export default function EventPreviewPane(props: IProps) {
                 <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={categories.map(t => {
                     return { Id: t.ID.toString(), Label: t.Name }
                 }) } />
+                <div style={{ height: props.Height - 37.5, maxHeight: props.Height - 37.5, overflowY: 'scroll', overflowX: 'hidden' }}>
+                    {widgets.filter(widget => widget.Enabled).map((widget, index) => {
+                        if (widget.Name === 'EventSearchOpenSEE')
+                            return <EventSearchOpenSEE key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'pqi')
+                            return <EventSearchPQI key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'EventSearchFaultSegments')
+                            return <EventSearchFaultSegments key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'EventSearchAssetVoltageDisturbances')
+                            return <EventSearchAssetVoltageDisturbances key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'EventSearchCorrelatedSags')
+                            return <EventSearchCorrelatedSags key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'TVAESRIMap')
+                            return <TVAESRIMap key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'TVAFaultInfo')
+                            return <TVAFaultInfo key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'LineParameters')
+                            return <LineParameters key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'TVALightning')
+                            return <TVALightningChart key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'TVASIDA')
+                            return <TVASIDA key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'TVASOE')
+                            return <TVASOE key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'TVALSC')
+                            return <TVALSC key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'TVAPQWeb')
+                            return <TVAPQWeb key={index} eventID={props.EventID} startTime={event.FileStartTime} />;
 
-                {widgets.filter(widget => widget.Enabled).map((widget, index) => {
-                    if (widget.Name === 'EventSearchOpenSEE')
-                        return <EventSearchOpenSEE key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'pqi')
-                        return <EventSearchPQI key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'EventSearchFaultSegments')
-                        return <EventSearchFaultSegments key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'EventSearchAssetVoltageDisturbances')
-                        return <EventSearchAssetVoltageDisturbances key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'EventSearchCorrelatedSags')
-                        return <EventSearchCorrelatedSags key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'TVAESRIMap')
-                        return <TVAESRIMap key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'TVAFaultInfo')
-                        return <TVAFaultInfo key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'LineParameters')
-                        return <LineParameters key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'TVALightning')
-                        return <TVALightningChart key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'TVASIDA')
-                        return <TVASIDA key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'TVASOE')
-                        return <TVASOE key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'TVALSC')
-                        return <TVALSC key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'TVAPQWeb')
-                        return <TVAPQWeb key={index} eventID={props.EventID} startTime={event.FileStartTime} />;
+                        else if (widget.Name === 'TVAStructureInfo')
+                            return <StructureInfo key={index} eventID={props.EventID} />;
 
-                    else if (widget.Name === 'TVAStructureInfo')
-                        return <StructureInfo key={index} eventID={props.EventID} />;
-
-                    else if (widget.Name === 'EventSearchFileInfo')
-                        return <EventSearchFileInfo key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'EventSearchHistory')
-                        return <EventSearchHistory key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'EventSearchRelayPerformance')
-                        return <EventSearchRelayPerformance key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'EventSearchBreakerPerformance')
-                        return <EventSearchBreakerPerformance key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'EventSearchCapBankAnalyticOverview')
-                        return <EventSearchCapBankAnalyticOverview key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'EventSearchNoteWindow')
-                        return <EventSearchNoteWindow key={index} eventID={props.EventID} />;
-                    else if (widget.Name === 'HECCOIR')
-                        return <InterruptionReport key={index} eventID={props.EventID} />;
-                })}
-
+                        else if (widget.Name === 'EventSearchFileInfo')
+                            return <EventSearchFileInfo key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'EventSearchHistory')
+                            return <EventSearchHistory key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'EventSearchRelayPerformance')
+                            return <EventSearchRelayPerformance key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'EventSearchBreakerPerformance')
+                            return <EventSearchBreakerPerformance key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'EventSearchCapBankAnalyticOverview')
+                            return <EventSearchCapBankAnalyticOverview key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'EventSearchNoteWindow')
+                            return <EventSearchNoteWindow key={index} eventID={props.EventID} />;
+                        else if (widget.Name === 'HECCOIR')
+                            return <InterruptionReport key={index} eventID={props.EventID} />;
+                    })}
+                </div>
         </>)
 }
 

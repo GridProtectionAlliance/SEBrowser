@@ -23,7 +23,7 @@
 //
 //******************************************************************************************************
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { Redux, SEBrowser } from '../global';
+import { Redux } from '../global';
 
 declare var homePath: string;
 
@@ -38,9 +38,10 @@ const settingsSlice = createSlice({
     initialState: {
         eventSearch: {
             NumberResults: 100,
-            WidgetCategories: []
-            },
-        TimeZoneOffset: 0,
+            WidgetCategories: [],
+            AggregateMagDur: true,
+        },
+        timeZone: 'UTC',
     } as Redux.SettingsState,
 
     reducers: {
@@ -58,9 +59,9 @@ const settingsSlice = createSlice({
                 state.eventSearch = preserved.eventSearch;
             }
             else
-                state.eventSearch = { NumberResults: 100, WidgetCategories: [] };
+                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true };
 
-            state.TimeZoneOffset = action.payload[0];
+            state.timeZone = action.payload[0];
             state.eventSearch.WidgetCategories = action.payload[1];
         });    
         
@@ -71,8 +72,8 @@ const settingsSlice = createSlice({
                 state.eventSearch = preserved.eventSearch;
             }
             else
-                state.eventSearch = { NumberResults: 100, WidgetCategories: [] };
-            state.TimeZoneOffset = 0;
+                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true };
+            state.timeZone = 'UTC';
         });
     }
     
@@ -127,5 +128,5 @@ function loadWidgetCategories() {
 export const SettingsReducer = settingsSlice.reducer
 export const { SetEventSearch } = settingsSlice.actions
 export const SelectEventSearchSettings = (state: Redux.StoreState) => state.Settings.eventSearch
-export const SelectTimeZoneOffset = (state: Redux.StoreState) => state.Settings.TimeZoneOffset
+export const SelectTimeZone = (state: Redux.StoreState) => state.Settings.timeZone
 export const SelectWidgetCategories = (state: Redux.StoreState) => state.Settings.eventSearch.WidgetCategories

@@ -19,7 +19,7 @@
     <Use64BitIISExpress />
     <IISExpressSSLPort>
     </IISExpressSSLPort>
-    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
+    <IISExpressAnonymousAuthentication>disabled</IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>enabled</IISExpressWindowsAuthentication>
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
@@ -481,7 +481,6 @@
     <None Include="Scripts\TSX\Components\BreakerReport\BreakerReportNavbar.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearch.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchList.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchListedEventsNoteWindow.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchNavbar.tsx" />
     <None Include="Scripts\TSX\Components\MeterActivity.tsx" />
     <None Include="Scripts\TSX\Components\SEDashboardNavbar.tsx" />
@@ -527,7 +526,6 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchBreakerPerformance.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchCapBankAnalyticOverview.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchCorrelatedSags.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchEsriMap.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchFileInfo.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchNoteWindow.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchOpenSEE.tsx" />
@@ -536,7 +534,6 @@
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchTypeFilter.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\SettingsSlice.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventNoteSlice.ts" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\HECCO\InterruptionReport.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPQI.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />

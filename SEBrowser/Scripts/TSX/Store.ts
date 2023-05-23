@@ -24,7 +24,6 @@
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { GenericSlice } from '@gpa-gemstone/react-interactive';
 import { configureStore } from '@reduxjs/toolkit';
-import NoteSlice from './Components/EventSearch/EventNoteSlice';
 import EventSearchReducer from './Components/EventSearch/EventSearchSlice';
 import { SettingsReducer } from './Components/SettingsSlice';
 import { SEBrowser,  } from './global';
@@ -43,7 +42,11 @@ export const AssetSlice = new GenericSlice<SystemCenter.Types.DetailedAsset>("As
 export const LocationSlice = new GenericSlice<SystemCenter.Types.DetailedLocation>("Location", `${homePath}api/OpenXDA/Location`, "LocationKey", true);
 export const EventTypeSlice = new GenericSlice<SEBrowser.EventType>("EventType", `${homePath}api/OpenXDA/EventType`, "Category", true);
 
-export const EventNoteSlice = new NoteSlice();
+export const EventNoteSlice = new GenericSlice<OpenXDA.Types.Note>("EventNote", `${homePath}api/OpenXDA/Note`, "Timestamp", true);
+
+export const MeterNoteSlice = new GenericSlice<OpenXDA.Types.Note>("MeterNote", `${homePath}api/OpenXDA/Note`, "Timestamp", true);
+export const AssetNoteSlice = new GenericSlice<OpenXDA.Types.Note>("AssetNote", `${homePath}api/OpenXDA/Note`, "Timestamp", true);
+export const LocationNoteSlice = new GenericSlice<OpenXDA.Types.Note>("LocationNote", `${homePath}api/OpenXDA/Note`, "Timestamp", true);
 
 const reducer = {
     EventSearch: EventSearchReducer,
@@ -52,9 +55,12 @@ const reducer = {
     Asset: AssetSlice.Reducer,
     AssetGroup: AssetGroupSlice.Reducer,
     Location: LocationSlice.Reducer,
-    EventNote: EventNoteSlice.Reducer,
     Settings: SettingsReducer,
-    EventType: EventTypeSlice.Reducer
+    EventType: EventTypeSlice.Reducer,
+    EventNote: EventNoteSlice.Reducer,
+    MeterNote: MeterNoteSlice.Reducer,
+    AssetNote: AssetNoteSlice.Reducer,
+    LocationNote: LocationNoteSlice.Reducer,
 }
 
 const store = configureStore({ reducer });

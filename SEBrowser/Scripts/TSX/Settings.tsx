@@ -20,13 +20,9 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-
-import { Provider } from 'react-redux';
-import store from './Store';
-
 import * as React from 'react';
 import { Modal } from '@gpa-gemstone/react-interactive';
-import { Input } from '@gpa-gemstone/react-forms';
+import { CheckBox, Input } from '@gpa-gemstone/react-forms';
 import { useAppDispatch, useAppSelector } from './hooks';
 import { SelectEventSearchSettings, SetEventSearch } from './Components/SettingsSlice';
 import { Redux } from './global';
@@ -66,9 +62,14 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>Event Search Settings:</legend>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                    <Input<Redux.IEventSearchSettings> Record={evtSearch} Field='NumberResults' Setter={setEvtSearch} Valid={() => true } Label='Number of Results:' Type='integer' />
+                                        <Input<Redux.IEventSearchSettings> Record={evtSearch} Field='NumberResults' Setter={setEvtSearch} Valid={() => true } Label='Number of Results' Type='integer' />
                                     </div>
+                            </div>
+                            <div className={"row"}>
+                                <div className={'col'}>
+                                    <CheckBox<Redux.IEventSearchSettings> Record={evtSearch} Field='AggregateMagDur' Setter={setEvtSearch} Label='Aggregate Events on Mag-Dur chart' />
                                 </div>
+                            </div>
                             </fieldset>
                     </div>
                 </div>

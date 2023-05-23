@@ -23,9 +23,10 @@
 import * as React from 'react';
 import { SEBrowser } from '../global';
 import moment from 'moment';
+import momentTZ from 'moment-timezone';
 import { TimePicker, DatePicker, Select, Input } from '@gpa-gemstone/react-forms'
 import { useSelector } from 'react-redux';
-import { SelectTimeZoneOffset } from './SettingsSlice';
+import { SelectTimeZone } from './SettingsSlice';
 
 interface IProps {
     filter: SEBrowser.IReportTimeFilter;
@@ -33,7 +34,7 @@ interface IProps {
     showQuickSelect: boolean
 }
 
-interface IQuickSelect { label: string, createFilter: (offset: number) =>  SEBrowser.IReportTimeFilter }
+interface IQuickSelect { label: string, createFilter: (timeZone: string) =>  SEBrowser.IReportTimeFilter }
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS"; // Also is the gemstone format
@@ -41,7 +42,8 @@ const momentTimeFormat = "HH:mm:ss.SSS"; // Also is the gemstone format
 
 const AvailableQuickSelects: IQuickSelect[] = [
     {
-        label: 'This Hour', createFilter: (offset) => {
+        label: 'This Hour', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('hour').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
             const t = moment.utc().add(offset, 'hour').startOf('hour');
             t.add(30, 'minutes');
             return {
@@ -53,7 +55,8 @@ const AvailableQuickSelects: IQuickSelect[] = [
         }
     },
     {
-        label: 'Last Hour', createFilter: (offset) => {
+        label: 'Last Hour', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('hour').subtract(1, 'hour').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
             const t = moment.utc().add(offset, 'hour').startOf('hour').subtract(1, 'hour');
             t.add(30, 'minutes')
             return {
@@ -65,9 +68,10 @@ const AvailableQuickSelects: IQuickSelect[] = [
         }
     },
     {
-        label: 'Last 60 Minutes', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('minute').add(1, 'minute');
-            t.subtract(30, 'minutes');
+        label: 'Last 60 Minutes', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('minute').subtract(1, 'hour').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
+            const t = moment.utc().add(offset, 'hour').startOf('minute').subtract(1, 'hour');
+            t.add(30, 'minutes');
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
@@ -77,7 +81,8 @@ const AvailableQuickSelects: IQuickSelect[] = [
         }
     },
     {
-        label: 'Today', createFilter: (offset) => {
+        label: 'Today', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
             const t = moment.utc().add(offset, 'hour').startOf('day');
             t.add(12, 'hours');
             return {
@@ -89,8 +94,9 @@ const AvailableQuickSelects: IQuickSelect[] = [
         }
     },
     {
-        label: 'Yesterday', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('day').subtract(1,'days');
+        label: 'Yesterday', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('day').subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
+            const t = moment.utc().add(offset, 'hour').startOf('day').subtract(1, 'days');
             t.add(12, 'hours');
             return {
                 date: t.format(momentDateFormat),
@@ -98,11 +104,13 @@ const AvailableQuickSelects: IQuickSelect[] = [
                 timeWindowUnits: 3,
                 windowSize: 12
             }
-        } },
+        }
+    },
     {
-        label: 'Last 24 Hours', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('hour').add(1, 'hour');
-            t.subtract(12, 'hours');
+        label: 'Last 24 Hours', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('hour').subtract(24, 'hours').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
+            const t = moment.utc().add(offset, 'hour').subtract(24, 'hours');
+            t.add(12, 'hours');
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
@@ -112,56 +120,48 @@ const AvailableQuickSelects: IQuickSelect[] = [
         }
     },
     {
-        label: 'This Week', createFilter: (offset) => {
+        label: 'This Week', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('week').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
             const t = moment.utc().add(offset, 'hour').startOf('week');
-            t.add(3.5*24, 'hours');
+            t.add(3.5 * 24, 'hours');
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
                 timeWindowUnits: 3,
-                windowSize: 3.5*24
+                windowSize: 3.5 * 24
             }
         }
     },
     {
-        label: 'Last Week', createFilter: (offset) => {
+        label: 'Last Week', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('week').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
             const t = moment.utc().add(offset, 'hour').startOf('week');
-            t.subtract(3.5*24, 'hours');
+            t.subtract(3.5 * 24, 'hours');
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
                 timeWindowUnits: 3,
-                windowSize: 3.5*24
+                windowSize: 3.5 * 24
             }
         }
     },
     {
-        label: 'Last 7 Days', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('day').add(1, 'day');
-            t.subtract(3.5*24, 'hours');
+        label: 'Last 7 Days', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
+            const t = moment.utc().add(offset, 'hour').startOf('day');
+            t.subtract(3.5 * 24, 'hours');
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
                 timeWindowUnits: 3,
-                windowSize: 3.5*24
+                windowSize: 3.5 * 24
             }
         }
     },
     {
-        label: 'This Month', createFilter: (offset) => {
+        label: 'This Month', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('month').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
             const t = moment.utc().add(offset, 'hour').startOf('month');
-            t.add(12 * t.daysInMonth(), 'hours');
-            return {
-                date: t.format(momentDateFormat),
-                time: t.format(momentTimeFormat),
-                timeWindowUnits: 3,
-                windowSize: (t.daysInMonth() * 24)/2.0
-            }
-        }
-    },
-    {
-        label: 'Last Month', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('month').subtract(1,'month');
             t.add(12 * t.daysInMonth(), 'hours');
             return {
                 date: t.format(momentDateFormat),
@@ -172,8 +172,22 @@ const AvailableQuickSelects: IQuickSelect[] = [
         }
     },
     {
-        label: 'Last 30 Days', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('day').add(1, 'day');
+        label: 'Last Month', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('month').subtract(1, 'month').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
+            const t = moment.utc().add(offset, 'hour').startOf('month').subtract(1, 'month');
+            t.add(12 * t.daysInMonth(), 'hours');
+            return {
+                date: t.format(momentDateFormat),
+                time: t.format(momentTimeFormat),
+                timeWindowUnits: 3,
+                windowSize: (t.daysInMonth() * 24) / 2.0
+            }
+        }
+    },
+    {
+        label: 'Last 30 Days', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
+            const t = moment.utc().add(offset, 'hour').startOf('day');
             t.subtract(15, 'days');
             return {
                 date: t.format(momentDateFormat),
@@ -184,9 +198,11 @@ const AvailableQuickSelects: IQuickSelect[] = [
         }
     },
     {
-        label: 'This Quarter', createFilter: (offset) => {
+        label: 'This Quarter', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('quarter').add(1, 'quarter').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
+            const offset_tend = momentTZ.tz(moment.utc().startOf('quarter').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
             const t = moment.utc().add(offset, 'hour').startOf('quarter');
-            const tend = moment.utc().add(offset, 'hour').startOf('quarter');
+            const tend = moment.utc().add(offset_tend, 'hour').startOf('quarter');
             tend.add(1, 'quarter')
             const h = moment.duration(tend.diff(t)).asDays();
             t.add(h * 0.5, 'day');
@@ -199,12 +215,14 @@ const AvailableQuickSelects: IQuickSelect[] = [
         }
     },
     {
-        label: 'Last Quarter', createFilter: (offset) => {
+        label: 'Last Quarter', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('quarter').subtract(1, 'quarter').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
+            const offset_tend = momentTZ.tz(moment.utc().startOf('quarter').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
             const t = moment.utc().add(offset, 'hour').startOf('quarter');
-            const tend = moment.utc().add(offset, 'hour').startOf('quarter');
+            const tend = moment.utc().add(offset_tend, 'hour').startOf('quarter');
             t.subtract(1, 'quarter');
             const h = moment.duration(tend.diff(t)).asDays();
-            t.add(h * 0.5,'day');
+            t.add(h * 0.5, 'day');
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
@@ -214,8 +232,9 @@ const AvailableQuickSelects: IQuickSelect[] = [
         }
     },
     {
-        label: 'Last 90 Days', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('day').add(1, 'day');
+        label: 'Last 90 Days', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('day').subtract(45, 'days').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
+            const t = moment.utc().add(offset, 'minute').startOf('day');
             t.subtract(45, 'days');
             return {
                 date: t.format(momentDateFormat),
@@ -223,11 +242,12 @@ const AvailableQuickSelects: IQuickSelect[] = [
                 timeWindowUnits: 4,
                 windowSize: 45
             }
-        }       
-},
+        }
+    },
     {
-        label: 'This Year', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('year');
+        label: 'This Year', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('year').add(6, 'month').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
+            const t = moment.utc().add(offset, 'minute').startOf('year');
             t.add(6, 'month');
             return {
                 date: t.format(momentDateFormat),
@@ -238,9 +258,11 @@ const AvailableQuickSelects: IQuickSelect[] = [
         }
     },
     {
-        label: 'Last Year', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('year').subtract(1,'year');
+        label: 'Last Year', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('year').subtract(1, 'year').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
+            const t = moment.utc().add(offset, 'minute').startOf('year').subtract(1, 'year');
             t.add(6, 'month');
+
             return {
                 date: t.format(momentDateFormat),
                 time: t.format(momentTimeFormat),
@@ -250,8 +272,9 @@ const AvailableQuickSelects: IQuickSelect[] = [
         }
     },
     {
-        label: 'Last 365 Days', createFilter: (offset) => {
-            const t = moment.utc().add(offset, 'hour').startOf('day').add(1, 'day');
+        label: 'Last 365 Days', createFilter: (tz) => {
+            const offset = momentTZ.tz(moment.utc().startOf('day').subtract(182.5, 'days').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
+            const t = moment.utc().add(offset, 'minute').startOf('day');
             t.subtract(182.5, 'days');
             return {
                 date: t.format(momentDateFormat),
@@ -264,9 +287,10 @@ const AvailableQuickSelects: IQuickSelect[] = [
 ];
 
 
+
 const ReportTimeFilter = (props: IProps) => {
     const [filter, setFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.filter)
-    const timeZoneOffset = useSelector(SelectTimeZoneOffset);
+    const timeZone = useSelector(SelectTimeZone);
     const [activeQP, setActiveQP] = React.useState<number>(-1);
 
     React.useEffect(() => {
@@ -351,7 +375,7 @@ const ReportTimeFilter = (props: IProps) => {
                                     <ul className="list-group" key={i}>
                                         <li key={i} style={{ cursor: 'pointer' }}
                                             onClick={() => {
-                                                props.setFilter(AvailableQuickSelects[i].createFilter(timeZoneOffset));
+                                                props.setFilter(AvailableQuickSelects[i].createFilter(timeZone));
                                                 setActiveQP(i);
                                             }}
                                             className={"item badge badge-" + (i == activeQP? "primary" : "secondary")}>{AvailableQuickSelects[i].label}
@@ -360,7 +384,7 @@ const ReportTimeFilter = (props: IProps) => {
                                             <li key={i + 1} style={{ marginTop: 3, cursor: 'pointer' }}
                                                 className={"item badge badge-" + (i+1 == activeQP ? "primary" : "secondary")}
                                                 onClick={() => {
-                                                    props.setFilter(AvailableQuickSelects[i + 1].createFilter(timeZoneOffset));
+                                                    props.setFilter(AvailableQuickSelects[i + 1].createFilter(timeZone));
                                                     setActiveQP(i+1)
                                                 }}>
                                             {AvailableQuickSelects[i+ 1].label}
@@ -370,7 +394,7 @@ const ReportTimeFilter = (props: IProps) => {
                                                 style={{ marginTop: 3, cursor: 'pointer' }}
                                                 className={"item badge badge-" + (i+2 == activeQP ? "primary" : "secondary")}
                                                 onClick={() => {
-                                                    props.setFilter(AvailableQuickSelects[i + 2].createFilter(timeZoneOffset));
+                                                    props.setFilter(AvailableQuickSelects[i + 2].createFilter(timeZone));
                                                     setActiveQP(i + 2);
                                                 }}>
                                             {AvailableQuickSelects[i+ 2].label}
