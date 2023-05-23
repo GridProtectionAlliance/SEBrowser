@@ -27,7 +27,6 @@ import { SEBrowser } from '../../../global';
 import { AssetNoteSlice, EventNoteSlice, LocationNoteSlice, MeterNoteSlice } from '../../../Store';
 import { OpenXDA } from '@gpa-gemstone/application-typings';
 import { Note } from '@gpa-gemstone/common-pages';
-import { NoteType } from '../EventNoteSlice';
 import { MultiCheckBoxSelect, Select } from '@gpa-gemstone/react-forms';
 
 interface ISetting {

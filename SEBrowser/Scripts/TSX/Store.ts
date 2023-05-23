@@ -24,7 +24,6 @@
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { GenericSlice } from '@gpa-gemstone/react-interactive';
 import { configureStore } from '@reduxjs/toolkit';
-import NoteSlice from './Components/EventSearch/EventNoteSlice';
 import EventSearchReducer from './Components/EventSearch/EventSearchSlice';
 import { SettingsReducer } from './Components/SettingsSlice';
 import { SEBrowser,  } from './global';
