@@ -178,7 +178,13 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
                 <div className='col'>
                     <MultiCheckBoxSelect Label={'Categories'}
                         Options={noteTags.map(t => ({ Selected: selectedTags.find(i => i == t.ID) != null, Text: t.Name, Value: t.ID }))}
-                        OnChange={(evt, options) => { setSelectedTags(options.map(t => t.Value)); }}
+                        OnChange={(evt, changed) => {
+                            setSelectedTags((st) => {
+                                const u = st.filter((t) => changed.findIndex(c => c.Value == t) == -1);
+                                u.push(...changed.filter(t => !t.Selected).map(t => t.Value));
+                                return u;
+                            })
+                        }}
                     />
                     <Select<OpenXDA.Types.NoteType>
                         Record={noteType}
@@ -188,7 +194,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
                         Field={'ID'} />
                 </div>
             </div>
-            <Note
+            {selectedTags.length > 0?  < Note
                 MaxHeight={window.innerHeight - 215}
                 ReferenceTableID={id}
                 NoteApplications={[noteApp]}
@@ -200,7 +206,9 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
                 AllowEdit={true}
                 AllowRemove={false}
                 ShowCard={false}
-            />
+            /> : <div className={'alert alert-warning'}>
+                    <p>At least 1 Category needs to be selected.</p>
+            </div>}
         </div>
     );
 
