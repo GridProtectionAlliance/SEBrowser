@@ -174,6 +174,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
     return (
         <div className='card'>
             <div className='card-header'>Notes</div>
+            <div className='card-body'>
             <div className='row'>
                 <div className='col'>
                     <MultiCheckBoxSelect Label={'Categories'}
@@ -209,7 +210,8 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
                 Filter={(n) => selectedTags.find(i => i == n.NoteTagID) != null}
             /> : <div className={'alert alert-warning'}>
                     <p>At least 1 Category needs to be selected.</p>
-            </div>}
+                </div>}
+            </div>
         </div>
     );
 
