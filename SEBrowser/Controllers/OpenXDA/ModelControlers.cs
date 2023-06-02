@@ -40,7 +40,8 @@ namespace SEBrowser.Controllers.OpenXDA
     [RoutePrefix("api/openXDA/AssetGroup")]
     public class OpenXDAAssetGroupController : ModelController<AssetGroupView> { }
 
-    [RootQueryRestriction("ShowInFilter = {0}", true)]
+    [RootQueryRestriction("ShowInFilter = 1")]
+    [UseEscapedName, TableName("EventType")]
     public class SEbrowserEventType : EventType { }
     [RoutePrefix("api/openXDA/EventType")]
     public class EventTypeController : ModelController<SEbrowserEventType> { }
