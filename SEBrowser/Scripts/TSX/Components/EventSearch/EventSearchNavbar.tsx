@@ -627,7 +627,7 @@ const EventSearchNavbar = (props: IProps) => {
                             { key: 'Assets', field: 'Assets', label: 'Assets', headerStyle: { width: '10%' }, rowStyle: { width: '10%' } },
                             { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
                         ]}
-                        Title={"Filter by Location"}
+                        Title={"Filter by Station"}
                     GetEnum={getEnum}
                     GetAddlFields={() => { return () => { } }} />
                 <DefaultSelects.AssetGroup
