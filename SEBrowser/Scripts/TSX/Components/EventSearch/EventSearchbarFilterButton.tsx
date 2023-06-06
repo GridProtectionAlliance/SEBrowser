@@ -110,7 +110,7 @@ function EventSearchFilterButton<T extends S>(props: IProps<T>) {
         </>
     );
 }
-function typeToString(Type: string): string {
+function typeToString(Type: 'Meter' | 'Asset' | 'AssetGroup' | 'Station'): string {
     switch (Type) {
         case 'Meter':
             return 'Meter';
@@ -124,6 +124,7 @@ function typeToString(Type: string): string {
             return Type;
     }
 }
+
 
 
 export default EventSearchFilterButton;
