@@ -545,7 +545,7 @@ const EventSearchNavbar = (props: IProps) => {
                                 </div>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <EventSearchFilterButton<OpenXDA.Types.AssetGroup> Type={'AssetGroup'} OnClick={() => setFilter('AssetGroup')} Data={assetGroupList} />
+                                        <EventSearchFilterButton<OpenXDA.Types.AssetGroup> Type={'AssetGroup'}  OnClick={() => setFilter('AssetGroup')} Data={assetGroupList} />
                                     </div>
                                 </div>
                                 <div className={"row"}>
