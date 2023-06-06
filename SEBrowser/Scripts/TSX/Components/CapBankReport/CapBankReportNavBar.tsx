@@ -318,7 +318,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                     { Label: 'Abnormal Health', Values: [2] },
                                     { Label: 'Failed Opening', Values: [3, 4] },
                                     { Label: 'Failed Closing', Values: [10, 5] },
-                                    { Label: 'Restrike/ Reignition', Values: [4, 5] },
+                                    { Label: 'Restrike/Reignition', Values: [4, 5] },
                                     { Label: 'Abnormal PreInsertion Switching', Values: [8] },
                                     { Label: 'Missing Pole', Values: [11] },
                                     { Label: 'Shorted Units', Values: [20] },
@@ -352,7 +352,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                 ]} />
                         </div>
                         <div style={{ width: '15%', paddingRight: 10 }}>
-                            <CBEventFilter activeFilter={this.props.HealthFilt} showAll={true} Label={'CapBank Health'} setter={(result) => {
+                            <CBEventFilter activeFilter={this.props.HealthFilt} showAll={true} Label={'Capacitor Bank Health'} setter={(result) => {
                                 var object = _.clone(this.props) as CapBankReportNavBarProps;
                                 object.HealthFilt = result;
                                 this.props.stateSetter({ searchBarProps: object });
