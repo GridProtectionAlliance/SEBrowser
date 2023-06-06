@@ -221,7 +221,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                                 {this.state.subStations.map(item => <option key={item.LocationID} value={item.LocationID} > {item.AssetName} </option>)}
                                         </select>
                                     </div>
-                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Cap Bank Group: </label>
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Capacitor Bank Group: </label>
                                     <div className="form-group" style={{ height: 30 }}>
                                             <select ref="Breaker" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
                                                 this.setCapBank(parseInt((e.target as any).value.toString()));
