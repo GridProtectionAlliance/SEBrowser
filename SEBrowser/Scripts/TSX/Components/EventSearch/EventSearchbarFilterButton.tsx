@@ -94,7 +94,7 @@ function EventSearchFilterButton<T extends S>(props: IProps<T>) {
     return (
         <>
             <button className={"btn btn-block btn-sm btn-" + (props.Data.length > 0 ? "warning" : "primary")} style={{ marginBottom: 5 }} onClick={(evt) => { evt.preventDefault(); props.OnClick(); }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-                {props.Type} {props.Data.length > 0 ? ('(' + props.Data.length + ')') : ''}
+                {typeToString(props.Type)} {props.Data.length > 0 ? ('(' + props.Data.length + ')') : ''}
             </button>
             <div style={{ width: window.innerWidth / 3, display: hover ? 'block' : 'none', position: 'absolute', backgroundColor: '#f1f1f1', boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)', zIndex: 1, right: 0 }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
                 <table className='table'>
@@ -110,5 +110,20 @@ function EventSearchFilterButton<T extends S>(props: IProps<T>) {
         </>
     );
 }
+function typeToString(Type: string): string {
+    switch (Type) {
+        case 'Meter':
+            return 'Meter';
+        case 'Asset':
+            return 'Asset';
+        case 'AssetGroup':
+            return 'Asset Group';
+        case 'Station':
+            return 'Substation';
+        default:
+            return Type;
+    }
+}
+
 
 export default EventSearchFilterButton;
