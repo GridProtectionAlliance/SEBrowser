@@ -177,7 +177,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
             <div className='card-body'>
             <div className='row'>
                 <div className='col'>
-                    <MultiCheckBoxSelect Label={'Types'}
+                    <MultiCheckBoxSelect Label={'Types:'}
                         Options={noteTags.map(t => ({ Selected: selectedTags.find(i => i == t.ID) != null, Text: t.Name, Value: t.ID }))}
                         OnChange={(evt, changed) => {
                             setSelectedTags((st) => {
@@ -189,7 +189,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
                     />
                     <Select<OpenXDA.Types.NoteType>
                         Record={noteType}
-                        Label={'Record'}
+                        Label={'Record:'}
                         Options={noteTypes.map(t => ({ Label: t.Name, Value: t.ID.toString() }))}
                         Setter={(r) => setNoteType(noteTypes.find((t) => t.ID == r.ID))}
                         Field={'ID'} />
