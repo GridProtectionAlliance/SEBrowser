@@ -189,7 +189,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
                     />
                     <Select<OpenXDA.Types.NoteType>
                         Record={noteType}
-                        Label={'Category'}
+                        Label={'Record'}
                         Options={noteTypes.map(t => ({ Label: t.Name, Value: t.ID.toString() }))}
                         Setter={(r) => setNoteType(noteTypes.find((t) => t.ID == r.ID))}
                         Field={'ID'} />
