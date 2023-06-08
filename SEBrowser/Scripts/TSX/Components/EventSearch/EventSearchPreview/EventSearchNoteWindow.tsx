@@ -177,7 +177,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
             <div className='card-body'>
             <div className='row'>
                 <div className='col'>
-                    <MultiCheckBoxSelect Label={'Categories'}
+                    <MultiCheckBoxSelect Label={'Types'}
                         Options={noteTags.map(t => ({ Selected: selectedTags.find(i => i == t.ID) != null, Text: t.Name, Value: t.ID }))}
                         OnChange={(evt, changed) => {
                             setSelectedTags((st) => {
