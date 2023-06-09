@@ -35,28 +35,21 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
         return () => { };
     }, [props.eventID]);
 
-
     const createTableRows = (eventID: number) => {
         seBrowserService.getEventSearchAsssetVoltageDisturbancesData(eventID).done((data) => {
-            const promises = data.map((d, i) => {
-                return seBrowserService.getEventSearchDisturbanceSeverityData(d.DisturbanceID).then((severityCode) => {
-                    const style = { backgroundColor: d.IsWorstDisturbance ? 'lightyellow' : 'transparent' };
-                    return (
-                        <tr key={i} style={style}>
-                            <td>{d.EventType}</td>
-                            <td>{d.Phase}</td>
-                            <td>{(d.PerUnitMagnitude * 100).toFixed(1)}</td>
-                            <td>{(d.DurationSeconds * 1000).toFixed(2)}</td>
-                            <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
-                            <td>{severityCode}</td>
-                        </tr>
-                    );
-                });
+            const rows = data.map((d, i) => {
+                const style = { backgroundColor: d.IsWorstDisturbance ? 'lightyellow' : 'transparent' };
+                return (
+                    <tr key={i} style={style}>
+                        <td>{d.EventType}</td>
+                        <td>{d.Phase}</td>
+                        <td>{(d.PerUnitMagnitude * 100).toFixed(1)}</td>
+                        <td>{(d.DurationSeconds * 1000).toFixed(2)}</td>
+                        <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
+                    </tr>
+                );
             });
-
-            Promise.all(promises).then((rows) => {
-                setTableRows(rows);
-            });
+            setTableRows(rows);
         });
     };
 
@@ -72,7 +65,6 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
                             <th>Magnitude (%)</th>
                             <th>Duration (ms)</th>
                             <th>Start Time</th>
-                            <th>Severity</th>
                         </tr>
                     </thead>
                     <tbody>{tableRows}</tbody>

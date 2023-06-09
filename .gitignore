@@ -226,3 +226,6 @@ _Pvt_Extensions
 /SEBrowser/NUglify.dll
 /Dependencies/NuGet
 /SEBrowser/web.config.backup
+/SEBrowser/Web.config
+/SEBrowser/Scripts/SEBrowser.js
+/.gitignore
