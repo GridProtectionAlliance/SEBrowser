@@ -30,7 +30,6 @@ export default class SEBrowserdService {
     fileGroupEventsHandle: JQuery.jqXHR;
     eventSearchHandle: JQuery.jqXHR;
     eventSearchAssetVoltageDisturbancesHandle: JQuery.jqXHR;
-    eventSearchDisturbanceSeverityHandle: JQuery.jqXHR;
     eventSearchAssetFaultSegmentsHandle: JQuery.jqXHR;
     subStationRelayReportHandle: JQuery.jqXHR;
     BreakerRelayReportHandle: JQuery.jqXHR;
@@ -44,7 +43,6 @@ export default class SEBrowserdService {
 
         this.getEventSearchData = this.getEventSearchData.bind(this);
         this.getEventSearchAsssetVoltageDisturbancesData = this.getEventSearchAsssetVoltageDisturbancesData.bind(this);
-        this.getEventSearchDisturbanceSeverityData = this.getEventSearchDisturbanceSeverityData.bind(this);
         this.getEventSearchAsssetFaultSegmentsData = this.getEventSearchAsssetFaultSegmentsData.bind(this);
 
         this.GetCapBankSubstationData = this.GetCapBankSubstationData.bind(this);
@@ -180,22 +178,6 @@ export default class SEBrowserdService {
         });
 
         return this.eventSearchAssetVoltageDisturbancesHandle;
-    }
-
-    getEventSearchDisturbanceSeverityData(disturbanceID: number): JQuery.jqXHR {
-        if (this.eventSearchDisturbanceSeverityHandle !== undefined)
-            this.eventSearchDisturbanceSeverityHandle.abort();
-
-        this.eventSearchDisturbanceSeverityHandle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/OpenXDA/GetSeverityCode?DisturbanceID=${disturbanceID}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: true,
-            async: true
-        });
-
-        return this.eventSearchDisturbanceSeverityHandle;
     }
 
     getEventSearchAsssetFaultSegmentsData(eventID: number): JQuery.jqXHR {
