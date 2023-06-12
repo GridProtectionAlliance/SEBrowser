@@ -46,7 +46,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
 
     const [ids, setIDs] = React.useState<{ EventID: number, MeterID: number, AssetID: number, LocationID: number }>({ EventID: props.eventID, MeterID: -1, AssetID: -1, LocationID: -1 });
 
-   
+
     React.useEffect(() => {
         let idHandle = getIDs();
         return () => { if (idHandle != null && idHandle.abort != null) idHandle.abort(); }
@@ -175,45 +175,40 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
         <div className='card'>
             <div className='card-header'>Notes</div>
             <div className='card-body'>
-            <div className='row'>
-                <div className='col'>
-                    <MultiCheckBoxSelect Label={'Types:'}
-                        Options={noteTags.map(t => ({ Selected: selectedTags.find(i => i == t.ID) != null, Text: t.Name, Value: t.ID }))}
-                        OnChange={(evt, changed) => {
-                            setSelectedTags((st) => {
-                                const u = st.filter((t) => changed.findIndex(c => c.Value == t) == -1);
-                                u.push(...changed.filter(t => !t.Selected).map(t => t.Value));
-                                return u;
-                            })
-                        }}
-                    />
-                    <Select<OpenXDA.Types.NoteType>
-                        Record={noteType}
-                        Label={'Record:'}
-                        Options={[
-                                { Label: 'Event', Value: '1' },
-                                { Label: 'Meter', Value: '2' },
-                                { Label: 'Asset', Value: '3' },
-                                { Label: 'Substation', Value: '4' }
-                            ]}
-                        Setter={(r) => setNoteType(noteTypes.find((t) => t.ID == r.ID))}
-                        Field={'ID'} />
+                <div className='row'>
+                    <div className='col'>
+                        <MultiCheckBoxSelect Label={'Types:'}
+                            Options={noteTags.map(t => ({ Selected: selectedTags.find(i => i == t.ID) != null, Text: t.Name, Value: t.ID }))}
+                            OnChange={(evt, changed) => {
+                                setSelectedTags((st) => {
+                                    const u = st.filter((t) => changed.findIndex(c => c.Value == t) == -1);
+                                    u.push(...changed.filter(t => !t.Selected).map(t => t.Value));
+                                    return u;
+                                })
+                            }}
+                        />
+                        <Select<OpenXDA.Types.NoteType>
+                            Record={noteType}
+                            Label={'Record:'}
+                            Options={noteTypes.map(t => ({ Label: t.Name, Value: t.ID.toString() }))}
+                            Setter={(r) => setNoteType(noteTypes.find((t) => t.ID == r.ID))}
+                            Field={'ID'} />
+                    </div>
                 </div>
-            </div>
-            {selectedTags.length > 0?  < Note
-                MaxHeight={window.innerHeight - 215}
-                ReferenceTableID={id}
-                NoteApplications={[noteApp]}
-                NoteTags={noteTags.filter((t) => selectedTags.find(i => i == t.ID) != null)}
-                NoteTypes={[noteType]}
-                NoteSlice={slice}
-                AllowAdd={true}
-                Title={''}
-                AllowEdit={true}
-                AllowRemove={false}
-                ShowCard={false}
-                Filter={(n) => selectedTags.find(i => i == n.NoteTagID) != null}
-            /> : <div className={'alert alert-warning'}>
+                {selectedTags.length > 0 ? < Note
+                    MaxHeight={window.innerHeight - 215}
+                    ReferenceTableID={id}
+                    NoteApplications={[noteApp]}
+                    NoteTags={noteTags.filter((t) => selectedTags.find(i => i == t.ID) != null)}
+                    NoteTypes={[noteType]}
+                    NoteSlice={slice}
+                    AllowAdd={true}
+                    Title={''}
+                    AllowEdit={true}
+                    AllowRemove={false}
+                    ShowCard={false}
+                    Filter={(n) => selectedTags.find(i => i == n.NoteTagID) != null}
+                /> : <div className={'alert alert-warning'}>
                     <p>At least 1 Category needs to be selected.</p>
                 </div>}
             </div>
