@@ -35,6 +35,7 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
         return () => { };
     }, [props.eventID]);
 
+
     const createTableRows = (eventID: number) => {
         seBrowserService.getEventSearchAsssetVoltageDisturbancesData(eventID).done((data) => {
             const rows = data.map((d, i) => {
@@ -46,9 +47,11 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
                         <td>{(d.PerUnitMagnitude * 100).toFixed(1)}</td>
                         <td>{(d.DurationSeconds * 1000).toFixed(2)}</td>
                         <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
+                        <td>{d.SeverityCode}</td>
                     </tr>
                 );
             });
+
             setTableRows(rows);
         });
     };
@@ -65,6 +68,7 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
                             <th>Magnitude (%)</th>
                             <th>Duration (ms)</th>
                             <th>Start Time</th>
+                            <th>Severity</th>
                         </tr>
                     </thead>
                     <tbody>{tableRows}</tbody>
