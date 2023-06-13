@@ -315,7 +315,7 @@ const ReportTimeFilter = (props: IProps) => {
         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
             <legend className="w-auto" style={{ fontSize: 'large' }}>Date/Time Filter:</legend>
                 <div className="">
-                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Window Center: </label>
+                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window Center: </label>
                     <div className="row">
                         <div className='col-6'>
                         <DatePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="date"
@@ -335,7 +335,7 @@ const ReportTimeFilter = (props: IProps) => {
                         </div>
                     </div>
 
-                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
+                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Window Center(+/-): </label>
                     <div className="row">
                     <div className='col-6'>
                         <Input<SEBrowser.IReportTimeFilter> Record={filter} Field='windowSize' Setter={(r) => {
