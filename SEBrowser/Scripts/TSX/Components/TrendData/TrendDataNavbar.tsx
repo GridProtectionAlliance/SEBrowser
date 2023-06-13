@@ -29,12 +29,13 @@ import { SEBrowser, IMultiCheckboxOption } from '../../Global';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { DefaultSelects } from '@gpa-gemstone/common-pages';
-import { ConfigurableTable, Search } from '@gpa-gemstone/react-interactive';
+import { Search } from '@gpa-gemstone/react-interactive';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { CreateGuid } from '@gpa-gemstone/helper-functions';
 import ReportTimeFilter from '../ReportTimeFilter';
 import NavbarFilterButton from '../Common/NavbarFilterButton';
-import { ITrendPlot } from './ChartContainer/TrendPlot';
+import { ITrendPlot } from './TrendPlot/TrendPlot';
+import TrendChannelTable from './TrendChannelTable';
 
 interface IProps {
     ToggleVis: () => void,
@@ -55,7 +56,7 @@ interface ITrendDataFilter {
     AssetList: SystemCenter.Types.DetailedAsset[]
 }
 
-const TrendSearchNavbar = (props: IProps) => {
+const TrendSearchNavbar = React.memo((props: IProps) => {
     const navRef = React.useRef(null);
     const timeRef = React.useRef(null);
     const filtRef = React.useRef(null);
@@ -77,11 +78,8 @@ const TrendSearchNavbar = (props: IProps) => {
     const [linePlotOptions, setLinePlotOptions] = React.useState<IMultiCheckboxOption[]>([{ Value: 0, Text: "Minimum", Selected: true }, { Value: 1, Text: "Maximum", Selected: true }, { Value: 2, Text: "Average", Selected: true }]);
 
     const [trendChannels, setTrendChannels] = React.useState<SEBrowser.ITrendChannel[]>([]);
-    const [sortField, setSortField] = React.useState<string>('Name');
-    const [ascending, setAscending] = React.useState<boolean>(true);
+    const [selectedSet, setSelectedSet] = React.useState<Set<number>>(new Set<number>());
     const [tableHeight, setTableHeight] = React.useState<number>(100);
-
-    const [selectedChannels, setSelectedChannels] = React.useState<SEBrowser.ITrendChannel[]>([]);
 
     const momentDateFormat = "MM/DD/YYYY";
 
@@ -125,10 +123,6 @@ const TrendSearchNavbar = (props: IProps) => {
     }, [trendFilter]);
 
     React.useEffect(() => {
-        setTrendChannels(_.orderBy(trendChannels, sortField, ascending));
-    }, [sortField, ascending]);
-
-    React.useEffect(() => {
         // Todo: get filters from memory
         setTrendFilter({
             Phases: makeKeyValuePairs(allPhases),
@@ -144,7 +138,7 @@ const TrendSearchNavbar = (props: IProps) => {
         return allKeys.map(key => ({ Key: key.Name, Value: true }));
     }
 
-    function makeMultiCheckboxOptions(keyValues: IKeyValuePair[], setOptions: (options: IMultiCheckboxOption[]) => void, allKeys: {ID: number, Name: string, Description: string}[]) {
+    function makeMultiCheckboxOptions(keyValues: IKeyValuePair[], setOptions: (options: IMultiCheckboxOption[]) => void, allKeys: { ID: number, Name: string, Description: string }[]) {
         if (allKeys == null || keyValues == null) return;
         let newOptions: IMultiCheckboxOption[] = [];
         allKeys.forEach((key, index) => newOptions.push({ Value: index, Text: key.Name, Selected: keyValues.find(e => e.Key === key.Name)?.Value ?? true }));
@@ -174,7 +168,7 @@ const TrendSearchNavbar = (props: IProps) => {
             async: true
         }).done((data: SEBrowser.ITrendChannel[]) => {
             setTrendChannels(data);
-            setSelectedChannels([]);
+            setSelectedSet(new Set<number>());
         });
     }
 
@@ -352,63 +346,25 @@ const TrendSearchNavbar = (props: IProps) => {
                             </div>
                         </fieldset>
                     </li>
-
                     <li className="nav-item" style={{ width: '55%', paddingRight: 10, height: tableHeight }}>
-                        <ConfigurableTable<SEBrowser.ITrendChannel>
-                            defaultColumns={["Name", "Description", "Phase", "ChannelGroup"]}
-                            requiredColumns={["Name", "Phase", "ChannelGroup"]}
-                            cols={[
-                                { key: "Name", field: "Name", label: "Name" },
-                                { key: "Description", field: "Description", label: "Description" },
-                                { key: "AssetKey", field: "AssetKey", label: "Asset Key" },
-                                { key: "AssetName", field: "AssetName", label: "Asset Name" },
-                                { key: "MeterKey", field: "MeterKey", label: "Meter Key" },
-                                { key: "Meter Name", field: "MeterName", label: "Meter Name" },
-                                { key: "Phase", field: "Phase", label: "Phase" },
-                                { key: "ChannelGroup", field: "ChannelGroup", label: "Channel Group" },
-                                { key: "ChannelGroupType", field: "ChannelGroupType", label: "Channel Group Type" }
-                            ]}
-                            data={trendChannels}
-                            sortKey={sortField}
-                            ascending={ascending}
-                            onSort={(d) => {
-                                if (d.colKey === 'undefined')
-                                    return
-                                if (d.colField === sortField)
-                                    setAscending(!ascending);
-                                else
-                                    setSortField(d.colField);
-                            }}
-                            onClick={(item) => {
-                                const newChanList = selectedChannels.filter(chan => chan.ID !== item.row.ID);
-                                if (newChanList.length === selectedChannels.length)
-                                    setSelectedChannels([...selectedChannels, item.row]);
-                                else
-                                    setSelectedChannels(newChanList)
-                            }}
-                            selected={(item) => selectedChannels.findIndex(chan => item.ID === chan.ID) >= 0}
-                            theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                            tbodyStyle={{ display: 'block', overflowY: 'scroll', height: tableHeight - 30 }}
-                            rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
-                        />
+                        <TrendChannelTable Height={tableHeight} TrendChannels={trendChannels} Type='multi' SelectedSet={selectedSet} SetSelectedSet={setSelectedSet} />
                     </li>
-
                 </ul>
                 <div className="btn-group-vertical float-right">
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}>
                         <span>{SVGIcons.ArrowDropUp}</span>
                     </button>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => props.AddNewChart({ TimeFilter: timeFilter, Type: 'Line', Channels: selectedChannels, ID: CreateGuid(), PlotFilter: linePlotOptions })}>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => { }}>
+                        <span>{SVGIcons.Settings}</span>
+                    </button>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => {
+                        let selectedChannels = trendChannels.filter(chan => selectedSet.has(chan.ID));
+                        props.AddNewChart({
+                            TimeFilter: timeFilter, Type: 'Line', Channels: selectedChannels, ID: CreateGuid(), Height: 33, Width: 50,
+                            PlotFilter: linePlotOptions, Title: `${selectedChannels.length} Channel Line Plot`
+                        })
+                    }}>
                         <span>{SVGIcons.DataContainer}</span>
-                    </button>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => { }}>
-                        <span>{SVGIcons.Alert}</span>
-                    </button>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => { }}>
-                        <span>{SVGIcons.Alert}</span>
-                    </button>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => { }}>
-                        <span>{SVGIcons.Alert}</span>
                     </button>
                 </div>
             </>);
@@ -466,6 +422,6 @@ const TrendSearchNavbar = (props: IProps) => {
                 GetAddlFields={getAdditionalAssetFields} />
         </>
     );
-}
+});
 
 export default TrendSearchNavbar;

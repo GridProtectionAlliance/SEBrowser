@@ -144,6 +144,18 @@ export namespace SEBrowser {
         ChannelGroupType: string
     }
 
+    interface IPQData {
+        ChannelID: string,
+        Points: {
+            Tag: string,
+            Minimum: number,
+            Maximum: number,
+            Average: number,
+            QualityFlags: number,
+            Timestamp: string
+        }[]
+    }
+
     interface IWidgetCategory { ID: number, Name: string, OrderBy: number }
 }
 

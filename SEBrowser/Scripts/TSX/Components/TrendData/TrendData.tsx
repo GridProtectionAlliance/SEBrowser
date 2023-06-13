@@ -23,7 +23,7 @@
 
 import React from 'react';
 import TrendSearchNavbar from './TrendDataNavbar';
-import { TrendPlot, ITrendPlot } from './ChartContainer/TrendPlot';
+import { TrendPlot, ITrendPlot } from './TrendPlot/TrendPlot';
 import { OverlayDrawer, VerticalSplit } from '@gpa-gemstone/react-interactive';
 import { CreateGuid } from '@gpa-gemstone/helper-functions';
 import { SEBrowser } from '../../global';
@@ -40,50 +40,55 @@ const TrendData = (props: IProps) => {
 
     function getShowNav(): boolean {
         if (localStorage.hasOwnProperty('SEbrowser.TrendData.ShowNav'))
-            return JSON.parse(localStorage.getItem('SEbrowser.TrendData.ShowNav'))
+            return JSON.parse(localStorage.getItem('SEbrowser.TrendData.ShowNav'));
         else
             return true;
     }
 
-    function removePlot(ID: string): void {
+    const removePlot = React.useCallback(((ID: string) => {
         const index = plotList.findIndex(item => item.ID === ID);
         const newList = [...plotList];
         newList.splice(index, 1);
         setPlotList(newList);
-    }
+    }), [plotList]);
 
-    function changePlot(plot: ITrendPlot): void {
-        const index = plotList.findIndex(item => item.ID === plot.ID);
-        const newList = [...plotList];
-        newList.splice(index, 1, plot);
+    const setPlot = React.useCallback(((ID: string, record: ITrendPlot, field: keyof (ITrendPlot)) => {
+        const index = plotList.findIndex(item => item.ID === ID);
+        const newList: any[] = [...plotList];
+        newList[index][field] = record[field] as any;
         setPlotList(newList);
-    }
+    }), [plotList]);
 
-    function appendNewContainer(newContainerProps: ITrendPlot): void {
-        setPlotList([...plotList, newContainerProps]);
-    }
+    const appendNewContainer = React.useCallback(((newContainerProps: ITrendPlot) => {
+        const newList = [...plotList];
+        newList.push(newContainerProps);
+        setPlotList(newList);
+    }), [plotList]);
 
-    function closeSettings(open: boolean) {
-        closureHandler.current(open);
-    }
+    const closeSettings = React.useCallback((
+        (open: boolean) => closureHandler.current(open)
+    ), [closureHandler.current]);
+
+    const toggleNavbar = React.useCallback((
+        () => setShowNav(!showNav)
+    ), [showNav]);
 
     return (
         <div style={{ width: '100%', height: '100%' }} data-drawer={overlayDrawer}>
             <TrendSearchNavbar
-                ToggleVis={() => setShowNav((c) => !c)}
+                ToggleVis={toggleNavbar}
                 ShowNav={showNav}
                 SetHeight={setNavHeight}
                 AddNewChart={appendNewContainer}
             />
             <div style={{ width: '100%', height: (showNav ? 'calc(100% - ' + navHeight + 'px)' : 'calc( 100% - 52px)'), overflowY: 'scroll' }}>
                 {plotList.map(element => <TrendPlot key={element.ID}
-                    PlotValues={element} SetPlotValues={changePlot} RemovePlot={removePlot}
-                    OverlayPortalID={overlayPortalID} HandleOverlay={closeSettings}/>)}
+                    Plot={element} SetPlot={setPlot} RemovePlot={removePlot}
+                    OverlayPortalID={overlayPortalID} HandleOverlay={closeSettings}
+                />)}
             </div>
             <OverlayDrawer Title={''} Open={false} Location={'top'} Target={overlayDrawer} GetOverride={(s) => { closureHandler.current = s; }} HideHandle={true}>
-                <div id={overlayPortalID} style={{opacity: 0.8, background: undefined, color: 'black' }}>
-
-                </div>
+                <div id={overlayPortalID} style={{opacity: 1, background: undefined, color: 'black' }} />
             </OverlayDrawer>
         </div>
     );

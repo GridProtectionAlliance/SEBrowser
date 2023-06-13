@@ -23,22 +23,14 @@
 import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
-import { useAppDispatch, useAppSelector } from '../../../hooks';
-import { AssetSlice, MeterSlice, PhaseSlice, ChannelGroupSlice } from '../../../Store';
 import { SEBrowser } from '../../../Global';
 import { Application } from '@gpa-gemstone/application-typings';
-import { MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
-import { DefaultSelects } from '@gpa-gemstone/common-pages';
-import { ConfigurableTable, LoadingIcon, Modal, OverlayDrawer, Search, ServerErrorIcon } from '@gpa-gemstone/react-interactive';
-import { SpacedColor } from '@gpa-gemstone/helper-functions';
-import { MagnifyingGlass, CrossMark, UpArrow, DownArrow, Wrench } from '@gpa-gemstone/gpa-symbols'
-import ReportTimeFilter from '../../ReportTimeFilter';
-import NavbarFilterButton from '../../Common/NavbarFilterButton';
+import { LoadingIcon, ServerErrorIcon } from '@gpa-gemstone/react-interactive';
 import { Button, Line, Plot } from '@gpa-gemstone/react-graph';
 
 interface IProps {
     TimeFilter: SEBrowser.IReportTimeFilter,
-    Channels: SEBrowser.ITrendChannel[],
+    ChannelInfo: ILineSeries[],
     PlotFilter: {
         Value: number,
         Text: string,
@@ -46,23 +38,20 @@ interface IProps {
     }[],
     Height: number,
     Width: number,
+    Title?: string,
+    XAxisLabel?: string,
     children: React.ReactNode
 }
 
-interface IPQData {
-    ChannelID: string,
-    Points: {
-        Tag: string,
-        Minimum: number,
-        Maximum: number,
-        Average: number,
-        QualityFlags: number,
-        Timestamp: string
-    }[]
+interface ILineSeries{
+    Channel: SEBrowser.ITrendChannel,
+    AvgLineType?: ':' | '-',
+    MinMaxLineType?: ':' | '-',
+    Label?: string,
+    Color?: string
 }
 
 interface IChartData {
-    Color: string,
     ChannelID: number,
     MinSeries: [number, number][],
     MaxSeries: [number, number][],
@@ -92,7 +81,7 @@ function formatWindowUnit(i: number) {
     return "milliseconds";
 }
 
-const LineGraph = (props: IProps) => {
+const LineGraph = React.memo((props: IProps) => {
     // Graph Consts
     const [timeLimits, setTimeLimits] = React.useState<[number, number]>([0, 1]);
     const [displayMin, setDisplayMin] = React.useState<boolean>(true);
@@ -100,23 +89,31 @@ const LineGraph = (props: IProps) => {
     const [displayAvg, setDisplayAvg] = React.useState<boolean>(true);
     const [allChartData, setAllChartData] = React.useState<IChartData[]>([]);
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
+    const [oldValues, setOldValues] = React.useState<{ ChannelInfo: ILineSeries[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
 
     React.useEffect(() => {
+        if (props.ChannelInfo == null || props.TimeFilter == null) return;
         const centerTime: moment.Moment = moment(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
         const startTime: string = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
         // Need to move back in the other direction, so entire window
         const endTime: string = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
-        const channels: number[] = props.Channels.map(chan => chan.ID);
+
+        // Need to figure out which channels we need info for
+        let channels: number[] = props.ChannelInfo.map(chan => chan.Channel.ID);
+        // If the time filter is the same, we only need to ask for information on channels we have not yet seen
+        if (_.isEqual(props.TimeFilter, oldValues.TimeFilter))
+            channels = channels.filter(channel => oldValues.ChannelInfo.findIndex(oldChannel => oldChannel.Channel.ID === channel) === -1);
+        setOldValues({ ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter });
         let handle = GetTrendData(channels, startTime, endTime);
         return () => {
             if (handle != null && handle.abort != null) handle.abort();
         };
-    }, [props.Channels, props.TimeFilter]);
+    }, [props.ChannelInfo, props.TimeFilter]);
 
     React.useEffect(() => {
-        setDisplayMin(props.PlotFilter.find(element => element.Text === "Minimum").Selected);
-        setDisplayMax(props.PlotFilter.find(element => element.Text === "Maximum").Selected);
-        setDisplayAvg(props.PlotFilter.find(element => element.Text === "Average").Selected);
+        setDisplayMin(props.PlotFilter.find(element => element.Text === "Minimum")?.Selected ?? false);
+        setDisplayMax(props.PlotFilter.find(element => element.Text === "Maximum")?.Selected ?? false);
+        setDisplayAvg(props.PlotFilter.find(element => element.Text === "Average")?.Selected ?? false);
     }, [props.PlotFilter]);
 
     React.useEffect(() => {
@@ -125,6 +122,7 @@ const LineGraph = (props: IProps) => {
     }, [allChartData]);
 
     function GetTrendData(channels: number[], startTime: string, endTime: string): JQuery.jqXHR<any[]> {
+        if (channels.length === 0) return null;
         setGraphStatus('loading');
         return $.ajax({
             type: "POST",
@@ -138,22 +136,21 @@ const LineGraph = (props: IProps) => {
             dataType: 'json',
             cache: false,
             async: true
-        }).done((data: IPQData[]) => {
-            setAllChartData(
+        }).done((data: SEBrowser.IPQData[]) => {
+            const newData: IChartData[] =
                 data.map(channelInfo => {
                     const timeSeries = channelInfo.Points.map(dataPoint => moment(dataPoint.Timestamp, serverFormat).valueOf());
-                    console.log(JSON.stringify(channelInfo));
-                    console.log(JSON.stringify(timeSeries));
                     const channelID = Number("0x" + channelInfo.ChannelID);
-                    const color: string = allChartData.find(data => channelID === data.ChannelID)?.Color ?? SpacedColor(0.99, 0.99);
-                    return ({ 
+                    return ({
                         ChannelID: channelID,
-                        Color: color,
                         MinSeries: channelInfo.Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Minimum]),
                         MaxSeries: channelInfo.Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Maximum]),
                         AvgSeries: channelInfo.Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Average])
                     });
-            }));
+                });
+            const oldData = allChartData.filter(oldSeries =>
+                props.ChannelInfo.findIndex(channel => channel.Channel.ID === oldSeries.ChannelID) !== -1);
+            setAllChartData(oldData.concat(newData));
             setGraphStatus('idle');
         }).fail(() => {
             setGraphStatus('error');
@@ -161,8 +158,6 @@ const LineGraph = (props: IProps) => {
     }
 
     function GetDisplay() {
-        if (graphStatus === 'loading' || graphStatus === 'unintiated')
-            return <LoadingIcon Show={true} Size={40} />;
         if (graphStatus === 'error' || (graphStatus === 'idle' && allChartData.findIndex(chartData => chartData.MinSeries.length + chartData.MaxSeries.length + chartData.AvgSeries.length > 0) < 0))
             return (
                 <div>
@@ -174,7 +169,7 @@ const LineGraph = (props: IProps) => {
                             return (
                                 <button type="button"
                                     className={'btn btn-primary float-left'}
-                                    onClick={() => {element.props.onClick()} }>
+                                    onClick={() => { element.props.onClick() }}>
                                     {element}
                                 </button>);
                         return null;
@@ -182,25 +177,29 @@ const LineGraph = (props: IProps) => {
                 </div>);
         else
             return (
-                <Plot height={props.Height} width={props.Width} showBorder={false}
-                    defaultTdomain={timeLimits}
-                    legend={'bottom'}
-                    Tlabel={'Time'} Ylabel={'Power (MW)'} showMouse={true}>
-                    {allChartData.flatMap((chartData, index) => { 
-                        let lineArray: JSX.Element[] = [];
-                        let showMin: boolean = displayMin && chartData.MinSeries.length > 0;
-                        let showAvg: boolean = displayAvg && chartData.AvgSeries.length > 0;
-                        let channelName: string = props.Channels.find((channel) => channel.ID === chartData.ChannelID)?.Name ?? "Unknown Channel";
-                        if (showAvg)
-                            lineArray.push(<Line highlightHover={false} key={"avg" + index} showPoints={false} lineStyle={'-'} color={chartData.Color} data={chartData.AvgSeries} legend={channelName} />);
-                        if (showMin)
-                            lineArray.push(<Line highlightHover={false} key={"min" + index} showPoints={false} lineStyle={':'} color={chartData.Color} data={chartData.MinSeries} legend={showAvg ? undefined : channelName} />);
-                        if (displayMax && chartData.MaxSeries.length > 0)
-                            lineArray.push(<Line highlightHover={false} key={"max" + index} showPoints={false} lineStyle={':'} color={chartData.Color} data={chartData.MaxSeries} legend={showAvg || showMin ? undefined : channelName} />);
-                        return lineArray;
-                    })}
-                    {props.children}
-                </Plot>);
+                <>
+                    <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={40} />
+                    {props.Title !== undefined ? <h4 style={{ textAlign: "center" }}>{props.Title}</h4> : null}
+                    <Plot height={props.Height} width={props.Width} showBorder={false}
+                        defaultTdomain={timeLimits}
+                        legend={'bottom'}
+                        Tlabel={props.XAxisLabel ?? 'Time'} Ylabel={'Units'} showMouse={true}>
+                        {allChartData.flatMap((chartData, index) => {
+                            let lineArray: JSX.Element[] = [];
+                            let channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === chartData.ChannelID);
+                            let baseLabel: string = channelSetting?.Label ?? channelSetting?.Channel?.Name ?? "Unknown Channel";
+                            let colorValue: string = channelSetting?.Color ?? "#E41000";
+                            if (displayAvg && chartData.AvgSeries.length > 0)
+                                lineArray.push(<Line highlightHover={false} key={"avg" + index} showPoints={false} lineStyle={channelSetting?.AvgLineType ?? '-'} color={colorValue} data={chartData.AvgSeries} legend={baseLabel + " avg"} />);
+                            if (displayMin && chartData.MinSeries.length > 0)
+                                lineArray.push(<Line highlightHover={false} key={"min" + index} showPoints={false} lineStyle={channelSetting?.MinMaxLineType ?? ':'} color={colorValue} data={chartData.MinSeries} legend={baseLabel + " min"} />);
+                            if (displayMax && chartData.MaxSeries.length > 0)
+                                lineArray.push(<Line highlightHover={false} key={"max" + index} showPoints={false} lineStyle={channelSetting?.MinMaxLineType ?? ':'} color={colorValue} data={chartData.MaxSeries} legend={baseLabel + " max"} />);
+                            return lineArray;
+                        })}
+                        {props.children}
+                    </Plot>
+                </>);
     }
 
     return (
@@ -208,6 +207,6 @@ const LineGraph = (props: IProps) => {
             {GetDisplay()}
         </div>
     );
-}
+});
 
-export { LineGraph };
+export { LineGraph, ILineSeries };

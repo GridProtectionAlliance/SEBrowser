@@ -570,8 +570,11 @@
     <None Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisReport.tsx" />
     <Content Include="Scripts\TSX\Components\TrendData\TrendData.tsx" />
     <Content Include="Scripts\TSX\Components\TrendData\TrendDataNavbar.tsx" />
-    <Content Include="Scripts\TSX\Components\TrendData\ChartContainer\TrendPlot.tsx" />
-    <Content Include="Scripts\TSX\Components\TrendData\ChartContainer\LineGraph.tsx" />
+    <Content Include="Scripts\TSX\Components\TrendData\TrendChannelTable.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\LineGraph.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\PlotSettings.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\SettingsOverlay.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\TrendPlot.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\hooks.ts" />
     <Content Include="Scripts\TSX\Settings.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Store.ts" />
