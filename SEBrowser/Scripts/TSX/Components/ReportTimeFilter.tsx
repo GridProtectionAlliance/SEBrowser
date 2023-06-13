@@ -335,7 +335,7 @@ const ReportTimeFilter = (props: IProps) => {
                         </div>
                     </div>
 
-                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Window Center(+/-): </label>
+                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
                     <div className="row">
                     <div className='col-6'>
                         <Input<SEBrowser.IReportTimeFilter> Record={filter} Field='windowSize' Setter={(r) => {
