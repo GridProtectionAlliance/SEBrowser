@@ -291,7 +291,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                 </div>
             </nav>
 
-                <Modal Show={this.state.showFilter} ShowX={true} ShowCancel={false} Size={'xlg'} Title={'Filter CapBank Events'} ConfirmText={'Close'} CallBack={() => this.setState({ showFilter: false })}>
+                <Modal Show={this.state.showFilter} ShowX={true} ShowCancel={false} Size={'xlg'} Title={'Filter Capacitor Bank Events'} ConfirmText={'Close'} CallBack={() => this.setState({ showFilter: false })}>
                     <div style={{ width: '100%', display: 'inline-flex' }}>
                         <div style={{ width: '10%', paddingRight: 10 }}>
                             <CBEventFilter activeFilter={this.props.PhaseFilter} showAll={true} Label={'Phase'} setter={(result) => {
