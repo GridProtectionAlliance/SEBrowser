@@ -57,17 +57,21 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }
 
     function HandleStatusFilterChange(key: string) {
-        statusFilter[key] = !statusFilter[key]
+        statusFilter[key.toLowerCase()] = !statusFilter[key.toLowerCase()]
         setStatusFilter(statusFilter);
         BuildTable(soeInfo)
     }
 
     function BuildTable(data) {
-        let tbl = data.filter(si => !statusFilter[si.Status]).map((si, index) => <tr key={index}>
-            <td>{si.Time}</td>
-            <td>{si.Alarm}</td>
-            <td>{si.Status}</td>
-        </tr>)
+        let tbl = data
+            .filter(si => !statusFilter[si.Status.toLowerCase()])
+            .map((si, index) => (
+                <tr key={index}>
+                    <td>{si.Time}</td>
+                    <td>{si.Alarm}</td>
+                    <td>{si.Status}</td>
+                </tr>
+            ));
 
         setTable(tbl);
     }
@@ -89,7 +93,7 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
                     <div className='col-8'>
                         <fieldset className='border'>
                             <legend style={{ font: 'inherit' }}>Filter Out:</legend>
-                            {Object.keys(statusFilter).map((key, index) => <div key={index} className='form-check form-check-inline'><input className="form-check-input" type="checkbox" value={statusFilter[key]} onChange={() => HandleStatusFilterChange(key)} /><label className="form-check-label">{key}</label></div>)}
+                            {Object.keys(statusFilter).map((key, index) => <div key={index} className='form-check form-check-inline'><input className="form-check-input" type="checkbox" value={statusFilter[key.toLowerCase()]} onChange={() => HandleStatusFilterChange(key.toLowerCase())} /><label className="form-check-label">{key}</label></div>)}
                         </fieldset>
                     </div>
 
