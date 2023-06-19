@@ -26,7 +26,6 @@ import React from 'react';
 import EventSearchNoteWindow from './EventSearchNoteWindow';
 import EventSearchAssetVoltageDisturbances from './EventSearchAssetVoltageDisturbances';
 import EventSearchFaultSegments from './EventSearchAssetFaultSegments';
-//import EventSearchHistory from './EventSearchAssetHistory';
 import EventSearchCorrelatedSags from './EventSearchCorrelatedSags';
 import EventSearchRelayPerformance from './EventSearchRelayPerformance';
 import { OpenXDA, Redux, SEBrowser } from '../../../global'
@@ -146,8 +145,6 @@ export default function EventPreviewPane(props: IProps) {
 
                         else if (widget.Name === 'EventSearchFileInfo')
                             return <EventSearchFileInfo key={index} eventID={props.EventID} />;
-                       // else if (widget.Name === 'EventSearchHistory')
-                            //return <EventSearchHistory key={index} eventID={props.EventID} />;
                         else if (widget.Name === 'EventSearchRelayPerformance')
                             return <EventSearchRelayPerformance key={index} eventID={props.EventID} />;
                         else if (widget.Name === 'EventSearchBreakerPerformance')

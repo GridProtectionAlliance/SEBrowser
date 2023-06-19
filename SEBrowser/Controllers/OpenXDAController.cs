@@ -448,9 +448,11 @@ namespace SEBrowser.Controllers
                         TOP " + count.ToString() + @"
 	                    EventType.Name as EventType,
 	                    Event.StartTime,
-	                    Event.ID
+	                    Event.ID,
+                        Asset.AssetName
                     FROM
 	                    Event JOIN
+                        Event ON Event.AssetID = Asset.ID JOIN
 	                    EventType ON Event.EventTypeID = EventType.ID JOIN
 	                    Event as OrgEvt ON Event.MeterID = OrgEvt.MeterID AND Event.AssetID = OrgEvt.AssetID AND Event.ID != OrgEvt.ID
                     WHERE 

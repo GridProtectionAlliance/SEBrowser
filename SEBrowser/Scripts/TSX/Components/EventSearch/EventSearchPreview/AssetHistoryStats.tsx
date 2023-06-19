@@ -1,5 +1,6 @@
 import React from 'react';
 import { SEBrowser } from '../../../global';
+import Table from '@gpa-gemstone/react-table';
 
 const AssetHistoryStats: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [statsData, setStatsData] = React.useState<any>({});
@@ -24,23 +25,28 @@ const AssetHistoryStats: React.FC<SEBrowser.IWidget<any>> = (props) => {
         });
     }
 
+    let tableData = Object.keys(statsData).map((key) => ({ Stat: key, Value: statsData[key] }));
+
     return (
         <div className="card">
             <div className="card-header">Asset History Stat:</div>
-                <div className="card-body">
-                    <table className="table">
-                        <thead>
-                            <tr><th>Stat</th><th>Value</th></tr>
-                        </thead>
-                        <tbody>
-                            {Object.keys(statsData).map((key, i) =>
-                                <tr key={i}>
-                                    <td>{key}</td>
-                                    <td>{statsData[key]}</td>
-                                </tr>)}
-                        </tbody>
-                    </table>
-                </div>
+            <div className="card-body">
+                <Table
+                    cols={[
+                        { key: 'Stat', field: 'Stat', label: 'Stat' },
+                        { key: 'Value', field: 'Value', label: 'Value' }
+                    ]}
+                    data={tableData}
+                    onClick={() => { }}
+                    onSort={() => { }}
+                    sortKey={''}
+                    ascending={true}
+                    tableClass="table"
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: 600, width: '100%' }}
+                    rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                />
+            </div>
         </div>
     );
 }
