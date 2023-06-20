@@ -323,7 +323,7 @@ const ReportTimeFilter = (props: IProps) => {
         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
             <legend className="w-auto" style={{ fontSize: 'large' }}>Date/Time Filter:</legend>
                 <div className="">
-                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Window Center: </label>
+                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window Center: </label>
                     <div className="row">
                     <div className='col-12'>
                         <DatePicker<{ Value: string }> Record={currentTime} Field="Value"
