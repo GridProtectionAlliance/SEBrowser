@@ -178,8 +178,7 @@ function DERAnalysisReport() {
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>DER:</legend>
                                 <form>
                                     <div className="form-group" style={{ height: 60, width: '100%' }}>
-                                        <label style={{ width: '100%', position: 'relative', float: "left" }}>Substation: </label>
-                                        <MultiCheckBoxSelect Options={stations} OnChange={(evt, options) => {
+                                        <MultiCheckBoxSelect Label={'Substation:'} Options={stations} OnChange={(evt, options) => {
                                             let records = [...stations]
                                             for (let option of options) {
                                                 let index = records.findIndex(r => r.Value == option.Value)
@@ -190,8 +189,7 @@ function DERAnalysisReport() {
 
                                     </div>
                                     <div className="form-group" style={{ height: 60, width: '100%' }}>
-                                        <label style={{ width: '100%', position: 'relative', float: "left" }}>DER: </label>
-                                        <MultiCheckBoxSelect Options={ders} OnChange={(evt, options) => {
+                                        <MultiCheckBoxSelect Label={'DER:'} Options={ders} OnChange={(evt, options) => {
                                             let records = [...ders]
                                             for (let option of options) {
                                                 let index = records.findIndex(r => r.Value == option.Value)
@@ -201,8 +199,7 @@ function DERAnalysisReport() {
                                         }} />
                                     </div>
                                     <div className="form-group" style={{ height: 60, width: '100%' }}>
-                                        <label style={{ width: '100%', position: 'relative', float: "left" }}>Regulations: </label>
-                                        <MultiCheckBoxSelect Options={regulations} OnChange={(evt, options) => {
+                                        <MultiCheckBoxSelect Label={'Regulations:'} Options={regulations} OnChange={(evt, options) => {
                                             let records = [...regulations]
                                             for (let option of options) {
                                                 let index = records.findIndex(r => r.Value == option.Value)
