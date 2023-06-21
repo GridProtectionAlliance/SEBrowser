@@ -26,6 +26,7 @@ using GSF;
 using GSF.Data;
 using GSF.Data.Model;
 using GSF.Web;
+using Microsoft.Ajax.Utilities;
 using openXDA.Model;
 using System;
 using System.Collections.Generic;
@@ -452,7 +453,7 @@ namespace SEBrowser.Controllers
                         Asset.AssetName
                     FROM
 	                    Event JOIN
-                        Event ON Event.AssetID = Asset.ID JOIN
+                        Asset ON Event.AssetID = Asset.ID JOIN
 	                    EventType ON Event.EventTypeID = EventType.ID JOIN
 	                    Event as OrgEvt ON Event.MeterID = OrgEvt.MeterID AND Event.AssetID = OrgEvt.AssetID AND Event.ID != OrgEvt.ID
                     WHERE 
@@ -468,11 +469,10 @@ namespace SEBrowser.Controllers
         }
 
         [Route("GetEventSearchHistoryStats/{eventID:int}"), HttpGet]
-        public DataTable GetEventSearchHistoryStats(int eventID, int count = 10)
+        public object GetEventSearchHistoryStats(int eventID)
         {
-            using (AdoDataConnection connection = new(SettingsCategory))
-            {
-                DataTable table = connection.RetrieveData(@" 
+            using AdoDataConnection connection = new(SettingsCategory);
+            object stats = connection.RetrieveData(@" 
                     SELECT
 	                    ROUND(MAX(VPeak)/Asset.VoltageKV/1000, 3) as VPeakMax,
 	                    MAX(VMax) as VMax,
@@ -480,7 +480,8 @@ namespace SEBrowser.Controllers
 	                    MAX(IMax) as IMax,
 	                    MAX(I2tMax) as I2tMax,
 	                    ROUND(MAX(IPeak),3) as IPeakMax,
-	                    ROUND(AVG(InitialMW),3) as AVGMW
+	                    ROUND(AVG(InitialMW),3) as AVGMW,
+                        Asset.AssetName
                     FROM
 	                    Asset  JOIN
 	                    Event ON Event.AssetID = Asset.ID JOIN
@@ -490,12 +491,11 @@ namespace SEBrowser.Controllers
 	                    (SELECT ROUND(MAX(IMax),3) as IMax FROM (VALUES(IAMax), (IBMax), (ICMax)) AS IMaxView(IMax)) as IMax OUTER APPLY
 	                    (SELECT ROUND(MAX(I2tMax),3) as I2tMax FROM (VALUES(IA2t), (IB2t), (IC2t)) AS I2tView(I2tMax)) as I2tMax
                     WHERE Asset.ID = (SELECT AssetID FROM Event WHERE ID = {0})
-                    GROUP BY VoltageKV
+                    GROUP BY VoltageKV , Asset.AssetName
                     "
-                    , eventID);
+                , eventID);
 
-                return table;
-            }
+            return stats;
 
         }
 

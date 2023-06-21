@@ -139,10 +139,8 @@ export default function EventPreviewPane(props: IProps) {
                             return <TVALSC key={index} eventID={props.EventID} />;
                         else if (widget.Name === 'TVAPQWeb')
                             return <TVAPQWeb key={index} eventID={props.EventID} startTime={event.FileStartTime} />;
-
                         else if (widget.Name === 'TVAStructureInfo')
                             return <StructureInfo key={index} eventID={props.EventID} />;
-
                         else if (widget.Name === 'EventSearchFileInfo')
                             return <EventSearchFileInfo key={index} eventID={props.EventID} />;
                         else if (widget.Name === 'EventSearchRelayPerformance')
