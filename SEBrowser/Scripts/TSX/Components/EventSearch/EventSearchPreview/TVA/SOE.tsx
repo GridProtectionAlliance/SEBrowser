@@ -28,7 +28,7 @@ type Status = 'ABNORMAL' | 'Close' | 'No' | 'NORMAL' | 'RECEIVED' | 'Start' | 'T
 
 const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [soeInfo, setSOEInfo] = React.useState<Array<{ Time: string, Alarm: string, Status: string }>>([]);
-    const [statusFilter, setStatusFilter] = React.useState<{ 'ABNORMAL': boolean, 'Close': boolean, 'No': boolean, 'NORMAL': boolean, 'RECEIVED': boolean, 'Start': boolean, 'Trip': boolean, 'Yes': boolean}>({ 'ABNORMAL':false, 'Close':false, 'No':false, 'NORMAL': false, 'RECEIVED': false, 'Start': false, 'Trip':false, 'Yes': false})
+    const [statusFilter, setStatusFilter] = React.useState<{ 'ABNORMAL': boolean, 'Close': boolean, 'No': boolean, 'NORMAL': boolean, 'RECEIVED': boolean, 'Start': boolean, 'Trip': boolean, 'Yes': boolean }>({ 'ABNORMAL': false, 'Close': false, 'No': false, 'NORMAL': false, 'RECEIVED': false, 'Start': false, 'Trip': false, 'Yes': false })
     const [timeWindow, setTimeWindow] = React.useState<number>(2);
     const [table, setTable] = React.useState<any>(null);
 
@@ -57,17 +57,20 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }
 
     function HandleStatusFilterChange(key: string) {
-        statusFilter[key] = !statusFilter[key]
+        const lowercaseKey = key.toLowerCase();
+        statusFilter[lowercaseKey] = !statusFilter[lowercaseKey];
         setStatusFilter(statusFilter);
-        BuildTable(soeInfo)
+        BuildTable(soeInfo);
     }
 
     function BuildTable(data) {
-        let tbl = data.filter(si => !statusFilter[si.Status]).map((si, index) => <tr key={index}>
-            <td>{si.Time}</td>
-            <td>{si.Alarm}</td>
-            <td>{si.Status}</td>
-        </tr>)
+        let tbl = data.filter(si => !statusFilter[si.Status.toLowerCase()]).map((si, index) => (
+            <tr key={index}>
+                <td>{si.Time}</td>
+                <td>{si.Alarm}</td>
+                <td>{si.Status}</td>
+            </tr>
+        ));
 
         setTable(tbl);
     }
@@ -89,12 +92,22 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
                     <div className='col-8'>
                         <fieldset className='border'>
                             <legend style={{ font: 'inherit' }}>Filter Out:</legend>
-                            {Object.keys(statusFilter).map((key, index) => <div key={index} className='form-check form-check-inline'><input className="form-check-input" type="checkbox" value={statusFilter[key]} onChange={() => HandleStatusFilterChange(key)} /><label className="form-check-label">{key}</label></div>)}
+                            {Object.keys(statusFilter).map((key, index) => (
+                                <div key={index} className='form-check form-check-inline'>
+                                    <input
+                                        className="form-check-input"
+                                        type="checkbox"
+                                        value={statusFilter[key.toLowerCase()]}
+                                        onChange={() => HandleStatusFilterChange(key.toLowerCase())}
+                                    />
+                                    <label className="form-check-label">{key}</label>
+                                </div>
+                            ))}
                         </fieldset>
                     </div>
 
                 </div>
-                <div style={{maxHeight: 200, overflowY:'auto'}}>
+                <div style={{ maxHeight: 200, overflowY: 'auto' }}>
                     <table className='table'>
                         <thead>
                             <tr>
@@ -104,7 +117,7 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
                             </tr>
                         </thead>
                         <tbody>
-                            { table }
+                            {table}
                         </tbody>
                     </table>
                 </div>
