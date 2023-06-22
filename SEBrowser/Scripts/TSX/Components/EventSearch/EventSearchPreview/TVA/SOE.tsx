@@ -23,18 +23,28 @@
 
 import React from 'react';
 import { SEBrowser } from '../../../../global';
+import { MultiSelect, Table, Column } from '@gpa-gemstone/react-table';
+
 
 type Status = 'ABNORMAL' | 'Close' | 'No' | 'NORMAL' | 'RECEIVED' | 'Start' | 'Trip' | 'Yes';
 
-const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
-    const [soeInfo, setSOEInfo] = React.useState<Array<{ Time: string, Alarm: string, Status: string }>>([]);
-    const [statusFilter, setStatusFilter] = React.useState<{ 'ABNORMAL': boolean, 'Close': boolean, 'No': boolean, 'NORMAL': boolean, 'RECEIVED': boolean, 'Start': boolean, 'Trip': boolean, 'Yes': boolean }>({ 'ABNORMAL': false, 'Close': false, 'No': false, 'NORMAL': false, 'RECEIVED': false, 'Start': false, 'Trip': false, 'Yes': false })
-    const [timeWindow, setTimeWindow] = React.useState<number>(2);
-    const [table, setTable] = React.useState<any>(null);
+type ISOEFilter = { 'abnormal': boolean, 'close': boolean, 'no': boolean, 'normal': boolean, 'received': boolean, 'start': boolean, 'trip': boolean, 'yes': boolean };
+type SOEInfo = { Time: string, Alarm: string, Status: string };
 
+const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
+    const [soeInfo, setSOEInfo] = React.useState<SOEInfo[]>([]);
+    const [statusFilter, setStatusFilter] = React.useState<ISOEFilter>({ 'abnormal': false, 'close': false, 'no': false, 'normal': false, 'received': false, 'start': false, 'trip': false, 'yes': false });
+    const [timeWindow, setTimeWindow] = React.useState<number>(2);
+    
     React.useEffect(() => {
         return GetData();
     }, [props.eventID, timeWindow, statusFilter]);
+
+    const cols: Column<SOEInfo>[] = [
+        { key: "Time", label: "Time", field: "Time" },
+        { key: "Alarm", label: "Alarm", field: "Alarm" },
+        { key: "Status", label: "Status", field: "Status" }
+    ];
 
     function GetData() {
         let handle = $.ajax({
@@ -48,7 +58,6 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
 
         handle.done(data => {
             setSOEInfo(data);
-            BuildTable(data);
         });
 
         return function () {
@@ -56,23 +65,9 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
         }
     }
 
-    function HandleStatusFilterChange(key: string) {
-        const lowercaseKey = key.toLowerCase();
-        statusFilter[lowercaseKey] = !statusFilter[lowercaseKey];
+    function HandleStatusFilterChange(key: keyof ISOEFilter) {
+        statusFilter[key] = !statusFilter[key]
         setStatusFilter(statusFilter);
-        BuildTable(soeInfo);
-    }
-
-    function BuildTable(data) {
-        let tbl = data.filter(si => !statusFilter[si.Status.toLowerCase()]).map((si, index) => (
-            <tr key={index}>
-                <td>{si.Time}</td>
-                <td>{si.Alarm}</td>
-                <td>{si.Status}</td>
-            </tr>
-        ));
-
-        setTable(tbl);
     }
 
     return (
@@ -92,34 +87,25 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
                     <div className='col-8'>
                         <fieldset className='border'>
                             <legend style={{ font: 'inherit' }}>Filter Out:</legend>
-                            {Object.keys(statusFilter).map((key, index) => (
-                                <div key={index} className='form-check form-check-inline'>
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        value={statusFilter[key.toLowerCase()]}
-                                        onChange={() => HandleStatusFilterChange(key.toLowerCase())}
-                                    />
-                                    <label className="form-check-label">{key}</label>
-                                </div>
-                            ))}
+                            {Object.keys(statusFilter).map((key, index) => <div key={index} className='form-check form-check-inline'><input className="form-check-input" type="checkbox" value={statusFilter[key]} onChange={() => HandleStatusFilterChange(key)} /><label className="form-check-label">{key}</label></div>)}
                         </fieldset>
                     </div>
 
                 </div>
                 <div style={{ maxHeight: 200, overflowY: 'auto' }}>
-                    <table className='table'>
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Alarm</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {table}
-                        </tbody>
-                    </table>
+                    <Table
+                        cols={cols}
+                        data={soeInfo.filter(si => !statusFilter[si.Status])}
+                        onClick={() => { }}
+                        onSort={() => { }}
+                        sortKey={'Time'}
+                        ascending={true}
+                        tableClass="table"
+                        keySelector={data => data.Time}
+                        theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
+                        tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%' }}
+                        rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                    />
                 </div>
             </div>
         </div>
