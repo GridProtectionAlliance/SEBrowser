@@ -521,7 +521,6 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\StructureInfo.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchRelayPerformance.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchAssetFaultSegments.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchAssetHistory.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchAssetVoltageDisturbances.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchBreakerPerformance.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchCapBankAnalyticOverview.tsx" />
@@ -532,6 +531,8 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewPane.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\LineParameters.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchTypeFilter.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\AssetHistoryStats.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\AssetHistoryTable.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\SettingsSlice.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\HECCO\InterruptionReport.tsx" />

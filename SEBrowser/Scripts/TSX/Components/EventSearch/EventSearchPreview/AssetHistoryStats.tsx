@@ -2,19 +2,9 @@ import React from 'react';
 import { SEBrowser } from '../../../global';
 import Table from '@gpa-gemstone/react-table';
 
-interface IStatsData {
-    VPeakMax: number;
-    VMax: number;
-    VMin: number;
-    IMax: number;
-    I2tMax: number;
-    IPeakMax: number;
-    AVGMW: number;
-    AssetName: string;
-}
 
 const AssetHistoryStats: React.FC<SEBrowser.IWidget<any>> = (props) => {
-    const [statsData, setStatsData] = React.useState<IStatsData[]>([]);
+    const [statsData, setStatsData] = React.useState<Number[]>([]);
     const [assetName, setAssetName] = React.useState<string>('');
 
     React.useEffect(() => {

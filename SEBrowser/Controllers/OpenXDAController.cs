@@ -469,10 +469,10 @@ namespace SEBrowser.Controllers
         }
 
         [Route("GetEventSearchHistoryStats/{eventID:int}"), HttpGet]
-        public object GetEventSearchHistoryStats(int eventID)
+        public DataTable GetEventSearchHistoryStats(int eventID)
         {
             using AdoDataConnection connection = new(SettingsCategory);
-            object stats = connection.RetrieveData(@" 
+            DataTable stats = connection.RetrieveData(@" 
                     SELECT
 	                    ROUND(MAX(VPeak)/Asset.VoltageKV/1000, 3) as VPeakMax,
 	                    MAX(VMax) as VMax,
