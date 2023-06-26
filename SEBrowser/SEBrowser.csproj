@@ -571,6 +571,8 @@
     <Content Include="Scripts\TSX\Components\TrendData\TrendData.tsx" />
     <Content Include="Scripts\TSX\Components\TrendData\TrendDataNavbar.tsx" />
     <Content Include="Scripts\TSX\Components\TrendData\TrendChannelTable.tsx" />
+    <Content Include="Scripts\TSX\Components\TrendData\AllSettingsModal.tsx" />
+    <Content Include="Scripts\TSX\Components\TrendData\TrendMarkerTable.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\LineGraph.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\PlotSettings.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\SettingsOverlay.tsx" />
