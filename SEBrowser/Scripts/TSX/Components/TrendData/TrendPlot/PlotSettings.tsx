@@ -24,16 +24,20 @@ import React from 'react';
 import _ from 'lodash';
 import { IMultiCheckboxOption } from '../../../global';
 import ReportTimeFilter from '../../ReportTimeFilter';
-import { Input, MultiCheckBoxSelect, Select } from '@gpa-gemstone/react-forms';
+import { CheckBox, Input, MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { ITrendPlot } from './TrendPlot';
 
 interface IProps {
-    // Manage Plot
     Plot: ITrendPlot,
-    SetPlot: (record: ITrendPlot) => void
+    SetPlot: (record: ITrendPlot) => void,
+    SetConfirmDisabled: (record: boolean) => void
 }
 
 const PlotSettings = React.memo((props: IProps) => {
+    React.useEffect(() => {
+        props.SetConfirmDisabled(!isValid());
+    }, [props.Plot]);
+
     function validateTrendPlot(field: keyof ITrendPlot): boolean {
         if (field === 'Height' || field === 'Width') {
             const checkValue = props.Plot[field];
@@ -42,17 +46,32 @@ const PlotSettings = React.memo((props: IProps) => {
         return true;
     }
 
+    function isValid(): boolean {
+        return validateTrendPlot('Height') && validateTrendPlot('Width');
+    }
+
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20}}>
             <div className="col" style={{ width: '50%' }}>
                 <legend className="w-auto" style={{ fontSize: 'large' }}>Plot Settings:</legend>
                 <div className="row">
-                    <Input<ITrendPlot> Record={props.Plot} Label={'Plot Title'} Field={'Title'} Setter={props.SetPlot} Valid={() => true} />
-                    <Input<ITrendPlot> Record={props.Plot} Label={'X-Axis Label'} Field={'XAxisLabel'} Setter={props.SetPlot} Valid={() => true} />
+                    <div className="col" style={{ width: '50%'}}>
+                        <Input<ITrendPlot> Record={props.Plot} Label={'Plot Title'} Field={'Title'} Setter={props.SetPlot} Valid={() => true} />
+                    </div>
+                    <div className="col" style={{ width: '50%' }}>
+                        <Input<ITrendPlot> Record={props.Plot} Label={'X-Axis Label'} Field={'XAxisLabel'} Setter={props.SetPlot} Valid={() => true} />
+                    </div>
                 </div>
                 <div className="row">
-                    <Input<ITrendPlot> Record={props.Plot} Label={'Height (%)'} Field={'Height'} Setter={props.SetPlot} Valid={validateTrendPlot} Feedback="Must be a percentage value" />
-                    <Input<ITrendPlot> Record={props.Plot} Label={'Width (%)'} Field={'Width'} Setter={props.SetPlot} Valid={validateTrendPlot} Feedback="Must be a percentage value" />
+                    <div className="col" style={{ width: '50%' }}>
+                        <Input<ITrendPlot> Record={props.Plot} Label={'Height (%)'} Field={'Height'} Setter={props.SetPlot} Valid={validateTrendPlot} Feedback="Must be a percentage value" />
+                    </div>
+                    <div className="col" style={{ width: '50%' }}>
+                        <Input<ITrendPlot> Record={props.Plot} Label={'Width (%)'} Field={'Width'} Setter={props.SetPlot} Valid={validateTrendPlot} Feedback="Must be a percentage value" />
+                    </div>
+                </div>
+                <div className="row">
+                    <CheckBox<ITrendPlot> Record={props.Plot} Label='Use Metric Abbreviation' Field='Metric' Setter={props.SetPlot} />
                 </div>
             </div>
             <div className="col" style={{ width: '50%' }}>

@@ -38,7 +38,9 @@ interface IProps {
     }[],
     Height: number,
     Width: number,
+    OnSelect: (time: number, value: number) => boolean,
     Title?: string,
+    Metric?: boolean,
     XAxisLabel?: string,
     children: React.ReactNode
 }
@@ -122,7 +124,10 @@ const LineGraph = React.memo((props: IProps) => {
     }, [allChartData]);
 
     function GetTrendData(channels: number[], startTime: string, endTime: string): JQuery.jqXHR<any[]> {
-        if (channels.length === 0) return null;
+        if (channels.length === 0) {
+            setAllChartData(CulledTrendData());
+            return null;
+        };
         setGraphStatus('loading');
         return $.ajax({
             type: "POST",
@@ -148,13 +153,17 @@ const LineGraph = React.memo((props: IProps) => {
                         AvgSeries: channelInfo.Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Average])
                     });
                 });
-            const oldData = allChartData.filter(oldSeries =>
-                props.ChannelInfo.findIndex(channel => channel.Channel.ID === oldSeries.ChannelID) !== -1);
+            const oldData = CulledTrendData();
             setAllChartData(oldData.concat(newData));
             setGraphStatus('idle');
         }).fail(() => {
             setGraphStatus('error');
         });
+    }
+
+    function CulledTrendData(): IChartData[] {
+        return allChartData.filter(oldSeries =>
+            props.ChannelInfo.findIndex(channel => channel.Channel.ID === oldSeries.ChannelID) !== -1);
     }
 
     function GetDisplay() {
@@ -181,8 +190,8 @@ const LineGraph = React.memo((props: IProps) => {
                     <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={40} />
                     {props.Title !== undefined ? <h4 style={{ textAlign: "center" }}>{props.Title}</h4> : null}
                     <Plot height={props.Height} width={props.Width} showBorder={false}
-                        defaultTdomain={timeLimits}
-                        legend={'bottom'}
+                        defaultTdomain={timeLimits} onSelectConsumable={props.OnSelect}
+                        legend={'bottom'} useMetricFactors={props.Metric ?? false}
                         Tlabel={props.XAxisLabel ?? 'Time'} Ylabel={'Units'} showMouse={true}>
                         {allChartData.flatMap((chartData, index) => {
                             let lineArray: JSX.Element[] = [];
