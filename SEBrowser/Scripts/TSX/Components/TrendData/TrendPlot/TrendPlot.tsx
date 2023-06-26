@@ -22,12 +22,16 @@
 //******************************************************************************************************
 import React from 'react';
 import _ from 'lodash';
-import { CrossMark, Pencil } from '@gpa-gemstone/gpa-symbols';
-import { Button } from '@gpa-gemstone/react-graph';
+import { CreateGuid } from '@gpa-gemstone/helper-functions';
+import { CrossMark, Pencil, Plus } from '@gpa-gemstone/gpa-symbols';
+import { Button, SymbolicMarker, Infobox } from '@gpa-gemstone/react-graph';
 import { LineGraph, ILineSeries } from './LineGraph';
 import { IMultiCheckboxOption, SEBrowser } from '../../../global';
 import { SettingsOverlay } from './SettingsOverlay';
+import { ToolTip } from '@gpa-gemstone/react-interactive';
+import moment from 'moment';
 
+//TODO: move to global
 interface ITrendPlot {
     TimeFilter: SEBrowser.IReportTimeFilter,
     Type: 'Line',
@@ -37,7 +41,8 @@ interface ITrendPlot {
     Width: number,
     Height: number,
     Title?: string,
-    XAxisLabel?: string
+    XAxisLabel?: string,
+    Metric?: boolean
 }
 
 interface IContainerProps {
@@ -48,6 +53,20 @@ interface IContainerProps {
     // Manage Overlay
     HandleOverlay: (open: boolean) => void,
     OverlayPortalID: string
+}
+
+interface IMarker {
+    // Symbolic marker
+    ID: string,
+    symbol: string,
+    xPos: number,
+    yPos: number,
+    radius: number,
+    // Infobox
+    note: string,
+    xBox: number,
+    yBox: number,
+    opacity: number
 }
 
 type SeriesSettings = ILineSeries;
@@ -61,6 +80,9 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     // Plot Saved Settings
     const [plotAllSeriesSettings, setPlotAllSeriesSettings] = React.useState<SeriesSettings[]>(null);
 
+    // Plot Markers
+    const [markers, setMarkers] = React.useState<IMarker[]>([]);
+
     // Settings Controls
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
 
@@ -73,7 +95,6 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     // Handle the overlay
     React.useEffect(() => {
         props.HandleOverlay(showSettings);
-        console.log("outer show is " + showSettings)
     }, [showSettings]);
 
     const handleChannelDrop = React.useCallback((event: any) => {
@@ -109,19 +130,59 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             {Pencil}
         </Button>);
 
+    const createMarker = React.useCallback((time: number, value: number) => {
+        const currentMarkers = [...markers];
+        const newId = CreateGuid();
+        currentMarkers.push({
+            ID: newId,
+            // Symbol
+            symbol: Plus,
+            radius: 10,
+            xPos: time,
+            yPos: value,
+            // Note
+            note: "",
+            opacity: 1,
+            xBox: time,
+            yBox: value
+        });
+        setMarkers(currentMarkers);
+        return true;
+    }, [markers, setMarkers]);
+
+    const setMarker = React.useCallback((ID: string, value: any, field: keyof (IMarker)) => {
+        const index = markers.findIndex(item => item.ID === ID);
+        const newList: any[] = [...markers];
+        newList[index][field] = value;
+        setMarkers(newList);
+        return true;
+    }, [markers, setMarkers]);
+
     return (
         <div className="col" style={{ width: props.Plot.Width - 1 + '%', height: props.Plot.Height-1 + '%', float: 'left' }} ref={chartRef} onDragOver={handleDragOver} onDrop={handleChannelDrop}>
             <div className="row">
                 {props.Plot.Type === 'Line' ?
-                    <LineGraph ChannelInfo={plotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter} Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel}
-                        Height={chartHeight} Width={chartWidth}>
+                    <LineGraph ChannelInfo={plotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
+                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric}
+                        OnSelect={createMarker}> 
+                        {markers.map((marker, i) =>
+                            <SymbolicMarker key={"Marker_" + i}
+                                xPos={marker.xPos} yPos={marker.yPos} symbol={<>{marker.symbol}</>} radius={marker.radius}
+                                setPosition={(x, y) => { setMarker(marker.ID, x, 'xPos'); setMarker(marker.ID, y, 'yPos'); setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }} />
+                        )}
+                        {markers.map((marker, i) =>
+                            <Infobox key={"Info_" + i} origin="upper-center"
+                                x={marker.xBox} y={marker.yBox} opacity={marker.opacity} info={`(X:${moment(marker.xPos).format("mm:ss.SS")}, Y:${marker.yPos.toFixed(2)})\n${marker.note}`}
+                                maxWidth={100} maxHeight={80} offset={15}
+                                setPosition={(x, y) => { setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }} />
+                        )}
                         {overlayButton} {closeButton}
                     </LineGraph> : null}
             </div>
             <SettingsOverlay SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings} SetShow={setShowSettings} Show={showSettings} SetPlot={props.SetPlot}
-                OverlayPortalID={props.OverlayPortalID} Plot={props.Plot} />
+            OverlayPortalID={props.OverlayPortalID} Plot={props.Plot} Markers={markers} SetMarkers={setMarkers} />
         </div>
     );
 });
 
-export { TrendPlot, ITrendPlot };
+export { TrendPlot, ITrendPlot, IMarker };

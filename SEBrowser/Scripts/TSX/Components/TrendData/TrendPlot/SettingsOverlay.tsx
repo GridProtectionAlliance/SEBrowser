@@ -27,17 +27,23 @@ import { BlockPicker } from 'react-color';
 import { ILineSeries } from './LineGraph';
 import { IMultiCheckboxOption } from '../../../global';
 import ReportTimeFilter from '../../ReportTimeFilter';
-import { Input, MultiCheckBoxSelect, Select } from '@gpa-gemstone/react-forms';
+import { Input, MultiCheckBoxSelect, Select, TextArea } from '@gpa-gemstone/react-forms';
 import { SpacedColor } from '@gpa-gemstone/helper-functions';
 import TrendChannelTable from '../TrendChannelTable';
 import { TabSelector, Warning } from '@gpa-gemstone/react-interactive';
-import { ITrendPlot } from './TrendPlot';
+import { ITrendPlot, IMarker } from './TrendPlot';
 import { PlotSettings } from './PlotSettings';
+import Table from '@gpa-gemstone/react-table';
+import TrendMarkerTable from '../TrendMarkerTable';
+import { CrossMark, Plus } from '@gpa-gemstone/gpa-symbols';
 
 interface IOverlayProps {
     // Manage Plot
     Plot: ITrendPlot,
     SetPlot: (id: string, record: ITrendPlot, field: keyof (ITrendPlot)) => void,
+    // Manage Markers
+    Markers: IMarker[],
+    SetMarkers: (markers: IMarker[]) => void,
     // Assumption that this doesnt change outside of this overlay
     SeriesSettings?: SeriesSettings[]
     SetSeriesSettings: (newSettings: SeriesSettings[]) => void
@@ -54,11 +60,19 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
     const sideSettingRef = React.useRef(null);
     const [settingsHeight, setSettingsHeight] = React.useState<number>(500);
 
+    const sideMarkerRef = React.useRef(null);
+    const [markersHeight, setMarkersHeight] = React.useState<number>(500);
+
     // Settings Controls
     const [tab, setTab] = React.useState<string>("plot");
     const [showWarning, setShowWarning] = React.useState<boolean>(false);
+    const [confirmDisabled, setConfirmDisabled] = React.useState<boolean>(false);
     const [removeId, setRemoveId] = React.useState<number>(undefined);
     const [currentSettingsChannel, setCurrentSettingsChannel] = React.useState<number>(undefined);
+
+    const [currentSettingsMarker, setCurrentSettingsMarker] = React.useState<string>(undefined);
+    const [currentMarker, setCurrentMarker] = React.useState<IMarker>(undefined);
+    const [markersBuffer, setMarkersBuffer] = React.useState<IMarker[]>([]);
 
     // Settings Buffers
     const [plotSettingsBuffer, setPlotSettingsBuffer] = React.useState<ITrendPlot>(null);
@@ -69,6 +83,8 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
     React.useLayoutEffect(() => {
         const baseHeight = sideSettingRef?.current?.offsetHeight ?? 400;
         setSettingsHeight(baseHeight < 400 ? 400 : baseHeight);
+        const baseMarkerHeight = sideMarkerRef?.current?.offsetHeight ?? 400;
+        setMarkersHeight(baseMarkerHeight < 400 ? 400 : baseMarkerHeight);
     });
 
     // Create Settings Variables
@@ -88,6 +104,16 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
     React.useEffect(() => {
         setPlotSettingsBuffer(props.Plot);
     }, [props.Plot]);
+
+    React.useEffect(() => {
+        setMarkersBuffer(props.Markers);
+    }, [props.Markers]);
+
+    React.useEffect(() => {
+        if (currentMarker !== undefined) setMarkersBuffer(getNewMarkerList(currentMarker));
+
+        setCurrentMarker(markersBuffer.find(marker => marker.ID === currentSettingsMarker));
+    }, [currentSettingsMarker]);
 
     React.useEffect(() => {
         // Means were in the first render/ after cleanup
@@ -118,17 +144,12 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
     }
 
     function clearBuffers(): void {
+        setCurrentSettingsMarker(undefined);
+        setCurrentMarker(undefined);
+        setMarkersBuffer(props.Markers);
         setCurrentSettingsChannel(undefined);
         setSeriesSettingsBuffer(undefined);
         setSeriesSettingsMultiBuffer([]);
-    }
-
-    function validateTrendPlot(field: keyof ITrendPlot): boolean {
-        if (field === 'Height' || field === 'Width') {
-            const checkValue = plotSettingsBuffer[field];
-            return checkValue <= 100 && checkValue >= 0;
-        }
-        return true;
     }
 
     // Functions to handle removing/adding channels
@@ -143,7 +164,7 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
 
     const warnRemoveChannel = React.useCallback((id: number) => {
         // implies there could be a change lost
-        if (currentSettingsChannel !== undefined || seriesSettingsBuffer !== undefined || seriesSettingsMultiBuffer.length !== 0) {
+        if (currentSettingsChannel !== undefined || seriesSettingsBuffer !== undefined || seriesSettingsMultiBuffer.length !== 0 || currentSettingsMarker !== undefined) {
             setShowWarning(true);
             setRemoveId(id);
         }
@@ -151,10 +172,28 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
             removeChannel(id);
     }, [currentSettingsChannel, seriesSettingsBuffer, seriesSettingsMultiBuffer, removeChannel, props.SetPlot]);
 
+    // Functions to handle removing/changing markers
+    const removeMarker = React.useCallback((id: string) => {
+        const allMarkers = [...markersBuffer];
+        const index = allMarkers.findIndex(marker => marker.ID === id);
+        allMarkers.splice(index, 1);
+        setMarkersBuffer(allMarkers);
+    }, [markersBuffer, setMarkersBuffer]);
+
+    const getNewMarkerList = React.useCallback((marker: IMarker) => {
+        const allMarkers = [...markersBuffer];
+        const index = allMarkers.findIndex(mark => mark.ID === marker.ID);
+        allMarkers.splice(index, 1, marker);
+        return allMarkers;
+    }, [markersBuffer, setMarkersBuffer]);
+
     const lineTypeOptions = [{ Label: "Dashed", Value: ":" }, { Label: "Solid", Value: "-" }];
+
+    const markerSymbolOptions = [{ Label: "Plus", Value: Plus }, { Label: "Cross", Value: CrossMark }];
 
     const Tabs = [
         { Id: "plot", Label: "Plot" },
+        { Id: "marks", Label: "Marker" },
         { Id: "series", Label: "Channel" }
     ];
 
@@ -170,7 +209,7 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                         <hr />
                         <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
                             <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
-                                <PlotSettings Plot={plotSettingsBuffer} SetPlot={setPlotSettingsBuffer} />
+                                <PlotSettings Plot={plotSettingsBuffer} SetPlot={setPlotSettingsBuffer} SetConfirmDisabled={setConfirmDisabled} />
                             </div>
                         </div>
                         <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
@@ -193,11 +232,34 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                                 </div>
                             </div>
                         </div>
+                        <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
+                            <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
+                                <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
+                                    <div className="col" style={{ width: '40%', height: settingsHeight }}>
+                                        <TrendMarkerTable Height={markersHeight} Markers={markersBuffer} RemoveMarker={removeMarker}
+                                            Selected={currentSettingsMarker} SetSelected={setCurrentSettingsMarker} />
+                                    </div>
+                                    <div className="col" style={{ width: '60%' }} ref={sideMarkerRef}>
+                                        {currentMarker === undefined ? null :
+                                            <>
+                                                <Select<IMarker> Record={currentMarker} Label={'Marker Symbol'} Field={'symbol'} Setter={setCurrentMarker} Options={markerSymbolOptions} />
+                                                <Input<IMarker> Record={currentMarker} Label={'Infobox Opacity'} Field={'opacity'} Setter={setCurrentMarker} Valid={() => {
+                                                    //TODO: this must be between 0-1
+                                                    return true;
+                                                }} />
+                                                <TextArea<IMarker> Record={currentMarker} Label={'Marker Note'} Field={'note'} Setter={setCurrentMarker} Rows={3} Valid={() => true } />
+                                            </>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div className="card-footer">
                         <button type="button"
-                            className={'btn btn-primary float-left'}
+                            className={`btn btn-primary ${confirmDisabled ? 'disabled ' : ''}float-left`}
                             onClick={() => {
+                                if (confirmDisabled) return;
                                 // Each of the fields that are set global to all channels
                                 Object.keys(plotSettingsBuffer).forEach(field => checkAndSetValue(field as keyof (ITrendPlot)));
                                 // Remove settings that got changed from base, then add back in
@@ -210,6 +272,9 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                                 if (seriesSettingsBuffer !== undefined)
                                     newSettings.push(seriesSettingsBuffer);
                                 props.SetSeriesSettings(newSettings);
+                                // Handle markers (we can assume if this is undefined we have no changes)
+                                if (currentMarker !== undefined) props.SetMarkers(getNewMarkerList(currentMarker));
+                                else if (props.Markers.length !== markersBuffer.length) props.SetMarkers(markersBuffer);
                                 clearBuffers();
                                 props.SetShow(false);
                             }}>Save Changes</button>
