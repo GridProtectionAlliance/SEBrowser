@@ -24,9 +24,8 @@
 import React from 'react';
 import TrendSearchNavbar from './TrendDataNavbar';
 import { TrendPlot, ITrendPlot } from './TrendPlot/TrendPlot';
-import { OverlayDrawer, VerticalSplit } from '@gpa-gemstone/react-interactive';
-import { CreateGuid } from '@gpa-gemstone/helper-functions';
-import { SEBrowser } from '../../global';
+import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
+import AllSettingsModal from './AllSettingsModal';
 
 interface IProps { }
 
@@ -35,6 +34,7 @@ const TrendData = (props: IProps) => {
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
     const [navHeight, setNavHeight] = React.useState<number>(0);
     const [plotList, setPlotList] = React.useState<ITrendPlot[]>([]);
+    const [showSettings, setShowSettings] = React.useState<boolean>(false);
     const overlayPortalID: string = "TrendDataChartPortal";
     const overlayDrawer: string = "TrendDataNavbar";
 
@@ -59,6 +59,14 @@ const TrendData = (props: IProps) => {
         setPlotList(newList);
     }), [plotList]);
 
+    const setAllPlot = React.useCallback(((record: ITrendPlot, field: keyof (ITrendPlot)) => {
+        const newList: any[] = [...plotList];
+        newList.forEach((item: ITrendPlot, index: number) => {
+            newList[index][field] = record[field];
+        });
+        setPlotList(newList);
+    }), [plotList]);
+
     const appendNewContainer = React.useCallback(((newContainerProps: ITrendPlot) => {
         const newList = [...plotList];
         newList.push(newContainerProps);
@@ -79,6 +87,7 @@ const TrendData = (props: IProps) => {
                 ToggleVis={toggleNavbar}
                 ShowNav={showNav}
                 SetHeight={setNavHeight}
+                SetShowAllSettings={setShowSettings}
                 AddNewChart={appendNewContainer}
             />
             <div style={{ width: '100%', height: (showNav ? 'calc(100% - ' + navHeight + 'px)' : 'calc( 100% - 52px)'), overflowY: 'scroll' }}>
@@ -90,6 +99,7 @@ const TrendData = (props: IProps) => {
             <OverlayDrawer Title={''} Open={false} Location={'top'} Target={overlayDrawer} GetOverride={(s) => { closureHandler.current = s; }} HideHandle={true}>
                 <div id={overlayPortalID} style={{opacity: 1, background: undefined, color: 'black' }} />
             </OverlayDrawer>
+            <AllSettingsModal Show={showSettings} SetShow={setShowSettings} ApplyFieldToAll={setAllPlot} />
         </div>
     );
 }

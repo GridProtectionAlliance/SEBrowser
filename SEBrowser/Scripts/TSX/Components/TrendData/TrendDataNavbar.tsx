@@ -41,6 +41,7 @@ interface IProps {
     ToggleVis: () => void,
     ShowNav: boolean,
     SetHeight: (h: number) => void,
+    SetShowAllSettings: (show: boolean) => void,
     AddNewChart: (chartData: ITrendPlot) => void
 }
 
@@ -347,14 +348,14 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         </fieldset>
                     </li>
                     <li className="nav-item" style={{ width: '55%', paddingRight: 10, height: tableHeight }}>
-                        <TrendChannelTable Height={tableHeight} TrendChannels={trendChannels} Type='multi' SelectedSet={selectedSet} SetSelectedSet={setSelectedSet} />
+                        <TrendChannelTable Height={tableHeight} TrendChannels={trendChannels} Type='multi' SelectedSet={selectedSet} SetSelectedSet={setSelectedSet} EnableDragDrop={true} />
                     </li>
                 </ul>
                 <div className="btn-group-vertical float-right">
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}>
                         <span>{SVGIcons.ArrowDropUp}</span>
                     </button>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => { }}>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => props.SetShowAllSettings(true)}>
                         <span>{SVGIcons.Settings}</span>
                     </button>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => {
