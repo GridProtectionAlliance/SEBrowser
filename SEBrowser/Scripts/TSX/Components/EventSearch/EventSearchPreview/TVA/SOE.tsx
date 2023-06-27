@@ -23,23 +23,29 @@
 
 import React from 'react';
 import { SEBrowser } from '../../../../global';
-import { MultiCheckBoxSelect , Select } from '@gpa-gemstone/react-forms';
-import Table  from '@gpa-gemstone/react-table';
-import cloneDeep from 'lodash/cloneDeep';
+import { MultiSelect, Table, Column } from '@gpa-gemstone/react-table';
 
-interface ISOEFilters { abnormal: boolean, close: boolean, no: boolean, normal: boolean, received: boolean, start: boolean, trip: boolean, yes: boolean };
 
-interface SOEInfo { Time: string, Alarm: string, Status: string };
+type Status = 'ABNORMAL' | 'Close' | 'No' | 'NORMAL' | 'RECEIVED' | 'Start' | 'Trip' | 'Yes';
+
+type ISOEFilter = { 'abnormal': boolean, 'close': boolean, 'no': boolean, 'normal': boolean, 'received': boolean, 'start': boolean, 'trip': boolean, 'yes': boolean };
+type SOEInfo = { Time: string, Alarm: string, Status: string };
 
 const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
-    const [soeInfo, setSOEInfo] = React.useState<Array< SOEInfo >>([]);
-    const [statusFilter, setStatusFilter] = React.useState<ISOEFilters>({ abnormal: false, close: false, no: false, normal: false, received: false, start: false, trip: false, yes: false })
+    const [soeInfo, setSOEInfo] = React.useState<SOEInfo[]>([]);
+    const [statusFilter, setStatusFilter] = React.useState<ISOEFilter>({ 'abnormal': false, 'close': false, 'no': false, 'normal': false, 'received': false, 'start': false, 'trip': false, 'yes': false });
     const [timeWindow, setTimeWindow] = React.useState<number>(2);
     
     React.useEffect(() => {
         return GetData();
     }, [props.eventID, timeWindow, statusFilter]);
-    
+
+    const cols: Column<SOEInfo>[] = [
+        { key: "Time", label: "Time", field: "Time" },
+        { key: "Alarm", label: "Alarm", field: "Alarm" },
+        { key: "Status", label: "Status", field: "Status" }
+    ];
+
     function GetData() {
         let handle = $.ajax({
             type: "GET",
@@ -59,50 +65,37 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
         }
     }
 
+    function HandleStatusFilterChange(key: keyof ISOEFilter) {
+        statusFilter[key] = !statusFilter[key]
+        setStatusFilter(statusFilter);
+    }
+
     return (
         <div className="card">
             <div className="card-header">SOE:</div>
             <div className="card-body">
                 <div className='row'>
                     <div className='col'>
-                        <Select
-                            Record={{ timeWindow }}
-                            Field='timeWindow'
-                            Options={[
-                                { Value: "2", Label: "2" },
-                                { Value: "10", Label: "10" },
-                                { Value: "60", Label: "60" }
-                            ]}
-                            Setter={(record) => setTimeWindow(record.timeWindow)}
-                            Label="Time Window(s)"
-                        />
+                        <label>Time Window(s)</label>
+                        <select value={timeWindow} onChange={(evt) => setTimeWindow(parseFloat(evt.target.value))}>
+                            <option value={2}>2</option>
+                            <option value={10}>10</option>
+                            <option value={60}>60</option>
+
+                        </select>
                     </div>
                     <div className='col-8'>
-                        <MultiCheckBoxSelect
-                            Options={Object.keys(statusFilter).map((k, i) => ({ Value: i, Text: k, Selected: statusFilter[k] })) }
-                            Label={'Filter Out: '}
-                            OnChange={(evt, options) => {
-                                let filters = cloneDeep(statusFilter)
-                                let filterKeys = Object.keys(filters);
-
-                                options.forEach((option) => {
-                                    let key = filterKeys[option.Value]; 
-                                    filters[key as keyof ISOEFilters] = !filters[key as keyof ISOEFilters];
-                                });
-
-                                setStatusFilter(filters)
-                            }} />
+                        <fieldset className='border'>
+                            <legend style={{ font: 'inherit' }}>Filter Out:</legend>
+                            {Object.keys(statusFilter).map((key, index) => <div key={index} className='form-check form-check-inline'><input className="form-check-input" type="checkbox" value={statusFilter[key]} onChange={() => HandleStatusFilterChange(key)} /><label className="form-check-label">{key}</label></div>)}
+                        </fieldset>
                     </div>
 
                 </div>
                 <div style={{ maxHeight: 200, overflowY: 'auto' }}>
                     <Table
-                        cols={[
-                            { key: "Time", label: "Time", field: "Time" },
-                            { key: "Alarm", label: "Alarm", field: "Alarm" },
-                            { key: "Status", label: "Status", field: "Status" }
-                        ]}
-                        data={soeInfo.filter(si => !statusFilter[si.Status.toLowerCase()] )}
+                        cols={cols}
+                        data={soeInfo.filter(si => !statusFilter[si.Status])}
                         onClick={() => { }}
                         onSort={() => { }}
                         sortKey={'Time'}
