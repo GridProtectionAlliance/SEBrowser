@@ -194,7 +194,7 @@ export default function EventSearchList(props: IProps) {
             {status == 'loading' ? null :
                 data.length == numberResults ?
                     <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
-                        Only the first {data.length} results are shown - please narrow your search or increase the number of results
+                        Only the first {data.length} chronological results are shown - please narrow your search or increase the number of results in the application settings
                     </div> :
                     <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
                         {data.length} results
