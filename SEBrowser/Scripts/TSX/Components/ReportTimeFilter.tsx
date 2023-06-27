@@ -292,12 +292,20 @@ const ReportTimeFilter = (props: IProps) => {
     const [filter, setFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.filter)
     const timeZone = useSelector(SelectTimeZone);
     const [activeQP, setActiveQP] = React.useState<number>(-1);
+    const [currentTime, setCurrentTime] = React.useState<{ Value: string }>({ Value: filter.date + 'T' + filter.time + "[Z]" });
+
 
     React.useEffect(() => {
         if (isEqual(props.filter, filter))
             return;
         setFilter(props.filter);
     }, [props.filter])
+
+    React.useEffect(() => {
+        const t = filter.date + 'T' + filter.time + "[Z]";
+        if (t !== currentTime.Value)
+            setCurrentTime({ Value: t });
+    }, [filter]);
 
     React.useEffect(() => {
         if (isEqual(props.filter, filter))
@@ -317,22 +325,24 @@ const ReportTimeFilter = (props: IProps) => {
                 <div className="">
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window Center: </label>
                     <div className="row">
-                        <div className='col-6'>
-                        <DatePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="date"
+                    <div className='col-12'>
+                        <DatePicker<{ Value: string }> Record={currentTime} Field="Value"
                             Setter={(r) => {
-                                setFilter(r);
+                                const t = r.Value;
+                                setFilter((f) => ({ ...f, date: t.split(" ")[0], time: t.split(" ")[1] }));
                                 setActiveQP(-1);
-                            }} Label=''
-                            Valid={(record) => { return true; }} Format="MM/DD/YYYY" />
+                            }} Label='' 
+                            Type='datetime-local'
+                            Valid={(record) => { return true; }} Format={momentDateFormat + ' ' + momentTimeFormat} />
                         </div>
-                    <div className='col-6'>
+                    {/*<div className='col-6'>
                         <TimePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="time"
                             Setter={(r) => {
                             setFilter(r);
                             setActiveQP(-1);
                             }}
                             Label='' Valid={(record) => { return true; }} Step={0.001} />
-                        </div>
+                        </div>*/}
                     </div>
 
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
