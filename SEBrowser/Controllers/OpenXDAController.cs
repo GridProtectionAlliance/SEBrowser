@@ -26,7 +26,6 @@ using GSF;
 using GSF.Data;
 using GSF.Data.Model;
 using GSF.Web;
-using Microsoft.Ajax.Utilities;
 using openXDA.Model;
 using System;
 using System.Collections.Generic;
@@ -491,7 +490,7 @@ namespace SEBrowser.Controllers
 	                    (SELECT ROUND(MAX(IMax),3) as IMax FROM (VALUES(IAMax), (IBMax), (ICMax)) AS IMaxView(IMax)) as IMax OUTER APPLY
 	                    (SELECT ROUND(MAX(I2tMax),3) as I2tMax FROM (VALUES(IA2t), (IB2t), (IC2t)) AS I2tView(I2tMax)) as I2tMax
                     WHERE Asset.ID = (SELECT AssetID FROM Event WHERE ID = {0})
-                    GROUP BY VoltageKV , Asset.AssetName
+                    GROUP BY VoltageKV, Asset.AssetName
                     "
                 , eventID);
 

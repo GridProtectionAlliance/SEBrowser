@@ -2,10 +2,20 @@ import React from 'react';
 import { SEBrowser } from '../../../global';
 import Table from '@gpa-gemstone/react-table';
 
+interface IStatsData {
+    VPeakMax: number;
+    VMax: number;
+    VMin: number;
+    IMax: number;
+    I2tMax: number;
+    IPeakMax: number;
+    AVGMW: number;
+    AssetName: string;
+}
 
 const AssetHistoryStats: React.FC<SEBrowser.IWidget<any>> = (props) => {
-    const [statsData, setStatsData] = React.useState<Number[]>([]);
-    const [assetName, setAssetName] = React.useState<string>('');
+    const [statsData, setStatsData] = React.useState<IStatsData[]>([]);
+
 
     React.useEffect(() => {
         getStatsData();
@@ -18,7 +28,6 @@ const AssetHistoryStats: React.FC<SEBrowser.IWidget<any>> = (props) => {
                 if (data && data.length > 0) {
                     const stats = data[0];
                     setStatsData(stats);
-                    setAssetName(stats.AssetName);
                 }
             })
             .catch((error) => {
@@ -28,7 +37,7 @@ const AssetHistoryStats: React.FC<SEBrowser.IWidget<any>> = (props) => {
 
     return (
         <div className="card">
-            <div className="card-header">Lifetime Stats for {assetName}:</div>
+            <div className="card-header">Lifetime Stats for {statsData['AssetName']}:</div>
             <div className="card-body">
                 <Table
                     cols={[

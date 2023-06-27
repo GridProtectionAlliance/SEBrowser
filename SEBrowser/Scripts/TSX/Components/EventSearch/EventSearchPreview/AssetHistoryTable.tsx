@@ -2,6 +2,7 @@ import React from 'react';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
 import Table from '@gpa-gemstone/react-table';
+import { Select } from '@gpa-gemstone/react-forms';
 
 const AssetHistoryTable: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [historyData, setHistoryData] = React.useState<Array<any>>([]);
@@ -11,7 +12,6 @@ const AssetHistoryTable: React.FC<SEBrowser.IWidget<any>> = (props) => {
     React.useEffect(() => {
         let handle = getHistoryData();
         handle.done((data) => {
-            console.log(data);
             setHistoryData(data);
 
             if (data.length > 0) setAssetName(data[0].AssetName);
@@ -35,16 +35,20 @@ const AssetHistoryTable: React.FC<SEBrowser.IWidget<any>> = (props) => {
 
     return (
         <div className="card">
-            <div className="card-header">Event History for {assetName}:
-                <div className='pull-right'>Number of events: 
-                    <select className='pull-right' value={count} onChange={(evt) => setCount(parseInt(evt.target.value))}>
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="75">75</option>
-                        <option value="100">100</option>
-                    </select>
-                </div>
+            <div className="card-header">Event History for {assetName}: 
+                <Select
+                Record={{ count }}
+                Field='count'
+                Options={[
+                    { Value: "10", Label: "10" },
+                    { Value: "25", Label: "25" },
+                    { Value: "50", Label: "50" },
+                    { Value: "75", Label: "75" },
+                    { Value: "100", Label: "100" }
+                ]}
+                Setter={(record) => setCount(record.count)}
+                Label="Number of events: "
+                    />
             </div>
             <div className="card-body">
                 <Table
