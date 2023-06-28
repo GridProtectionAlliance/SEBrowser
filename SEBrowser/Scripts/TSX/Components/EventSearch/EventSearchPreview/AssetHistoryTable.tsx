@@ -35,20 +35,22 @@ const AssetHistoryTable: React.FC<SEBrowser.IWidget<any>> = (props) => {
 
     return (
         <div className="card">
-            <div className="card-header">Event History for {assetName}: 
-                <Select
-                Record={{ count }}
-                Field='count'
-                Options={[
-                    { Value: "10", Label: "10" },
-                    { Value: "25", Label: "25" },
-                    { Value: "50", Label: "50" },
-                    { Value: "75", Label: "75" },
-                    { Value: "100", Label: "100" }
-                ]}
-                Setter={(record) => setCount(record.count)}
-                Label="Number of events: "
+            <div className="card-header">Event History for {assetName}:
+                <div className='pull-right'>
+                    <Select
+                        Record={{ count }}
+                        Field='count'
+                        Options={[
+                            { Value: "10", Label: "10" },
+                            { Value: "25", Label: "25" },
+                            { Value: "50", Label: "50" },
+                            { Value: "75", Label: "75" },
+                            { Value: "100", Label: "100" }
+                        ]}
+                        Setter={(record) => setCount(record.count)}
+                        Label="Number of events: "
                     />
+                </div>
             </div>
             <div className="card-body">
                 <Table
