@@ -221,7 +221,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                                 {this.state.subStations.map(item => <option key={item.LocationID} value={item.LocationID} > {item.AssetName} </option>)}
                                         </select>
                                     </div>
-                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Cap Bank Group: </label>
+                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Capacitor Bank Group: </label>
                                     <div className="form-group" style={{ height: 30 }}>
                                             <select ref="Breaker" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
                                                 this.setCapBank(parseInt((e.target as any).value.toString()));
@@ -291,7 +291,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                 </div>
             </nav>
 
-                <Modal Show={this.state.showFilter} ShowX={true} ShowCancel={false} Size={'xlg'} Title={'Filter CapBank Events'} ConfirmText={'Close'} CallBack={() => this.setState({ showFilter: false })}>
+                <Modal Show={this.state.showFilter} ShowX={true} ShowCancel={false} Size={'xlg'} Title={'Filter Capacitor Bank Events'} ConfirmText={'Close'} CallBack={() => this.setState({ showFilter: false })}>
                     <div style={{ width: '100%', display: 'inline-flex' }}>
                         <div style={{ width: '10%', paddingRight: 10 }}>
                             <CBEventFilter activeFilter={this.props.PhaseFilter} showAll={true} Label={'Phase'} setter={(result) => {
@@ -318,7 +318,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                     { Label: 'Abnormal Health', Values: [2] },
                                     { Label: 'Failed Opening', Values: [3, 4] },
                                     { Label: 'Failed Closing', Values: [10, 5] },
-                                    { Label: 'Restrike/ Reignition', Values: [4, 5] },
+                                    { Label: 'Restrike/Reignition', Values: [4, 5] },
                                     { Label: 'Abnormal PreInsertion Switching', Values: [8] },
                                     { Label: 'Missing Pole', Values: [11] },
                                     { Label: 'Shorted Units', Values: [20] },
@@ -352,7 +352,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                 ]} />
                         </div>
                         <div style={{ width: '15%', paddingRight: 10 }}>
-                            <CBEventFilter activeFilter={this.props.HealthFilt} showAll={true} Label={'CapBank Health'} setter={(result) => {
+                            <CBEventFilter activeFilter={this.props.HealthFilt} showAll={true} Label={'Capacitor Bank Health'} setter={(result) => {
                                 var object = _.clone(this.props) as CapBankReportNavBarProps;
                                 object.HealthFilt = result;
                                 this.props.stateSetter({ searchBarProps: object });
