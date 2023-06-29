@@ -40,27 +40,24 @@ interface IDisturbanceData {
     SeverityCode: string;
     IsWorstDisturbance: boolean;
 }
+
+const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (props) => {
+    const [data, setData] = React.useState<IDisturbanceData[]>([]);
+
     React.useEffect(() => {
-        if (props.eventID >= 0) createTableRows(props.eventID);
-        return () => { };
+        if (props.eventID >= 0) loadDisturbancesData(props.eventID);
     }, [props.eventID]);
 
-    const createTableRows = (eventID: number) => {
-        seBrowserService.getEventSearchAsssetVoltageDisturbancesData(eventID).done((data) => {
-            const rows = data.map((d, i) => {
-                const style = { backgroundColor: d.IsWorstDisturbance ? 'lightyellow' : 'transparent' };
-                return (
-                    <tr key={i} style={style}>
-                        <td>{d.EventType}</td>
-                        <td>{d.Phase}</td>
-                        <td>{(d.PerUnitMagnitude * 100).toFixed(1)}</td>
-                        <td>{(d.DurationSeconds * 1000).toFixed(2)}</td>
-                        <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
-                    </tr>
-                );
+    const loadDisturbancesData = (eventID: number) => {
+        seBrowserService.getEventSearchAsssetVoltageDisturbancesData(eventID).done((response) => {
+            const parsedData = response.map((d) => ({
+                ...d,
+                PerUnitMagnitude: (d.PerUnitMagnitude * 100).toFixed(1),
+                DurationSeconds: (d.DurationSeconds * 1000).toFixed(2),
+                StartTime: moment(d.StartTime).format('HH:mm:ss.SSS'),
+            }));
+            setData(parsedData);
             });
-            setTableRows(rows);
-        });
     };
 
     return (
