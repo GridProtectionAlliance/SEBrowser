@@ -32,7 +32,7 @@ interface ISOEFilters { abnormal: boolean, close: boolean, no: boolean, normal: 
 interface SOEInfo { Time: string, Alarm: string, Status: string };
 
 const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
-    const [soeInfo, setSOEInfo] = React.useState<Array<SOEInfo>>([]);
+    const [soeInfo, setSOEInfo] = React.useState<SOEInfo[]>([]);
     const [statusFilter, setStatusFilter] = React.useState<ISOEFilters>({ abnormal: false, close: false, no: false, normal: false, received: false, start: false, trip: false, yes: false })
     const [timeWindow, setTimeWindow] = React.useState<number>(2);
 
