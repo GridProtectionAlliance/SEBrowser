@@ -27,9 +27,7 @@ import moment from 'moment';
 import { SEBrowser } from '../../../global';
 import Table from '@gpa-gemstone/react-table';
 
-const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (props) => {
-    const [tableRows, setTableRows] = React.useState<JSX.Element[]>([]);
-    const seBrowserService = new SEBrowserService();
+const seBrowserService = new SEBrowserService();
 
 interface IDisturbanceData {
     EventType: string;
@@ -57,27 +55,35 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
                 StartTime: moment(d.StartTime).format('HH:mm:ss.SSS'),
             }));
             setData(parsedData);
-            });
+        });
     };
 
     return (
         <div className="card">
             <div className="card-header">Voltage Disturbance in Waveform:</div>
             <div className="card-body">
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Disturbance Type</th>
-                            <th>Phase</th>
-                            <th>Magnitude (%)</th>
-                            <th>Duration (ms)</th>
-                            <th>Start Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>{tableRows}</tbody>
-                </table>
+                <Table
+                    cols={[
+                        { key: 'EventType', field: 'EventType', label: 'Disturbance Type' },
+                        { key: 'Phase', field: 'Phase', label: 'Phase' },
+                        { key: 'PerUnitMagnitude', field: 'PerUnitMagnitude', label: 'Magnitude (%)' },
+                        { key: 'DurationSeconds', field: 'DurationSeconds', label: 'Duration (ms)' },
+                        { key: 'StartTime', field: 'StartTime', label: 'Start Time' },
+                        { key: 'SeverityCode', field: 'SeverityCode', label: 'Severity' },
+                    ]}
+                    data={data}
+                    onClick={() => { }}
+                    onSort={() => { }}
+                    sortKey={''}
+                    ascending={true}
+                    tableClass="table"
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
+                    tbodyStyle={{ display: 'table', overflowY: 'scroll', width: '100%' }}
+                    rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                />
             </div>
         </div>
+
     );
 }
 
