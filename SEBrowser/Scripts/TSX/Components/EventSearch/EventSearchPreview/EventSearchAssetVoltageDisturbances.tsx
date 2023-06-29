@@ -31,6 +31,15 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
     const [tableRows, setTableRows] = React.useState<JSX.Element[]>([]);
     const seBrowserService = new SEBrowserService();
 
+interface IDisturbanceData {
+    EventType: string;
+    Phase: string;
+    PerUnitMagnitude: number;
+    DurationSeconds: number;
+    StartTime: string;
+    SeverityCode: string;
+    IsWorstDisturbance: boolean;
+}
     React.useEffect(() => {
         if (props.eventID >= 0) createTableRows(props.eventID);
         return () => { };
