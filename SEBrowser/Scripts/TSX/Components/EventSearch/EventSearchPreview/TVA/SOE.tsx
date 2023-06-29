@@ -23,14 +23,18 @@
 
 import React from 'react';
 import { SEBrowser } from '../../../../global';
+import { MultiCheckBoxSelect, Select } from '@gpa-gemstone/react-forms';
+import Table from '@gpa-gemstone/react-table';
+import cloneDeep from 'lodash/cloneDeep';
 
-type Status = 'ABNORMAL' | 'Close' | 'No' | 'NORMAL' | 'RECEIVED' | 'Start' | 'Trip' | 'Yes';
+interface ISOEFilters { abnormal: boolean, close: boolean, no: boolean, normal: boolean, received: boolean, start: boolean, trip: boolean, yes: boolean };
+
+interface SOEInfo { Time: string, Alarm: string, Status: string };
 
 const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
-    const [soeInfo, setSOEInfo] = React.useState<Array<{ Time: string, Alarm: string, Status: string }>>([]);
-    const [statusFilter, setStatusFilter] = React.useState<{ 'ABNORMAL': boolean, 'Close': boolean, 'No': boolean, 'NORMAL': boolean, 'RECEIVED': boolean, 'Start': boolean, 'Trip': boolean, 'Yes': boolean}>({ 'ABNORMAL':false, 'Close':false, 'No':false, 'NORMAL': false, 'RECEIVED': false, 'Start': false, 'Trip':false, 'Yes': false})
+    const [soeInfo, setSOEInfo] = React.useState<SOEInfo[]>([]);
+    const [statusFilter, setStatusFilter] = React.useState<ISOEFilters>({ abnormal: false, close: false, no: false, normal: false, received: false, start: false, trip: false, yes: false })
     const [timeWindow, setTimeWindow] = React.useState<number>(2);
-    const [table, setTable] = React.useState<any>(null);
 
     React.useEffect(() => {
         return GetData();
@@ -48,28 +52,11 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
 
         handle.done(data => {
             setSOEInfo(data);
-            BuildTable(data);
         });
 
         return function () {
             if (handle.abort != undefined) handle.abort();
         }
-    }
-
-    function HandleStatusFilterChange(key: string) {
-        statusFilter[key] = !statusFilter[key]
-        setStatusFilter(statusFilter);
-        BuildTable(soeInfo)
-    }
-
-    function BuildTable(data) {
-        let tbl = data.filter(si => !statusFilter[si.Status]).map((si, index) => <tr key={index}>
-            <td>{si.Time}</td>
-            <td>{si.Alarm}</td>
-            <td>{si.Status}</td>
-        </tr>)
-
-        setTable(tbl);
     }
 
     return (
@@ -78,35 +65,54 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
             <div className="card-body">
                 <div className='row'>
                     <div className='col'>
-                        <label>Time Window(s)</label>
-                        <select value={timeWindow} onChange={(evt) => setTimeWindow(parseFloat(evt.target.value))}>
-                            <option value={2}>2</option>
-                            <option value={10}>10</option>
-                            <option value={60}>60</option>
-
-                        </select>
+                        <Select
+                            Record={{ timeWindow }}
+                            Field='timeWindow'
+                            Options={[
+                                { Value: "2", Label: "2" },
+                                { Value: "10", Label: "10" },
+                                { Value: "60", Label: "60" }
+                            ]}
+                            Setter={(record) => setTimeWindow(record.timeWindow)}
+                            Label="Time Window(s)"
+                        />
                     </div>
                     <div className='col-8'>
-                        <fieldset className='border'>
-                            <legend style={{ font: 'inherit' }}>Filter Out:</legend>
-                            {Object.keys(statusFilter).map((key, index) => <div key={index} className='form-check form-check-inline'><input className="form-check-input" type="checkbox" value={statusFilter[key]} onChange={() => HandleStatusFilterChange(key)} /><label className="form-check-label">{key}</label></div>)}
-                        </fieldset>
+                        <MultiCheckBoxSelect
+                            Options={Object.keys(statusFilter).map((k, i) => ({ Value: i, Text: k, Selected: statusFilter[k] }))}
+                            Label={'Filter Out: '}
+                            OnChange={(evt, options) => {
+                                let filters = cloneDeep(statusFilter)
+                                let filterKeys = Object.keys(filters);
+
+                                options.forEach((option) => {
+                                    let key = filterKeys[option.Value];
+                                    filters[key as keyof ISOEFilters] = !filters[key as keyof ISOEFilters];
+                                });
+
+                                setStatusFilter(filters)
+                            }} />
                     </div>
 
                 </div>
-                <div style={{maxHeight: 200, overflowY:'auto'}}>
-                    <table className='table'>
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Alarm</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            { table }
-                        </tbody>
-                    </table>
+                <div style={{ maxHeight: 200, overflowY: 'auto' }}>
+                    <Table
+                        cols={[
+                            { key: "Time", label: "Time", field: "Time" },
+                            { key: "Alarm", label: "Alarm", field: "Alarm" },
+                            { key: "Status", label: "Status", field: "Status" }
+                        ]}
+                        data={soeInfo.filter(si => !statusFilter[si.Status.toLowerCase()])}
+                        onClick={() => { }}
+                        onSort={() => { }}
+                        sortKey={'Time'}
+                        ascending={true}
+                        tableClass="table"
+                        keySelector={data => data.Time}
+                        theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
+                        tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%' }}
+                        rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                    />
                 </div>
             </div>
         </div>
