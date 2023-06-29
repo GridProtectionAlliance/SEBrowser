@@ -29,12 +29,8 @@ import moment from 'moment';
 import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, EventTypeSlice, LocationSlice, MeterSlice } from '../../Store';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
-import SEBrowserdService from '../../../TS/Services/SEBrowser';
 
-
-const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS";
 
 let fetchHandle: JQuery.jqXHR<any> | null = null;
 
@@ -47,7 +43,6 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     const assetList = (getState() as any).EventSearch.SelectedAssets as SystemCenter.Types.DetailedAsset[];
     const locationList = (getState() as any).EventSearch.SelectedStations as SystemCenter.Types.DetailedLocation[];
     const groupList = (getState() as any).EventSearch.SelectedGroups as OpenXDA.Types.AssetGroup[];
-
     const settings = (getState() as Redux.StoreState).Settings.eventSearch;
 
     const filter = {
@@ -151,7 +146,7 @@ export const EventSearchsSlice = createSlice({
         Status: 'unitiated',
         Data: [],
         Error: null,
-        SortField: 'FileStartTime',
+        SortField: 'Time',
         Ascending: true,
         SearchText: '',
         EventCharacteristic: {

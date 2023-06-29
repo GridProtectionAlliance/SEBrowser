@@ -44,9 +44,9 @@ const HeaderRow = () => {
         <tr key='Header'>
             <th key='Phase'>Phase</th>
             <th key='Status'>Analysis Status</th>
-            <th key='Operation'>CapBank Operation</th>
+            <th key='Operation'>Capacitor Bank Operation</th>
             <th key='Resonance'>Resonance</th>
-            <th key='Health'>CapBank Health</th>
+            <th key='Health'>Capacitor Bank Health</th>
             <th key='Restrike'>Restrike</th>
             <th key='PIS'>PreInsertionSwitching Condition</th>
         </tr>
@@ -79,7 +79,7 @@ const EventSearchCapBankAnalyticOverview: React.FC<SEBrowser.IWidget<any>> = (pr
 
         return (
             <div className="card">
-                <div className="card-header">EPRI CapBank Analytic:</div>
+                <div className="card-header">EPRI Capacitor Bank Analytic:</div>
                 <div className="card-body">
                     <table className="table">
                         <thead>

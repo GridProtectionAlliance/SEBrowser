@@ -46,9 +46,7 @@ export default function EventSearchList(props: IProps) {
     const ref = React.useRef();
     const closureHandler = React.useRef<((o: boolean) => void)>(() => { })
     const count = React.useRef(null);
-
     const dispatch = useAppDispatch();
-
     const status = useAppSelector(SelectEventSearchsStatus);
     const sortField = useAppSelector(SelectEventSearchsSortField);
     const ascending = useAppSelector(SelectEventSearchsAscending);
@@ -80,7 +78,6 @@ export default function EventSearchList(props: IProps) {
 
         flds = Object.keys(data[0]).filter(item => item != "Time" && item != "DisturbanceID" && item != "EventID" && item != "EventID1" && item != 'MagDurDuration' && item != 'MagDurMagnitude').sort();
 
-
         if (flds.length != cols.length)
             setCols(flds.map(item => ({
                 field: item, key: item, label: item, content: (item, key, fld, style) => ProcessWhitespace(item[fld]) })))
@@ -90,7 +87,6 @@ export default function EventSearchList(props: IProps) {
     React.useLayoutEffect(() => {
         setHCounter(count?.current?.offsetHeight ?? 0)
     });
-
 
     function closeSettings(open: boolean) {
         closureHandler.current(open);
@@ -142,7 +138,6 @@ export default function EventSearchList(props: IProps) {
 
         if(scrollTop <= sectionIndex * tableSectionHeight || scrollTop >= (sectionIndex + 1) * tableSectionHeight - tableSectionHeight/2)
             $(ReactDOM.findDOMNode(ref.current)).find('tbody').scrollTop(sectionIndex * tableSectionHeight);
-
     }
 
     function ProcessWhitespace(txt: string | number): React.ReactNode {
@@ -194,7 +189,7 @@ export default function EventSearchList(props: IProps) {
             {status == 'loading' ? null :
                 data.length == numberResults ?
                     <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
-                        Only the first {data.length} results are shown - please narrow your search or increase the number of results
+                        Only the first {data.length} chronological results are shown - please narrow your search or increase the number of results in the application settings.
                     </div> :
                     <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
                         {data.length} results
