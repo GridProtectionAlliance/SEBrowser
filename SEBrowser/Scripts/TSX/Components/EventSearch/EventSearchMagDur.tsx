@@ -38,18 +38,15 @@ interface IProps {
     EventID: number,
     SelectEvent: (id: number) => void,
 }
-const MagDurChart = (props: IProps) => {
 
+const MagDurChart = (props: IProps) => {
     const chart = React.useRef(null);
     const count = React.useRef(null);
     const empty = React.useCallback(() => { }, []);
-    
     const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
     const magDurCurves = useAppSelector(MagDurCurveSlice.Data) as SEBrowser.MagDurCurve[];
- 
     const [currentCurve, setCurrentCurve] = React.useState<SEBrowser.MagDurCurve>(null)
     const numberResults = useAppSelector((state: Redux.StoreState) => SelectEventSearchSettings(state).NumberResults)
-
     const [width, setWidth] = React.useState<number>(0);
     const [x, setX] = React.useState<boolean>(false);
     const [hCounter, setHCounter] = React.useState<number>(0);
@@ -60,7 +57,6 @@ const MagDurChart = (props: IProps) => {
     const [selectedMag, setSelectedMag] = React.useState<number>(0);
     const [selectedDur, setSelectedDur] = React.useState<number>(0);
     const settings = useAppSelector(SelectEventSearchSettings);
-
     const selectedCurve = useAppSelector((state: Redux.StoreState) => SelectCharacteristicFilter(state).curveID);
     const showSelectedCurve = useAppSelector((state: Redux.StoreState) => SelectCharacteristicFilter(state).curveInside != SelectCharacteristicFilter(state).curveOutside);
 
@@ -212,7 +208,7 @@ const MagDurChart = (props: IProps) => {
             {status == 'loading' ? null :
                 data.length == numberResults ?
                     <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
-                        Only the first {data.length}  chronological results are shown - please narrow your search or increase the number of results in the application settings
+                        Only the first {data.length}  chronological results are shown - please narrow your search or increase the number of results in the application settings.
                     </div> :
                     <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
                         {data.length} results
@@ -241,7 +237,6 @@ const EventList = (props: IEventListProps) => {
         [props.Magnitude, props.Duration])
 
     const dispatch = useAppDispatch();
-
     const sortField = useAppSelector(SelectEventSearchsSortField);
     const ascending = useAppSelector(SelectEventSearchsAscending);
     const data = useAppSelector(dataFilter);
@@ -271,7 +266,6 @@ const EventList = (props: IEventListProps) => {
     function LoadColumns() {
         let c = [{ field: "Time", key: "Time", label: "Time", content: (item, key, fld, style) => ProcessWhitespace(item[fld]) }];
         const flds = Object.keys(data[0]).filter(item => item != "Time" && item != "DisturbanceID" && item != "EventID" && item != "EventID1" && item != 'MagDurDuration' && item != 'MagDurMagnitude').sort();
-
         let keys = [];
         const currentState = localStorage.getItem('SEbrowser.EventSearch.TableCols');
         if (currentState !== null)
