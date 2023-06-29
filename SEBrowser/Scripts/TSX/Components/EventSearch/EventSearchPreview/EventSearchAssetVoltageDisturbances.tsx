@@ -25,6 +25,7 @@ import React from 'react';
 import SEBrowserService from './../../../../TS/Services/SEBrowser';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
+import Table from '@gpa-gemstone/react-table';
 
 const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [tableRows, setTableRows] = React.useState<JSX.Element[]>([]);
