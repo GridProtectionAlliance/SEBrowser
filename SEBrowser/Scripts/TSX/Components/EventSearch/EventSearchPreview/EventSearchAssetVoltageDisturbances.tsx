@@ -42,14 +42,24 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
     const [data, setData] = React.useState<IDisturbanceData[]>([]);
 
     React.useEffect(() => {
-        if (props.eventID >= 0) loadDisturbancesData(props.eventID);
+        let handle = getDisturbanceData();
+        handle.done((data) => {
+            setData(data);
+        });
+
     }, [props.eventID]);
 
-    const loadDisturbancesData = (eventID: number) => {
-        seBrowserService.getEventSearchAsssetVoltageDisturbancesData(eventID).done((response) => {
-            setData(response);
+    function getDisturbanceData() {
+        return $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/GetEventSearchAssetVoltageDisturbances?EventID=${props.eventID}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
         });
-    };
+    }
+
 
     return (
         <div className="card">
