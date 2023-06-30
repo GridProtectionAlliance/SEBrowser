@@ -47,13 +47,7 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
 
     const loadDisturbancesData = (eventID: number) => {
         seBrowserService.getEventSearchAsssetVoltageDisturbancesData(eventID).done((response) => {
-            const parsedData = response.map((d) => ({
-                ...d,
-                PerUnitMagnitude: (d.PerUnitMagnitude * 100).toFixed(1),
-                DurationSeconds: (d.DurationSeconds * 1000).toFixed(2),
-                StartTime: moment(d.StartTime).format('HH:mm:ss.SSS'),
-            }));
-            setData(parsedData);
+            setData(response);
         });
     };
 
@@ -65,9 +59,9 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
                     cols={[
                         { key: 'EventType', field: 'EventType', label: 'Disturbance Type' },
                         { key: 'Phase', field: 'Phase', label: 'Phase' },
-                        { key: 'PerUnitMagnitude', field: 'PerUnitMagnitude', label: 'Magnitude (%)' },
-                        { key: 'DurationSeconds', field: 'DurationSeconds', label: 'Duration (ms)' },
-                        { key: 'StartTime', field: 'StartTime', label: 'Start Time' },
+                        { key: 'PerUnitMagnitude', field: 'PerUnitMagnitude', label: 'Magnitude (%)', content: (r) => (r.PerUnitMagnitude * 100).toFixed(1), },
+                        { key: 'DurationSeconds', field: 'DurationSeconds', label: 'Duration (ms)', content: (r) => (r.DurationSeconds * 1000).toFixed(2), },
+                        { key: 'StartTime', field: 'StartTime', label: 'Start Time', content: (r) => moment(r.StartTime).format('HH:mm:ss.SSS') },
                         { key: 'SeverityCode', field: 'SeverityCode', label: 'Severity' },
                     ]}
                     data={data}
