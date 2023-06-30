@@ -73,6 +73,7 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
                     theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
                     tbodyStyle={{ display: 'table', overflowY: 'scroll', width: '100%' }}
                     rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                    selected={(r) => r.IsWorstDisturbance}
                 />
             </div>
         </div>
