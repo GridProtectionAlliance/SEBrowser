@@ -20,12 +20,11 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-
 import React from 'react';
-import SEBrowserService from './../../../../TS/Services/SEBrowser';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
 import Table from '@gpa-gemstone/react-table';
+import SEBrowserService from './../../../../TS/Services/SEBrowser';
 
 const seBrowserService = new SEBrowserService();
 
@@ -83,7 +82,6 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
                 />
             </div>
         </div>
-
     );
 }
 
