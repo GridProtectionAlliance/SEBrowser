@@ -88,7 +88,7 @@ const PlotSettings = React.memo((props: IProps) => {
                         props.SetPlot({ ...props.Plot, PlotFilter: options });
                     }}
                 />
-                <ReportTimeFilter filter={props.Plot.TimeFilter} showQuickSelect={false} removeFieldset={true} 
+                <ReportTimeFilter filter={props.Plot.TimeFilter} showQuickSelect={false}
                     setFilter={newFilter => props.SetPlot({ ...props.Plot, TimeFilter: newFilter })} />
             </div>
         </div>
