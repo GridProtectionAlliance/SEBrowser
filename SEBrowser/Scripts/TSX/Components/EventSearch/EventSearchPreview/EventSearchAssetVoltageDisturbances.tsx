@@ -22,8 +22,8 @@
 //******************************************************************************************************
 import React from 'react';
 import moment from 'moment';
-import { SEBrowser } from '../../../global';
 import Table from '@gpa-gemstone/react-table';
+import { SEBrowser } from '../../../global';
 import SEBrowserService from './../../../../TS/Services/SEBrowser';
 
 const seBrowserService = new SEBrowserService();
