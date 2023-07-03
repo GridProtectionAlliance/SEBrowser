@@ -28,25 +28,27 @@ import { SelectEventSearchSettings, SetEventSearch } from './Components/Settings
 import { Redux } from './global';
 import { FetchEventSearches } from './Components/EventSearch/EventSearchSlice';
 
+
+
 const Settings = (props: { Show: boolean, Close: () => void }) => {
     const dispatch = useAppDispatch();
     const evtSearchsettings = useAppSelector(SelectEventSearchSettings)
     const [evtSearch, setEvtSearch] = React.useState<Redux.IEventSearchSettings>()
     const searchSettingsOptions = [
         {
-            Value: 'center',
+            Value: 'Center Date/Time and Window',
             Label: 'Center Date/Time and Window',
         },
         {
-            Value: 'startWindow',
+            Value: 'Start Date/Time and Window',
             Label: 'Start Date/Time and Window',
         },
         {
-            Value: 'endWindow',
+            Value: 'End Date/Time and Window',
             Label: 'End Date/Time and Window',
         },
         {
-            Value: 'startEnd',
+            Value: 'Start and End Date/Time',
             Label: 'Start and End Date/Time',
         },
     ];
