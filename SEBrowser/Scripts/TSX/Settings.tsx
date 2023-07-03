@@ -62,7 +62,10 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>Event Search Settings:</legend>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <Input<Redux.IEventSearchSettings> Record={evtSearch} Field='NumberResults' Setter={setEvtSearch} Valid={() => true } Label='Number of Results' Type='integer' />
+                                    <Input<Redux.IEventSearchSettings>
+                                        Record={evtSearch} Field='NumberResults'
+                                        Setter={setEvtSearch} Valid={() => true}
+                                        Label='Number of Results' Type='integer' />
                                     </div>
                             </div>
                             <div className={"row"}>
