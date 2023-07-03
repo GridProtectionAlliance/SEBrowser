@@ -22,7 +22,7 @@
 //******************************************************************************************************
 import * as React from 'react';
 import { Modal } from '@gpa-gemstone/react-interactive';
-import { CheckBox, Input } from '@gpa-gemstone/react-forms';
+import { CheckBox, Input, Select } from '@gpa-gemstone/react-forms';
 import { useAppDispatch, useAppSelector } from './hooks';
 import { SelectEventSearchSettings, SetEventSearch } from './Components/SettingsSlice';
 import { Redux } from './global';
@@ -34,6 +34,24 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
     const dispatch = useAppDispatch();
     const evtSearchsettings = useAppSelector(SelectEventSearchSettings)
     const [evtSearch, setEvtSearch] = React.useState<Redux.IEventSearchSettings>()
+    const searchSettingsOptions = [
+        {
+            Value: 'Center Date/Time and Window',
+            Label: 'Center Date/Time and Window',
+        },
+        {
+            Value: 'Start Date/Time and Window',
+            Label: 'Start Date/Time and Window',
+        },
+        {
+            Value: 'End Date/Time and Window',
+            Label: 'End Date/Time and Window',
+        },
+        {
+            Value: 'Start and End Date/Time',
+            Label: 'Start and End Date/Time',
+        },
+    ];
 
     React.useEffect(() => {
         setEvtSearch(evtSearchsettings);
@@ -70,7 +88,27 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                             </div>
                             <div className={"row"}>
                                 <div className={'col'}>
-                                    <CheckBox<Redux.IEventSearchSettings> Record={evtSearch} Field='AggregateMagDur' Setter={setEvtSearch} Label='Aggregate Events on Mag-Dur chart' />
+                                    <CheckBox<Redux.IEventSearchSettings>
+                                        Record={evtSearch}
+                                        Field='AggregateMagDur'
+                                        Setter={setEvtSearch}
+                                        Label='Aggregate Events on Mag-Dur chart' />
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div className="col-6">
+                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>General Settings:</legend>
+                            <div className="row">
+                                <div className="col">
+                                    <Select<Redux.IEventSearchSettings>
+                                        Options={searchSettingsOptions}
+                                        Record={evtSearch}
+                                        Field='DateTimeSetting'
+                                        Setter={setEvtSearch}
+                                        Label='Date/Time Filter Mode'
+                                    />
                                 </div>
                             </div>
                             </fieldset>
