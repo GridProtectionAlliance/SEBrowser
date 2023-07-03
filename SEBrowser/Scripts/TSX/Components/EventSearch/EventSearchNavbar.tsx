@@ -23,7 +23,7 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import 'moment';
+import moment from 'moment';
 import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../hooks';
@@ -44,6 +44,9 @@ interface IProps {
     setHeight: (h: number) => void
 }
 
+const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
+const momentDateFormat = "MM/DD/YYYY";
+const momentTimeFormat = "HH:mm:ss.SSS";
 
 const EventSearchNavbar = (props: IProps) => {
     const navRef = React.useRef(null);
