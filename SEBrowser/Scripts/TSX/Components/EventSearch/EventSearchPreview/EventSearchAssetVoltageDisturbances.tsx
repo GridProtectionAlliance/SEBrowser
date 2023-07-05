@@ -43,7 +43,7 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
         handle.done((data) => {
             setData(data);
         });
-
+        return () => { if (handle != null && handle.abort != null) handle.abort(); } 
     }, [props.eventID]);
 
     function getDisturbanceData() {
