@@ -386,26 +386,28 @@ namespace SEBrowser.Controllers
 
                 DataTable table = connection.RetrieveData(@" 
                     SELECT 
-	                    EventType.Name as EventType,
-	                    Phase.Name as Phase,
-	                    Disturbance.PerUnitMagnitude,
-	                    Disturbance.DurationSeconds,
-	                    Disturbance.StartTime,
+                        EventType.Name as EventType,
+                        Phase.Name as Phase,
+                        Disturbance.PerUnitMagnitude,
+                        Disturbance.DurationSeconds,
+                        Disturbance.StartTime,
+                        DisturbanceSeverity.SeverityCode,
                         CASE 
                             WHEN Disturbance.ID = EventWorstDisturbance.WorstDisturbanceID THEN 1
                             ELSE 0
                         END as IsWorstDisturbance
                     FROM 
-	                    Disturbance JOIN
-	                    Phase ON Disturbance.PhaseID = Phase.ID JOIN
-	                    EventType ON Disturbance.EventTypeID = EventType.ID Join
-	                    EventWorstDisturbance ON Disturbance.EventID = EventWorstDisturbance.EventID
+                        Disturbance 
+                        JOIN Phase ON Disturbance.PhaseID = Phase.ID 
+                        JOIN EventType ON Disturbance.EventTypeID = EventType.ID 
+                        JOIN DisturbanceSeverity ON Disturbance.ID = DisturbanceSeverity.DisturbanceID
+                        JOIN EventWorstDisturbance ON Disturbance.EventID = EventWorstDisturbance.EventID
                     WHERE
-	                    Phase.Name != 'WORST' AND  
-	                    Disturbance.EventID = {0}
+                        Phase.Name != 'WORST' AND  
+                        Disturbance.EventID = {0}
                     ORDER BY Disturbance.StartTime
-                    ", eventID
-                    );
+            ", eventID
+                );
                 return table;
             }
         }

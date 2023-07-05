@@ -22,17 +22,17 @@ const AssetHistoryStats: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }, [props.eventID]);
 
     function getStatsData() {
-        fetch(`${homePath}api/OpenXDA/GetEventSearchHistoryStats/${props.eventID}`)
-            .then((response) => response.json())
-            .then((data) => {
+        $.ajax({
+            url: `${homePath}api/OpenXDA/GetEventSearchHistoryStats/${props.eventID}`,
+            method: 'GET',
+            dataType: 'json',
+            success: (data) => {
                 if (data && data.length > 0) {
                     const stats = data[0];
                     setStatsData(stats);
                 }
-            })
-            .catch((error) => {
-                console.error('Error retrieving stats data:', error);
-            });
+            },
+        });
     }
 
     return (

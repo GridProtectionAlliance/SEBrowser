@@ -20,55 +20,67 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-
 import React from 'react';
-import SEBrowserService from './../../../../TS/Services/SEBrowser';
 import moment from 'moment';
+import Table from '@gpa-gemstone/react-table';
 import { SEBrowser } from '../../../global';
 
+interface IDisturbanceData {
+    EventType: string;
+    Phase: string;
+    PerUnitMagnitude: number;
+    DurationSeconds: number;
+    StartTime: string;
+    SeverityCode: string;
+    IsWorstDisturbance: boolean;
+}
+
 const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (props) => {
-    const [tableRows, setTableRows] = React.useState<JSX.Element[]>([]);
-    const seBrowserService = new SEBrowserService();
+    const [data, setData] = React.useState<IDisturbanceData[]>([]);
 
     React.useEffect(() => {
-        if (props.eventID >= 0) createTableRows(props.eventID);
-        return () => { };
+        let handle = getDisturbanceData();
+        handle.done((data) => {
+            setData(data);
+        });
+        return () => { if (handle != null && handle.abort != null) handle.abort(); } 
     }, [props.eventID]);
 
-    const createTableRows = (eventID: number) => {
-        seBrowserService.getEventSearchAsssetVoltageDisturbancesData(eventID).done((data) => {
-            const rows = data.map((d, i) => {
-                const style = { backgroundColor: d.IsWorstDisturbance ? 'lightyellow' : 'transparent' };
-                return (
-                    <tr key={i} style={style}>
-                        <td>{d.EventType}</td>
-                        <td>{d.Phase}</td>
-                        <td>{(d.PerUnitMagnitude * 100).toFixed(1)}</td>
-                        <td>{(d.DurationSeconds * 1000).toFixed(2)}</td>
-                        <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
-                    </tr>
-                );
-            });
-            setTableRows(rows);
+    function getDisturbanceData() {
+        return $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/GetEventSearchAssetVoltageDisturbances?EventID=${props.eventID}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
         });
-    };
+    }
 
     return (
         <div className="card">
             <div className="card-header">Voltage Disturbance in Waveform:</div>
             <div className="card-body">
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Disturbance Type</th>
-                            <th>Phase</th>
-                            <th>Magnitude (%)</th>
-                            <th>Duration (ms)</th>
-                            <th>Start Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>{tableRows}</tbody>
-                </table>
+                <Table
+                    cols={[
+                        { key: 'EventType', field: 'EventType', label: 'Disturbance Type' },
+                        { key: 'Phase', field: 'Phase', label: 'Phase' },
+                        { key: 'PerUnitMagnitude', field: 'PerUnitMagnitude', label: 'Magnitude (%)', content: (r) => (r.PerUnitMagnitude * 100).toFixed(1), },
+                        { key: 'DurationSeconds', field: 'DurationSeconds', label: 'Duration (ms)', content: (r) => (r.DurationSeconds * 1000).toFixed(2), },
+                        { key: 'StartTime', field: 'StartTime', label: 'Start Time', content: (r) => moment(r.StartTime).format('HH:mm:ss.SSS') },
+                        { key: 'SeverityCode', field: 'SeverityCode', label: 'Severity' },
+                    ]}
+                    data={data}
+                    onClick={() => { }}
+                    onSort={() => { }}
+                    sortKey={''}
+                    ascending={true}
+                    tableClass="table"
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
+                    tbodyStyle={{ display: 'table', overflowY: 'scroll', width: '100%' }}
+                    rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                    selected={(r) => r.IsWorstDisturbance}
+                />
             </div>
         </div>
     );
