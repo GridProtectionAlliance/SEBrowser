@@ -32,9 +32,6 @@ const AssetHistoryStats: React.FC<SEBrowser.IWidget<any>> = (props) => {
                     setStatsData(stats);
                 }
             },
-            error: (error) => {
-                console.error('Error retrieving stats data:', error);
-            }
         });
     }
 
