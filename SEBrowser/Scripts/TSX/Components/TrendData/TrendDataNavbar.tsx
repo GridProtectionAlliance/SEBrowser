@@ -63,11 +63,11 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const filtRef = React.useRef(null);
     const dispatch = useAppDispatch();
 
-    const phaseStatus = useAppSelector(PhaseSlice.Status);
-    const allPhases = useAppSelector(PhaseSlice.Data);
+    const phaseStatus = useAppSelector(PhaseSlice.SearchStatus);
+    const allPhases = useAppSelector(PhaseSlice.SearchResults);
 
-    const channelGroupStatus = useAppSelector(ChannelGroupSlice.Status);
-    const allChannelGroups = useAppSelector(ChannelGroupSlice.Data);
+    const channelGroupStatus = useAppSelector(ChannelGroupSlice.SearchStatus);
+    const allChannelGroups = useAppSelector(ChannelGroupSlice.SearchResults);
 
     const [showFilter, setShowFilter] = React.useState<('None' | 'Meter' | 'Asset')>('None');
 
@@ -83,7 +83,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
     const momentDateFormat = "MM/DD/YYYY";
-
+    const defaultTrueSet = new Set(["AB", "BC", "CA", "Voltage"]);
     const baseTimeFilter = { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 12, timeWindowUnits: 3 }
 
     // Page effects
@@ -106,16 +106,16 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     // Slice dispatches
     React.useEffect(() => {
         if (phaseStatus == 'changed' || phaseStatus == 'unintiated')
-            dispatch(PhaseSlice.Fetch());
+            dispatch(PhaseSlice.DBSearch({ filter: [], sortField: "Name", ascending: true }));
     }, [phaseStatus]);
 
     React.useEffect(() => {
         if (channelGroupStatus == 'changed' || channelGroupStatus == 'unintiated')
-            dispatch(ChannelGroupSlice.Fetch());
+            dispatch(ChannelGroupSlice.DBSearch({ filter: [], sortField: "Name", ascending: true }));
     }, [channelGroupStatus]);
 
     React.useEffect(() => {
-        if (trendFilter === null) return;
+        if (trendFilter === null) return; // || trendFilter.Phases.length === 0 || trendFilter.ChannelGroups.length === 0
         // Get the data from the filter
         let handle = GetTrendChannels();
         return () => {
@@ -136,13 +136,13 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
 
     function makeKeyValuePairs(allKeys: { ID: number, Name: string, Description: string }[]): IKeyValuePair[] {
         if (allKeys == null) return [];
-        return allKeys.map(key => ({ Key: key.Name, Value: true }));
+        return allKeys.map(key => ({ Key: key.Name, Value: defaultTrueSet.has(key.Name) }));
     }
 
     function makeMultiCheckboxOptions(keyValues: IKeyValuePair[], setOptions: (options: IMultiCheckboxOption[]) => void, allKeys: { ID: number, Name: string, Description: string }[]) {
         if (allKeys == null || keyValues == null) return;
         let newOptions: IMultiCheckboxOption[] = [];
-        allKeys.forEach((key, index) => newOptions.push({ Value: index, Text: key.Name, Selected: keyValues.find(e => e.Key === key.Name)?.Value ?? true }));
+        allKeys.forEach((key, index) => newOptions.push({ Value: index, Text: key.Name, Selected: keyValues.find(e => e.Key === key.Name)?.Value ?? defaultTrueSet.has(key.Name) }));
         setOptions(newOptions);
     }
 
@@ -296,7 +296,15 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         <ReportTimeFilter filter={timeFilter} setFilter={setTimeFilter} showQuickSelect={true} />
                     </li>
                     <li className="nav-item" style={{ width: '15%', paddingRight: 10 }} ref={filtRef}>
-                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                        <fieldset className="border" style={{ padding: '10px' }}>
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>Meter Selection:</legend>
+                            <div className={"row"}>
+                                <div className={'col'}>
+                                    <NavbarFilterButton<SystemCenter.Types.DetailedMeter> Type={'Meter'} OnClick={() => setShowFilter('Meter')} Data={trendFilter.MeterList} />
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset className="border" style={{ padding: '10px' }}>
                             <legend className="w-auto" style={{ fontSize: 'large' }}>Channel Filters:</legend>
                             <label style={{ width: '100%', position: 'relative', float: "left" }}>Phase Filter: </label>
                             <div className="row">
@@ -333,11 +341,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                                             setLinePlotOptions(options);
                                         }}
                                     />
-                                </div>
-                            </div>
-                            <div className={"row"}>
-                                <div className={'col'}>
-                                    <NavbarFilterButton<SystemCenter.Types.DetailedMeter> Type={'Meter'} OnClick={() => setShowFilter('Meter')} Data={trendFilter.MeterList} />
                                 </div>
                             </div>
                             <div className={"row"}>
