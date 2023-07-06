@@ -85,6 +85,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
 
     // Settings Controls
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
+    const makeMode = React.useRef<boolean>(false);
 
     // Get Heights and Widths
     React.useLayoutEffect(() => {
@@ -130,7 +131,19 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             {Pencil}
         </Button>);
 
+    const addMarkerButton = (
+        <Button onClick={() => {
+            makeMode.current = true;
+            return () => { makeMode.current = false; };
+        }} isSelect={true}>
+            {Plus}
+        </Button>
+        );
+
     const createMarker = React.useCallback((time: number, value: number) => {
+        console.log(makeMode.current);
+        // Means our custom select is not selected
+        if (!makeMode.current) return;
         const currentMarkers = [...markers];
         const newId = CreateGuid();
         currentMarkers.push({
@@ -147,7 +160,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             yBox: value
         });
         setMarkers(currentMarkers);
-        return true;
+        return;
     }, [markers, setMarkers]);
 
     const setMarker = React.useCallback((ID: string, value: any, field: keyof (IMarker)) => {
@@ -167,16 +180,22 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                         OnSelect={createMarker}> 
                         {markers.map((marker, i) =>
                             <SymbolicMarker key={"Marker_" + i}
-                                xPos={marker.xPos} yPos={marker.yPos} symbol={<>{marker.symbol}</>} radius={marker.radius}
-                                setPosition={(x, y) => { setMarker(marker.ID, x, 'xPos'); setMarker(marker.ID, y, 'yPos'); setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }} />
+                                xPos={marker.xPos} yPos={marker.yPos} radius={marker.radius}
+                                setPosition={(x, y) => { if (makeMode.current) return; setMarker(marker.ID, x, 'xPos'); setMarker(marker.ID, y, 'yPos'); setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
+                                <>{marker.symbol}</>
+                            </SymbolicMarker>
                         )}
                         {markers.map((marker, i) =>
                             <Infobox key={"Info_" + i} origin="upper-center"
-                                x={marker.xBox} y={marker.yBox} opacity={marker.opacity} info={`(X:${moment(marker.xPos).format("mm:ss.SS")}, Y:${marker.yPos.toFixed(2)})\n${marker.note}`}
-                                maxWidth={100} maxHeight={80} offset={15}
-                                setPosition={(x, y) => { setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }} />
+                                x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
+                                width={100} height={80} offset={15}
+                                setPosition={(x, y) => { if (makeMode.current) return; setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
+                                <div style={{ background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
+                                    {`(X:${moment(marker.xPos).format("mm:ss.SS")}, Y:${marker.yPos.toFixed(2)})\n${marker.note}`}
+                                </div>
+                            </Infobox>
                         )}
-                        {overlayButton} {closeButton}
+                        {addMarkerButton} {overlayButton} {closeButton}
                     </LineGraph> : null}
             </div>
             <SettingsOverlay SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings} SetShow={setShowSettings} Show={showSettings} SetPlot={props.SetPlot}

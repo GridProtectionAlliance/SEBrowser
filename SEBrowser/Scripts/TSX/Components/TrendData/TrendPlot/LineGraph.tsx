@@ -38,7 +38,7 @@ interface IProps {
     }[],
     Height: number,
     Width: number,
-    OnSelect: (time: number, value: number) => boolean,
+    OnSelect: (time: number, value: number) => void,
     Title?: string,
     Metric?: boolean,
     XAxisLabel?: string,
@@ -175,7 +175,7 @@ const LineGraph = React.memo((props: IProps) => {
                         if (!React.isValidElement(element))
                             return null;
                         if ((element as React.ReactElement<any>).type === Button)
-                            return (
+                            return ((element.props.isSelect ?? false) ? null :
                                 <button type="button"
                                     className={'btn btn-primary float-left'}
                                     onClick={() => { element.props.onClick() }}>
@@ -190,7 +190,7 @@ const LineGraph = React.memo((props: IProps) => {
                     <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={40} />
                     {props.Title !== undefined ? <h4 style={{ textAlign: "center" }}>{props.Title}</h4> : null}
                     <Plot height={props.Height} width={props.Width} showBorder={false}
-                        defaultTdomain={timeLimits} onSelectConsumable={props.OnSelect}
+                        defaultTdomain={timeLimits} onSelect={props.OnSelect}
                         legend={'bottom'} useMetricFactors={props.Metric ?? false}
                         Tlabel={props.XAxisLabel ?? 'Time'} Ylabel={'Units'} showMouse={true}>
                         {allChartData.flatMap((chartData, index) => {
