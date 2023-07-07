@@ -141,7 +141,6 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         );
 
     const createMarker = React.useCallback((time: number, value: number) => {
-        console.log(makeMode.current);
         // Means our custom select is not selected
         if (!makeMode.current) return;
         const currentMarkers = [...markers];
@@ -173,31 +172,29 @@ const TrendPlot = React.memo((props: IContainerProps) => {
 
     return (
         <div className="col" style={{ width: props.Plot.Width - 1 + '%', height: props.Plot.Height-1 + '%', float: 'left' }} ref={chartRef} onDragOver={handleDragOver} onDrop={handleChannelDrop}>
-            <div className="row">
-                {props.Plot.Type === 'Line' ?
-                    <LineGraph ChannelInfo={plotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
-                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric}
-                        OnSelect={createMarker}> 
-                        {markers.map((marker, i) =>
-                            <SymbolicMarker key={"Marker_" + i}
-                                xPos={marker.xPos} yPos={marker.yPos} radius={marker.radius}
-                                setPosition={(x, y) => { if (makeMode.current) return; setMarker(marker.ID, x, 'xPos'); setMarker(marker.ID, y, 'yPos'); setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
-                                <>{marker.symbol}</>
-                            </SymbolicMarker>
-                        )}
-                        {markers.map((marker, i) =>
-                            <Infobox key={"Info_" + i} origin="upper-center"
-                                x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
-                                width={100} height={80} offset={15}
-                                setPosition={(x, y) => { if (makeMode.current) return; setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
-                                <div style={{ background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
-                                    {`(X:${moment(marker.xPos).format("mm:ss.SS")}, Y:${marker.yPos.toFixed(2)})\n${marker.note}`}
-                                </div>
-                            </Infobox>
-                        )}
-                        {addMarkerButton} {overlayButton} {closeButton}
-                    </LineGraph> : null}
-            </div>
+            {props.Plot.Type === 'Line' ?
+                <LineGraph ChannelInfo={plotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
+                    Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric}
+                    OnSelect={createMarker}> 
+                    {markers.map((marker, i) =>
+                        <SymbolicMarker key={"Marker_" + i}
+                            xPos={marker.xPos} yPos={marker.yPos} radius={marker.radius}
+                            setPosition={(x, y) => { if (makeMode.current) return; setMarker(marker.ID, x, 'xPos'); setMarker(marker.ID, y, 'yPos'); setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
+                            <>{marker.symbol}</>
+                        </SymbolicMarker>
+                    )}
+                    {markers.map((marker, i) =>
+                        <Infobox key={"Info_" + i} origin="upper-center"
+                            x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
+                            width={100} height={80} offset={15}
+                            setPosition={(x, y) => { if (makeMode.current) return; setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
+                            <div style={{ background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
+                                {`(X:${moment(marker.xPos).format("mm:ss.SS")}, Y:${marker.yPos.toFixed(2)})\n${marker.note}`}
+                            </div>
+                        </Infobox>
+                    )}
+                    {addMarkerButton} {overlayButton} {closeButton}
+                </LineGraph> : null}
             <SettingsOverlay SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings} SetShow={setShowSettings} Show={showSettings} SetPlot={props.SetPlot}
             OverlayPortalID={props.OverlayPortalID} Plot={props.Plot} Markers={markers} SetMarkers={setMarkers} />
         </div>

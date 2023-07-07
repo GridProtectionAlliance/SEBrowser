@@ -166,56 +166,54 @@ const LineGraph = React.memo((props: IProps) => {
             props.ChannelInfo.findIndex(channel => channel.Channel.ID === oldSeries.ChannelID) !== -1);
     }
 
-    function GetDisplay() {
-        if (graphStatus === 'error' || (graphStatus === 'idle' && allChartData.findIndex(chartData => chartData.MinSeries.length + chartData.MaxSeries.length + chartData.AvgSeries.length > 0) < 0))
-            return (
-                <div>
+    if (graphStatus === 'error' || (graphStatus === 'idle' && allChartData.findIndex(chartData => chartData.MinSeries.length + chartData.MaxSeries.length + chartData.AvgSeries.length > 0) < 0))
+        return (
+            <>
+                <div className="row" style={{ alignItems: "center", justifyContent: "center", width: "100%", height: "50%" }}>
                     <ServerErrorIcon Show={true} Label={'No Data Available'} />
+                </div>
+                <div className="row" style={{ width: "100%", height: "50%" }}>
                     {React.Children.map(props.children, (element, i) => {
                         if (!React.isValidElement(element))
                             return null;
                         if ((element as React.ReactElement<any>).type === Button)
                             return ((element.props.isSelect ?? false) ? null :
-                                <button type="button"
-                                    className={'btn btn-primary float-left'}
-                                    onClick={() => { element.props.onClick() }}>
-                                    {element}
-                                </button>);
+                                <div className="col" style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", height: "100%" }}>
+                                    <button type="button"
+                                        className={'btn btn-primary'}
+                                        onClick={() => { element.props.onClick() }}>
+                                        {element}
+                                    </button>
+                                </div>);
                         return null;
                     })}
-                </div>);
-        else
-            return (
-                <>
-                    <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={40} />
-                    {props.Title !== undefined ? <h4 style={{ textAlign: "center" }}>{props.Title}</h4> : null}
-                    <Plot height={props.Height} width={props.Width} showBorder={false}
-                        defaultTdomain={timeLimits} onSelect={props.OnSelect}
-                        legend={'bottom'} useMetricFactors={props.Metric ?? false}
-                        Tlabel={props.XAxisLabel ?? 'Time'} Ylabel={'Units'} showMouse={true}>
-                        {allChartData.flatMap((chartData, index) => {
-                            let lineArray: JSX.Element[] = [];
-                            let channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === chartData.ChannelID);
-                            let baseLabel: string = channelSetting?.Label ?? channelSetting?.Channel?.Name ?? "Unknown Channel";
-                            let colorValue: string = channelSetting?.Color ?? "#E41000";
-                            if (displayAvg && chartData.AvgSeries.length > 0)
-                                lineArray.push(<Line highlightHover={false} key={"avg" + index} showPoints={false} lineStyle={channelSetting?.AvgLineType ?? '-'} color={colorValue} data={chartData.AvgSeries} legend={baseLabel + " avg"} />);
-                            if (displayMin && chartData.MinSeries.length > 0)
-                                lineArray.push(<Line highlightHover={false} key={"min" + index} showPoints={false} lineStyle={channelSetting?.MinMaxLineType ?? ':'} color={colorValue} data={chartData.MinSeries} legend={baseLabel + " min"} />);
-                            if (displayMax && chartData.MaxSeries.length > 0)
-                                lineArray.push(<Line highlightHover={false} key={"max" + index} showPoints={false} lineStyle={channelSetting?.MinMaxLineType ?? ':'} color={colorValue} data={chartData.MaxSeries} legend={baseLabel + " max"} />);
-                            return lineArray;
-                        })}
-                        {props.children}
-                    </Plot>
-                </>);
-    }
-
-    return (
-        <div className="col" style={{ width: '50%', float: 'left' }}>
-            {GetDisplay()}
-        </div>
-    );
+                </div>
+            </>);
+    else
+        return (
+            <div className="row">
+                <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={29} />
+                {props.Title !== undefined ? <h4 style={{ textAlign: "center", width: `${props.Width}px` }}>{props.Title}</h4> : null}
+                <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} showBorder={false}
+                    defaultTdomain={timeLimits} onSelect={props.OnSelect}
+                    legend={'bottom'} useMetricFactors={props.Metric ?? false}
+                    Tlabel={props.XAxisLabel ?? 'Time'} Ylabel={'Units'} showMouse={true}>
+                    {allChartData.flatMap((chartData, index) => {
+                        let lineArray: JSX.Element[] = [];
+                        let channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === chartData.ChannelID);
+                        let baseLabel: string = channelSetting?.Label ?? channelSetting?.Channel?.Name ?? "Unknown Channel";
+                        let colorValue: string = channelSetting?.Color ?? "#E41000";
+                        if (displayAvg && chartData.AvgSeries.length > 0)
+                            lineArray.push(<Line highlightHover={false} key={"avg" + index} showPoints={false} lineStyle={channelSetting?.AvgLineType ?? '-'} color={colorValue} data={chartData.AvgSeries} legend={baseLabel + " avg"} />);
+                        if (displayMin && chartData.MinSeries.length > 0)
+                            lineArray.push(<Line highlightHover={false} key={"min" + index} showPoints={false} lineStyle={channelSetting?.MinMaxLineType ?? ':'} color={colorValue} data={chartData.MinSeries} legend={baseLabel + " min"} />);
+                        if (displayMax && chartData.MaxSeries.length > 0)
+                            lineArray.push(<Line highlightHover={false} key={"max" + index} showPoints={false} lineStyle={channelSetting?.MinMaxLineType ?? ':'} color={colorValue} data={chartData.MaxSeries} legend={baseLabel + " max"} />);
+                        return lineArray;
+                    })}
+                    {props.children}
+                </Plot>
+            </div>);
 });
 
 export { LineGraph, ILineSeries };
