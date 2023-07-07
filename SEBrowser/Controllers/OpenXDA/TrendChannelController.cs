@@ -76,8 +76,10 @@ namespace SEBrowser.Controllers.OpenXDA
             {
                 string phaseFilter = GetKeyValueFilter(postData["Phases"], "Phase.Name");
                 string channelGroupFilter = GetKeyValueFilter(postData["ChannelGroups"], "ChannelGroup.Name");
-                string meterFilter = GetIDFilter(postData["MeterList"], "Meter.ID");
                 string assetFilter = GetIDFilter(postData["AssetList"], "Asset.ID");
+                string meterFilter = GetIDFilter(postData["MeterList"], "Meter.ID");
+                // Meters must be selected
+                if (string.IsNullOrEmpty(meterFilter)) return new DataTable();
 
                 //TODO: IMPORTANT: DONT FORGET: Change first line to the following before pushing
                 //Channel.Trend = 1

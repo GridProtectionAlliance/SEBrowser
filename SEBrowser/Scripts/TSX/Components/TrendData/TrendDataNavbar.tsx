@@ -76,7 +76,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [trendFilter, setTrendFilter] = React.useState<ITrendDataFilter>(null);
     const [phaseOptions, setPhaseOptions] = React.useState<IMultiCheckboxOption[]>([]);
     const [channelGroupOptions, setChannelGroupOptions] = React.useState<IMultiCheckboxOption[]>([]);
-    const [linePlotOptions, setLinePlotOptions] = React.useState<IMultiCheckboxOption[]>([{ Value: 0, Text: "Minimum", Selected: true }, { Value: 1, Text: "Maximum", Selected: true }, { Value: 2, Text: "Average", Selected: true }]);
+    const [linePlotOptions, setLinePlotOptions] = React.useState<IMultiCheckboxOption[]>([{ Value: 0, Text: "Minimum", Selected: true }, { Value: 1, Text: "Maximum", Selected: true }, { Value: 2, Text: "Average/Values", Selected: true }]);
 
     const [trendChannels, setTrendChannels] = React.useState<SEBrowser.ITrendChannel[]>([]);
     const [selectedSet, setSelectedSet] = React.useState<Set<number>>(new Set<number>());
@@ -297,15 +297,17 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </li>
                     <li className="nav-item" style={{ width: '15%', paddingRight: 10 }} ref={filtRef}>
                         <fieldset className="border" style={{ padding: '10px' }}>
-                            <legend className="w-auto" style={{ fontSize: 'large' }}>Meter Selection:</legend>
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>Channel Filters:</legend>
                             <div className={"row"}>
                                 <div className={'col'}>
-                                    <NavbarFilterButton<SystemCenter.Types.DetailedMeter> Type={'Meter'} OnClick={() => setShowFilter('Meter')} Data={trendFilter.MeterList} />
+                                    <NavbarFilterButton<SystemCenter.Types.DetailedMeter> Type={'Meter'} OnClick={() => setShowFilter('Meter')} Data={trendFilter.MeterList} AlternateColors={{ normal: "#3840B5", selected: "#FF9B4B" }} />
                                 </div>
                             </div>
-                        </fieldset>
-                        <fieldset className="border" style={{ padding: '10px' }}>
-                            <legend className="w-auto" style={{ fontSize: 'large' }}>Channel Filters:</legend>
+                            <div className={"row"}>
+                                <div className={'col'}>
+                                    <NavbarFilterButton<SystemCenter.Types.DetailedAsset> Type={'Asset'} OnClick={() => setShowFilter('Asset')} Data={trendFilter.AssetList} />
+                                </div>
+                            </div>
                             <label style={{ width: '100%', position: 'relative', float: "left" }}>Phase Filter: </label>
                             <div className="row">
                                 <div className={"col"}>
@@ -343,11 +345,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                                     />
                                 </div>
                             </div>
-                            <div className={"row"}>
-                                <div className={'col'}>
-                                    <NavbarFilterButton<SystemCenter.Types.DetailedAsset> Type={'Asset'} OnClick={() => setShowFilter('Asset')} Data={trendFilter.AssetList} />
-                                </div>
-                            </div>
                         </fieldset>
                     </li>
                     <li className="nav-item" style={{ width: '55%', paddingRight: 10, height: tableHeight }}>
@@ -362,7 +359,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         <span>{SVGIcons.Settings}</span>
                     </button>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => {
-                        let selectedChannels = trendChannels.filter(chan => selectedSet.has(chan.ID));
+                        const selectedChannels = trendChannels.filter(chan => selectedSet.has(chan.ID));
                         props.AddNewChart({
                             TimeFilter: timeFilter, Type: 'Line', Channels: selectedChannels, ID: CreateGuid(), Height: 33, Width: 50,
                             PlotFilter: linePlotOptions, Title: `${selectedChannels.length} Channel Line Plot`
@@ -387,8 +384,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     setShowFilter('None');
                     if (conf)
                         setTrendFilter({ ...trendFilter, MeterList: selected });
-                }
-                }
+                }}
                 Show={showFilter == 'Meter'}
                 Type={'multiple'}
                 Columns={[
@@ -400,7 +396,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     { key: 'Model', field: 'Model', label: 'Model', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
                     { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
                 ]}
-                Title={"Filter by Meter"}
+                Title={"Select Meters to Display"}
                 GetEnum={getEnum}
                 GetAddlFields={getAdditionalMeterFields} />
             <DefaultSelects.Asset
