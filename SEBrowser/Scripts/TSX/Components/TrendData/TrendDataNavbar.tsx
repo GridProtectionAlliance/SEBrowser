@@ -42,7 +42,7 @@ interface IProps {
     ShowNav: boolean,
     SetHeight: (h: number) => void,
     SetShowAllSettings: (show: boolean) => void,
-    AddNewChart: (chartData: ITrendPlot) => void
+    AddNewCharts: (chartData: ITrendPlot[]) => void
 }
 
 interface IKeyValuePair {
@@ -360,12 +360,38 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </button>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => {
                         const selectedChannels = trendChannels.filter(chan => selectedSet.has(chan.ID));
-                        props.AddNewChart({
-                            TimeFilter: timeFilter, Type: 'Line', Channels: selectedChannels, ID: CreateGuid(), Height: 33, Width: 50,
+                        props.AddNewCharts([{
+                            TimeFilter: timeFilter, Type: 'Line', Channels: selectedChannels, ID: CreateGuid(), Height: 50, Width: 50,
                             PlotFilter: linePlotOptions, Title: `${selectedChannels.length} Channel Line Plot`
-                        })
+                        }]);
                     }}>
-                        <span>{SVGIcons.DataContainer}</span>
+                        <span>{SVGIcons.Document}</span>
+                    </button>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => {
+                        const selectedChannels: SEBrowser.ITrendChannel[] = trendChannels.filter(chan => selectedSet.has(chan.ID));
+                        const meterPlotChannels: SEBrowser.ITrendChannel[][] = [];
+                        selectedChannels.forEach(channel => {
+                            const listIndex = meterPlotChannels.findIndex(channelList => channelList[0].MeterKey === channel.MeterKey);
+                            let newList: SEBrowser.ITrendChannel[];
+                            if (listIndex > -1) {
+                                newList = meterPlotChannels[listIndex];
+                                newList.push(channel);
+                                meterPlotChannels[listIndex] = newList;
+                            } else {
+                                newList = [channel];
+                                meterPlotChannels.push(newList);
+                            }
+                        });
+                        props.AddNewCharts(
+                            meterPlotChannels.map(channelList => {
+                                return ({
+                                    TimeFilter: timeFilter, Type: 'Line', Channels: channelList, ID: CreateGuid(), Height: 50, Width: 50,
+                                    PlotFilter: linePlotOptions, Title: `${channelList.length} Channel Line Plot`
+                                });
+                            })
+                        );
+                    }}>
+                        <span>{SVGIcons.Folder}</span>
                     </button>
                 </div>
             </>);

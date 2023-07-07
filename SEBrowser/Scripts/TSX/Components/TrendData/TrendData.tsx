@@ -67,11 +67,9 @@ const TrendData = (props: IProps) => {
         setPlotList(newList);
     }), [plotList]);
 
-    const appendNewContainer = React.useCallback(((newContainerProps: ITrendPlot) => {
-        const newList = [...plotList];
-        newList.push(newContainerProps);
-        setPlotList(newList);
-    }), [plotList]);
+    const concatNewContainers = React.useCallback(((newContainers: ITrendPlot[]) => {
+        setPlotList(plotList.concat(newContainers));
+    }), [plotList, setPlotList]);
 
     const closeSettings = React.useCallback((
         (open: boolean) => closureHandler.current(open)
@@ -88,7 +86,7 @@ const TrendData = (props: IProps) => {
                 ShowNav={showNav}
                 SetHeight={setNavHeight}
                 SetShowAllSettings={setShowSettings}
-                AddNewChart={appendNewContainer}
+                AddNewCharts={concatNewContainers}
             />
             <div style={{ width: '100%', height: (showNav ? 'calc(100% - ' + navHeight + 'px)' : 'calc( 100% - 52px)'), overflowY: 'scroll' }}>
                 {plotList.map(element => <TrendPlot key={element.ID}
