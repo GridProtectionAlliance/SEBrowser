@@ -131,6 +131,28 @@ const EventSearchNavbar = (props: IProps) => {
         return "Milliseconds";
     }
 
+    const calculateDateRange = () => {
+
+        let centralDateTime = moment(`${timeFilter.date} ${timeFilter.time}`, momentDateTimeFormat);
+        let startDate = moment(centralDateTime)
+            .subtract(timeFilter.windowSize, formatWindowUnitLC(timeFilter.timeWindowUnits));
+        let endDate = moment(centralDateTime)
+            .add(timeFilter.windowSize, formatWindowUnitLC(timeFilter.timeWindowUnits));
+        let timeSpan = moment.duration(endDate.diff(startDate, 'milliseconds'));
+        let timeWindow = Number(timeSpan) / 2;
+        let humanizedTimeWindow = moment.duration(timeWindow).humanize();
+
+        if (dateTimeSetting == 'center') {
+            return `${centralDateTime} +/- ${humanizedTimeWindow}`;
+        } else if (dateTimeSetting == 'startWindow') {
+            return `Start: ${startDate} + ${humanizedTimeWindow}`;
+        } else if (dateTimeSetting == 'endWindow') {
+            return `End: ${endDate} - ${humanizedTimeWindow}`;
+        } else if (dateTimeSetting == 'startEnd') {
+            return `${startDate} - ${endDate}`;
+        } else return `${centralDateTime} +/- ${humanizedTimeWindow}`;
+    };
+
     function getEnum(setOptions, field) {
         let handle = null;
         if (field.type != 'enum' || field.enum == undefined || field.enum.length != 1)
