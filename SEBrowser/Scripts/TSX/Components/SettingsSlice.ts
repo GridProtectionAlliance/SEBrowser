@@ -40,6 +40,7 @@ const settingsSlice = createSlice({
             NumberResults: 100,
             WidgetCategories: [],
             AggregateMagDur: true,
+            DateTimeSetting: 'center'
         },
         timeZone: 'UTC',
     } as Redux.SettingsState,
@@ -59,7 +60,7 @@ const settingsSlice = createSlice({
                 state.eventSearch = preserved.eventSearch;
             }
             else
-                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true };
+                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true, DateTimeSetting: 'center' };
 
             state.timeZone = action.payload[0];
             state.eventSearch.WidgetCategories = action.payload[1];
@@ -72,7 +73,7 @@ const settingsSlice = createSlice({
                 state.eventSearch = preserved.eventSearch;
             }
             else
-                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true };
+                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true, DateTimeSetting: 'center' };
             state.timeZone = 'UTC';
         });
     }
@@ -130,3 +131,4 @@ export const { SetEventSearch } = settingsSlice.actions
 export const SelectEventSearchSettings = (state: Redux.StoreState) => state.Settings.eventSearch
 export const SelectTimeZone = (state: Redux.StoreState) => state.Settings.timeZone
 export const SelectWidgetCategories = (state: Redux.StoreState) => state.Settings.eventSearch.WidgetCategories
+export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.eventSearch.DateTimeSetting
