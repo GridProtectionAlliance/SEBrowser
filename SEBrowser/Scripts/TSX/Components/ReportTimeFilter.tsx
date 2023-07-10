@@ -299,10 +299,19 @@ const AvailableQuickSelects: IQuickSelect[] = [
 
 
 const ReportTimeFilter = (props: IProps) => {
-    const [filter, setFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.filter)
     const timeZone = useSelector(SelectTimeZone);
     const [activeQP, setActiveQP] = React.useState<number>(-1);
-    const [currentTime, setCurrentTime] = React.useState<{ Value: string }>({ Value: filter.date + 'T' + filter.time + "[Z]" });
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const [filter, setFilter] = React.useState<ITimeFilter>({
+        centerTime: props.filter.date + ' ' + props.filter.time,
+        startTime: moment(props.filter.date + ' ' + props.filter.time, momentDateFormat + ' ' + momentTimeFormat)
+            .subtract(props.filter.windowSize, getDurationUnit(props.filter.timeWindowUnits)).format(momentDateFormat + ' ' + momentTimeFormat),
+        endTime: moment(props.filter.date + ' ' + props.filter.time, momentDateFormat + ' ' + momentTimeFormat)
+            .add(props.filter.windowSize, getDurationUnit(props.filter.timeWindowUnits)).format(momentDateFormat + ' ' + momentTimeFormat),
+        timeWindowUnits: props.filter.timeWindowUnits,
+        windowSize: props.filter.windowSize*2,
+        halfWindowSize: props.filter.windowSize,
+    });
 
 
     React.useEffect(() => {
