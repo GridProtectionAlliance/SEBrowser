@@ -357,6 +357,24 @@ const ReportTimeFilter = (props: IProps) => {
 
     }, [props.filter]);
     
+    function getDurationUnit(dUnits: number) {
+        if (dUnits === 7) {
+            return 'y';
+        } else if (dUnits === 6) {
+            return 'M';
+        } else if (dUnits === 5) {
+            return  'w';
+        } else if (dUnits === 4) {
+            return 'd';
+        } else if (dUnits === 3) {
+            return 'h';
+        } else if (dUnits === 2) {
+            return 'm';
+        } else if (dUnits === 1) {
+            return 's';
+        } else if (dUnits === 0) {
+            return 'ms';
+    }
     }
 
     return (
