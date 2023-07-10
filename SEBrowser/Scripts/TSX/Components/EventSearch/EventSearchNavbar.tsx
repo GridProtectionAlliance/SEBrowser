@@ -37,6 +37,7 @@ import { Input, Select, MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { SEBrowser } from '../../Global';
 import EventSearchTypeFilters from './EventSearchTypeFilter';
+import { SelectEventSearchSettings } from '../SettingsSlice';
 
 interface IProps {
     toggleVis: () => void,
@@ -75,6 +76,7 @@ const EventSearchNavbar = (props: IProps) => {
     const [newEventCharacteristicFilter, setNewEventCharacteristicFilter] = React.useState<SEBrowser.IEventCharacteristicFilters>(null);
     const [newTypeFilter, setNewTypeFilter] = React.useState<number[]>(null);
     const lineNeutralOptions = [{ Value: 'LL', Label: 'LL' }, { Value: 'LN', Label: 'LN' }, { Value: 'both', Label: 'LL/LN' }];
+    const dateTimeSetting = useAppSelector((state: Redux.StoreState) => SelectEventSearchSettings(state).DateTimeSetting)
 
     React.useLayoutEffect(() => setHeight(navRef?.current?.offsetHeight ?? 0))
     React.useEffect(() => props.setHeight(height), [height])
