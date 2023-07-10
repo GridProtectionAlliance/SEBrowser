@@ -315,10 +315,15 @@ const ReportTimeFilter = (props: IProps) => {
 
 
     React.useEffect(() => {
-        if (isEqual(props.filter, filter))
+        if (isEqual(filter, props.filter))
             return;
-        setFilter(props.filter);
-    }, [props.filter])
+        props.setFilter({
+            time: filter.centerTime.split(' ')[1],
+            date: filter.centerTime.split(' ')[0],
+            windowSize: filter.halfWindowSize,
+            timeWindowUnits: filter.timeWindowUnits
+        });
+    }, [filter])
 
     React.useEffect(() => {
         const t = filter.date + 'T' + filter.time + "[Z]";
