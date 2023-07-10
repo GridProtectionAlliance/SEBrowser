@@ -34,8 +34,18 @@ interface IProps {
     showQuickSelect: boolean
 }
 
-interface IQuickSelect { label: string, createFilter: (timeZone: string) =>  SEBrowser.IReportTimeFilter }
+interface ITimeFilter {
+    centerTime: string,
+    startTime: string,
+    endTime: string,
+    timeWindowUnits: number,
+    windowSize: number,
+    halfWindowSize: number,
+};
 
+interface IQuickSelect { label: string, createFilter: (timeZone: string) => SEBrowser.IReportTimeFilter }
+
+const momentDateTimeFormat = "YYYY-MMDD/YYYYTHH:mm:ss.SSS[Z]";
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS"; // Also is the gemstone format
 
