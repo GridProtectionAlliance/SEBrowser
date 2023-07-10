@@ -333,15 +333,30 @@ const ReportTimeFilter = (props: IProps) => {
     }
 
     React.useEffect(() => {
-        if (isEqual(props.filter, filter))
+        if (isEqual(filter, props.filter))
             return;
         props.setFilter(filter);
     }, [filter])
 
-    function isEqual(flt1: SEBrowser.IReportTimeFilter, flt2: SEBrowser.IReportTimeFilter) {
-        return flt1.date == flt2.date && flt1.time == flt2.time &&
-            flt1.timeWindowUnits == flt2.timeWindowUnits &&
-            flt1.windowSize == flt2.windowSize;
+        const durationValue = props.filter.windowSize;
+        const dUnits = props.filter.timeWindowUnits;
+        let durationUnit;
+        const centerTimeMoment = moment(props.filter.date + ' ' + props.filter.time, momentDateFormat + ' ' + momentTimeFormat);
+        const newStartTime = centerTimeMoment.clone().subtract(durationValue, durationUnit);
+        const newEndTime = centerTimeMoment.clone().add(durationValue, durationUnit);
+
+        setFilter(prevState => ({
+            ...prevState,
+            centerTime: centerTimeMoment.format('MM/DD/YYYY HH:mm:ss.SSS') ,
+            startTime: newStartTime.format('MM/DD/YYYY HH:mm:ss.SSS'),
+            endTime: newEndTime.format('MM/DD/YYYY HH:mm:ss.SSS'),
+            timeWindowUnits: dUnits,
+            windowSize: durationValue * 2,
+            halfWindowSize: durationValue,
+        }));
+
+    }, [props.filter]);
+    
     }
 
     return (
