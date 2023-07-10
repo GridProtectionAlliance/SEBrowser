@@ -86,10 +86,13 @@ export namespace Redux {
         NumberResults: number,
         WidgetCategories: SEBrowser.IWidgetCategory[],
         AggregateMagDur: boolean
+        DateTimeSetting: TimeWindowMode
     }
 }
 export namespace SEBrowser {
     type Status = 'loading' | 'idle' | 'error' | 'changed' | 'unitiated';
+    type TimeWindowMode =   'center' | 'startWindow' | 'endWindow' | 'startEnd';
+      
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
     interface EventPreviewPaneSetting { ID: number, Name: string, Show: boolean, OrderBy: number }
     interface IReportTimeFilter { date: string, time: string, windowSize: number, timeWindowUnits: number }
