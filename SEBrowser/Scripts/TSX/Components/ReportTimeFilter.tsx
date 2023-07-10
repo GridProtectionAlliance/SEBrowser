@@ -598,7 +598,7 @@ const ReportTimeFilter = (props: IProps) => {
                     <div className="row">
                         <div className='col-6'>
                             <Input<ITimeFilter> Record={filter} Field='windowSize' Setter={(r) => {
-                                const newEndTimeMoment = moment(filter.startTime, momentDateFormat + ' ' + momentTimeFormat);
+                                const newEndTimeMoment = moment(filter.endTime, momentDateFormat + ' ' + momentTimeFormat);
                                 const newCenterTime = newEndTimeMoment.clone().subtract(r.windowSize/2, getDurationUnit(filter.timeWindowUnits));
                                 const newStartTime = newEndTimeMoment.clone().subtract(r.windowSize, getDurationUnit(filter.timeWindowUnits));
                                 setFilter(prevFilter => ({
