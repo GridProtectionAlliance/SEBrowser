@@ -452,9 +452,9 @@ const ReportTimeFilter = (props: IProps) => {
                     <div className='col-12'>
                         <DatePicker< ITimeFilter > Record={filter} Field="startTime"
                         Setter={(r) => {
-                            const centerTimeMoment = moment(r.centerTime, momentDateFormat + ' ' + momentTimeFormat);
-                            const newStartTime = centerTimeMoment.clone().subtract(filter.halfWindowSize, getDurationUnit(filter.timeWindowUnits));
-                            const newEndTime = centerTimeMoment.clone().add(filter.halfWindowSize, getDurationUnit(filter.timeWindowUnits));
+                                    const newStartTime = moment(r.startTime, momentDateFormat + ' ' + momentTimeFormat);
+                                    const centerTimeMoment = newStartTime.clone().add(filter.halfWindowSize, getDurationUnit(filter.timeWindowUnits));
+                                    const newEndTime = newStartTime.clone().add(filter.windowSize, getDurationUnit(filter.timeWindowUnits));
                             setFilter(prevFilter => ({
                                 ...prevFilter,
                                 centerTime: centerTimeMoment.format(momentDateFormat + ' ' + momentTimeFormat),
@@ -470,9 +470,9 @@ const ReportTimeFilter = (props: IProps) => {
                     <div className='col-12'>
                         <DatePicker< ITimeFilter > Record={filter} Field="endTime"
                             Setter={(r) => {
-                                const centerTimeMoment = moment(r.centerTime, momentDateFormat + ' ' + momentTimeFormat);
-                                const newStartTime = centerTimeMoment.clone().subtract(filter.halfWindowSize, getDurationUnit(filter.timeWindowUnits));
-                                const newEndTime = centerTimeMoment.clone().add(filter.halfWindowSize, getDurationUnit(filter.timeWindowUnits));
+                                    const newEndTime = moment(r.endTime, momentDateFormat + ' ' + momentTimeFormat);
+                                    const centerTimeMoment = newEndTime.clone().subtract(filter.halfWindowSize, getDurationUnit(filter.timeWindowUnits));
+                                    const newStartTime = newEndTime.clone().subtract(filter.windowSize, getDurationUnit(filter.timeWindowUnits));
                                 setFilter(prevFilter => ({
                                     ...prevFilter,
                                     centerTime: centerTimeMoment.format(momentDateFormat + ' ' + momentTimeFormat),
