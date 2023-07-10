@@ -83,7 +83,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
     const momentDateFormat = "MM/DD/YYYY";
-    const defaultTrueSet = new Set(["AB", "BC", "CA", "Voltage"]);
     const baseTimeFilter = { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 12, timeWindowUnits: 3 }
 
     // Page effects
@@ -115,7 +114,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     }, [channelGroupStatus]);
 
     React.useEffect(() => {
-        if (trendFilter === null) return; // || trendFilter.Phases.length === 0 || trendFilter.ChannelGroups.length === 0
+        if (trendFilter === null) return;
         // Get the data from the filter
         let handle = GetTrendChannels();
         return () => {
@@ -125,24 +124,25 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
 
     React.useEffect(() => {
         // Todo: get filters from memory
+        if (trendFilter !== null || channelGroupStatus !== 'idle' || phaseStatus !== 'idle') return;
         setTrendFilter({
-            Phases: makeKeyValuePairs(allPhases),
-            ChannelGroups: makeKeyValuePairs(allChannelGroups),
+            Phases: makeKeyValuePairs(allPhases, new Set(["AB", "BC", "CA"])),
+            ChannelGroups: makeKeyValuePairs(allChannelGroups, new Set(["Voltage"])),
             MeterList: [],
             AssetList: []
         });
         setTimeFilter(baseTimeFilter);
-    }, []);
+    }, [channelGroupStatus, phaseStatus]);
 
-    function makeKeyValuePairs(allKeys: { ID: number, Name: string, Description: string }[]): IKeyValuePair[] {
+    function makeKeyValuePairs(allKeys: { ID: number, Name: string, Description: string }[], defaultTrueSet?: Set<string>): IKeyValuePair[] {
         if (allKeys == null) return [];
-        return allKeys.map(key => ({ Key: key.Name, Value: defaultTrueSet.has(key.Name) }));
+        return allKeys.map(key => ({ Key: key.Name, Value: defaultTrueSet?.has(key.Name) ?? false }));
     }
 
     function makeMultiCheckboxOptions(keyValues: IKeyValuePair[], setOptions: (options: IMultiCheckboxOption[]) => void, allKeys: { ID: number, Name: string, Description: string }[]) {
         if (allKeys == null || keyValues == null) return;
         let newOptions: IMultiCheckboxOption[] = [];
-        allKeys.forEach((key, index) => newOptions.push({ Value: index, Text: key.Name, Selected: keyValues.find(e => e.Key === key.Name)?.Value ?? defaultTrueSet.has(key.Name) }));
+        allKeys.forEach((key, index) => newOptions.push({ Value: index, Text: key.Name, Selected: keyValues.find(e => e.Key === key.Name)?.Value ?? false }));
         setOptions(newOptions);
     }
 
