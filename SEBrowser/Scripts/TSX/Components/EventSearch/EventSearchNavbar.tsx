@@ -131,6 +131,24 @@ const EventSearchNavbar = (props: IProps) => {
         return "Milliseconds";
     }
 
+    function formatWindowUnitLC(i: number) {
+        if (i == 7)
+            return "y";
+        if (i == 6)
+            return "M";
+        if (i == 5)
+            return "w";
+        if (i == 4)
+            return "d";
+        if (i == 3)
+            return "h";
+        if (i == 2)
+            return "m";
+        if (i == 1)
+            return "s";
+        return "ms";
+    }
+
     const calculateDateRange = () => {
 
         let centralDateTime = moment(`${timeFilter.date} ${timeFilter.time}`, momentDateTimeFormat);
@@ -310,7 +328,7 @@ const EventSearchNavbar = (props: IProps) => {
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <div className="navbar-nav mr-auto">
                         <span className="navbar-text">
-                            {timeFilter.date} {timeFilter.time} +/- {timeFilter.windowSize} {formatWindowUnit(timeFilter.timeWindowUnits)}
+                            {calculateDateRange()}
                         </span>
                     </div>
                     <div className="navbar-nav ml-auto" >
