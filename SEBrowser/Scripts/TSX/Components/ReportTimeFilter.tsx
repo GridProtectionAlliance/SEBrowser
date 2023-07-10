@@ -325,11 +325,12 @@ const ReportTimeFilter = (props: IProps) => {
         });
     }, [filter])
 
-    React.useEffect(() => {
-        const t = filter.date + 'T' + filter.time + "[Z]";
-        if (t !== currentTime.Value)
-            setCurrentTime({ Value: t });
-    }, [filter]);
+    function isEqual(flt1: ITimeFilter, flt2: SEBrowser.IReportTimeFilter) {
+        const t = flt2.date + ' ' + flt2.time;
+        return flt1.centerTime == t &&
+            flt1.timeWindowUnits == flt2.timeWindowUnits &&
+            flt1.windowSize == flt2.windowSize * 2;
+    }
 
     React.useEffect(() => {
         if (isEqual(props.filter, filter))
