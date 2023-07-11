@@ -354,7 +354,19 @@ const ReportTimeFilter = (props: IProps) => {
         }));
 
     }, [props.filter]);
+    function getMostAppropriateUnit(startTime: moment.Moment, endTime: moment.Moment) {
     
+        for (let i = 7; i < 1; i--) {
+            const difference = endTime.diff(startTime, getDurationUnit(i));
+   
+            if (Number.isInteger(difference)) {
+                return [ i , difference ];
+            }
+        }
+
+        return [0, endTime.diff(startTime, 'ms')];
+    }
+
     function getDurationUnit(dUnits: number) {
         if (dUnits === 7) {
             return 'y';
@@ -411,8 +423,9 @@ const ReportTimeFilter = (props: IProps) => {
                                     let newWindow = filter.windowSize;
                                     let newUnit = filter.timeWindowUnits;
                                     if (dateTimeSetting === 'startEnd') {
-                                        newWindow = moment(filter.endTime, momentDateFormat + ' ' + momentTimeFormat).diff(newStartTime, 'ms');  
-                                        newUnit = 0;
+                                        const appropriateUnit = getMostAppropriateUnit(newStartTime, moment(filter.endTime, momentDateFormat + ' ' + momentTimeFormat));
+                                        newWindow = appropriateUnit[1];  
+                                        newUnit = appropriateUnit[0];
                                     }
 
                                     const centerTimeMoment = newStartTime.clone().add(newWindow/2, getDurationUnit(newUnit));
@@ -445,8 +458,9 @@ const ReportTimeFilter = (props: IProps) => {
                                     let newWindow = filter.windowSize;
                                     let newUnit = filter.timeWindowUnits;
                                     if (dateTimeSetting === 'startEnd') {
-                                        newWindow = newEndTime.diff(moment(filter.startTime, momentDateFormat + ' ' + momentTimeFormat), 'ms');
-                                        newUnit = 0;
+                                        const appropriateUnit = getMostAppropriateUnit(moment(filter.startTime, momentDateFormat + ' ' + momentTimeFormat), newEndTime);
+                                        newWindow = appropriateUnit[1];
+                                        newUnit = appropriateUnit[0];
                                     }
 
                                     const centerTimeMoment = newEndTime.clone().subtract(newWindow / 2, getDurationUnit(newUnit));
