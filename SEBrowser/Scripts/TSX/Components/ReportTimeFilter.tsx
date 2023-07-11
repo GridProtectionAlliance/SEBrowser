@@ -408,14 +408,24 @@ const ReportTimeFilter = (props: IProps) => {
                             <DatePicker< ITimeFilter > Record={filter} Field="startTime"
                                 Setter={(r) => {
                                     const newStartTime = moment(r.startTime, momentDateFormat + ' ' + momentTimeFormat);
-                                    const centerTimeMoment = newStartTime.clone().add(filter.halfWindowSize, getDurationUnit(filter.timeWindowUnits));
-                                    const newEndTime = newStartTime.clone().add(filter.windowSize, getDurationUnit(filter.timeWindowUnits));
-                                    setFilter(prevFilter => ({
-                                        ...prevFilter,
+                                    let newWindow = filter.windowSize;
+                                    let newUnit = filter.timeWindowUnits;
+                                    if (dateTimeSetting === 'startEnd') {
+                                        newWindow = moment(filter.endTime, momentDateFormat + ' ' + momentTimeFormat).diff(newStartTime, 'ms');  
+                                        newUnit = 0;
+                                    }
+
+                                    const centerTimeMoment = newStartTime.clone().add(newWindow/2, getDurationUnit(newUnit));
+                                    const newEndTime = newStartTime.clone().add(newWindow, getDurationUnit(newUnit));
+                                    setFilter({
                                         centerTime: centerTimeMoment.format(momentDateFormat + ' ' + momentTimeFormat),
                                         startTime: newStartTime.format(momentDateFormat + ' ' + momentTimeFormat),
-                                        endTime: newEndTime.format(momentDateFormat + ' ' + momentTimeFormat)
-                                    }));;
+                                        endTime: newEndTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                        windowSize: newWindow,
+                                        halfWindowSize: newWindow / 2,
+                                        timeWindowUnits: newUnit
+
+                                    });
                                     setActiveQP(-1);
                                 }}
                                 Label='Start of Time Window:'
@@ -426,71 +436,38 @@ const ReportTimeFilter = (props: IProps) => {
                 </div>
                             : null
                         }
-                    </div>
-                    
+                    {dateTimeSetting === 'endWindow' || dateTimeSetting === 'startEnd' ?
                     <div className='col-12'>
                         <div className="row"> 
                             <DatePicker<ITimeFilter> Record={filter} Field="endTime"
                                 Setter={(r) => {
                                     const newEndTime = moment(r.endTime, momentDateFormat + ' ' + momentTimeFormat);
-                                    const centerTimeMoment = newEndTime.clone().subtract(filter.halfWindowSize, getDurationUnit(filter.timeWindowUnits));
-                                    const newStartTime = newEndTime.clone().subtract(filter.windowSize, getDurationUnit(filter.timeWindowUnits));
-                                    setFilter(prevFilter => ({
-                                        ...prevFilter,
+                                    let newWindow = filter.windowSize;
+                                    let newUnit = filter.timeWindowUnits;
+                                    if (dateTimeSetting === 'startEnd') {
+                                        newWindow = newEndTime.diff(moment(filter.startTime, momentDateFormat + ' ' + momentTimeFormat), 'ms');
+                                        newUnit = 0;
+                                    }
+
+                                    const centerTimeMoment = newEndTime.clone().subtract(newWindow / 2, getDurationUnit(newUnit));
+                                    const newStartTime = newEndTime.clone().subtract(newWindow, getDurationUnit(newUnit));
+                                    setFilter({
                                         centerTime: centerTimeMoment.format(momentDateFormat + ' ' + momentTimeFormat),
                                         startTime: newStartTime.format(momentDateFormat + ' ' + momentTimeFormat),
-                                        endTime: newEndTime.format(momentDateFormat + ' ' + momentTimeFormat)
-                                    }));;
+                                        endTime: newEndTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                        windowSize: newWindow,
+                                        halfWindowSize: newWindow / 2,
+                                        timeWindowUnits: newUnit
+
+                                    });
                                     setActiveQP(-1);
                                 }}
                                 Label='End of Time Window :'
                                 Type='datetime-local'
                                 Valid={() =>  true } Format={momentDateFormat + ' ' + momentTimeFormat}
                             />
-                            : null
-                        }
                     </div>
-                </div>
-                {dateTimeSetting === 'startEnd' ?
-                <>
-                    <div className='col-12'>
-                        <DatePicker< ITimeFilter > Record={filter} Field="startTime"
-                        Setter={(r) => {
-                                    const newStartTime = moment(r.startTime, momentDateFormat + ' ' + momentTimeFormat);
-                                    const centerTimeMoment = newStartTime.clone().add(filter.halfWindowSize, getDurationUnit(filter.timeWindowUnits));
-                                    const newEndTime = newStartTime.clone().add(filter.windowSize, getDurationUnit(filter.timeWindowUnits));
-                            setFilter(prevFilter => ({
-                                ...prevFilter,
-                                centerTime: centerTimeMoment.format(momentDateFormat + ' ' + momentTimeFormat),
-                                startTime: newStartTime.format(momentDateFormat + ' ' + momentTimeFormat),
-                                endTime: newEndTime.format(momentDateFormat + ' ' + momentTimeFormat)
-                            }));;
-                            setActiveQP(-1);
-                        }}
-                        Label='Start Date/Time'
-                        Type='datetime-local'
-                        Valid={(record) => { return true; }} Format={momentDateFormat + ' ' + momentTimeFormat} />
                     </div>
-                    <div className='col-12'>
-                        <DatePicker< ITimeFilter > Record={filter} Field="endTime"
-                            Setter={(r) => {
-                                    const newEndTime = moment(r.endTime, momentDateFormat + ' ' + momentTimeFormat);
-                                    const centerTimeMoment = newEndTime.clone().subtract(filter.halfWindowSize, getDurationUnit(filter.timeWindowUnits));
-                                    const newStartTime = newEndTime.clone().subtract(filter.windowSize, getDurationUnit(filter.timeWindowUnits));
-                                setFilter(prevFilter => ({
-                                    ...prevFilter,
-                                    centerTime: centerTimeMoment.format(momentDateFormat + ' ' + momentTimeFormat),
-                                    startTime: newStartTime.format(momentDateFormat + ' ' + momentTimeFormat),
-                                    endTime: newEndTime.format(momentDateFormat + ' ' + momentTimeFormat)
-                                }));;
-                                setActiveQP(-1);
-                            }}
-                            Label='End Date/Time'
-                            Type='datetime-local'
-                                Valid={(record) => { return true; }} Format={momentDateFormat + ' ' + momentTimeFormat}
-                        />
-                    </div>
-                </>
                 : null
                 }
                 {dateTimeSetting === 'center' ?
