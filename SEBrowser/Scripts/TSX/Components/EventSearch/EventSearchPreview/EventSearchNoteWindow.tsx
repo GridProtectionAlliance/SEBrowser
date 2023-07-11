@@ -209,7 +209,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
                     ShowCard={false}
                     Filter={(n) => selectedTags.find(i => i == n.NoteTagID) != null}
                 /> : <div className={'alert alert-warning'}>
-                    <p>At least 1 Category needs to be selected.</p>
+                    <p>At least 1 Type needs to be selected.</p>
                 </div>}
             </div>
         </div>
