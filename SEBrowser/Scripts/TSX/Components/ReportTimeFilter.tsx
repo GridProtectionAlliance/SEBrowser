@@ -378,10 +378,9 @@ const ReportTimeFilter = (props: IProps) => {
     return (
         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
             <legend className="w-auto" style={{ fontSize: 'large' }}>Date/Time Filter:</legend>
-            <div>
+                {dateTimeSetting === 'center' ?
                 <div className="row">
                     <div className='col-12'>
-                        {dateTimeSetting === 'center' ?
                         <DatePicker< ITimeFilter > Record={filter} Field="centerTime"
                             Setter={(r) => {
                                 const centerTimeMoment = moment(r.centerTime, momentDateFormat + ' ' + momentTimeFormat);
@@ -397,12 +396,15 @@ const ReportTimeFilter = (props: IProps) => {
                             }}
                                 Label='Time Window Center:'
                             Type='datetime-local'
-                            Valid={() => true;} Format={momentDateFormat + ' ' + momentTimeFormat} />
+                            Valid={(record) => { return true; }} Format={momentDateFormat + ' ' + momentTimeFormat} />
+                        </div>
+                    </div>
                             : null
                         }
-                    </div>
+            {dateTimeSetting === 'startWindow' || dateTimeSetting === 'startEnd' ?
+                
                     <div className='col-12'>
-                        {dateTimeSetting === 'startWindow' ?
+                    <div className="row"> 
                             <DatePicker< ITimeFilter > Record={filter} Field="startTime"
                                 Setter={(r) => {
                                     const newStartTime = moment(r.startTime, momentDateFormat + ' ' + momentTimeFormat);
@@ -420,12 +422,14 @@ const ReportTimeFilter = (props: IProps) => {
                                 Type='datetime-local'
                                 Valid={() => true} Format={momentDateFormat + ' ' + momentTimeFormat}
                             />
+                    </div> 
+                </div>
                             : null
                         }
                     </div>
                     
                     <div className='col-12'>
-                        {dateTimeSetting === 'endWindow' ?
+                        <div className="row"> 
                             <DatePicker<ITimeFilter> Record={filter} Field="endTime"
                                 Setter={(r) => {
                                     const newEndTime = moment(r.endTime, momentDateFormat + ' ' + momentTimeFormat);
@@ -644,7 +648,6 @@ const ReportTimeFilter = (props: IProps) => {
                 </>
                 : null
                 }
-            </div>    
 
             {props.showQuickSelect ?
                 <div className="row" style={{ width: '100%' }}>
