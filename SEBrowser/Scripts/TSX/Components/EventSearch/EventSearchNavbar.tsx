@@ -161,13 +161,13 @@ const EventSearchNavbar = (props: IProps) => {
         let timeSpan = moment.duration(endDate.diff(startDate, 'milliseconds'));
         let timeWindow = Number(timeSpan) / 2;
         let humanizedTimeWindow = moment.duration(timeWindow).humanize();
-
+        let humanizedTimeWindow2 = moment.duration(timeWindow*2).humanize();
         if (dateTimeSetting == 'center') {
             return `${centralDateTime} +/- ${humanizedTimeWindow}`;
         } else if (dateTimeSetting == 'startWindow') {
-            return `Start: ${startDate} + ${humanizedTimeWindow}`;
+            return `Start: ${startDate} + ${humanizedTimeWindow2}`;
         } else if (dateTimeSetting == 'endWindow') {
-            return `End: ${endDate} - ${humanizedTimeWindow}`;
+            return `End: ${endDate} - ${humanizedTimeWindow2}`;
         } else if (dateTimeSetting == 'startEnd') {
             return `${startDate} - ${endDate}`;
         } else return `${centralDateTime} +/- ${humanizedTimeWindow}`;
