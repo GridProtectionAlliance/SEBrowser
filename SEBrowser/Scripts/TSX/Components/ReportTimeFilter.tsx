@@ -27,6 +27,7 @@ import momentTZ from 'moment-timezone';
 import { DatePicker, Select, Input } from '@gpa-gemstone/react-forms'
 import { useSelector } from 'react-redux';
 import { SelectTimeZone, SelectDateTimeSetting } from './SettingsSlice';
+import { findAppropriateUnit, momentUnit } from './EventSearch/TimeWindowUtils';
 
 interface IProps {
     filter: SEBrowser.IReportTimeFilter;
@@ -45,7 +46,6 @@ interface ITimeFilter {
 
 interface IQuickSelect { label: string, createFilter: (timeZone: string) => SEBrowser.IReportTimeFilter }
 
-const momentDateTimeFormat = "YYYY-MMDD/YYYYTHH:mm:ss.SSS[Z]";
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS"; // Also is the gemstone format
 
@@ -305,9 +305,9 @@ const ReportTimeFilter = (props: IProps) => {
     const [filter, setFilter] = React.useState<ITimeFilter>({
         centerTime: props.filter.date + ' ' + props.filter.time,
         startTime: moment(props.filter.date + ' ' + props.filter.time, momentDateFormat + ' ' + momentTimeFormat)
-            .subtract(props.filter.windowSize, getDurationUnit(props.filter.timeWindowUnits)).format(momentDateFormat + ' ' + momentTimeFormat),
+            .subtract(props.filter.windowSize, momentUnit(props.filter.timeWindowUnits)).format(momentDateFormat + ' ' + momentTimeFormat),
         endTime: moment(props.filter.date + ' ' + props.filter.time, momentDateFormat + ' ' + momentTimeFormat)
-            .add(props.filter.windowSize, getDurationUnit(props.filter.timeWindowUnits)).format(momentDateFormat + ' ' + momentTimeFormat),
+            .add(props.filter.windowSize, momentUnit(props.filter.timeWindowUnits)).format(momentDateFormat + ' ' + momentTimeFormat),
         timeWindowUnits: props.filter.timeWindowUnits,
         windowSize: props.filter.windowSize*2,
         halfWindowSize: props.filter.windowSize,
@@ -354,38 +354,7 @@ const ReportTimeFilter = (props: IProps) => {
         }));
 
     }, [props.filter]);
-    function getMostAppropriateUnit(startTime: moment.Moment, endTime: moment.Moment) {
-    
-        for (let i = 7; i < 1; i--) {
-            const difference = endTime.diff(startTime, getDurationUnit(i));
    
-            if (Number.isInteger(difference)) {
-                return [ i , difference ];
-            }
-        }
-
-        return [0, endTime.diff(startTime, 'ms')];
-    }
-
-    function getDurationUnit(dUnits: number) {
-        if (dUnits === 7) {
-            return 'y';
-        } else if (dUnits === 6) {
-            return 'M';
-        } else if (dUnits === 5) {
-            return  'w';
-        } else if (dUnits === 4) {
-            return 'd';
-        } else if (dUnits === 3) {
-            return 'h';
-        } else if (dUnits === 2) {
-            return 'm';
-        } else if (dUnits === 1) {
-            return 's';
-        } else if (dUnits === 0) {
-            return 'ms';
-        }
-    }
 
     return (
         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
@@ -396,8 +365,8 @@ const ReportTimeFilter = (props: IProps) => {
                         <DatePicker< ITimeFilter > Record={filter} Field="centerTime"
                             Setter={(r) => {
                                 const centerTimeMoment = moment(r.centerTime, momentDateFormat + ' ' + momentTimeFormat);
-                                const newStartTime = centerTimeMoment.clone().subtract(filter.halfWindowSize, getDurationUnit(filter.timeWindowUnits));
-                                const newEndTime = centerTimeMoment.clone().add(filter.halfWindowSize, getDurationUnit(filter.timeWindowUnits));
+                                const newStartTime = centerTimeMoment.clone().subtract(filter.halfWindowSize, momentUnit(filter.timeWindowUnits));
+                                const newEndTime = centerTimeMoment.clone().add(filter.halfWindowSize, momentUnit(filter.timeWindowUnits));
                                 setFilter(prevFilter => ({
                                     ...prevFilter,
                                     centerTime: centerTimeMoment.format(momentDateFormat + ' ' + momentTimeFormat),
@@ -423,13 +392,13 @@ const ReportTimeFilter = (props: IProps) => {
                                     let newWindow = filter.windowSize;
                                     let newUnit = filter.timeWindowUnits;
                                     if (dateTimeSetting === 'startEnd') {
-                                        const appropriateUnit = getMostAppropriateUnit(newStartTime, moment(filter.endTime, momentDateFormat + ' ' + momentTimeFormat));
+                                        const appropriateUnit = findAppropriateUnit(newStartTime, moment(filter.endTime, momentDateFormat + ' ' + momentTimeFormat));
                                         newWindow = appropriateUnit[1];  
                                         newUnit = appropriateUnit[0];
                                     }
 
-                                    const centerTimeMoment = newStartTime.clone().add(newWindow/2, getDurationUnit(newUnit));
-                                    const newEndTime = newStartTime.clone().add(newWindow, getDurationUnit(newUnit));
+                                    const centerTimeMoment = newStartTime.clone().add(newWindow / 2, momentUnit(newUnit));
+                                    const newEndTime = newStartTime.clone().add(newWindow, momentUnit(newUnit));
                                     setFilter({
                                         centerTime: centerTimeMoment.format(momentDateFormat + ' ' + momentTimeFormat),
                                         startTime: newStartTime.format(momentDateFormat + ' ' + momentTimeFormat),
@@ -458,13 +427,13 @@ const ReportTimeFilter = (props: IProps) => {
                                     let newWindow = filter.windowSize;
                                     let newUnit = filter.timeWindowUnits;
                                     if (dateTimeSetting === 'startEnd') {
-                                        const appropriateUnit = getMostAppropriateUnit(moment(filter.startTime, momentDateFormat + ' ' + momentTimeFormat), newEndTime);
+                                        const appropriateUnit = findAppropriateUnit(moment(filter.startTime, momentDateFormat + ' ' + momentTimeFormat), newEndTime);
                                         newWindow = appropriateUnit[1];
                                         newUnit = appropriateUnit[0];
                                     }
 
-                                    const centerTimeMoment = newEndTime.clone().subtract(newWindow / 2, getDurationUnit(newUnit));
-                                    const newStartTime = newEndTime.clone().subtract(newWindow, getDurationUnit(newUnit));
+                                    const centerTimeMoment = newEndTime.clone().subtract(newWindow / 2, momentUnit(newUnit));
+                                    const newStartTime = newEndTime.clone().subtract(newWindow, momentUnit(newUnit));
                                     setFilter({
                                         centerTime: centerTimeMoment.format(momentDateFormat + ' ' + momentTimeFormat),
                                         startTime: newStartTime.format(momentDateFormat + ' ' + momentTimeFormat),
@@ -492,8 +461,8 @@ const ReportTimeFilter = (props: IProps) => {
                             <Input<ITimeFilter> Record={filter} Field='halfWindowSize' Setter={(r) => {
                                 const windowSize = r.halfWindowSize * 2;
                                 const centerTimeMoment = moment(props.filter.date + ' ' + props.filter.time, momentDateFormat + ' ' + momentTimeFormat);
-                                const newStartTime = centerTimeMoment.clone().subtract(r.halfWindowSize, getDurationUnit(filter.timeWindowUnits));
-                                const newEndTime = centerTimeMoment.clone().add(r.halfWindowSize, getDurationUnit(filter.timeWindowUnits));
+                                const newStartTime = centerTimeMoment.clone().subtract(r.halfWindowSize, momentUnit(filter.timeWindowUnits));
+                                const newEndTime = centerTimeMoment.clone().add(r.halfWindowSize, momentUnit(filter.timeWindowUnits));
                                 setFilter(prevFilter => ({
                                     ...prevFilter,
                                     windowSize: windowSize,
@@ -510,8 +479,8 @@ const ReportTimeFilter = (props: IProps) => {
                                 Field='timeWindowUnits'
                                 Setter={(r) => {
                                     const centerTimeMoment = moment(props.filter.date + ' ' + props.filter.time, momentDateFormat + ' ' + momentTimeFormat);
-                                    const newStartTime = centerTimeMoment.clone().subtract(filter.halfWindowSize, getDurationUnit(r.timeWindowUnits));
-                                    const newEndTime = centerTimeMoment.clone().add(filter.halfWindowSize, getDurationUnit(r.timeWindowUnits));
+                                    const newStartTime = centerTimeMoment.clone().subtract(filter.halfWindowSize, momentUnit(r.timeWindowUnits));
+                                    const newEndTime = centerTimeMoment.clone().add(filter.halfWindowSize, momentUnit(r.timeWindowUnits));
                                     setFilter(prevFilter => ({
                                         ...prevFilter,
                                         timeWindowUnits: r.timeWindowUnits,              
@@ -542,8 +511,8 @@ const ReportTimeFilter = (props: IProps) => {
                         <div className='col-6'>
                             <Input<ITimeFilter> Record={filter} Field='windowSize' Setter={(r) => {
                                 const newStartTimeMoment = moment(filter.startTime, momentDateFormat + ' ' + momentTimeFormat);
-                                const newCenterTime = newStartTimeMoment.clone().add(r.windowSize/2, getDurationUnit(filter.timeWindowUnits));
-                                const newEndTime = newStartTimeMoment.clone().add(r.windowSize, getDurationUnit(filter.timeWindowUnits));
+                                const newCenterTime = newStartTimeMoment.clone().add(r.windowSize / 2, momentUnit(filter.timeWindowUnits));
+                                const newEndTime = newStartTimeMoment.clone().add(r.windowSize, momentUnit(filter.timeWindowUnits));
                                 setFilter(prevFilter => ({
                                     ...prevFilter,
                                     windowSize: r.windowSize,
@@ -561,8 +530,8 @@ const ReportTimeFilter = (props: IProps) => {
                                 Field='timeWindowUnits'
                                 Setter={(r) => {
                                     const newStartTimeMoment = moment(filter.startTime, momentDateFormat + ' ' + momentTimeFormat);
-                                    const newCenterTime = newStartTimeMoment.clone().add(filter.halfWindowSize, getDurationUnit(r.timeWindowUnits));
-                                    const newEndTime = newStartTimeMoment.clone().add(filter.windowSize, getDurationUnit(r.timeWindowUnits));
+                                    const newCenterTime = newStartTimeMoment.clone().add(filter.halfWindowSize, momentUnit(r.timeWindowUnits));
+                                    const newEndTime = newStartTimeMoment.clone().add(filter.windowSize, momentUnit(r.timeWindowUnits));
                                     setFilter(prevFilter => ({
                                         ...prevFilter,
                                         timeWindowUnits: r.timeWindowUnits,
@@ -594,8 +563,8 @@ const ReportTimeFilter = (props: IProps) => {
                         <div className='col-6'>
                             <Input<ITimeFilter> Record={filter} Field='windowSize' Setter={(r) => {
                                 const newEndTimeMoment = moment(filter.endTime, momentDateFormat + ' ' + momentTimeFormat);
-                                const newCenterTime = newEndTimeMoment.clone().subtract(r.windowSize/2, getDurationUnit(filter.timeWindowUnits));
-                                const newStartTime = newEndTimeMoment.clone().subtract(r.windowSize, getDurationUnit(filter.timeWindowUnits));
+                                const newCenterTime = newEndTimeMoment.clone().subtract(r.windowSize / 2, momentUnit(filter.timeWindowUnits));
+                                const newStartTime = newEndTimeMoment.clone().subtract(r.windowSize, momentUnit(filter.timeWindowUnits));
                                 setFilter(prevFilter => ({
                                     ...prevFilter,
                                     windowSize: r.windowSize,
@@ -613,8 +582,8 @@ const ReportTimeFilter = (props: IProps) => {
                                 Field='timeWindowUnits'
                             Setter={(r) => {
                                 const newEndTimeMoment = moment(filter.startTime, momentDateFormat + ' ' + momentTimeFormat);
-                                const newCenterTime = newEndTimeMoment.clone().subtract(filter.halfWindowSize, getDurationUnit(r.timeWindowUnits));
-                                const newStartTime = newEndTimeMoment.clone().subtract(filter.windowSize, getDurationUnit(r.timeWindowUnits));
+                                const newCenterTime = newEndTimeMoment.clone().subtract(filter.halfWindowSize, momentUnit(r.timeWindowUnits));
+                                const newStartTime = newEndTimeMoment.clone().subtract(filter.windowSize, momentUnit(r.timeWindowUnits));
                                 setFilter(prevFilter => ({
                                     ...prevFilter,
                                     timeWindowUnits: r.timeWindowUnits,
