@@ -23,6 +23,7 @@
 //
 //******************************************************************************************************
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { forEach } from 'lodash';
 import { Redux } from '../global';
 
 declare let homePath: string;
@@ -31,19 +32,20 @@ export const LoadSettings = createAsyncThunk('Settings/LoadSettingsThunk', async
     return Promise.all([loadTimeZone(), loadWidgetCategories()])
 });
 
+const defaultState = {
+    eventSearch: {
+        NumberResults: 100,
+        WidgetCategories: [],
+        AggregateMagDur: true,
+    },
+    timeZone: 'UTC',
+    DateTimeSetting: 'center'
+}
 
 const settingsSlice = createSlice({
     name: 'Settings',
 
-    initialState: {
-        eventSearch: {
-            NumberResults: 100,
-            WidgetCategories: [],
-            AggregateMagDur: true,
-            DateTimeSetting: 'center'
-        },
-        timeZone: 'UTC',
-    } as Redux.SettingsState,
+    initialState: defaultState as Redux.SettingsState,
 
     reducers: {
         SetEventSearch: (state: Redux.SettingsState, action: { type: string, payload: Redux.IEventSearchSettings }) => {
@@ -60,10 +62,15 @@ const settingsSlice = createSlice({
                 state.eventSearch = preserved.eventSearch;
             }
             else
-                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true, DateTimeSetting: 'center' };
+                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true};
 
             state.timeZone = action.payload[0];
             state.eventSearch.WidgetCategories = action.payload[1];
+
+            if (preserved.DateTimeSetting === undefined)
+                state.DateTimeSetting = 'center';
+            else
+                state.DateTimeSetting = preserved.DateTimeSetting;
         });    
         
         builder.addCase(LoadSettings.rejected, (state) => {
@@ -73,8 +80,13 @@ const settingsSlice = createSlice({
                 state.eventSearch = preserved.eventSearch;
             }
             else
-                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true, DateTimeSetting: 'center' };
+                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true };
             state.timeZone = 'UTC';
+
+            if (preserved.DateTimeSetting === undefined)
+                state.DateTimeSetting = 'center';
+            else
+                state.DateTimeSetting = preserved.DateTimeSetting;
         });
     }
     
@@ -131,4 +143,4 @@ export const { SetEventSearch } = settingsSlice.actions
 export const SelectEventSearchSettings = (state: Redux.StoreState) => state.Settings.eventSearch
 export const SelectTimeZone = (state: Redux.StoreState) => state.Settings.timeZone
 export const SelectWidgetCategories = (state: Redux.StoreState) => state.Settings.eventSearch.WidgetCategories
-export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.eventSearch.DateTimeSetting
+export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.DateTimeSetting

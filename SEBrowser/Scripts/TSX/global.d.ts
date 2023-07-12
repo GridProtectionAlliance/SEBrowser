@@ -79,14 +79,15 @@ export namespace Redux {
 
     interface SettingsState {
         eventSearch: IEventSearchSettings,
-        timeZone: string
+        timeZone: string,
+        DateTimeSetting: TimeWindowMode
     }
 
     interface IEventSearchSettings {
         NumberResults: number,
         WidgetCategories: SEBrowser.IWidgetCategory[],
         AggregateMagDur: boolean
-        DateTimeSetting: TimeWindowMode
+        
     }
 }
 export namespace SEBrowser {
