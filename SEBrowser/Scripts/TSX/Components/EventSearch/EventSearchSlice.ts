@@ -163,7 +163,12 @@ export const EventSearchsSlice = createSlice({
             sagType: 'both', swellType: 'both', transientType: 'both',
             curveID: 1, curveInside: true, curveOutside: true
         },
-        TimeRange: { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 7, timeWindowUnits: 4 },
+        TimeRange: {
+            date: moment.utc().subtract(84,'h').format(momentDateFormat),
+            time: '12:00:00.000',
+            windowSize: 84,
+            timeWindowUnits: 5
+        },
         EventType: [],
         isReset: true,
         SelectedAssets: [],
