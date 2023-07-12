@@ -24,14 +24,18 @@ import * as React from 'react';
 import { Modal } from '@gpa-gemstone/react-interactive';
 import { CheckBox, Input, Select } from '@gpa-gemstone/react-forms';
 import { useAppDispatch, useAppSelector } from './hooks';
-import { SelectEventSearchSettings, SetEventSearch } from './Components/SettingsSlice';
+import { SelectEventSearchSettings, SelectGeneralSettings, SetEventSearch } from './Components/SettingsSlice';
 import { Redux } from './global';
 import { FetchEventSearches } from './Components/EventSearch/EventSearchSlice';
 
 const Settings = (props: { Show: boolean, Close: () => void }) => {
     const dispatch = useAppDispatch();
     const evtSearchsettings = useAppSelector(SelectEventSearchSettings)
+    const generalSettings = useAppSelector(SelectGeneralSettings);
+
     const [evtSearch, setEvtSearch] = React.useState<Redux.IEventSearchSettings>()
+    const [general, setGeneral] = React.useState<any>()
+
     const searchSettingsOptions = [
         {
             Value: 'center',
@@ -56,12 +60,19 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
     }, [evtSearchsettings])
 
     React.useEffect(() => {
-        if (props.Show)
+        setGeneral(generalSettings);
+    }, [generalSettings])
+
+    React.useEffect(() => {
+        if (props.Show) {
             setEvtSearch(evtSearchsettings);
+            setGeneral(generalSettings);
+        }
     }, [props.Show])
 
     function save() {
         dispatch(SetEventSearch(evtSearch));
+        dispatch(SetEventSearch(general));
         dispatch(FetchEventSearches());
     }
 
@@ -100,11 +111,11 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                             <legend className="w-auto" style={{ fontSize: 'large' }}>General Settings:</legend>
                             <div className="row">
                                 <div className="col">
-                                    <Select<Redux.IEventSearchSettings>
+                                    <Select
                                         Options={searchSettingsOptions}
-                                        Record={evtSearch}
-                                        Field='DateTimeSetting'
-                                        Setter={setEvtSearch}
+                                        Record={generalSettings}
+                                        Field='DateTime'
+                                        Setter={setGeneral}
                                         Label='Date/Time Filter Mode'
                                     />
                                 </div>

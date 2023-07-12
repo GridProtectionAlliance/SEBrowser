@@ -80,7 +80,7 @@ export namespace Redux {
     interface SettingsState {
         eventSearch: IEventSearchSettings,
         timeZone: string,
-        DateTimeSetting: TimeWindowMode
+        DateTimeSetting: SEBrowser.TimeWindowMode
     }
 
     interface IEventSearchSettings {

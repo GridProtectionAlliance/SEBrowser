@@ -22,9 +22,9 @@
 //       Cleaned up Settings code.
 //
 //******************************************************************************************************
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import { forEach } from 'lodash';
-import { Redux } from '../global';
+import { Redux, SEBrowser } from '../global';
 
 declare let homePath: string;
 
@@ -50,6 +50,14 @@ const settingsSlice = createSlice({
     reducers: {
         SetEventSearch: (state: Redux.SettingsState, action: { type: string, payload: Redux.IEventSearchSettings }) => {
             state.eventSearch = action.payload;
+            saveSettings(state);
+        },
+        SetGeneral: (state: Redux.SettingsState, action: {
+            type: string,
+            payload: { DateTime?: SEBrowser.TimeWindowMode }
+        }) => {
+            if (action.payload.DateTime !== undefined)
+                state.DateTimeSetting = action.payload.DateTime;
             saveSettings(state);
         },
     },
@@ -139,8 +147,10 @@ function loadWidgetCategories() {
 
 
 export const SettingsReducer = settingsSlice.reducer
-export const { SetEventSearch } = settingsSlice.actions
+export const { SetEventSearch, SetGeneral } = settingsSlice.actions
 export const SelectEventSearchSettings = (state: Redux.StoreState) => state.Settings.eventSearch
 export const SelectTimeZone = (state: Redux.StoreState) => state.Settings.timeZone
 export const SelectWidgetCategories = (state: Redux.StoreState) => state.Settings.eventSearch.WidgetCategories
 export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.DateTimeSetting
+export const SelectGeneralSettings = createSelector(
+    SelectDateTimeSetting, (dateTime) => ({ DateTime: dateTime }));
