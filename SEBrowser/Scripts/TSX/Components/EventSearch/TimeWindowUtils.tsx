@@ -19,6 +19,7 @@
 //  07/11/2023 - C. Lackner
 //       Generated original version of source code.
 //******************************************************************************************************
+import moment from 'moment';
 
 export function momentUnit(unit: number) {
     if (unit === 7) {
@@ -53,4 +54,16 @@ export function findAppropriateUnit(startTime: moment.Moment, endTime: moment.Mo
     }
 
     return [0, endTime.diff(startTime, momentUnit(0))];
+}
+
+export function getStartEndTime(center: moment.Moment, duration: number, unit: number): [moment.Moment, moment.Moment] {
+    const start = center.clone().subtract(duration, momentUnit(unit));
+    const end = center.clone().add(duration, momentUnit(unit));
+    return [start, end]
+}
+
+export function getMoment(date: string, time?: string) {
+    if (time === undefined)
+        return moment(date, 'MM/DD/YYYY HH:mm:ss.SSS');
+    return moment(date + ' ' + time, 'MM/DD/YYYY HH:mm:ss.SSS');
 }

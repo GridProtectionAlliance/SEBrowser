@@ -29,6 +29,7 @@ import moment from 'moment';
 import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, EventTypeSlice, LocationSlice, MeterSlice } from '../../Store';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
+import { findAppropriateUnit, getStartEndTime, getMoment } from './TimeWindowUtils';
 
 const momentDateFormat = "MM/DD/YYYY";
 
@@ -45,8 +46,13 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     const groupList = (getState() as any).EventSearch.SelectedGroups as OpenXDA.Types.AssetGroup[];
     const settings = (getState() as Redux.StoreState).Settings.eventSearch;
 
+    const adjustedTime = findAppropriateUnit(
+        ...getStartEndTime(getMoment(time.date, time.time), time.windowSize, time.timeWindowUnits),
+        time.timeWindowUnits);
+
+
     const filter = {
-        date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,
+        date: time.date, time: time.time, windowSize: adjustedTime[1], timeWindowUnits: adjustedTime[0],
         typeIDs: types,
         durationMin: characteristics.durationMin ?? 0, durationMax: characteristics.durationMax ?? 0,
         phases: {
