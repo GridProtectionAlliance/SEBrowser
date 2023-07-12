@@ -167,7 +167,7 @@ export const EventSearchsSlice = createSlice({
             date: moment.utc().subtract(84,'h').format(momentDateFormat),
             time: '12:00:00.000',
             windowSize: 84,
-            timeWindowUnits: 5
+            timeWindowUnits: 3
         },
         EventType: [],
         isReset: true,
