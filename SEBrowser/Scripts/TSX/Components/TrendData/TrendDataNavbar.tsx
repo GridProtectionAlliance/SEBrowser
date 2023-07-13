@@ -20,6 +20,7 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
+/* eslint-disable @typescript-eslint/no-empty-function */
 import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
@@ -29,8 +30,8 @@ import { SEBrowser, IMultiCheckboxOption } from '../../Global';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { DefaultSelects } from '@gpa-gemstone/common-pages';
-import { Search } from '@gpa-gemstone/react-interactive';
-import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
+import { Search, ToolTip } from '@gpa-gemstone/react-interactive';
+import { CrossMark, SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { CreateGuid } from '@gpa-gemstone/helper-functions';
 import ReportTimeFilter from '../ReportTimeFilter';
 import NavbarFilterButton from '../Common/NavbarFilterButton';
@@ -42,6 +43,7 @@ interface IProps {
     ShowNav: boolean,
     SetHeight: (h: number) => void,
     SetShowAllSettings: (show: boolean) => void,
+    DisableAllSettings: boolean
     AddNewCharts: (chartData: ITrendPlot[]) => void
 }
 
@@ -82,14 +84,17 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [selectedSet, setSelectedSet] = React.useState<Set<number>>(new Set<number>());
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
+    // Button Consts
+    const [hover, setHover] = React.useState<'None'|'Show'|'Hide'|'Cog'|'Single-Line'|'Multi-Line'>('None');
+
     const momentDateFormat = "MM/DD/YYYY";
     const baseTimeFilter = { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 12, timeWindowUnits: 3 }
 
     // Page effects
     React.useLayoutEffect(() => {
         props.SetHeight(navRef?.current?.offsetHeight ?? 0);
-        let timeHeight = timeRef?.current?.offsetHeight ?? 0;
-        let filtHeight = filtRef?.current?.offsetHeight ?? 0;
+        const timeHeight = timeRef?.current?.offsetHeight ?? 0;
+        const filtHeight = filtRef?.current?.offsetHeight ?? 0;
         setTableHeight(timeHeight > filtRef ? timeHeight : filtHeight);
     });
 
@@ -116,7 +121,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     React.useEffect(() => {
         if (trendFilter === null) return;
         // Get the data from the filter
-        let handle = GetTrendChannels();
+        const handle = GetTrendChannels();
         return () => {
             if (handle != null && handle.abort != null) handle.abort();
         };
@@ -141,14 +146,14 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
 
     function makeMultiCheckboxOptions(keyValues: IKeyValuePair[], setOptions: (options: IMultiCheckboxOption[]) => void, allKeys: { ID: number, Name: string, Description: string }[]) {
         if (allKeys == null || keyValues == null) return;
-        let newOptions: IMultiCheckboxOption[] = [];
+        const newOptions: IMultiCheckboxOption[] = [];
         allKeys.forEach((key, index) => newOptions.push({ Value: index, Text: key.Name, Selected: keyValues.find(e => e.Key === key.Name)?.Value ?? false }));
         setOptions(newOptions);
     }
 
     function multiCheckboxUpdate(filterField: keyof ITrendDataFilter, newOptions: IMultiCheckboxOption[], oldOptions: IMultiCheckboxOption[], setOptions: (options: IMultiCheckboxOption[]) => void) {
-        let options: IMultiCheckboxOption[] = [];
-        let pairs: IKeyValuePair[] = [];
+        const options: IMultiCheckboxOption[] = [];
+        const pairs: IKeyValuePair[] = [];
         oldOptions.forEach(item => {
             const selected: boolean = item.Selected != (newOptions.findIndex(option => item.Value === option.Value) > -1);
             options.push({ ...item, Selected: selected });
@@ -214,7 +219,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     }
 
     function getAdditionalMeterFields(setFields) {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/openXDA/AdditionalField/ParentTable/Meter/FieldName/0`,
             contentType: "application/json; charset=utf-8",
@@ -231,7 +236,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         }
 
         handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
-            let ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
+            const ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
                 { label: `[AF${item.ExternalDB != undefined ? " " + item.ExternalDB : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedMeter>
             )), ['label'], ["asc"]);
             setFields(ordered)
@@ -243,7 +248,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     }
 
     function getAdditionalAssetFields(setFields) {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/SystemCenter/AdditionalField/ParentTable/Asset/FieldName/0`,
             contentType: "application/json; charset=utf-8",
@@ -260,8 +265,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         }
 
         handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
-
-            let ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
+            const ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
                 { label: `[AF${item.ExternalDB != undefined ? " " + item.ExternalDB : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedAsset>
             )), ['label'], ["asc"]);
             setFields(ordered);
@@ -283,9 +287,13 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </span>
                 </div>
                 <div className="navbar-nav ml-auto" >
-                    <button type="button" className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}>
+                    <button type="button" className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}
+                        data-tooltip='Show' onMouseEnter={() => setHover('Show')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.ArrowDropDown}</span>
                     </button>
+                    <ToolTip Show={hover === 'Show'} Position={'left'} Theme={'dark'} Target={"Show"}>
+                        Shows Navbar
+                    </ToolTip>
                 </div>
             </>);
     else
@@ -335,7 +343,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                                         Options={linePlotOptions}
                                         Label={''}
                                         OnChange={(evt, newOptions: IMultiCheckboxOption[]) => {
-                                            let options: IMultiCheckboxOption[] = [];
+                                            const options: IMultiCheckboxOption[] = [];
                                             linePlotOptions.forEach(item => {
                                                 const selected: boolean = item.Selected != (newOptions.findIndex(option => item.Value === option.Value) > -1);
                                                 options.push({ ...item, Selected: selected });
@@ -352,47 +360,72 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </li>
                 </ul>
                 <div className="btn-group-vertical float-right">
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}
+                        data-tooltip='Hide' onMouseEnter={() => setHover('Hide')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.ArrowDropUp}</span>
                     </button>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => props.SetShowAllSettings(true)}>
+                    <ToolTip Show={hover === 'Hide'} Position={'left'} Theme={'dark'} Target={"Hide"}>
+                        Hides Navbar
+                    </ToolTip>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm  ${props.DisableAllSettings ? ' disabled' : ''}`}
+                        onClick={() => { if (!props.DisableAllSettings) props.SetShowAllSettings(true); } }
+                        data-tooltip='Cog' onMouseEnter={() => setHover('Cog')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.Settings}</span>
                     </button>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => {
-                        const selectedChannels = trendChannels.filter(chan => selectedSet.has(chan.ID));
-                        props.AddNewCharts([{
-                            TimeFilter: timeFilter, Type: 'Line', Channels: selectedChannels, ID: CreateGuid(), Height: 50, Width: 50,
-                            PlotFilter: linePlotOptions, Title: `${selectedChannels.length} Channel Line Plot`
-                        }]);
-                    }}>
+                    <ToolTip Show={hover === 'Cog'} Position={'left'} Theme={'dark'} Target={"Cog"}>
+                        {<p>Changes Settings for All Plots</p>}
+                        {props.DisableAllSettings ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
+                    </ToolTip>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm ${selectedSet.size === 0 ? ' disabled' : ''}`}
+                        data-tooltip='Single-Line' onMouseEnter={() => setHover('Single-Line')} onMouseLeave={() => setHover('None')}
+                        onClick={() => {
+                            if (selectedSet.size === 0) return;
+                            const selectedChannels = trendChannels.filter(chan => selectedSet.has(chan.ID));
+                            props.AddNewCharts([{
+                                TimeFilter: timeFilter, Type: 'Line', Channels: selectedChannels, ID: CreateGuid(), Height: 50, Width: 50,
+                                PlotFilter: linePlotOptions, Title: `${selectedChannels.length} Channel Line Plot`
+                            }]);
+                        }}>
                         <span>{SVGIcons.Document}</span>
                     </button>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => {
-                        const selectedChannels: SEBrowser.ITrendChannel[] = trendChannels.filter(chan => selectedSet.has(chan.ID));
-                        const meterPlotChannels: SEBrowser.ITrendChannel[][] = [];
-                        selectedChannels.forEach(channel => {
-                            const listIndex = meterPlotChannels.findIndex(channelList => channelList[0].MeterKey === channel.MeterKey);
-                            let newList: SEBrowser.ITrendChannel[];
-                            if (listIndex > -1) {
-                                newList = meterPlotChannels[listIndex];
-                                newList.push(channel);
-                                meterPlotChannels[listIndex] = newList;
-                            } else {
-                                newList = [channel];
-                                meterPlotChannels.push(newList);
-                            }
-                        });
-                        props.AddNewCharts(
-                            meterPlotChannels.map(channelList => {
-                                return ({
-                                    TimeFilter: timeFilter, Type: 'Line', Channels: channelList, ID: CreateGuid(), Height: 50, Width: 50,
-                                    PlotFilter: linePlotOptions, Title: `${channelList.length} Channel Line Plot`
-                                });
-                            })
-                        );
-                    }}>
+                    <ToolTip Show={hover === 'Single-Line'} Position={'left'} Theme={'dark'} Target={"Single-Line"}>
+                        {<p>Add All Selected Channels to Line Plot</p>}
+                        {selectedSet.size === 0 ? <p>{CrossMark} {'Action Requires Channels to be Selected'}</p> : null}
+                    </ToolTip>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm ${selectedSet.size === 0 ? ' disabled' : ''}`}
+                        data-tooltip='Multi-Line' onMouseEnter={() => setHover('Multi-Line')} onMouseLeave={() => setHover('None')}
+                        onClick={() => {
+                            if (selectedSet.size === 0) return;
+                            const selectedChannels: SEBrowser.ITrendChannel[] = trendChannels.filter(chan => selectedSet.has(chan.ID));
+                            const meterPlotChannels: SEBrowser.ITrendChannel[][] = [];
+                            selectedChannels.forEach(channel => {
+                                const listIndex = meterPlotChannels.findIndex(channelList => channelList[0].MeterKey === channel.MeterKey);
+                                let newList: SEBrowser.ITrendChannel[];
+                                if (listIndex > -1) {
+                                    newList = meterPlotChannels[listIndex];
+                                    newList.push(channel);
+                                    meterPlotChannels[listIndex] = newList;
+                                } else {
+                                    newList = [channel];
+                                    meterPlotChannels.push(newList);
+                                }
+                            });
+                            props.AddNewCharts(
+                                meterPlotChannels.map(channelList => {
+                                    return ({
+                                        TimeFilter: timeFilter, Type: 'Line', Channels: channelList, ID: CreateGuid(), Height: 50, Width: 50,
+                                        PlotFilter: linePlotOptions, Title: `${channelList.length} Channel Line Plot`
+                                    });
+                                })
+                            );
+                        }}>
                         <span>{SVGIcons.Folder}</span>
                     </button>
+                    <ToolTip Show={hover === 'Multi-Line'} Position={'left'} Theme={'dark'} Target={"Multi-Line"}>
+                        {<p>Add All Selected Channels to Line Plots</p>}
+                        {<p>Channels will be Seperated into Plots Based on Meter</p>}
+                        {selectedSet.size === 0 ? <p>{CrossMark} {'Action Requires Channels to be Selected'}</p> : null}
+                    </ToolTip>
                 </div>
             </>);
 

@@ -85,6 +85,7 @@ const TrendData = (props: IProps) => {
                 ToggleVis={toggleNavbar}
                 ShowNav={showNav}
                 SetHeight={setNavHeight}
+                DisableAllSettings={plotList.length === 0} //TODO: Does this count as a function? Should this be a const with callback?
                 SetShowAllSettings={setShowSettings}
                 AddNewCharts={concatNewContainers}
             />
