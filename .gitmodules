@@ -1,0 +1,3 @@
+[submodule "SEBrowser/EventWidgets"]
+	path = SEBrowser/EventWidgets
+	url = https://github.com/GridProtectionAlliance/EventWidgets
