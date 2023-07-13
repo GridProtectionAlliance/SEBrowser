@@ -42,6 +42,7 @@ interface IProps {
     Title?: string,
     Metric?: boolean,
     XAxisLabel?: string,
+    AlwaysRender: React.ReactNode,
     children: React.ReactNode
 }
 
@@ -106,7 +107,7 @@ const LineGraph = React.memo((props: IProps) => {
         if (_.isEqual(props.TimeFilter, oldValues.TimeFilter))
             channels = channels.filter(channel => oldValues.ChannelInfo.findIndex(oldChannel => oldChannel.Channel.ID === channel) === -1);
         setOldValues({ ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter });
-        let handle = GetTrendData(channels, startTime, endTime);
+        const handle = GetTrendData(channels, startTime, endTime);
         return () => {
             if (handle != null && handle.abort != null) handle.abort();
         };
@@ -119,7 +120,7 @@ const LineGraph = React.memo((props: IProps) => {
     }, [props.PlotFilter]);
 
     React.useEffect(() => {
-        let chartData: IChartData = allChartData.find(chartData => chartData.AvgSeries.length > 0);
+        const chartData: IChartData = allChartData.find(chartData => chartData.AvgSeries.length > 0);
         setTimeLimits(chartData === undefined ? [0, 1] : [chartData.AvgSeries[0][0], chartData.AvgSeries[chartData.AvgSeries.length - 1][0]]);
     }, [allChartData]);
 
@@ -127,7 +128,7 @@ const LineGraph = React.memo((props: IProps) => {
         if (channels.length === 0) {
             setAllChartData(CulledTrendData());
             return null;
-        };
+        }
         setGraphStatus('loading');
         return $.ajax({
             type: "POST",
@@ -173,11 +174,11 @@ const LineGraph = React.memo((props: IProps) => {
                     <ServerErrorIcon Show={true} Label={'No Data Available'} />
                 </div>
                 <div className="row" style={{ width: "100%", height: "50%" }}>
-                    {React.Children.map(props.children, (element, i) => {
+                    {React.Children.map(props.AlwaysRender, (element, i) => {
                         if (!React.isValidElement(element))
                             return null;
                         if ((element as React.ReactElement<any>).type === Button)
-                            return ((element.props.isSelect ?? false) ? null :
+                            return (
                                 <div className="col" style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", height: "100%" }}>
                                     <button type="button"
                                         className={'btn btn-primary'}
@@ -199,10 +200,10 @@ const LineGraph = React.memo((props: IProps) => {
                     legend={'bottom'} useMetricFactors={props.Metric ?? false}
                     Tlabel={props.XAxisLabel ?? 'Time'} Ylabel={'Units'} showMouse={true}>
                     {allChartData.flatMap((chartData, index) => {
-                        let lineArray: JSX.Element[] = [];
-                        let channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === chartData.ChannelID);
-                        let baseLabel: string = channelSetting?.Label ?? channelSetting?.Channel?.Name ?? "Unknown Channel";
-                        let colorValue: string = channelSetting?.Color ?? "#E41000";
+                        const lineArray: JSX.Element[] = [];
+                        const channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === chartData.ChannelID);
+                        const baseLabel: string = channelSetting?.Label ?? channelSetting?.Channel?.Name ?? "Unknown Channel";
+                        const colorValue: string = channelSetting?.Color ?? "#E41000";
                         if (displayAvg && chartData.AvgSeries.length > 0)
                             lineArray.push(<Line highlightHover={false} key={"avg" + index} showPoints={false} lineStyle={channelSetting?.AvgLineType ?? '-'} color={colorValue} data={chartData.AvgSeries} legend={baseLabel + " avg"} />);
                         if (displayMin && chartData.MinSeries.length > 0)
@@ -212,6 +213,7 @@ const LineGraph = React.memo((props: IProps) => {
                         return lineArray;
                     })}
                     {props.children}
+                    {props.AlwaysRender}
                 </Plot>
             </div>);
 });
