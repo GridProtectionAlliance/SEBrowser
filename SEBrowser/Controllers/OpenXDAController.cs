@@ -188,9 +188,9 @@ namespace SEBrowser.Controllers
                 filters += $"{(string.IsNullOrEmpty(eventCharacteristic) ? "" : $"AND {eventCharacteristic}")} ";
                 filters += $"{(string.IsNullOrEmpty(asset) ? "" : $"AND {asset}")}";
 
-                string sortBy = postData.sortKey;
+                string sortBy = postData.sortKey ?? "Time";
                 if (!SortCollumns.TryGetValue(sortBy, out sortBy))
-                    sortBy = postData.sortKey;
+                    sortBy = postData.sortKey ?? "Time";
                 sortBy = $"ORDER BY [{sortBy}] {(postData.ascending ? "ASC" : "DESC")}";
 
                 string query =
