@@ -40,7 +40,7 @@ const defaultState = {
     },
     timeZone: 'UTC',
     DateTimeSetting: 'center'
-}
+} as Redux.SettingsState;
 
 const settingsSlice = createSlice({
     name: 'Settings',
@@ -66,35 +66,34 @@ const settingsSlice = createSlice({
         builder.addCase(LoadSettings.fulfilled, (state, action) => {
             const preserved = readSettings();
 
-            if (preserved != undefined) {
-                state.eventSearch = preserved.eventSearch;
+            if (preserved == undefined)
+                state = defaultState;
+            else {
+                if (preserved.eventSearch != undefined) {
+                    state.eventSearch = preserved.eventSearch;
+                }
+                if (preserved.DateTimeSetting === undefined)
+                    state.DateTimeSetting = 'center';
             }
-            else
-                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true};
-
+            
             state.timeZone = action.payload[0];
             state.eventSearch.WidgetCategories = action.payload[1];
-
-            if (preserved.DateTimeSetting === undefined)
-                state.DateTimeSetting = 'center';
-            else
-                state.DateTimeSetting = preserved.DateTimeSetting;
         });    
         
         builder.addCase(LoadSettings.rejected, (state) => {
             const preserved = readSettings();
 
-            if (preserved != undefined) {
-                state.eventSearch = preserved.eventSearch;
+            if (preserved == undefined)
+                state = defaultState;
+            else {
+                if (preserved.eventSearch != undefined) {
+                    state.eventSearch = preserved.eventSearch;
+                }
+                if (preserved.DateTimeSetting === undefined)
+                    state.DateTimeSetting = 'center';
             }
-            else
-                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true };
-            state.timeZone = 'UTC';
 
-            if (preserved.DateTimeSetting === undefined)
-                state.DateTimeSetting = 'center';
-            else
-                state.DateTimeSetting = preserved.DateTimeSetting;
+            state.timeZone = 'UTC';
         });
     }
     

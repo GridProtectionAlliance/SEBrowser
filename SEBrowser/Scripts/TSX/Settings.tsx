@@ -24,7 +24,7 @@ import * as React from 'react';
 import { Modal } from '@gpa-gemstone/react-interactive';
 import { CheckBox, Input, Select } from '@gpa-gemstone/react-forms';
 import { useAppDispatch, useAppSelector } from './hooks';
-import { SelectEventSearchSettings, SelectGeneralSettings, SetEventSearch } from './Components/SettingsSlice';
+import { SelectEventSearchSettings, SelectGeneralSettings, SetEventSearch, SetGeneral } from './Components/SettingsSlice';
 import { Redux } from './global';
 import { FetchEventSearches } from './Components/EventSearch/EventSearchSlice';
 
@@ -63,6 +63,9 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
         setGeneral(generalSettings);
     }, [generalSettings])
 
+    React.useEffect(() => { console.log(general?.DateTime ?? "null") },
+        [general])
+
     React.useEffect(() => {
         if (props.Show) {
             setEvtSearch(evtSearchsettings);
@@ -72,7 +75,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
 
     function save() {
         dispatch(SetEventSearch(evtSearch));
-        dispatch(SetEventSearch(general));
+        dispatch(SetGeneral(general));
         dispatch(FetchEventSearches());
     }
 
@@ -113,9 +116,9 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                 <div className="col">
                                     <Select
                                         Options={searchSettingsOptions}
-                                        Record={generalSettings}
+                                        Record={general}
                                         Field='DateTime'
-                                        Setter={setGeneral}
+                                        Setter={(g) => setGeneral(g)}
                                         Label='Date/Time Filter Mode'
                                     />
                                 </div>
