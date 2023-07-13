@@ -25,10 +25,9 @@ import _ from 'lodash';
 import { Portal } from 'react-portal';
 import { BlockPicker } from 'react-color';
 import { ILineSeries } from './LineGraph';
-import { IMultiCheckboxOption } from '../../../global';
+import { IMultiCheckboxOption, SEBrowser } from '../../../global';
 import ReportTimeFilter from '../../ReportTimeFilter';
 import { Input, MultiCheckBoxSelect, Select, TextArea } from '@gpa-gemstone/react-forms';
-import { SpacedColor } from '@gpa-gemstone/helper-functions';
 import TrendChannelTable from '../TrendChannelTable';
 import { TabSelector, Warning } from '@gpa-gemstone/react-interactive';
 import { ITrendPlot, IMarker } from './TrendPlot';
@@ -90,14 +89,6 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
     // Create Settings Variables
     React.useEffect(() => {
         clearBuffers();
-        if (props.Plot.Type === 'Line')
-            props.SetSeriesSettings(
-                // Get old setting if it exists, otherwise just get new one
-                props.Plot.Channels.map(channel => (
-                    props.SeriesSettings?.find(oldSetting => oldSetting.Channel.ID === channel.ID) ??
-                    ({ Channel: channel, Color: SpacedColor(0.9, 0.9), MinMaxLineType: ':', AvgLineType: '-' })
-                ))
-            );
     }, [props.Plot.Type, props.Plot.Channels]);
 
     // Create Settings Buffers
