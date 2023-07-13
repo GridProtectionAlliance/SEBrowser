@@ -60,7 +60,7 @@ export namespace Redux {
         Status: SEBrowser.Status,
         Data: T[],
         Error: null | string,
-        SortField: keyof T,
+        SortField: string,
         Ascending: boolean,
         Record?: T,
     }

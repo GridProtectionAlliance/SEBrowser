@@ -85,8 +85,8 @@ namespace SEBrowser.Controllers
                         DataTable collumns = connection.RetrieveData(@"
                             SELECT COLUMN_NAME,TABLE_NAME
                                 FROM INFORMATION_SCHEMA.COLUMNS 
-                            WHERE TABLE_NAME = 'SEBrowser.EventSearchEventView'
-                                OR TABLE_NAME = 'SEBrowser.EventSearchDetailsView' 
+                            WHERE (TABLE_NAME = 'SEBrowser.EventSearchEventView'
+                                OR TABLE_NAME = 'SEBrowser.EventSearchDetailsView') 
                                 AND COLUMN_NAME LIKE 'Sort.%'");
                         m_sortCollumns = collumns.Select()
                             .ToDictionary(
@@ -141,6 +141,8 @@ namespace SEBrowser.Controllers
             public List<int> groupIDs { get; set; }
             public List<int> locationIDs { get; set; }
             public string numberResults { get; set; }
+            public bool ascending { get; set; }
+            public string sortKey { get; set; }
         }
 
         enum TimeWindowUnits
@@ -185,6 +187,11 @@ namespace SEBrowser.Controllers
                 filters += $"{(string.IsNullOrEmpty(phase) ? "" : $"AND ({phase})")}  ";
                 filters += $"{(string.IsNullOrEmpty(eventCharacteristic) ? "" : $"AND {eventCharacteristic}")} ";
                 filters += $"{(string.IsNullOrEmpty(asset) ? "" : $"AND {asset}")}";
+
+                string sortBy = postData.sortKey;
+                if (!SortCollumns.TryGetValue(sortBy, out sortBy))
+                    sortBy = postData.sortKey;
+                sortBy = $"ORDER BY [{sortBy}] {(postData.ascending ? "ASC" : "DESC")}";
 
                 string query =
                     $@"SELECT  
@@ -231,7 +238,7 @@ namespace SEBrowser.Controllers
                                 (Main.DisturbanceID IS NOT NULL AND [SEBrowser.EventSearchDetailsView].DisturbanceID = Main.DisturbanceID) OR 
                                 (Main.FaultID IS NOT NULL AND [SEBrowser.EventSearchDetailsView].FaultID = Main.FaultID) OR 
                                 (COALESCE([SEBrowser.EventSearchDetailsView].DisturbanceID, Main.DisturbanceID) IS NULL AND COALESCE([SEBrowser.EventSearchDetailsView].FaultID, Main.FaultID) IS NULL) 
-                            )";
+                            ) {sortBy}";
 
                 DataTable table = connection.RetrieveData(query, dateTime);
 
