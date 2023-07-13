@@ -63,9 +63,6 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
         setGeneral(generalSettings);
     }, [generalSettings])
 
-    React.useEffect(() => { console.log(general?.DateTime ?? "null") },
-        [general])
-
     React.useEffect(() => {
         if (props.Show) {
             setEvtSearch(evtSearchsettings);
