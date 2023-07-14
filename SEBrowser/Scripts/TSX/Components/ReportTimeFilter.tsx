@@ -315,7 +315,7 @@ const ReportTimeFilter = (props: IProps) => {
         halfWindowSize: props.filter.windowSize,
     });
 
-
+    
     React.useEffect(() => {
         if (isEqual(filter, props.filter))
             return;
@@ -384,9 +384,8 @@ const ReportTimeFilter = (props: IProps) => {
                             : null
                         }
             {dateTimeSetting === 'startWindow' || dateTimeSetting === 'startEnd' ?
-                
+                <div className="row"> 
                     <div className='col-12'>
-                    <div className="row"> 
                             <DatePicker< ITimeFilter > Record={filter} Field="startTime"
                                 Setter={(r) => {
                                     const startTime = getMoment(r.startTime);
@@ -417,9 +416,9 @@ const ReportTimeFilter = (props: IProps) => {
                 </div>
                             : null
                         }
-                    {dateTimeSetting === 'endWindow' || dateTimeSetting === 'startEnd' ?
-                    <div className='col-12'>
-                        <div className="row"> 
+            {dateTimeSetting === 'endWindow' || dateTimeSetting === 'startEnd' ?
+                    <div className="row"> 
+                        <div className='col-12'>
                             <DatePicker<ITimeFilter> Record={filter} Field="endTime"
                                 Setter={(r) => {
                                     const endTime = getMoment(r.endTime);

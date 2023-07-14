@@ -30,7 +30,6 @@ import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, EventTypeSlice, LocationSlice, MeterSlice } from '../../Store';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { findAppropriateUnit, getStartEndTime, getMoment } from './TimeWindowUtils';
-import { dispatch } from 'd3';
 
 const momentDateFormat = "MM/DD/YYYY";
 
