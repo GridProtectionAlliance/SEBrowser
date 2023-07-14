@@ -67,3 +67,23 @@ export function getMoment(date: string, time?: string) {
         return moment(date, 'MM/DD/YYYY HH:mm:ss.SSS');
     return moment(date + ' ' + time, 'MM/DD/YYYY HH:mm:ss.SSS');
 }
+
+
+export function readableUnit(unit: number) {
+    if (unit === 7) {
+        return 'Year(s)';
+    } else if (unit === 6) {
+        return 'Month(s)';
+    } else if (unit === 5) {
+        return 'Week(s)';
+    } else if (unit === 4) {
+        return 'Day(s)';
+    } else if (unit === 3) {
+        return 'Hour(s)';
+    } else if (unit === 2) {
+        return 'Minute(s)';
+    } else if (unit === 1) {
+        return 'Second(s)';
+    }
+    return 'Millisecond(s)';
+}

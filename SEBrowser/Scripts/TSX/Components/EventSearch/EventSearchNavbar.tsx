@@ -37,7 +37,8 @@ import { Input, Select, MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { SEBrowser } from '../../Global';
 import EventSearchTypeFilters from './EventSearchTypeFilter';
-import { SelectDateTimeSetting, SelectEventSearchSettings } from '../SettingsSlice';
+import { SelectDateTimeSetting, SelectEventSearchSettings, SelectTimeZone } from '../SettingsSlice';
+import { getMoment, getStartEndTime, readableUnit } from './TimeWindowUtils';
 
 interface IProps {
     toggleVis: () => void,
@@ -58,6 +59,7 @@ const EventSearchNavbar = (props: IProps) => {
     const eventTypeFilter = useAppSelector(SelectTypeFilter);
     const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
     const magDurCurves = useAppSelector(MagDurCurveSlice.Data);
+    const timeZone = useAppSelector(SelectTimeZone);
 
     const assetGroupList = useAppSelector(SelectAssetGroupList);
 
@@ -85,6 +87,8 @@ const EventSearchNavbar = (props: IProps) => {
     React.useEffect(() => { setNewEventCharacteristicFilter(eventCharacteristicFilter) }, [eventCharacteristicFilter])
 
     const [newPhases, setNewPhases] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([]);
+
+    const [timeRange, setTimeRange] = React.useState<string>('');
 
     React.useEffect(() => {
         setNewEventCharacteristicFilter(eventCharacteristicFilter);
@@ -114,65 +118,30 @@ const EventSearchNavbar = (props: IProps) => {
         }));
     }, [newEventCharacteristicFilter, newTypeFilter]);   
 
+    React.useEffect(() => {
+        let r = "";
+        const center = getMoment(timeFilter.date, timeFilter.time);
+        const [start, end] = getStartEndTime(center, timeFilter.windowSize, timeFilter.timeWindowUnits);
+        
+        if (dateTimeSetting == 'startWindow' || dateTimeSetting == 'startEnd')
+            r = `${start.format(momentDateTimeFormat)} (${timeZone})`;
+        else if (dateTimeSetting == 'endWindow')
+            r = `${end.format(momentDateTimeFormat)} (${timeZone})`;
+        else if (dateTimeSetting == 'center')
+            r = `${center.format(momentDateTimeFormat)} (${timeZone})`;
 
-    function formatWindowUnit(i: number) {
-        if (i == 7)
-            return "Years";
-        if (i == 6)
-            return "Months";
-        if (i == 5)
-            return "Weeks";
-        if (i == 4)
-            return "Days";
-        if (i == 3)
-            return "Hours";
-        if (i == 2)
-            return "Minutes";
-        if (i == 1)
-            return "Seconds";
-        return "Milliseconds";
-    }
+        if (dateTimeSetting == 'startEnd')
+            r += ` to ${end.format(momentDateTimeFormat)} (${timeZone})`;
+        else if (dateTimeSetting == 'center')
+            r += ` +/- ${timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
+        else if (dateTimeSetting == 'startWindow')
+            r += ` + ${2*timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
+        else if (dateTimeSetting == 'endWindow')
+            r += ` - ${2*timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
 
-    function formatWindowUnitLC(i: number) {
-        if (i == 7)
-            return "y";
-        if (i == 6)
-            return "M";
-        if (i == 5)
-            return "w";
-        if (i == 4)
-            return "d";
-        if (i == 3)
-            return "h";
-        if (i == 2)
-            return "m";
-        if (i == 1)
-            return "s";
-        return "ms";
-    }
-
-    const calculateDateRange = () => {
-
-        let centralDateTime = moment(`${timeFilter.date} ${timeFilter.time}`, momentDateTimeFormat);
-        let startDate = moment(centralDateTime)
-            .subtract(timeFilter.windowSize, formatWindowUnitLC(timeFilter.timeWindowUnits));
-        let endDate = moment(centralDateTime)
-            .add(timeFilter.windowSize, formatWindowUnitLC(timeFilter.timeWindowUnits));
-        let timeSpan = moment.duration(endDate.diff(startDate, 'milliseconds'));
-        let timeWindow = Number(timeSpan) / 2;
-        let humanizedTimeWindow = moment.duration(timeWindow).humanize();
-        let humanizedTimeWindow2 = moment.duration(timeWindow*2).humanize();
-        if (dateTimeSetting == 'center') {
-            return `${centralDateTime} +/- ${humanizedTimeWindow}`;
-        } else if (dateTimeSetting == 'startWindow') {
-            return `Start: ${startDate} + ${humanizedTimeWindow2}`;
-        } else if (dateTimeSetting == 'endWindow') {
-            return `End: ${endDate} - ${humanizedTimeWindow2}`;
-        } else if (dateTimeSetting == 'startEnd') {
-            return `${startDate} - ${endDate}`;
-        } else return `${centralDateTime} +/- ${humanizedTimeWindow}`;
-    };
-
+        setTimeRange(r);
+    }, [timeFilter, dateTimeSetting, timeZone])
+  
     function getEnum(setOptions, field) {
         let handle = null;
         if (field.type != 'enum' || field.enum == undefined || field.enum.length != 1)
@@ -330,7 +299,7 @@ const EventSearchNavbar = (props: IProps) => {
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <div className="navbar-nav mr-auto">
                         <span className="navbar-text">
-                            {calculateDateRange()}
+                            {timeRange}
                         </span>
                     </div>
                     <div className="navbar-nav ml-auto" >
