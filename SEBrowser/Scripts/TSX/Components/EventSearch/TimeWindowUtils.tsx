@@ -22,19 +22,19 @@
 import moment from 'moment';
 
 export function momentUnit(unit: number) {
-    if (unit === 7) {
+    if (unit == 7) {
         return 'y';
-    } else if (unit === 6) {
+    } else if (unit == 6) {
         return 'M';
-    } else if (unit === 5) {
+    } else if (unit == 5) {
         return 'w';
-    } else if (unit === 4) {
+    } else if (unit == 4) {
         return 'd';
-    } else if (unit === 3) {
+    } else if (unit == 3) {
         return 'h';
-    } else if (unit === 2) {
+    } else if (unit == 2) {
         return 'm';
-    } else if (unit === 1) {
+    } else if (unit == 1) {
         return 's';
     } 
     return 'ms';
@@ -72,19 +72,19 @@ export function getMoment(date: string, time?: string) {
 
 
 export function readableUnit(unit: number) {
-    if (unit === 7) {
+    if (unit == 7) {
         return 'Year(s)';
-    } else if (unit === 6) {
+    } else if (unit == 6) {
         return 'Month(s)';
-    } else if (unit === 5) {
+    } else if (unit == 5) {
         return 'Week(s)';
-    } else if (unit === 4) {
+    } else if (unit == 4) {
         return 'Day(s)';
-    } else if (unit === 3) {
+    } else if (unit == 3) {
         return 'Hour(s)';
-    } else if (unit === 2) {
+    } else if (unit == 2) {
         return 'Minute(s)';
-    } else if (unit === 1) {
+    } else if (unit == 1) {
         return 'Second(s)';
     }
     return 'Millisecond(s)';
