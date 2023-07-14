@@ -25,6 +25,8 @@ import _ from 'lodash';
 
 import SEBrowserService from './../../../TS/Services/SEBrowser';
 import { Modal } from '@gpa-gemstone/react-interactive';
+import ReportTimeFilter from '../ReportTimeFilter';
+import { SEBrowser } from '../../global';
 
 
 const momentDateFormat = "MM/DD/YYYY";
@@ -48,10 +50,7 @@ export interface EventFilter {
 export interface CapBankReportNavBarProps extends EventFilter {
     stateSetter(state): void,
     CapBankID: number,
-    date: string,
-    time: string,
-    windowSize: number,
-    timeWindowUnits: number,
+    TimeFilter: SEBrowser.IReportTimeFilter,
     selectedBank: number,
     StationId: number,
     numBanks: number,
@@ -91,16 +90,6 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
 
         if (this.props.StationId > -1)
             this.getCapBankData(this.props.StationId);
-
-        $('#datePicker').datetimepicker({ format: momentDateFormat });
-        $('#datePicker').on('dp.change', (e) => {
-            this.setDate((e.target as any).value);
-        });
-
-        $('#timePicker').datetimepicker({ format: momentTimeFormat });
-        $('#timePicker').on('dp.change', (e) => {
-            this.setTime((e.target as any).value);
-        });
     }
 
     componentWillReceiveProps(nextProps: CapBankReportNavBarProps) {
@@ -137,35 +126,13 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         this.props.stateSetter({ searchBarProps: object });
     }
 
-    setDate(date: string) {
+    setDate(filter: SEBrowser.IReportTimeFilter) {
 
-        const object = _.clone(this.props) as CapBankReportNavBarProps;
-        object.date = date;
+        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        object.TimeFilter = filter;
         this.props.stateSetter({ searchBarProps: object });
     }
 
-    setTime(time: string) {
-
-        const object = _.clone(this.props) as CapBankReportNavBarProps;
-        object.time = time;
-        this.props.stateSetter({ searchBarProps: object });
-    }
-
-    setTimeWindowUnits(timeWindowUnits: number) {
-
-        const object = _.clone(this.props) as CapBankReportNavBarProps;
-        object.timeWindowUnits = timeWindowUnits;
-        this.props.stateSetter({ searchBarProps: object });
-    }
-
-    setWindowSize(windowSize: number) {
-
-        const object = _.clone(this.props) as CapBankReportNavBarProps;
-        object.windowSize = windowSize;
-        this.props.stateSetter({ searchBarProps: object });
-    }
-
-    
     getSubstationData() {
         this.seBrowserService.GetCapBankSubstationData().done(results => {
             if (results == null)
@@ -240,45 +207,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                             </fieldset>
                         </li>
                         <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Time Window:</legend>
-                                <form>
-                                    <label style={{ width: '100%', position: 'relative', float: "left" }} >Date: </label>
-                                    <div className="form-group" style={{ height: 30 }}>
-                                        <div className='input-group' style={{ width: 'calc(49%)', position: 'relative', float: "right" }}>
-                                            <input id="timePicker" className='form-control' value={this.props.time} onChange={(e) => {
-                                                this.setTime((e.target as any).value);
-                                            }} />
-                                        </div>
-
-                                        <div className='input-group date' style={{ width: 'calc(49%)', position: 'relative', float: "left" }}>
-                                            <input className='form-control' id='datePicker' value={this.props.date} onChange={(e) => {
-                                                this.setDate((e.target as any).value);
-                                            }} />
-                                        </div>
-
-                                    </div>
-                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
-                                    <div className="form-group" style={{ height: 30 }}>
-                                        <input style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} value={this.props.windowSize} onChange={(e) => {
-                                            this.setWindowSize((e.target as any).value);
-                                        }} type="number" />
-                                        <select style={{ height: 35, width: 'calc(49%)', position: 'relative', float: "right", border: '1px solid #ced4da', borderRadius: '.25em' }} value={this.props.timeWindowUnits} onChange={(e) => {
-                                            this.setTimeWindowUnits((e.target as any).value);
-                                        }} >
-                                            <option value="7">Year</option>
-                                            <option value="6">Month</option>
-                                            <option value="5">Week</option>
-                                            <option value="4">Day</option>
-                                            <option value="3">Hour</option>
-                                            <option value="2">Minute</option>
-                                            <option value="1">Second</option>
-                                            <option value="0">Millisecond</option>
-                                        </select>
-
-                                    </div>
-                                </form>
-                            </fieldset>
+                            <ReportTimeFilter filter={this.props.TimeFilter} setFilter={(f) => this.setDate(f)} showQuickSelect={true} />
                         </li>
                         <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
