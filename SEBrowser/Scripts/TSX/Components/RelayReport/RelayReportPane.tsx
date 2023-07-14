@@ -25,7 +25,7 @@ import moment from 'moment';
 import { RelayReportNavBarProps } from './RelayReportNavBar';
 import { Line, LineWithThreshold, Plot } from '@gpa-gemstone/react-graph';
 import { RandomColor } from '@gpa-gemstone/helper-functions';
-import { cloneDeep } from 'lodash';
+import { findAppropriateUnit, getMoment, getStartEndTime } from '../EventSearch/TimeWindowUtils';
 
 interface IRelayPerformance {
     EventID: number,
@@ -74,43 +74,24 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
 
 
     function getTimeLimits() {
-        const dT = props.windowSize;
-        const Tcenter = moment.utc(props.date + " " + props.time, "MM/DD/YYYY HH:mm:ss.SSSS");
-        let dUnit: moment.unitOfTime.DurationConstructor;
-
-        if (props.timeWindowUnits == 0)
-            dUnit = "ms";
-        else if (props.timeWindowUnits == 1)
-            dUnit = "s"
-        else if (props.timeWindowUnits == 2)
-            dUnit = "m"
-        else if (props.timeWindowUnits == 3)
-            dUnit = "h"
-        else if (props.timeWindowUnits == 4)
-            dUnit = "d"
-        else if (props.timeWindowUnits == 5)
-            dUnit = "w"
-        else if (props.timeWindowUnits == 6)
-            dUnit = "M"
-        else if (props.timeWindowUnits == 7)
-            dUnit = "y"
-
-        const Start = cloneDeep(Tcenter);
-        Start.subtract(dT, dUnit);
-        const End = cloneDeep(Tcenter);
-        End.add(dT, dUnit);
-        setTend(End.valueOf());
-        setTstart(Start.valueOf())
+        const [Tstart, Tend] = getStartEndTime(getMoment(props.date, props.time), props.windowSize, props.timeWindowUnits)
+        setTend(Tend.valueOf());
+        setTstart(Tstart.valueOf())
         
     }
 
   
 
     function getRelayPerformance(): JQuery.jqXHR<IRelayPerformance[]> {
-        const h = $.ajax({
+
+        const adjustedTime = findAppropriateUnit(
+            ...getStartEndTime(getMoment(props.date, props.time), props.windowSize, props.timeWindowUnits),
+            props.timeWindowUnits);
+
+        let h = $.ajax({
             type: "GET",
             url: `${homePath}api/PQDashboard/RelayReport/getRelayPerformance?lineID=${props.BreakerID}&channelID=${props.ChannelID}}&date=${props.date}` +
-                `&time=${props.time}&timeWindowunits=${props.timeWindowUnits}&windowSize=${props.windowSize}`,
+                `&time=${props.time}&timeWindowunits=${adjustedTime[0]}&windowSize=${adjustedTime[1]}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,

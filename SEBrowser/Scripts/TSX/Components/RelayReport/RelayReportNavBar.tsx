@@ -61,20 +61,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
     const [channels, setChannels] = React.useState<Channel[]>([]);
 
     React.useEffect(() => {
-        $('#datePicker').datetimepicker({ format: momentDateFormat });
-        $('#datePicker').on('dp.change', (e) => {
-            setDate((e.target as any).value);
-        });
-
-        $('#timePicker').datetimepicker({ format: momentTimeFormat });
-        $('#timePicker').on('dp.change', (e) => {
-            setTime((e.target as any).value);
-        });
-    
-    }, [])
-
-    React.useEffect(() => {
-        const handle = getSubstationData();
+        let handle = getSubstationData();
         return () => { if (handle != null && handle.abort != null) handle.abort(); }
     }, [])
 
