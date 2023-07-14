@@ -45,15 +45,17 @@ export function findAppropriateUnit(startTime: moment.Moment, endTime: moment.Mo
     if (unit === undefined) 
         unit = 7;
 
+    let diff = endTime.diff(startTime, momentUnit(unit));
     for (let i = unit; i >= 1; i--) {
-        const diff = endTime.diff(startTime, momentUnit(i));
-
         if (Number.isInteger(diff)) {
             return [i, diff];
         }
+        diff = endTime.diff(startTime, momentUnit(i-1));
+        if (diff > 65000)
+            return [i, Math.round(endTime.diff(startTime, momentUnit(i)))];
     }
 
-    return [0, endTime.diff(startTime, momentUnit(0))];
+    return [0, Math.round(diff)];
 }
 
 export function getStartEndTime(center: moment.Moment, duration: number, unit: number): [moment.Moment, moment.Moment] {
