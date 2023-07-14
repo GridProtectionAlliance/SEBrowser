@@ -226,3 +226,6 @@ _Pvt_Extensions
 /SEBrowser/NUglify.dll
 /Dependencies/NuGet
 /SEBrowser/web.config.backup
+
+# Ignore Web.config
+/SEBrowser/Web.config
