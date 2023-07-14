@@ -31,6 +31,7 @@ import ReportTimeFilter from '../ReportTimeFilter';
 import { orderBy } from 'lodash';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { findAppropriateUnit, getMoment, getStartEndTime } from '../EventSearch/TimeWindowUtils';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -149,12 +150,23 @@ function DERAnalysisReport() {
 
 
     React.useEffect(() => {
-        const handle1 = $.ajax({
+
+        const adjustedTime = findAppropriateUnit(
+            ...getStartEndTime(getMoment(date, time), windowSize, timeWindowUnits),
+            timeWindowUnits);
+
+        let handle1 = $.ajax({
             type: "POST",
             url: `${homePath}api/DERReport`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            data: JSON.stringify({ DERIDs: ders.filter(s => s.Selected).map(s => s.Value), Time: date + ' '+ time, Window: windowSize, TimeWindowUnit: timeWindowUnits, Regulations: regulations.filter(s => s.Selected).map(s => s.Text) }),
+            data: JSON.stringify({
+                DERIDs: ders.filter(s => s.Selected).map(s => s.Value),
+                Time: date + ' ' + time,
+                Window: adjustedTime[1],
+                TimeWindowUnit: adjustedTime[0],
+                Regulations: regulations.filter(s => s.Selected).map(s => s.Text)
+            }),
             cache: false,
             async: true
         }) as JQuery.jqXHR<DERAnalyticResult[]>;
