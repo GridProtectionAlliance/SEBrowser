@@ -27,6 +27,7 @@ import { CapBankReportNavBarProps } from './CapBankReportNavBar';
 import _, { cloneDeep } from 'lodash';
 import { Warning, Modal } from '@gpa-gemstone/react-interactive';
 import { Plot, Line } from '@gpa-gemstone/react-graph'
+import { findAppropriateUnit, getMoment, getStartEndTime } from '../EventSearch/TimeWindowUtils';
 
 interface ITrendSeries {
 
@@ -210,10 +211,14 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         if (this.eventTableHandle !== undefined)
             this.eventTableHandle.abort();
 
+        const adjustedTimeFrame = findAppropriateUnit(
+            ...getStartEndTime(getMoment(this.props.date, this.props.time), this.props.windowSize, this.props.timeWindowUnits),
+            this.props.timeWindowUnits);
+
         this.eventTableHandle = $.ajax({
             type: "GET",
             url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${this.props.CapBankID}&date=${this.props.date}` +
-                `&time=${this.props.time}&timeWindowunits=${this.props.timeWindowUnits}&windowSize=${this.props.windowSize}` +
+                `&time=${this.props.time}&timeWindowunits=${adjustedTimeFrame[0]}&windowSize=${adjustedTimeFrame[1]}` +
                 `&bankNum=${this.props.selectedBank}` + this.getFilterString(),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
