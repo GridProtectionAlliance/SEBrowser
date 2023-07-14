@@ -172,7 +172,7 @@ const MagDurChart = (props: IProps) => {
                 color={baseColors[i % baseColors.length]}
                 data={generateCurve(s)}
                 legend={s.Name} key={i}
-                width={showSelectedCurve && selectedCurve == s.ID? 5 : 3}
+                width={showSelectedCurve && selectedCurve == s.ID? 9 : 3}
             />),
             <AggregatingCircles data={data}
                 canAggregate={settings.AggregateMagDur ? CanAggregate : IsSame}
