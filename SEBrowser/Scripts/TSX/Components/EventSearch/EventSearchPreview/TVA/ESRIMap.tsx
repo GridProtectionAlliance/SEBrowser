@@ -323,13 +323,12 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
                         ascending={true}
                         onSort={() => {/*Do Nothing*/}}
                         theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                        tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: 'calc(30% - 100px)' }}
+                        tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.maxHeight ?? 500 }}
                         rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
                         selected={() => false}
                         />
                         </div>
                 </div>
-            </div>
             </div>
     );
 }
