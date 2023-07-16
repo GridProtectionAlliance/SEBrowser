@@ -41,7 +41,7 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }, [props.eventID, timeWindow, statusFilter]);
 
     function GetData() {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/SOE/${props.eventID}/${timeWindow}`,
             contentType: "application/json; charset=utf-8",
@@ -110,7 +110,7 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
                         tableClass="table"
                         keySelector={data => data.Time}
                         theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
-                        tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%' }}
+                        tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500 }}
                         rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                     />
                 </div>
