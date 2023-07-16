@@ -36,22 +36,22 @@ const AssetHistoryTable: React.FC<SEBrowser.IWidget<any>> = (props) => {
     return (
         <div className="card">
             <div className="card-header">Event History for {assetName}:
-                <div className='pull-right'>
-                    <Select
-                        Record={{ count }}
-                        Field='count'
-                        Options={[
-                            { Value: "10", Label: "10" },
-                            { Value: "25", Label: "25" },
-                            { Value: "50", Label: "50" },
-                            { Value: "75", Label: "75" },
-                            { Value: "100", Label: "100" }
-                        ]}
-                        Setter={(record) => setCount(record.count)}
-                        Label="Number of events: "
-                    />
+                    <div className='pull-right'>
+                        <Select
+                            Record={{ count }}
+                            Field='count'
+                            Options={[
+                                { Value: "10", Label: "10" },
+                                { Value: "25", Label: "25" },
+                                { Value: "50", Label: "50" },
+                                { Value: "75", Label: "75" },
+                                { Value: "100", Label: "100" }
+                            ]}
+                            Setter={(record) => setCount(record.count)}
+                            Label="Number of events: "
+                        />
+                    </div>
                 </div>
-            </div>
             <div className="card-body">
                 <Table
                     cols={[
@@ -66,7 +66,7 @@ const AssetHistoryTable: React.FC<SEBrowser.IWidget<any>> = (props) => {
                     ascending={true}
                     tableClass="table"
                     theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
-                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%' }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500 }}
                     rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                 />
             </div>
@@ -74,4 +74,4 @@ const AssetHistoryTable: React.FC<SEBrowser.IWidget<any>> = (props) => {
     );
 }
 
-export default AssetHistoryTable;
+export default AssetHistoryTable; 
