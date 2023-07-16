@@ -51,7 +51,7 @@ const AssetHistoryStats: React.FC<SEBrowser.IWidget<any>> = (props) => {
                     ascending={true}
                     tableClass="table"
                     theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                    tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: 600, width: '100%' }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500}}
                     rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                 />
             </div>
