@@ -278,8 +278,8 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
     }
 
     return (
-        <div className="card" style={{ maxHeight: '50vh' }}>
-            <div className="card" style={{ position: 'sticky', top: 0, zIndex: 2, backgroundColor: '#f5f5f5' }}>
+        <div className="card">
+            <div className="card" >
                 <div className="card-header" >ESRI Map
                     <div className='pull-right'>
                         <Select
@@ -322,18 +322,15 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
                         data={lightningInfo}
                         sortKey={'DisplayTime'}
                         ascending={true}
-                        onSort={(d) => {
-                            
-                        }}
-                        onClick={(item) => { }}
+                        onSort={() => { }}
+                        onClick={() => { }}
                         theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                        tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: 'calc(30% - 100px)' }}
+                        tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.maxHeight ?? 500 }}
                         rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
                         selected={item => false}
                         />
                         </div>
                 </div>
-            </div>
             </div>
     );
 }
