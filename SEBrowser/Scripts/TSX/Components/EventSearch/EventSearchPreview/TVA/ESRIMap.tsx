@@ -29,6 +29,7 @@ import moment from 'moment';
 import { SEBrowser } from '../../../../global';
 import { Application } from '@gpa-gemstone/application-typings';
 import Table from '@gpa-gemstone/react-table';
+import { Select } from '@gpa-gemstone/react-forms';
 
 interface ILightningStrike {
     Service: string, DisplayTime: string, Amplitude: number, Latitude: number, Longitude: number
