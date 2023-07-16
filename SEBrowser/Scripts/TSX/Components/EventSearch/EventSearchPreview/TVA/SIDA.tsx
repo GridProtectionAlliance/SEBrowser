@@ -23,6 +23,24 @@
 
 import React from 'react';
 import { SEBrowser } from '../../../../global';
+import Table from '@gpa-gemstone/react-table';
+
+interface ISida {
+    ID: number, 
+    sidaeventnumber: number,
+    equipmentname: string,
+    Ins: string,
+    kv: string,
+    durationhr: number,
+    durationmin: number,
+    omoffice: string,
+    causedescription: string,
+    subcausedescription: string,
+    eventtype: string,
+    excludedrecord: string,
+    internalexternal: string,
+    eventtime: string
+}
 
 const SIDA: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const [sidaInfo, setSIDAInfo] = React.useState < Array<{ ID: number, sidaeventnumber: number, equipmentname: string, Ins: string, kv: string, durationhr: number, durationmin: number, omoffice: string, causedescription: string, subcausedescription:string, eventtype: string, excludedrecord: string, internalexternal:string, eventtime: string}>>([]);
