@@ -43,7 +43,8 @@ interface ISida {
 }
 
 const SIDA: React.FC<SEBrowser.IWidget<any>> = (props) => {
-    const [sidaInfo, setSIDAInfo] = React.useState < Array<{ ID: number, sidaeventnumber: number, equipmentname: string, Ins: string, kv: string, durationhr: number, durationmin: number, omoffice: string, causedescription: string, subcausedescription:string, eventtype: string, excludedrecord: string, internalexternal:string, eventtime: string}>>([]);
+    const [sidaInfo, setSIDAInfo] = React.useState <ISida[]> ([]);
+    
     React.useEffect(() => {
         return GetData();
     }, [props.eventID]);
@@ -69,38 +70,29 @@ const SIDA: React.FC<SEBrowser.IWidget<any>> = (props) => {
         <div className="card">
             <div className="card-header">Corresponding SIDA Reports:</div>
             <div className="card-body">
-                <table className='table'>
-                    <thead>
-                        <tr>
-                            <th>SIDA #</th>
-                            <th>Evt Time</th>
-                            <th>Eqp</th>
-                            <th>kV</th>
-                            <th>Dur (HH:MM)</th>
-                            <th>OM Office</th>
-                            <th>Cause (SubCause)</th>
-                            <th>Type</th>
-                            <th>Excluded</th>
-                            <th>Int/Ext</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            sidaInfo.map(si => <tr key={si.ID}>
-                                <td>{si.sidaeventnumber}</td>
-                                <td>{si.eventtime}</td>
-                                <td>{si.equipmentname}</td>
-                                <td>{si.kv}</td>
-                                <td>{`${si.durationhr}:${si.durationmin}`}</td>
-                                <td>{si.omoffice}</td>
-                                <td>{`${si.causedescription}(${si.subcausedescription})`}</td>
-                                <td>{si.eventtype}</td>
-                                <td>{si.Ins}</td>
-                                <td>{si.internalexternal}</td>
-                            </tr>)
-                        }
-                    </tbody>
-                </table>
+                <Table
+                    cols={[
+                        { key: 'sidaeventnumber', field: 'sidaeventnumber', label: 'SIDA #' },
+                        { key: 'eventtime', field: 'eventtime', label: 'Evt Time' },
+                        { key: 'equipmentname', field: 'equipmentname', label: 'Eqp' },
+                        { key: 'kv', field: 'kv', label: 'kV' },
+                        { key: 'duration', label: 'Dur (HH:MM)', content: (d: ISida) => `${d.durationhr}:${d.durationmin}` },
+                        { key: 'omoffice', field: 'omoffice', label: 'OM Office' },
+                        { key: 'cause', label: 'Cause (SubCause)', content: (d: ISida) => `${d.causedescription}(${d.subcausedescription})` },
+                        { key: 'eventtype', field: 'eventtype', label: 'Type' },
+                        { key: 'Ins', field: 'Ins', label: 'Excluded' },
+                        { key: 'internalexternal', field: 'internalexternal', label: 'Int/Ext' },
+                    ]}
+                    data={sidaInfo}
+                    onClick={() => { }}
+                    onSort={() => { }}
+                    sortKey=''
+                    ascending={true}
+                    tableClass="table"
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: '50px' }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%' }}
+                    rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                />
             </div>
         </div>
     );
