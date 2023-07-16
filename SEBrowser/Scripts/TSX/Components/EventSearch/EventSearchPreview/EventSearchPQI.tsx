@@ -49,8 +49,8 @@ const EventSearchPQI: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     }
 
     return (
-        <div className="card">
-            <div className="card-header">Interruption Report:</div>
+        <div className="card" style={{ maxHeight: props.maxHeight ?? 500, overflowY: 'auto' }}>
+            <div className="card-header">Power Quality Investigator:</div>
             <div className="card-body">
                 <div className='row'>
                     <div className='col'>
