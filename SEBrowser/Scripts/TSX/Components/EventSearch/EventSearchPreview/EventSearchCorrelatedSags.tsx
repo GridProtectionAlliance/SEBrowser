@@ -24,9 +24,23 @@
 import React from 'react';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
+import Table from '@gpa-gemstone/react-table';
+
+interface ITimeCorrelatedSags {
+    EventID: number;
+    EventType: string;
+    SagMagnitudePercent: number;
+    SagDurationMilliseconds: number;
+    SagDurationCycles: number;
+    StartTime: string;
+    MeterName: string;
+    LineName: string;
+}
 
 const EventSearchCorrelatedSags: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [tableRows, setTableRows] = React.useState([]);
+
+    const [data, setData] = React.useState<ITimeCorrelatedSags[]>([]);
 
     let correlatedSagsHandle;
 
