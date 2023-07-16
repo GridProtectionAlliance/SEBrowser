@@ -79,7 +79,7 @@ const EventSearchCorrelatedSags: React.FC<SEBrowser.IWidget<unknown>> = (props) 
                             { key: 'EventType', field: 'EventType', label: 'Event Type'},
                             { key: 'SagMagnitude', field: 'SagMagnitudePercent', label: 'Magnitude'},
                             { key: 'SagDuration', field: 'SagDurationMilliseconds', label: 'Duration', content: (d: ITimeCorrelatedSags) => `${d.SagDurationMilliseconds} ms (${d.SagDurationCycles} cycles)` },
-                            { key: 'StartTime', field: 'StartTime', label: 'Start Time'},
+                            { key: 'StartTime', field: 'StartTime', label: 'Start Time', content: (d: ITimeCorrelatedSags) => moment(d.StartTime).format('HH:mm:ss.SSS') },
                             { key: 'MeterName', field: 'MeterName', label: 'Meter Name'},
                             { key: 'LineName', field: 'LineName', label: 'Line Name'}
                         ]}
