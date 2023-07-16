@@ -67,7 +67,7 @@ const SIDA: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     }
 
     return (
-        <div className="card">
+        <div className="card" style={{ maxHeight: props.maxHeight ?? 500, overflowY: 'auto' }}>
             <div className="card-header">Corresponding SIDA Reports:</div>
             <div className="card-body">
                 <Table
