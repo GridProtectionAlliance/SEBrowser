@@ -48,8 +48,9 @@ interface ILinks {
 
 const FaultInfo: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const [hidden, setHidden] = React.useState<boolean>(true);
-    const [faultInfo, setFaultInfo] = React.useState<{ FaultTime?: string, FaultDuration?: number, FaultType?: string, FaultDistance?: number, StationID?: string, StationName?: string, LineName?: string, LineAssetKey?: string, DblDist?: number, TreeFaultResistance?: number}>({});
-    const [links, setLinks] = React.useState<Array<{ID: number, Name:string, Display: string, Value: string}>>([])
+    const [faultInfo, setFaultInfo] = React.useState<IFaultInfo[]>([]);
+    const [links, setLinks] = React.useState<ILinks[]>([]);
+
     React.useEffect(() => {
         return GetData();
     }, [props.eventID]);
@@ -77,7 +78,7 @@ const FaultInfo: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
             if (data.length > 0) {
                 setHidden(false);
             }
-            setFaultInfo(data[0]);
+            setFaultInfo(data);
         });
 
         handle2.done(data => setLinks(data));
