@@ -23,6 +23,7 @@
 
 import React from 'react';
 import { SEBrowser } from '../../../global';
+import  Table  from '@gpa-gemstone/react-table'; 
 
 const EventSearchFileInfo: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
 
