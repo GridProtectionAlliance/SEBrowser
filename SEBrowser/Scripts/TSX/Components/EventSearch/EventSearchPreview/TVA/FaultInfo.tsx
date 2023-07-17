@@ -100,22 +100,58 @@ const FaultInfo: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
         <div className="card" hidden={hidden}>
             <div className="card-header">Fault Information:</div>
             <div className="card-body">
-                <table className='table'>
-                    <tbody>
-                        <tr><td>Fault Inception Time: </td><td>{faultInfo ? moment(faultInfo.FaultTime).format('YYYY-MM-DD HH:mm:ss.SSS') : ''} (Central Time)</td></tr>
-                        <tr><td>Fault Duration: </td><td>{faultInfo ? faultInfo.FaultDuration : ''} cycles / {faultInfo ? (faultInfo.FaultDuration == undefined ? '': (faultInfo.FaultDuration * 16.6).toFixed(2)) : ''} ms : ''</td></tr>
-                        <tr><td>Fault Type: </td><td>{faultInfo ? faultInfo.FaultType : ''}</td></tr>
-                        <tr><td>Location: </td><td>{faultInfo ? faultInfo.FaultDistance : ''}  miles from {faultInfo ? faultInfo.StationName : ''}({faultInfo ? faultInfo.StationID : ''}) on {faultInfo ? faultInfo.LineName : ''}({faultInfo ? faultInfo.LineAssetKey : ''})</td></tr>
-                        <tr hidden={!faultInfo || faultInfo.DblDist == undefined}><td>Double Ended Location: </td><td>{faultInfo ? faultInfo.DblDist : ''}  miles from {faultInfo ? faultInfo.StationName : ''}</td></tr>
-                        <tr><td>Tree Probability: </td><td>{faultInfo ? TreeProbability(faultInfo.TreeFaultResistance) : ''}</td></tr>
-                        <tr><td>View:</td><td>{links.map(a => {
-                            if (a.Name == 'FaultInfo.Miles')
-                                return <a style={{ paddingRight: 5 }} key={a.Name} href={a.Value + `?Station=${faultInfo.StationID}&Line=${faultInfo.LineAssetKey}&Mileage=${faultInfo.FaultDistance}`} target='_blank'>{a.Display}</a>
-                            else
-                                return <a style={{ paddingRight: 5 }} key={a.Name} href={a.Value} target='_blank'>{a.Display}</a>
-                        })}</td></tr>
-                    </tbody>
-                </table>
+                <Table
+                    cols={[
+                        {
+                            key: 'FaultTime', label: 'Fault Inception Time: ',
+                            content: (d: IFaultInfo) => d.FaultTime ? `${moment(d.FaultTime).format('YYYY-MM-DD HH:mm:ss.SSS')} (Central Time)` : ''
+                        },
+                        {
+                            key: 'FaultDuration', label: 'Fault Duration: ',
+                            content: (d: IFaultInfo) => d.FaultDuration != null ? `${d.FaultDuration} cycles / ${(d.FaultDuration * 16.6).toFixed(2)} ms` : ''
+                        },
+                        {
+                            key: 'FaultType', label: 'Fault Type: ',
+                            content: (d: IFaultInfo) => d.FaultType || ''
+                        },
+                        {
+                            key: 'Location', label: 'Location: ',
+                            content: (d: IFaultInfo) => d.FaultDistance != null && d.StationName != null && d.StationID != null && d.LineName != null && d.LineAssetKey != null
+                                ? `${d.FaultDistance} miles from ${d.StationName} (${d.StationID}) on ${d.LineName} (${d.LineAssetKey})` : ''
+                        },
+                        {
+                            key: 'DoubleEndedLocation', label: 'Double Ended Location: ',
+                            content: (d: IFaultInfo) => d.DblDist != null && d.StationName != null ? `${d.DblDist} miles from ${d.StationName}` : ''
+                        },
+                        {
+                            key: 'TreeProbability', label: 'Tree Probability: ',
+                            content: (d: IFaultInfo) => d.TreeFaultResistance != null ? TreeProbability(d.TreeFaultResistance) : ''
+                        },
+                        {
+                            key: 'View', label: 'View:',
+                            content: (d: IFaultInfo) => links.map(a => {
+                                if (a.Name == 'FaultInfo.Miles') {
+                                    return (
+                                        <a style={{ paddingRight: 5 }} key={a.Name} href={a.Value + `?Station=${d.StationID}&Line=${d.LineAssetKey}&Mileage=${d.FaultDistance}`} target='_blank'>{a.Display}</a>
+                                    );
+                                } else {
+                                    return (
+                                        <a style={{ paddingRight: 5 }} key={a.Name} href={a.Value} target='_blank'>{a.Display}</a>);
+                                }
+                            })
+                        }
+
+                    ]}
+                    data={faultInfo}
+                    onClick={() => { }}
+                    onSort={() => { }}
+                    sortKey={''}
+                    ascending={true}
+                    tableClass="table"
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500 }}
+                    rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                />
             </div>
         </div>
     );
