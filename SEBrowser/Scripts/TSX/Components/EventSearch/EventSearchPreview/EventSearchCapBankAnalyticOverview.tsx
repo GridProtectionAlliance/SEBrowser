@@ -24,6 +24,7 @@
 import React from 'react';
 import OpenSEEService from '../../../../TS/Services/OpenSEE';
 import { SEBrowser } from '../../../global';
+import Table from '@gpa-gemstone/react-table';
 
 const Row = (row) => {
     return (
