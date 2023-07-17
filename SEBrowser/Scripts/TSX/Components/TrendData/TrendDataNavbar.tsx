@@ -78,7 +78,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [trendFilter, setTrendFilter] = React.useState<ITrendDataFilter>(null);
     const [phaseOptions, setPhaseOptions] = React.useState<IMultiCheckboxOption[]>([]);
     const [channelGroupOptions, setChannelGroupOptions] = React.useState<IMultiCheckboxOption[]>([]);
-    const [linePlotOptions, setLinePlotOptions] = React.useState<IMultiCheckboxOption[]>([{ Value: 0, Text: "Minimum", Selected: true }, { Value: 1, Text: "Maximum", Selected: true }, { Value: 2, Text: "Average/Values", Selected: true }]);
+    const [linePlotOptions, setLinePlotOptions] = React.useState<IMultiCheckboxOption[]>([{ Value: "min", Text: "Minimum", Selected: true }, { Value: "max", Text: "Maximum", Selected: true }, { Value: "avg", Text: "Average/Values", Selected: true }]);
 
     const [trendChannels, setTrendChannels] = React.useState<SEBrowser.ITrendChannel[]>([]);
     const [selectedSet, setSelectedSet] = React.useState<Set<number>>(new Set<number>());

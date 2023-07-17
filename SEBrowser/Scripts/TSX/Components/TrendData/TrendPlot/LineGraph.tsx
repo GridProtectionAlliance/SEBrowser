@@ -23,7 +23,7 @@
 import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
-import { SEBrowser } from '../../../Global';
+import { IMultiCheckboxOption, SEBrowser } from '../../../Global';
 import { Application } from '@gpa-gemstone/application-typings';
 import { LoadingIcon, ServerErrorIcon } from '@gpa-gemstone/react-interactive';
 import { Button, Line, Plot } from '@gpa-gemstone/react-graph';
@@ -31,11 +31,7 @@ import { Button, Line, Plot } from '@gpa-gemstone/react-graph';
 interface IProps {
     TimeFilter: SEBrowser.IReportTimeFilter,
     ChannelInfo: ILineSeries[],
-    PlotFilter: {
-        Value: number,
-        Text: string,
-        Selected: boolean
-    }[],
+    PlotFilter: IMultiCheckboxOption[],
     Height: number,
     Width: number,
     OnSelect: (time: number, value: number) => void,
@@ -114,9 +110,9 @@ const LineGraph = React.memo((props: IProps) => {
     }, [props.ChannelInfo, props.TimeFilter]);
 
     React.useEffect(() => {
-        setDisplayMin(props.PlotFilter.find(element => element.Text === "Minimum")?.Selected ?? false);
-        setDisplayMax(props.PlotFilter.find(element => element.Text === "Maximum")?.Selected ?? false);
-        setDisplayAvg(props.PlotFilter.find(element => element.Text === "Average")?.Selected ?? false);
+        setDisplayMin(props.PlotFilter.find(element => element.Value === "min")?.Selected ?? false);
+        setDisplayMax(props.PlotFilter.find(element => element.Value === "max")?.Selected ?? false);
+        setDisplayAvg(props.PlotFilter.find(element => element.Value === "avg")?.Selected ?? false);
     }, [props.PlotFilter]);
 
     React.useEffect(() => {

@@ -80,7 +80,7 @@ const PlotSettings = React.memo((props: IProps) => {
                     Options={props.Plot.PlotFilter}
                     Label={''}
                     OnChange={(evt, newOptions: IMultiCheckboxOption[]) => {
-                        let options: IMultiCheckboxOption[] = [];
+                        const options: IMultiCheckboxOption[] = [];
                         props.Plot.PlotFilter.forEach(item => {
                             const selected: boolean = item.Selected != (newOptions.findIndex(option => item.Value === option.Value) > -1);
                             options.push({ ...item, Selected: selected });

@@ -42,7 +42,7 @@ declare global {
 
 //Todo: Move to gemstone?
 export interface IMultiCheckboxOption {
-    Value: number,
+    Value: number | string,
     Text: string,
     Selected: boolean
 }
@@ -141,6 +141,7 @@ export namespace SEBrowser {
         MeterID: number,
         MeterKey: string,
         MeterName: string,
+        MeterShortName: string,
         Phase: string,
         ChannelGroup: string,
         ChannelGroupType: string
