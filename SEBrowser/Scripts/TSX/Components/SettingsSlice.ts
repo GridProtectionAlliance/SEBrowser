@@ -78,6 +78,7 @@ const settingsSlice = createSlice({
             
             state.timeZone = action.payload[0];
             state.eventSearch.WidgetCategories = action.payload[1];
+            return state;
         });    
         
         builder.addCase(LoadSettings.rejected, (state) => {
@@ -94,6 +95,7 @@ const settingsSlice = createSlice({
             }
 
             state.timeZone = 'UTC';
+            return state;
         });
     }
     
