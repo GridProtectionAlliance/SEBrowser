@@ -6,12 +6,10 @@
     ],
     "extends": [
       "eslint:recommended",
-      "plugin:@typescript-eslint/eslint-recommended",
       "plugin:@typescript-eslint/recommended"
     ],
 	"rules": {
-	  "no-prototype-builtins": "warn",
-	  "@typescript-eslint/ban-types": "warn",
+	  "@typescript-eslint/ban-types": "off",
 	  "no-constant-condition": "warn"
 	}
   }

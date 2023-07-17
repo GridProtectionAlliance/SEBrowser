@@ -34,11 +34,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SplitSection, VerticalSplit } from '@gpa-gemstone/react-interactive';
 
-interface IProps { }
 
 type tab = 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All' | undefined;
 
-const EventSearch = (props: IProps) => {
+const EventSearch = (props: {}) => {
     const history = useLocation();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
@@ -81,7 +80,7 @@ const EventSearch = (props: IProps) => {
 
 
     function getShowNav(): boolean {
-        if (localStorage.hasOwnProperty('SEbrowser.EventSearch.ShowNav'))
+        if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.EventSearch.ShowNav'))
             return JSON.parse(localStorage.getItem('SEbrowser.EventSearch.ShowNav'))
         else
             return true;

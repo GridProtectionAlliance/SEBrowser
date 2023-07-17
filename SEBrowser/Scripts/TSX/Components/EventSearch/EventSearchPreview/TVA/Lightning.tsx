@@ -66,7 +66,7 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
 
         data.forEach((d, i) => {
             Object.keys(d).forEach((key, j) => {
-                if (dict.hasOwnProperty(key))
+                if (Object.prototype.hasOwnProperty.call(dict, key))
                     dict[key].Data.push((key == 'Day' ? moment(d[key]).unix() : d[key]))
                 else
                     dict[key] = { Data: [(key == 'Day' ? moment(d[key]).unix() : d[key])], Show: true }
