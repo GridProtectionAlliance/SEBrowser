@@ -124,7 +124,7 @@ const LineGraph = React.memo((props: IProps) => {
         setTimeLimits(chartData === undefined ? [0, 1] : [chartData.AvgSeries[0][0], chartData.AvgSeries[chartData.AvgSeries.length - 1][0]]);
     }, [allChartData]);
 
-    function GetTrendData(channels: number[], startTime: string, endTime: string): JQuery.jqXHR<any[]> {
+    function GetTrendData(channels: number[], startTime: string, endTime: string): JQuery.jqXHR<SEBrowser.IPQData[]> {
         if (channels.length === 0) {
             setAllChartData(CulledTrendData());
             return null;
@@ -171,13 +171,13 @@ const LineGraph = React.memo((props: IProps) => {
         return (
             <>
                 <div className="row" style={{ alignItems: "center", justifyContent: "center", width: "100%", height: "50%" }}>
-                    <ServerErrorIcon Show={true} Label={'No Data Available'} />
+                    <ServerErrorIcon Show={true} Label={'No Data Available'} Size={props.Height / 7} />
                 </div>
                 <div className="row" style={{ width: "100%", height: "50%" }}>
-                    {React.Children.map(props.AlwaysRender, (element, i) => {
+                    {React.Children.map(props.AlwaysRender, (element) => {
                         if (!React.isValidElement(element))
                             return null;
-                        if ((element as React.ReactElement<any>).type === Button)
+                        if ((element as React.ReactElement<unknown>).type === Button)
                             return (
                                 <div className="col" style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", height: "100%" }}>
                                     <button type="button"
