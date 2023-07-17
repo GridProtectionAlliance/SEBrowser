@@ -33,9 +33,9 @@ import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice, MagDurCurveSlic
 import { DefaultSelects } from '@gpa-gemstone/common-pages';
 import EventSearchFilterButton from './EventSearchbarFilterButton';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
-import { Input, Select, EnumCheckBoxes, MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
+import { Input, Select, MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { Search } from '@gpa-gemstone/react-interactive';
-import { SEBrowser, Redux } from '../../Global';
+import { SEBrowser } from '../../Global';
 import EventSearchTypeFilters from './EventSearchTypeFilter';
 
 interface IProps {
@@ -87,7 +87,7 @@ const EventSearchNavbar = (props: IProps) => {
     React.useEffect(() => {
         setNewEventCharacteristicFilter(eventCharacteristicFilter);
         setNewTypeFilter(eventTypeFilter);
-        let setupPhases: { Value: number, Text: string, Selected: boolean }[] = [];
+        const setupPhases: { Value: number, Text: string, Selected: boolean }[] = [];
         Object.keys(eventCharacteristicFilter.phases).forEach((key, index) => setupPhases.push({ Value: index, Text: key, Selected: eventCharacteristicFilter.phases[key] }));
         setNewPhases(setupPhases);
     }, []);
@@ -152,7 +152,7 @@ const EventSearchNavbar = (props: IProps) => {
     }
 
     function getAdditionalMeterFields(setFields) {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/openXDA/AdditionalField/ParentTable/Meter/FieldName/0`,
             contentType: "application/json; charset=utf-8",
@@ -169,7 +169,7 @@ const EventSearchNavbar = (props: IProps) => {
         }
 
         handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
-            let ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
+            const ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
                 { label: `[AF${item.ExternalDB != undefined ? " " + item.ExternalDB : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedMeter>
             )), ['label'], ["asc"]);
             setFields(ordered)
@@ -181,7 +181,7 @@ const EventSearchNavbar = (props: IProps) => {
     }
 
     function getAdditionalAssetFields(setFields) {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/SystemCenter/AdditionalField/ParentTable/Asset/FieldName/0`,
             contentType: "application/json; charset=utf-8",
@@ -199,7 +199,7 @@ const EventSearchNavbar = (props: IProps) => {
 
         handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
 
-            let ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
+            const ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
                 { label: `[AF${item.ExternalDB != undefined ? " " + item.ExternalDB : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedAsset>
             )), ['label'], ["asc"]);
             setFields(ordered);
@@ -299,8 +299,8 @@ const EventSearchNavbar = (props: IProps) => {
         );
 
     const sagsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Sag')?.ID ?? -1) != null;
-    const swellsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Swell')?.ID ?? -1) != null;;
-    const transientsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Transient')?.ID ?? -1) != null;;
+    const swellsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Swell')?.ID ?? -1) != null;
+    const transientsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Transient')?.ID ?? -1) != null;
 
     return (
         <>
@@ -428,8 +428,8 @@ const EventSearchNavbar = (props: IProps) => {
                                             Label={'Phases'}
                                                 OnChange={
                                                     (evt, Options: { Value: number; Text: string; Selected: boolean; }[]) => { 
-                                                        let phaseList = [];
-                                                        let phaseFilter: SEBrowser.IPhaseFilters = { ...newEventCharacteristicFilter.phases };
+                                                        const phaseList = [];
+                                                        const phaseFilter: SEBrowser.IPhaseFilters = { ...newEventCharacteristicFilter.phases };
                                                         newPhases.forEach(phase => {
                                                             const phaseSelected: boolean = phase.Selected != (Options.findIndex(option => phase.Value === option.Value) > -1);
                                                             phaseList.push({ ...phase, Selected: phaseSelected });

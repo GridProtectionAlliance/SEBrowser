@@ -34,7 +34,7 @@ const FaultInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }, [props.eventID]);
 
     function GetData() {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/OpenXDA/FaultInfo/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
@@ -43,7 +43,7 @@ const FaultInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
             async: true
         });
 
-        let handle2 = $.ajax({
+        const handle2 = $.ajax({
             type: "GET",
             url: `${homePath}api/SEBrowser/GetLinks/FaultInfo`,
             contentType: "application/json; charset=utf-8",

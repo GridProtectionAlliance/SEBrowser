@@ -22,7 +22,7 @@
 //******************************************************************************************************
 
 import * as React from 'react';
-declare var homePath: string;
+declare let homePath: string;
 
 const SEDashbaordNavbar: React.FunctionComponent<{}> = (props) => {
         return (

@@ -62,7 +62,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
     const [Tend, setTend] = React.useState<number>(0);
 
     React.useEffect(() => {
-        let h = getRelayPerformance()
+        const h = getRelayPerformance()
 
         return () => { if (h != null && h.abort != null) h.abort(); };
         
@@ -74,8 +74,8 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
 
 
     function getTimeLimits() {
-        let dT = props.windowSize;
-        let Tcenter = moment.utc(props.date + " " + props.time, "MM/DD/YYYY HH:mm:ss.SSSS");
+        const dT = props.windowSize;
+        const Tcenter = moment.utc(props.date + " " + props.time, "MM/DD/YYYY HH:mm:ss.SSSS");
         let dUnit: moment.unitOfTime.DurationConstructor;
 
         if (props.timeWindowUnits == 0)
@@ -95,9 +95,9 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
         else if (props.timeWindowUnits == 7)
             dUnit = "y"
 
-        let Start = cloneDeep(Tcenter);
+        const Start = cloneDeep(Tcenter);
         Start.subtract(dT, dUnit);
-        let End = cloneDeep(Tcenter);
+        const End = cloneDeep(Tcenter);
         End.add(dT, dUnit);
         setTend(End.valueOf());
         setTstart(Start.valueOf())
@@ -107,7 +107,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
   
 
     function getRelayPerformance(): JQuery.jqXHR<IRelayPerformance[]> {
-        let h = $.ajax({
+        const h = $.ajax({
             type: "GET",
             url: `${homePath}api/PQDashboard/RelayReport/getRelayPerformance?lineID=${props.BreakerID}&channelID=${props.ChannelID}}&date=${props.date}` +
                 `&time=${props.time}&timeWindowunits=${props.timeWindowUnits}&windowSize=${props.windowSize}`,

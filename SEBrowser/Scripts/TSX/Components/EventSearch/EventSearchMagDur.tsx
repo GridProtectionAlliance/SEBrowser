@@ -22,13 +22,12 @@
 //******************************************************************************************************
 
 import * as React from 'react';
-import * as _ from 'lodash';
 import { SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs, SelectCharacteristicFilter, SelectEventSearchsSortField, SelectEventSearchsAscending, Sort } from './EventSearchSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { OpenXDA, Redux, SEBrowser } from '../../global';
+import { Redux, SEBrowser } from '../../global';
 import { MagDurCurveSlice } from '../../Store';
 import { Line, Plot, Circle, AggregatingCircles } from '@gpa-gemstone/react-graph';
-import { SelectEventSearchSettings, SetEventSearch } from '../SettingsSlice';
+import { SelectEventSearchSettings } from '../SettingsSlice';
 import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
 import Table, { Column } from '@gpa-gemstone/react-table';
 
@@ -115,8 +114,8 @@ const MagDurChart = (props: IProps) => {
     function generateCurve(curve: SEBrowser.MagDurCurve) {
        
         if (curve.LowerCurve == null && curve.UpperCurve == null) {
-            let pt = curve.Area.split(',');
-            let cu = pt.map(point => { let s = point.trim().split(" "); return [parseFloat(s[0]), parseFloat(s[1])] as [number, number]; })
+            const pt = curve.Area.split(',');
+            const cu = pt.map(point => { const s = point.trim().split(" "); return [parseFloat(s[0]), parseFloat(s[1])] as [number, number]; })
             return cu;
         }
 
@@ -227,7 +226,7 @@ interface IEventListProps {
     Duration: number;
     Height: number;
     Width: number;
-};
+}
 
 const EventList = (props: IEventListProps) => {
     const closureHandler = React.useRef<((o: boolean) => void)>(() => { });
@@ -255,7 +254,7 @@ const EventList = (props: IEventListProps) => {
     function ProcessWhitespace(txt: string | number): React.ReactNode {
         if (txt == null)
             return <>N/A</>
-        let lines = txt.toString().split("<br>");
+        const lines = txt.toString().split("<br>");
         return lines.map((item, index) => {
             if (index == 0)
                 return <> {item} </>

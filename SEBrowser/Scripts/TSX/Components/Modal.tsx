@@ -21,7 +21,6 @@
 //******************************************************************************************************
 
 import * as React from 'react';
-import { clone, isEqual } from 'lodash';
 
 interface IProps {
     Title: string,

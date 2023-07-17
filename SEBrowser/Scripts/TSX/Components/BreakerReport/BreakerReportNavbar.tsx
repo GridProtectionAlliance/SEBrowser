@@ -23,7 +23,6 @@
 
 import React from 'react';
 import BreakerReportService from './../../../TS/Services/BreakerReport'
-import moment from 'moment';
 
 
 export interface BreakerReportNavbarProps {

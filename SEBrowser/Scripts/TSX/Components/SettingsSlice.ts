@@ -25,7 +25,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { Redux } from '../global';
 
-declare var homePath: string;
+declare let homePath: string;
 
 export const LoadSettings = createAsyncThunk('Settings/LoadSettingsThunk', async () => {
     return Promise.all([loadTimeZone(), loadWidgetCategories()])
@@ -53,7 +53,7 @@ const settingsSlice = createSlice({
     extraReducers: (builder) => {
 
         builder.addCase(LoadSettings.fulfilled, (state, action) => {
-            let preserved = readSettings();
+            const preserved = readSettings();
 
             if (preserved != undefined) {
                 state.eventSearch = preserved.eventSearch;
@@ -66,7 +66,7 @@ const settingsSlice = createSlice({
         });    
         
         builder.addCase(LoadSettings.rejected, (state, action) => {
-            let preserved = readSettings();
+            const preserved = readSettings();
 
             if (preserved != undefined) {
                 state.eventSearch = preserved.eventSearch;
@@ -85,7 +85,7 @@ function readSettings() {
         if (serializedState === null) {
             return undefined;
         }
-        let state: Redux.SettingsState = JSON.parse(serializedState);
+        const state: Redux.SettingsState = JSON.parse(serializedState);
         return state;
     } catch (err) {
         return undefined;

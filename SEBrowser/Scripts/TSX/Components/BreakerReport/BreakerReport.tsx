@@ -29,7 +29,7 @@ const momentDateFormat = "MM/DD/YYYY";
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-declare var homePath: string;
+declare let homePath: string;
 
 const BreakerReport = (props: {}) => {
     const [fromDate, setFromDate] = React.useState<string>('');
@@ -39,7 +39,7 @@ const BreakerReport = (props: {}) => {
     const history = useLocation();
 
     React.useEffect(() => {
-        var query = queryString.parse(history.search.replace("?", ""), "&", "=");
+        const query = queryString.parse(history.search.replace("?", ""), "&", "=");
 
         setFromDate(query['fromDate'] != undefined ? query['fromDate'].toString() : moment().subtract(30, 'days').format(momentDateFormat));
         setToDate(query['toDate'] != undefined ? query['toDate'].toString() : moment().format(momentDateFormat));
@@ -51,8 +51,8 @@ const BreakerReport = (props: {}) => {
     React.useEffect(() => {
         const state = { breaker, toDate, fromDate };
 
-        let q = queryString.stringify(state, "&", "=");
-        let handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
+        const q = queryString.stringify(state, "&", "=");
+        const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
     }, [fromDate,toDate,breaker])
 

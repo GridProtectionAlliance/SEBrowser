@@ -66,7 +66,7 @@ function DERAnalysisReport() {
     const [selectedData, setSelectedData] = React.useState<DERAnalyticResult>(null);
 
     React.useEffect(() => {
-        var query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
+        const query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
 
         setTime(query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat))
         setDate(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat))
@@ -82,13 +82,13 @@ function DERAnalysisReport() {
             windowSize,
             timeWindowUnits
         };
-        let q = queryString.stringify(queryParam, "&", "=", { encodeURIComponent: queryString.escape });
-        let handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
+        const q = queryString.stringify(queryParam, "&", "=", { encodeURIComponent: queryString.escape });
+        const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
     }, [time, date, windowSize, timeWindowUnits])
 
     React.useEffect(() => {
-        let handle1 = $.ajax({
+        const handle1 = $.ajax({
             type: "GET",
             url: `${homePath}api/DERReport/Regulation`,
             contentType: "application/json; charset=utf-8",
@@ -99,7 +99,7 @@ function DERAnalysisReport() {
 
         handle1.done(d => setRegulations(d.map((reg, i) => ({Value: i, Text: reg, Selected: true}))) )
 
-        let handle2 = $.ajax({
+        const handle2 = $.ajax({
             type: "GET",
             url: `${homePath}api/DERReport/Substation`,
             contentType: "application/json; charset=utf-8",
@@ -108,7 +108,7 @@ function DERAnalysisReport() {
             async: true
         }) as JQuery.jqXHR<{LocationID: number, LocationKey: string, Name: string}[]>;
 
-        handle2.done(d => setStations(d.map((reg, i) => ({ Value: reg.LocationID, Text: reg.Name, Selected: true }))))
+        handle2.done(d => setStations(d.map((reg) => ({ Value: reg.LocationID, Text: reg.Name, Selected: true }))))
 
         return () => {
             if (handle1.abort != undefined) handle1.abort();
@@ -118,7 +118,7 @@ function DERAnalysisReport() {
     }, []);
 
     React.useEffect(() => {
-        let sorted = orderBy(data, [sortKey], [ascending]);
+        const sorted = orderBy(data, [sortKey], [ascending]);
         setData(sorted);
     }, [sortKey, ascending]);
 
@@ -129,7 +129,7 @@ function DERAnalysisReport() {
     }, [selectedData]);
 
     React.useEffect(() => {
-        let handle1 = $.ajax({
+        const handle1 = $.ajax({
             type: "POST",
             url: `${homePath}api/DERReport/DER`,
             contentType: "application/json; charset=utf-8",
@@ -149,7 +149,7 @@ function DERAnalysisReport() {
 
 
     React.useEffect(() => {
-        let handle1 = $.ajax({
+        const handle1 = $.ajax({
             type: "POST",
             url: `${homePath}api/DERReport`,
             contentType: "application/json; charset=utf-8",
@@ -179,9 +179,9 @@ function DERAnalysisReport() {
                                 <form>
                                     <div className="form-group" style={{ height: 60, width: '100%' }}>
                                         <MultiCheckBoxSelect Label={'Substation:'} Options={stations} OnChange={(evt, options) => {
-                                            let records = [...stations]
-                                            for (let option of options) {
-                                                let index = records.findIndex(r => r.Value == option.Value)
+                                            const records = [...stations]
+                                            for (const option of options) {
+                                                const index = records.findIndex(r => r.Value == option.Value)
                                                 records[index].Selected = !records[index].Selected
                                             }
                                             setStations(records)
@@ -190,9 +190,9 @@ function DERAnalysisReport() {
                                     </div>
                                     <div className="form-group" style={{ height: 60, width: '100%' }}>
                                         <MultiCheckBoxSelect Label={'DER:'} Options={ders} OnChange={(evt, options) => {
-                                            let records = [...ders]
-                                            for (let option of options) {
-                                                let index = records.findIndex(r => r.Value == option.Value)
+                                            const records = [...ders]
+                                            for (const option of options) {
+                                                const index = records.findIndex(r => r.Value == option.Value)
                                                 records[index].Selected = !records[index].Selected
                                             }
                                             setDERs(records)
@@ -200,9 +200,9 @@ function DERAnalysisReport() {
                                     </div>
                                     <div className="form-group" style={{ height: 60, width: '100%' }}>
                                         <MultiCheckBoxSelect Label={'Regulations:'} Options={regulations} OnChange={(evt, options) => {
-                                            let records = [...regulations]
-                                            for (let option of options) {
-                                                let index = records.findIndex(r => r.Value == option.Value)
+                                            const records = [...regulations]
+                                            for (const option of options) {
+                                                const index = records.findIndex(r => r.Value == option.Value)
                                                 records[index].Selected = !records[index].Selected
                                             }
                                             setRegulations(records)
@@ -251,8 +251,8 @@ function DERAnalysisReport() {
                                 setSortKey(data.colField);
                         }}
                         data={data}
-                        onClick={({ colKey, colField, row, data, index }, evt) => {
-                            setSelectedData(row);
+                        onClick={(d) => {
+                            setSelectedData(d.row);
                         }}
                         theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                         tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 343, width: '100%' }}
@@ -328,7 +328,7 @@ const Graph = (props: DERAnalyticResult) => {
     React.useEffect(() => {
         if (props.ID == undefined) return;
 
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/DERReport/Data/${props.ID}`,
             contentType: "application/json; charset=utf-8",

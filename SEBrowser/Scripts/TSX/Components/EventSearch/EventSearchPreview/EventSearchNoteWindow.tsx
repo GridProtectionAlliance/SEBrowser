@@ -22,7 +22,6 @@
 //******************************************************************************************************
 
 import React from 'react';
-import moment from 'moment';
 import { SEBrowser } from '../../../global';
 import { AssetNoteSlice, EventNoteSlice, LocationNoteSlice, MeterNoteSlice } from '../../../Store';
 import { OpenXDA } from '@gpa-gemstone/application-typings';
@@ -48,22 +47,22 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
 
 
     React.useEffect(() => {
-        let idHandle = getIDs();
+        const idHandle = getIDs();
         return () => { if (idHandle != null && idHandle.abort != null) idHandle.abort(); }
     }, [props.eventID])
 
     React.useEffect(() => {
-        let typeHandle = getNoteType();
+        const typeHandle = getNoteType();
         return () => { if (typeHandle != null && typeHandle.abort != null) typeHandle.abort(); }
     }, []);
 
     React.useEffect(() => {
-        let tagHandle = getNoteTag();
+        const tagHandle = getNoteTag();
         return () => { if (tagHandle != null && tagHandle.abort != null) tagHandle.abort(); }
     }, []);
 
     React.useEffect(() => {
-        let appHandle = getNoteApp();
+        const appHandle = getNoteApp();
         return () => { if (appHandle != null && appHandle.abort != null) appHandle.abort(); }
     }, []);
 
@@ -72,7 +71,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
             setNoteType(noteTypes[0]);
     }, [noteTypes, noteType])
     function getNoteType(): JQuery.jqXHR<OpenXDA.Types.NoteType[]> {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/OpenXDA/NoteType`,
             contentType: "application/json; charset=utf-8",
@@ -93,7 +92,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
     }
 
     function getNoteApp(): JQuery.jqXHR<OpenXDA.Types.NoteApplication[]> {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/OpenXDA/NoteApp`,
             contentType: "application/json; charset=utf-8",
@@ -103,7 +102,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
         });
 
         handle.done((d: OpenXDA.Types.NoteApplication[]) => {
-            let record = d.find(r => r.Name == "SEbrowser")
+            const record = d.find(r => r.Name == "SEbrowser")
             setNoteApp(record);
         });
 
@@ -111,7 +110,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
     }
 
     function getNoteTag(): JQuery.jqXHR<OpenXDA.Types.NoteTag[]> {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/OpenXDA/NoteTag`,
             contentType: "application/json; charset=utf-8",
@@ -131,7 +130,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
     }
 
     function getIDs(): JQuery.jqXHR {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/OpenXDA/GetEventInformation/${props.eventID}`,
             cache: true,

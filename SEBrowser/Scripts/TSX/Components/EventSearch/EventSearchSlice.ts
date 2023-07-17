@@ -374,7 +374,7 @@ function computeReset(state: Redux.EventSearchState, eventTypes: SEBrowser.Event
 function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: number[],
     time: SEBrowser.IReportTimeFilter, assets: SystemCenter.Types.DetailedAsset[], groups: OpenXDA.Types.AssetGroup[],
     meters: SystemCenter.Types.DetailedMeter[], stations: SystemCenter.Types.DetailedLocation[]): any {
-    let result: any = {};
+    const result: any = {};
     if (assets.length > 0 && assets.length < 100) {
         let i = 0;
         assets.forEach(a => {
@@ -477,7 +477,7 @@ function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type:
 }
 
 function parseList(key: string, object: any) {
-    let result = [];
+    const result = [];
     let i = 0;
 
     while (object[key + i] != null) {

@@ -47,7 +47,7 @@ const RelayReport = (props: {}) => {
     const [timeWindowUnits, setTimeWindowUnits] = React.useState<number>(0);
 
     React.useEffect(() => {
-        var query = queryString.parse(history.search.replace("?", ""), "&", "=");
+        const query = queryString.parse(history.search.replace("?", ""), "&", "=");
         setBreakerID(query['breakerid'] != undefined ? parseInt(query['breakerid'] as string) : -1);
         setChannelID(query['channelid'] != undefined ? parseInt(query['channelid'] as string) : -1);
         setDate(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat));
@@ -64,8 +64,8 @@ const RelayReport = (props: {}) => {
             windowSize, timeWindowUnits
         };
 
-        let q = queryString.stringify(state, "&", "=");
-        let handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
+        const q = queryString.stringify(state, "&", "=");
+        const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
 
     }, [BreakerID, ChannelID, StationId, date, time,

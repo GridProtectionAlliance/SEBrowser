@@ -178,14 +178,14 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) 
             mode: "time",
             reserveSpace: false,
             ticks: (axis) => {
-                var ticks = [],
+                let ticks = [],
                     delta = (axis.max - axis.min) / 11,
                     start = floorInBase(axis.min, axis.delta),
                     i = 0,
                     v = Number.NaN,
                     prev;
 
-                for (var i = 1; i < 11; ++i) {
+                for (let i = 1; i < 11; ++i) {
                     ticks.push(axis.min + i * delta);
                 }
 
@@ -239,9 +239,9 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) 
         if (label.indexOf('IR') >= 0) return '#c3c3c3';
 
         else {
-            var ranNumOne = Math.floor(Math.random() * 256).toString(16);
-            var ranNumTwo = Math.floor(Math.random() * 256).toString(16);
-            var ranNumThree = Math.floor(Math.random() * 256).toString(16);
+            const ranNumOne = Math.floor(Math.random() * 256).toString(16);
+            const ranNumTwo = Math.floor(Math.random() * 256).toString(16);
+            const ranNumThree = Math.floor(Math.random() * 256).toString(16);
 
             return `#${(ranNumOne.length > 1 ? ranNumOne : "0" + ranNumOne)}${(ranNumTwo.length > 1 ? ranNumTwo : "0" + ranNumTwo)}${(ranNumThree.length > 1 ? ranNumThree : "0" + ranNumThree)}`;
         }
@@ -255,7 +255,7 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) 
         $(this.refs.L1window).children().remove();
         $(this.refs.L2window).children().remove();
         */
-        var pixels = (window.innerWidth - 300 - 40) / 2;
+        const pixels = (window.innerWidth - 300 - 40) / 2;
 
         service.getStatisticData(props.eventid, pixels, "History").then(data => {
 
@@ -265,11 +265,11 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) 
             }
             setShowRelayHistory(true);
 
-            var tripTimeVessel = [];
-            var pickupTimeVessel = [];
-            var tripCoilConditionVessel = [];
-            var l1Vessel = [];
-            var l2Vessel = [];
+            const tripTimeVessel = [];
+            const pickupTimeVessel = [];
+            const tripCoilConditionVessel = [];
+            const l1Vessel = [];
+            const l2Vessel = [];
 
             $.each(data.Data, (index, value) => {
                 if (value.MeasurementType == "TripTime") { tripTimeVessel.push({ label: value.ChartLabel, data: value.DataPoints, color: this.getColor(value.ChartLabel) }) }

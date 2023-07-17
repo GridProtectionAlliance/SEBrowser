@@ -49,7 +49,7 @@ const EventSearchTypeFilters = (props: IProps) => {
 
     React.useEffect(() => {
         let navHeight = props.Height;
-        let heights = evtTypeCategories.map(h => h.height);
+        const heights = evtTypeCategories.map(h => h.height);
         if (heights.some(h => h > navHeight))
             navHeight = Math.max(...heights);
 
@@ -124,7 +124,7 @@ const EventSearchTypeFilters = (props: IProps) => {
         const index = evtTypeCategories.findIndex(c => c.label == label)
         if (index > -1 && evtTypeCategories[index].height != h)
             setEvtTypeCategories((d) => {
-                let u = _.cloneDeep(d);
+                const u = _.cloneDeep(d);
                 u[index].height = h;
                 return u;
             })

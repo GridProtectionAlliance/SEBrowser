@@ -66,7 +66,7 @@ export default function About () {
 	                        to next event in the openXDA base globally (for all DFRs, PQ Meters, etc.),
 	                        i.e., what havened immediately previously or next on the system relative to the current waveform-of-focus.  A selection of "asset" (or "line") limits this navigation to just events on this asset.
 	                        A selection of "meter" limits this navigation to just events recored by this substation device.</li>
-                                <li><u>Chart Trace Section</u> - To the right of each chart, the user has the ability to turn on and off individual traces.  Tabs are provided to organize these selections by data type.</li>
+                            <li><u>Chart Trace Section</u> - To the right of each chart, the user has the ability to turn on and off individual traces.  Tabs are provided to organize these selections by data type.</li>
                         </ul>
 
                         <p>

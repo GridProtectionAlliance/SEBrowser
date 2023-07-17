@@ -28,7 +28,7 @@ import EventSearchAssetVoltageDisturbances from './EventSearchAssetVoltageDistur
 import EventSearchFaultSegments from './EventSearchAssetFaultSegments';
 import EventSearchCorrelatedSags from './EventSearchCorrelatedSags';
 import EventSearchRelayPerformance from './EventSearchRelayPerformance';
-import { OpenXDA, Redux, SEBrowser } from '../../../global'
+import { Redux, SEBrowser } from '../../../global'
 import EventSearchBreakerPerformance from './EventSearchBreakerPerformance';
 import EventSearchFileInfo from './EventSearchFileInfo';
 import TVAESRIMap from './TVA/ESRIMap';

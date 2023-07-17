@@ -67,7 +67,7 @@ const StructureInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
         setSelectedIndex(parseInt(event.target.value));
     };
 
-    let test = '\\\\Images\\noimage.jpg';
+    const test = '\\\\Images\\noimage.jpg';
 
     return (
         <div className="card">

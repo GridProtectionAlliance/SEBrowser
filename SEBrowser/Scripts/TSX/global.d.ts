@@ -20,18 +20,17 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-import { Application, SystemCenter, OpenXDA as XDA } from '@gpa-gemstone/application-typings';
-import { IGenericSlice } from '@gpa-gemstone/common-pages/lib/SliceInterfaces';
+import { SystemCenter, OpenXDA as XDA } from '@gpa-gemstone/application-typings';
 import { IGenericSliceState } from '@gpa-gemstone/react-interactive';
 
 declare global {
-    var homePath: string;
-    var xdaInstance: string;
-    var scInstance: string;
-    var openSEEInstance: string;
-    var faultLocationInstance: string;
-    var controllerViewPath: string;
-    var version: string;
+    let homePath: string;
+    let xdaInstance: string;
+    let scInstance: string;
+    let openSEEInstance: string;
+    let faultLocationInstance: string;
+    let controllerViewPath: string;
+    let version: string;
 
     namespace queryString {
         function parse(str: string, opts?: object): object

@@ -44,7 +44,7 @@ const LSC: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }, [props.eventID, ]);
 
     function GetData() {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/LSC/${props.eventID}`,
             contentType: "application/json; charset=utf-8",

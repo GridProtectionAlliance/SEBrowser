@@ -36,7 +36,7 @@ const EventSearchFileInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }, [props.eventID]);
 
     function GetData() {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/OpenXDA/GetFileName/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
@@ -47,7 +47,7 @@ const EventSearchFileInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
 
        handle.done(data => setFileName(data));
 
-        let handle2 = $.ajax({
+        const handle2 = $.ajax({
             type: "GET",
             url: `${homePath}api/OpenXDA/GetMappedChannels/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
@@ -58,7 +58,7 @@ const EventSearchFileInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
 
         handle2.done(data => setMappedChannels(data));
 
-        let handle3 = $.ajax({
+        const handle3 = $.ajax({
             type: "GET",
             url: `${homePath}api/OpenXDA/GetMeterConfiguration/${props.eventID}`,
             contentType: "application/json; charset=utf-8",

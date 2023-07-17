@@ -26,11 +26,9 @@ import Table from './Table';
 import SEBrowserService from './../../TS/Services/SEBrowser';
 import moment from 'moment';
 
-declare var xdaInstance: string;
-declare var homePath: string;
+declare let xdaInstance: string;
+declare let homePath: string;
 
-const updateInterval = 300000;
-const rowsPerPage = 7;
 //const autoUpdate = setInterval(
 //    function () {
 //        //buildMeterActivityTables();
@@ -99,19 +97,20 @@ class MostActiveMeters extends React.Component<{}, { meterTable: Array<MostActiv
     }
 
     resize() {
-        var headerHeight = $(this.refs.divElement).find('th').innerHeight();
-        if (headerHeight == headerHeight) rowHeight = 43;
+        const headerHeight = $(this.refs.divElement).find('th').innerHeight();
 
         const height = $(this.refs.divElement).height() - headerHeight;
 
-        var rowHeight = $(this.refs.divElement).find('td').innerHeight();
+        let rowHeight = $(this.refs.divElement).find('td').innerHeight();
+        if (headerHeight == headerHeight) rowHeight = 43;
+
         if (rowHeight == undefined) rowHeight = 48;
 
         this.setState({ rowsPerPage: Math.floor(height / rowHeight) }, () => this.createTableRows());
     }
 
     createContent(item, key: keyof (MostActiveMeterActivityRow)) {
-        var context = '';
+        let context = '';
         if (key == '24Hours') {
             context = '24h';
         }
@@ -203,12 +202,12 @@ class LeastActiveMeters extends React.Component<{}, { meterTable: Array<LeastAct
 
 
     resize() {
-        var headerHeight = $(this.refs.divElement).find('th').innerHeight();
-        if (headerHeight == headerHeight) rowHeight = 43;
+        const headerHeight = $(this.refs.divElement).find('th').innerHeight();
 
         const height = $(this.refs.divElement).height() - headerHeight;
 
-        var rowHeight = $(this.refs.divElement).find('td').innerHeight();
+        let rowHeight = $(this.refs.divElement).find('td').innerHeight();
+        if (headerHeight == headerHeight) rowHeight = 43;
         if (rowHeight == undefined) rowHeight = 48;
 
         this.setState({ rowsPerPage: Math.floor(height / rowHeight) }, () => this.createTableRows());
@@ -222,7 +221,7 @@ class LeastActiveMeters extends React.Component<{}, { meterTable: Array<LeastAct
     }
 
     createContent(item: LeastActiveMeterActivityRow, key: keyof(LeastActiveMeterActivityRow)) {
-        var context = '';
+        let context = '';
         if (key == '180Days') {
             context = '180d';
         }
@@ -327,22 +326,22 @@ const ListItem = (props: { CreationTime: string, FilePath: string, FileGroupID: 
 
     React.useEffect(() => {
         seBrowserService.getFileGroupEvents(props.FileGroupID).done(data => {
-            var arr = data.map(x => <tr key={x.ID} ><td><a style={{ color: 'blue' }} href={homePath + 'Main/OpenSEE?eventid=' + x.ID} target="_blank">{x.LineName}</a></td><td>{moment.utc(x.StartTime).format('MM/DD/YY HH:mm:ss')}</td><td>{x.EventTypeName}</td></tr>);
+            const arr = data.map(x => <tr key={x.ID} ><td><a style={{ color: 'blue' }} href={homePath + 'Main/OpenSEE?eventid=' + x.ID} target="_blank">{x.LineName}</a></td><td>{moment.utc(x.StartTime).format('MM/DD/YY HH:mm:ss')}</td><td>{x.EventTypeName}</td></tr>);
             setEventTable(arr);
         });
     }, []);
 
     function buildFileGroupContent(row) {
-        var filepathParts = row.FilePath.split('\\');
-        var fullFilename = filepathParts[filepathParts.length - 1];
-        var filenameParts = fullFilename.split('.');
-        var filenameWithoutExtension = filenameParts.splice(0, filenameParts.length - 1).join('.');
-        var filenameParts = filenameWithoutExtension.split(',');
-        var shortFilename = "";
+        const filepathParts = row.FilePath.split('\\');
+        const fullFilename = filepathParts[filepathParts.length - 1];
+        let filenameParts = fullFilename.split('.');
+        const filenameWithoutExtension = filenameParts.splice(0, filenameParts.length - 1).join('.');
+        filenameParts = filenameWithoutExtension.split(',');
+        let shortFilename = "";
 
         // This is to eliminate the timestamp in the fullFilename for the shortFilename
-        var inTimestamp = true;
-        for (var i = 0; i < filenameParts.length; i++) {
+        let inTimestamp = true;
+        for (let i = 0; i < filenameParts.length; i++) {
             if (inTimestamp) {
                 if (!(/^-?\d/.test(filenameParts[i]))) {
                     inTimestamp = false;
@@ -358,7 +357,7 @@ const ListItem = (props: { CreationTime: string, FilePath: string, FileGroupID: 
             shortFilename = filenameWithoutExtension;
         }
 
-        var html = <a href={xdaInstance + '/Workbench/DataFiles.cshtml'} title={fullFilename} style={{ color: 'blue' }} target="_blank">{shortFilename}</a>;
+        const html = <a href={xdaInstance + '/Workbench/DataFiles.cshtml'} title={fullFilename} style={{ color: 'blue' }} target="_blank">{shortFilename}</a>;
 
         return html;
     }

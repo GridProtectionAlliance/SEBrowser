@@ -10,7 +10,7 @@ const AssetHistoryTable: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [assetName, setAssetName] = React.useState<string>('');
 
     React.useEffect(() => {
-        let handle = getHistoryData();
+        const handle = getHistoryData();
         handle.done((data) => {
             setHistoryData(data);
 

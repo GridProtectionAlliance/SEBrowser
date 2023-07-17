@@ -25,7 +25,6 @@
 
 import React from 'react';
 import EventSearchList from './EventSearchList';
-import { History } from 'history';
 import EventSearchNavbar from './EventSearchNavbar';
 import EventPreviewPane from './EventSearchPreview/EventSearchPreviewPane';
 import queryString from 'querystring';
@@ -54,7 +53,7 @@ const EventSearch = (props: IProps) => {
     const evtList = useAppSelector(SelectEventList);
 
     React.useEffect(() => {
-        var query = queryString.parse(history.search.replace("?",""), "&", "=", { decodeURIComponent: queryString.unescape });
+        const query = queryString.parse(history.search.replace("?",""), "&", "=", { decodeURIComponent: queryString.unescape });
 
         dispatch(ProcessQuery(query));
 
@@ -67,8 +66,8 @@ const EventSearch = (props: IProps) => {
 
    
     React.useEffect(() => {
-        let q = queryString.stringify(queryParam, "&", "=", { encodeURIComponent: queryString.escape });
-        let handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
+        const q = queryString.stringify(queryParam, "&", "=", { encodeURIComponent: queryString.escape });
+        const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
     }, [queryParam])
 

@@ -22,7 +22,6 @@
 //******************************************************************************************************
 import * as React from 'react';
 import _ from 'lodash';
-import moment from 'moment';
 
 import SEBrowserService from './../../../TS/Services/SEBrowser';
 import { Modal } from '@gpa-gemstone/react-interactive';
@@ -123,7 +122,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
 
     setCapBank(capBankId: number) {
        
-        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        const object = _.clone(this.props) as CapBankReportNavBarProps;
         object.CapBankID = capBankId;
         object.selectedBank = -1;
         if (this.state.capBanks.find(cB => cB.Id == capBankId) != null)
@@ -133,35 +132,35 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
     }
 
     setBankNumber(capBankNumber: number) {
-        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        const object = _.clone(this.props) as CapBankReportNavBarProps;
         object.selectedBank = capBankNumber;
         this.props.stateSetter({ searchBarProps: object });
     }
 
     setDate(date: string) {
 
-        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        const object = _.clone(this.props) as CapBankReportNavBarProps;
         object.date = date;
         this.props.stateSetter({ searchBarProps: object });
     }
 
     setTime(time: string) {
 
-        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        const object = _.clone(this.props) as CapBankReportNavBarProps;
         object.time = time;
         this.props.stateSetter({ searchBarProps: object });
     }
 
     setTimeWindowUnits(timeWindowUnits: number) {
 
-        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        const object = _.clone(this.props) as CapBankReportNavBarProps;
         object.timeWindowUnits = timeWindowUnits;
         this.props.stateSetter({ searchBarProps: object });
     }
 
     setWindowSize(windowSize: number) {
 
-        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        const object = _.clone(this.props) as CapBankReportNavBarProps;
         object.windowSize = windowSize;
         this.props.stateSetter({ searchBarProps: object });
     }
@@ -180,7 +179,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
     }
 
     setStation(id: number) {
-        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        const object = _.clone(this.props) as CapBankReportNavBarProps;
         object.StationId = id;
         this.props.stateSetter({ searchBarProps: object });
         this.getCapBankData(id);
@@ -188,7 +187,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
    
     render() {
 
-        let bankOptions: Array<JSX.Element> = [];
+        const bankOptions: Array<JSX.Element> = [];
         let i = 1;
         let n = 1;
         if (this.state.capBanks.find(cB => cB.Id == this.props.CapBankID) != null)
@@ -295,7 +294,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                     <div style={{ width: '100%', display: 'inline-flex' }}>
                         <div style={{ width: '10%', paddingRight: 10 }}>
                             <CBEventFilter activeFilter={this.props.PhaseFilter} showAll={true} Label={'Phase'} setter={(result) => {
-                                var object = _.clone(this.props) as CapBankReportNavBarProps;
+                                const object = _.clone(this.props) as CapBankReportNavBarProps;
                                 object.PhaseFilter = result;
                                 this.props.stateSetter({ searchBarProps: object });
                             }}
@@ -307,7 +306,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                         </div>
                         <div style={{ width: '15%', paddingRight: 10 }}>
                             <CBEventFilter activeFilter={this.props.StatFilt} showAll={true} Label={'Status'} setter={(result) => {
-                                var object = _.clone(this.props) as CapBankReportNavBarProps;
+                                const object = _.clone(this.props) as CapBankReportNavBarProps;
                                 object.StatFilt = result;
                                 this.props.stateSetter({ searchBarProps: object });
                             }}
@@ -328,7 +327,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                         </div>
                         <div style={{ width: '15%', paddingRight: 10 }}>
                             <CBEventFilter activeFilter={this.props.OpFilt} showAll={true} Label={'Operation'} setter={(result) => {
-                                var object = _.clone(this.props) as CapBankReportNavBarProps;
+                                const object = _.clone(this.props) as CapBankReportNavBarProps;
                                 object.OpFilt = result;
                                 this.props.stateSetter({ searchBarProps: object });
                             }}
@@ -342,7 +341,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                         </div>
                         <div style={{ width: '15%', paddingRight: 10 }}>
                             <CBEventFilter activeFilter={this.props.ResFilt} showAll={false} Label={'Resonance'} setter={(result) => {
-                                var object = _.clone(this.props) as CapBankReportNavBarProps;
+                                const object = _.clone(this.props) as CapBankReportNavBarProps;
                                 object.ResFilt = result;
                                 this.props.stateSetter({ searchBarProps: object });
                             }}
@@ -353,7 +352,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                         </div>
                         <div style={{ width: '15%', paddingRight: 10 }}>
                             <CBEventFilter activeFilter={this.props.HealthFilt} showAll={true} Label={'Capacitor Bank Health'} setter={(result) => {
-                                var object = _.clone(this.props) as CapBankReportNavBarProps;
+                                const object = _.clone(this.props) as CapBankReportNavBarProps;
                                 object.HealthFilt = result;
                                 this.props.stateSetter({ searchBarProps: object });
                             }}
@@ -366,7 +365,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                         </div>
                         <div style={{ width: '15%', paddingRight: 10 }}>
                             <CBEventFilter activeFilter={this.props.RestFilt} showAll={true} Label={'Restrike'} setter={(result) => {
-                                var object = _.clone(this.props) as CapBankReportNavBarProps;
+                                const object = _.clone(this.props) as CapBankReportNavBarProps;
                                 object.RestFilt = result;
                                 this.props.stateSetter({ searchBarProps: object });
                             }}
@@ -380,7 +379,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                         </div>
                         <div style={{ width: '15%', paddingRight: 10 }}>
                             <CBEventFilter activeFilter={this.props.PISFilt} showAll={true} Label={'Switching Health'} setter={(result) => {
-                                var object = _.clone(this.props) as CapBankReportNavBarProps;
+                                const object = _.clone(this.props) as CapBankReportNavBarProps;
                                 object.PISFilt = result;
                                 this.props.stateSetter({ searchBarProps: object });
                             }}
@@ -429,7 +428,7 @@ const CBEventFilter = (props: { filters: Array<IFilter>, Label: string, showAll:
     }
 
     function mapState(filter: IFilter) {
-        let state: boolean = true;
+        let state = true;
 
         filter.Values.forEach(item => {
             if (!props.activeFilter.includes(item))

@@ -148,7 +148,7 @@ const EventSearchOpenSEE: React.FC<SEBrowser.IWidget<any>> = (props) => {
     
 
             // overwrite options if new options are available
-            let state: IPartialOpenseeSettings = JSON.parse(serializedState);
+            const state: IPartialOpenseeSettings = JSON.parse(serializedState);
 
             Object.keys(defaultSettings.Colors).forEach((key) => {
                 if (state.Colors[key] == undefined)

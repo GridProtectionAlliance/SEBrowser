@@ -24,7 +24,7 @@ import * as React from 'react';
 import { SEBrowser } from '../global';
 import moment from 'moment';
 import momentTZ from 'moment-timezone';
-import { TimePicker, DatePicker, Select, Input } from '@gpa-gemstone/react-forms'
+import { DatePicker, Select, Input } from '@gpa-gemstone/react-forms'
 import { useSelector } from 'react-redux';
 import { SelectTimeZone } from './SettingsSlice';
 

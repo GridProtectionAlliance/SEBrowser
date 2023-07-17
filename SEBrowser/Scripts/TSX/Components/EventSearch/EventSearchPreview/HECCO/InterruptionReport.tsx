@@ -42,7 +42,7 @@ const InterruptionReport: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [hours, setHours] = React.useState<number>(6);
 
     React.useEffect(() => {
-        let handle = getData();
+        const handle = getData();
         return () => { if (handle != null && handle.abort != null) handle.abort();}
     }, [hours])
 

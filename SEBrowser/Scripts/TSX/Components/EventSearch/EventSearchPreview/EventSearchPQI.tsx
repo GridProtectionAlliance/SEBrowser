@@ -22,7 +22,6 @@
 //******************************************************************************************************
 
 import React from 'react';
-import moment from 'moment';
 import Table from '@gpa-gemstone/react-table';
 import { PQI } from '@gpa-gemstone/application-typings';
 import { SEBrowser } from '../../../global';
