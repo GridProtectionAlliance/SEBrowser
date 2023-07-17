@@ -34,7 +34,8 @@ interface IFaultSegment {
 }
 const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
 
-    const [tableRows, setTableRows] = React.useState<JSX.Element[]>([]);
+const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<any>> = (props) => {
+    const [data, setData] = React.useState<IFaultSegment[]>([]);
     const [count, setCount] = React.useState<number>(0);
     const [handle, setHandle] = React.useState<JQuery.jqXHR>();
 
@@ -42,8 +43,14 @@ const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<unknown>> = (pro
 
     React.useEffect(() => {
         if (props.eventID >= 0) {
-            createTableRows(props.eventID);
+            const handle = seBrowserService.getEventSearchAsssetFaultSegmentsData(props.eventID).done((data: IFaultSegment[]) => {
+                setData(data);
+                setCount(data.length);
+            });
+
+            setHandle(handle);
         }
+
         return () => {
             if (handle?.abort != undefined) {
                 handle.abort();
@@ -51,28 +58,9 @@ const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<unknown>> = (pro
         };
     }, [props.eventID]);
 
-    const createTableRows = (eventID: number) => {
-        const handle = seBrowserService.getEventSearchAsssetFaultSegmentsData(eventID).done((data) => {
-            const rows = data.map((d, i) => (
-                <tr key={i}>
-                    <td>{d.SegmentType}</td>
-                    <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
-                    <td>{moment(d.EndTime).format('HH:mm:ss.SSS')}</td>
-                    <td>{(moment(d.EndTime).diff(moment(d.StartTime)) / 16.66667).toFixed(1)}</td>
-                </tr>
-            ));
-
-            setTableRows(rows);
-            setCount(rows.length);
-        });
-
-        setHandle(handle);
-    };
-
     return (
         <div className="card" style={{ display: count > 0 ? 'block' : 'none' }}>
             <div className="card-header">Fault Evolution Summary:</div>
-
             <div className="card-body">
                 <table className="table">
                     <thead>
@@ -88,7 +76,6 @@ const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<unknown>> = (pro
             </div>
         </div>
     );
-
 }
 
 export default EventSearchAssetFaultSegments;
