@@ -48,7 +48,7 @@ const EventSearchCapBankAnalyticOverview: React.FC<SEBrowser.IWidget<unknown>> =
 
 
     return (
-        <div className="card" style={{ maxHeight: props.maxHeight ?? 500, overflowY: 'auto' }}>
+        <div className="card" >
             <div className="card-header">EPRI Capacitor Bank Analytic:</div>
             <div className="card-body">
                 <Table
@@ -68,7 +68,7 @@ const EventSearchCapBankAnalyticOverview: React.FC<SEBrowser.IWidget<unknown>> =
                     ascending={true}
                     tableClass="table"
                     theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
-                    tbodyStyle={{ display: 'table', overflowY: 'scroll', width: '100%' }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500 }}
                     rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                 />
             </div>
