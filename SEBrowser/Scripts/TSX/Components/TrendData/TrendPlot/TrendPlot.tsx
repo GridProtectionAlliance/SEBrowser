@@ -122,7 +122,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         const constructLabel: (channel: SEBrowser.ITrendChannel) => string = (channel) => {
             let label: string = channel.Name;
             label = (useAssetAppend ? `${channel.AssetName} - ` : "") + label;
-            label = (useMeterAppend ? `${channel.MeterName} - ` : "") + label;
+            label = (useMeterAppend ? `${channel.MeterShortName ?? channel.MeterName} - ` : "") + label;
             return label;
         };
 
