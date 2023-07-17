@@ -97,34 +97,27 @@ const LineParameters: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
                 <a className="pull-right" target="_blank" href={`${scInstance}?name=Asset&AssetID=${lineParameters.ID}`}>Line Configuration Via System Center</a>
             </div>
             <div className="card-body">
-                <table className='table'>
-                    <thead>
-                        <tr><th style={{textAlign: 'center'}}colSpan={5}>Pos-Seq Imp (LLL,LLLG,LL,LLG)</th></tr>
-                        <tr><th>Length (mi)</th><th>Z1 (Ohm)</th><th>Ang (Deg)</th><th>R1 (Ohm)</th><th>X1 (Ohm)</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>{lineParameters.Length}</td><td>{Math.sqrt(lineParameters.R1 ^ 2 + lineParameters.X1 ^ 2).toFixed(3)}</td><td>{Math.atan((lineParameters.X1/lineParameters.R1)*180/Math.PI).toFixed(3)}</td><td>{lineParameters.R1.toFixed(4)}</td><td>{lineParameters.X1.toFixed(4)}</td></tr>
-                        <tr><td>Per Mile</td><td>{(Math.sqrt(lineParameters.R1 ^ 2 + lineParameters.X1 ^ 2)/lineParameters.Length).toFixed(3)}</td><td>-</td><td>{(lineParameters.R1/lineParameters.Length).toFixed(4)}</td><td>{(lineParameters.X1/lineParameters.Length).toFixed(4)}</td></tr>
-                    </tbody>
-                </table>
-                <table className='table'>
-                    <thead>
-                        <tr><th style={{ textAlign: 'center' }}colSpan={5}>Zero-Seq Imp</th></tr>
-                        <tr><th>Length (mi)</th><th>Z0 (Ohm)</th><th>Ang (Deg)</th><th>R0 (Ohm)</th><th>X0 (Ohm)</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>{lineParameters.Length}</td><td>{Math.sqrt(lineParameters.R0 ^ 2 + lineParameters.X0 ^ 2).toFixed(3)}</td><td>{Math.atan((lineParameters.X0 / lineParameters.R0) * 180 / Math.PI).toFixed(3)}</td><td>{lineParameters.R0.toFixed(4)}</td><td>{lineParameters.X0.toFixed(4)}</td></tr>
-                        <tr><td>Per Mile</td><td>{(Math.sqrt(lineParameters.R0 ^ 2 + lineParameters.X0 ^ 2) / lineParameters.Length).toFixed(3)}</td><td>-</td><td>{(lineParameters.R0 / lineParameters.Length).toFixed(4)}</td><td>{(lineParameters.X0 / lineParameters.Length).toFixed(4)}</td></tr>
-                    </tbody>
-                </table>
-                <table className='table'>
-                    <thead>
-                        <tr><th style={{ textAlign: 'center' }}colSpan={5}>Loop Imp (LG)</th></tr>
-                        <tr><th>Length (mi)</th><th>ZS (Ohm)</th><th>Ang (Deg)</th><th>RS (Ohm)</th><th>XS (Ohm)</th></tr>
-                    </thead>
-                    {LoopImp()}
-                </table>
-
+                <Table<ILoopImpedance>
+                    cols={[
+                        { key: 'Length', field: 'Length', label: 'Length (mi)' },
+                        { key: 'ZS', field: 'ZS', label: 'ZS (Ohm)' },
+                        { key: 'Ang', field: 'Ang', label: 'Ang (Deg)' },
+                        { key: 'RS', field: 'RS', label: 'RS (Ohm)' },
+                        { key: 'XS', field: 'XS', label: 'XS (Ohm)' },
+                        { key: 'PerMileZS', field: 'PerMileZS', label: 'Per Mile ZS' },
+                        { key: 'PerMileRS', field: 'PerMileRS', label: 'Per Mile RS' },
+                        { key: 'PerMileXS', field: 'PerMileXS', label: 'Per Mile XS' }
+                    ]}
+                    data={[LoopImp()]} 
+                    onClick={() => { }}
+                    onSort={() => { }}
+                    sortKey={''}
+                    ascending={true}
+                    tableClass="table"
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.maxHeight ?? 500, width: '100%' }}
+                    rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                />
             </div>
         </div>
     );
