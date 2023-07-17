@@ -383,7 +383,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             const selectedChannels = trendChannels.filter(chan => selectedSet.has(chan.ID));
                             props.AddNewCharts([{
                                 TimeFilter: timeFilter, Type: 'Line', Channels: selectedChannels, ID: CreateGuid(), Height: 50, Width: 50,
-                                PlotFilter: linePlotOptions, Title: `${selectedChannels.length} Channel Line Plot`
+                                PlotFilter: linePlotOptions
                             }]);
                         }}>
                         <span>{SVGIcons.Document}</span>
@@ -414,7 +414,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                                 meterPlotChannels.map(channelList => {
                                     return ({
                                         TimeFilter: timeFilter, Type: 'Line', Channels: channelList, ID: CreateGuid(), Height: 50, Width: 50,
-                                        PlotFilter: linePlotOptions, Title: `${channelList.length} Channel Line Plot`
+                                        PlotFilter: linePlotOptions
                                     });
                                 })
                             );

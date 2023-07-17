@@ -101,6 +101,7 @@ namespace SEBrowser.Controllers.OpenXDA
                         Meter.ID as MeterID,
 	                    Meter.AssetKey AS MeterKey,
 	                    Meter.Name AS MeterName,
+                        Meter.ShortName AS MeterShortName,
 	                    Phase.Name AS Phase,
 	                    ChannelGroup.Name AS ChannelGroup,
 	                    ChannelGroupType.DisplayName AS ChannelGroupType

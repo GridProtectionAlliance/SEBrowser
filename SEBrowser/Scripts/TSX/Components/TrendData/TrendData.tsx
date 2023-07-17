@@ -27,16 +27,14 @@ import { TrendPlot, ITrendPlot } from './TrendPlot/TrendPlot';
 import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
 import AllSettingsModal from './AllSettingsModal';
 
-interface IProps { }
-
-const TrendData = (props: IProps) => {
+const TrendData = () => {
     const closureHandler = React.useRef<((o: boolean) => void)>(() => { });
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
     const [navHeight, setNavHeight] = React.useState<number>(0);
     const [plotList, setPlotList] = React.useState<ITrendPlot[]>([]);
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
-    const overlayPortalID: string = "TrendDataChartPortal";
-    const overlayDrawer: string = "TrendDataNavbar";
+    const overlayPortalID = "TrendDataChartPortal";
+    const overlayDrawer = "TrendDataNavbar";
 
     function getShowNav(): boolean {
         if (localStorage.hasOwnProperty('SEbrowser.TrendData.ShowNav'))
@@ -68,6 +66,16 @@ const TrendData = (props: IProps) => {
     }), [plotList]);
 
     const concatNewContainers = React.useCallback(((newContainers: ITrendPlot[]) => {
+        for (const container of newContainers) {
+            if (container.Channels.length === 0) continue;
+            let title = container.Channels.some(channel => channel.MeterID !== container.Channels[0].MeterID) ?
+                "Multi-Meter " : (container.Channels[0].MeterShortName ?? container.Channels[0].MeterName);
+            title += container.Channels.some(channel => channel.AssetID !== container.Channels[0].AssetID) ?
+                "" : ` - ${container.Channels[0].AssetName}`
+            title += container.Channels.some(channel => channel.ChannelGroup !== container.Channels[0].ChannelGroup) ?
+                "" : ` - ${container.Channels[0].ChannelGroup}`
+            container.Title = title;
+        }
         setPlotList(plotList.concat(newContainers));
     }), [plotList, setPlotList]);
 
