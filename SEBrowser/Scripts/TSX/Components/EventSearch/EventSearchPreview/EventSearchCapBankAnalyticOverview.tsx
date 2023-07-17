@@ -26,32 +26,15 @@ import OpenSEEService from '../../../../TS/Services/OpenSEE';
 import { SEBrowser } from '../../../global';
 import Table from '@gpa-gemstone/react-table';
 
-const Row = (row) => {
-    return (
-        <tr key={row.ID}>
-            <td key={'Phase' + row.ID}>{row.Phase}</td>
-            <td key={'Status' + row.ID}>{row.Status}</td>
-            <td key={'Operation' + row.ID}>{row.Operation}</td>
-            <td key={'Resonance' + row.ID}>{(row.Resonance ? 'Yes' : 'No')}</td>
-            <td key={'Health' + row.ID}>{row.CapBankHealth}</td>
-            <td key={'PIS' + row.ID}>{row.PreInsertionSwitch}</td>
-            <td key={'Restrike' + row.ID}>{row.Restrike}</td>
-        </tr>
-    );
-}
-
-const HeaderRow = () => {
-    return (
-        <tr key='Header'>
-            <th key='Phase'>Phase</th>
-            <th key='Status'>Analysis Status</th>
-            <th key='Operation'>Capacitor Bank Operation</th>
-            <th key='Resonance'>Resonance</th>
-            <th key='Health'>Capacitor Bank Health</th>
-            <th key='Restrike'>Restrike</th>
-            <th key='PIS'>PreInsertionSwitching Condition</th>
-        </tr>
-    );
+interface ICapBankAnalytic {
+    ID: number,
+    Phase: string,
+    Status: string,
+    Operation: string,
+    Resonance: boolean,
+    CapBankHealth: string,
+    PreInsertionSwitch: string,
+    Restrike: string
 }
 
 const EventSearchCapBankAnalyticOverview: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
@@ -60,38 +43,37 @@ const EventSearchCapBankAnalyticOverview: React.FC<SEBrowser.IWidget<unknown>> =
 
     React.useEffect(() => {
         if (props.eventID >= 0)
-            createTableRows(props.eventID);
+            service.getCapBankAnalytic(props.eventID).then(setData);
     }, [props.eventID]);
 
 
     return (
-        <div className="card" style={{ maxHeight: props.maxHeight ?? 500 , overflowY: 'auto'} }>
+        <div className="card" style={{ maxHeight: props.maxHeight ?? 500, overflowY: 'auto' }}>
             <div className="card-header">EPRI Capacitor Bank Analytic:</div>
             <div className="card-body">
                 <Table
-                        cols={[
-                            { key: 'Phase', field: 'Phase', label: 'Phase'},
-                            { key: 'Status', field: 'Status', label: 'Analysis Status'},
-                            { key: 'Operation', field: 'Operation', label: 'Capacitor Bank Operation'},
-                            { key: 'Resonance', field: 'Resonance', label: 'Resonance'},
-                            { key: 'Health', field: 'CapBankHealth', label: 'Capacitor Bank Health'},
-                            { key: 'Restrike', field: 'Restrike', label: 'Restrike'},
-                            { key: 'PIS', field: 'PreInsertionSwitch', label: 'PreInsertionSwitching Condition'}
-                        ]}
-                        data={data}
+                    cols={[
+                        { key: 'Phase', field: 'Phase', label: 'Phase' },
+                        { key: 'Status', field: 'Status', label: 'Analysis Status' },
+                        { key: 'Operation', field: 'Operation', label: 'Capacitor Bank Operation' },
+                        { key: 'Resonance', field: 'Resonance', label: 'Resonance' },
+                        { key: 'Health', field: 'CapBankHealth', label: 'Capacitor Bank Health' },
+                        { key: 'Restrike', field: 'Restrike', label: 'Restrike' },
+                        { key: 'PIS', field: 'PreInsertionSwitch', label: 'PreInsertionSwitching Condition' }
+                    ]}
+                    data={data}
                     onClick={() => { }}
                     onSort={() => { }}
                     sortKey={''}
                     ascending={true}
                     tableClass="table"
                     theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
-                    tbodyStyle={{ display: 'table', overflowY: 'scroll', width: '100%'}}
+                    tbodyStyle={{ display: 'table', overflowY: 'scroll', width: '100%' }}
                     rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                    />
+                />
             </div>
         </div>
-
-        );
+    );
 }
 
 export default EventSearchCapBankAnalyticOverview;
