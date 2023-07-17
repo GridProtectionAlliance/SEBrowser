@@ -87,7 +87,7 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
         Object.keys(dict).forEach((key) => {
             if (key == 'Day' || !dict[key].Show) return;
 
-            let newExtent = extent(dict[key].Data);
+            const newExtent = extent(dict[key].Data);
 
             if (yextent == null) {
                 yextent = newExtent;

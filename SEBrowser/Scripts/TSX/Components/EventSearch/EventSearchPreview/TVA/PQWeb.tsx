@@ -28,9 +28,6 @@ import { SEBrowser } from '../../../../global';
 const PQWeb: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [tab, setTab] = React.useState<'LSC' | 'All'>('LSC');
 
-    React.useEffect(() => {
-    }, [props.startTime]);
-
     return (
         <div className="card">
             <div className="card-header">PQWeb Reports:</div>

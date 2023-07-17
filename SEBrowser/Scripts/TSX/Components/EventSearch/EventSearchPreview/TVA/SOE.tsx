@@ -103,7 +103,6 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
                             { key: "Status", label: "Status", field: "Status" }
                         ]}
                         data={soeInfo.filter(si => !statusFilter[si.Status.toLowerCase()])}
-                        onClick={() => { }}
                         onSort={() => { }}
                         sortKey={'Time'}
                         ascending={true}

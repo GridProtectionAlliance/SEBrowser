@@ -44,9 +44,6 @@ interface IProps {
     setHeight: (h: number) => void
 }
 
-const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
-const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS";
 
 const EventSearchNavbar = (props: IProps) => {
     const navRef = React.useRef(null);

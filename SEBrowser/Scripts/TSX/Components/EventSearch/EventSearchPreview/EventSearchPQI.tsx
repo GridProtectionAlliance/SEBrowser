@@ -32,7 +32,7 @@ const EventSearchPQI: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [state, setState] = React.useState<('loading' | 'idle' | 'error')>('idle');
 
     React.useEffect(() => {
-        let handle = getData();
+        const handle = getData();
         return () => { if (handle != null && handle.abort != null) handle.abort(); }
     }, [])
 
@@ -67,7 +67,6 @@ const EventSearchPQI: React.FC<SEBrowser.IWidget<any>> = (props) => {
                                 { key: 'ComponentType', field: 'ComponentType', label: 'Component Type' }
                             ]}
                             data={data}
-                            onClick={() => { }}
                             onSort={() => { }}
                             sortKey={''}
                             ascending={true}

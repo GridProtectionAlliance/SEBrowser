@@ -60,7 +60,6 @@ const AssetHistoryTable: React.FC<SEBrowser.IWidget<any>> = (props) => {
                         { key: 'Link', field: 'ID', label: '', content: (d) => <a href={openSEEInstance + '?eventid=' + d.ID} target="_blank">View in OpenSEE</a> },
                     ]}
                     data={historyData}
-                    onClick={() => { }}
                     onSort={() => { }}
                     sortKey={''}
                     ascending={true}

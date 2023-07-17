@@ -318,7 +318,6 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
                         onSort={(d) => {
                             
                         }}
-                        onClick={(item) => { }}
                         theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                         tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: 'calc(30% - 100px)' }}
                         rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}

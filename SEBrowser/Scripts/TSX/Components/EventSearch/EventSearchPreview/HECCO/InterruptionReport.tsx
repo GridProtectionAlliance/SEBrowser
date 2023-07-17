@@ -111,7 +111,6 @@ const InterruptionReport: React.FC<SEBrowser.IWidget<any>> = (props) => {
                         { key: 'Explanation', field: 'Explanation', label: 'Explanation' }
                     ]}
                     data={data}
-                    onClick={() => { }}
                     onSort={() => { }}
                     sortKey={'TimeOut'}
                     ascending={true}

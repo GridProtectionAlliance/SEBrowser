@@ -71,7 +71,6 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
                         { key: 'SeverityCode', field: 'SeverityCode', label: 'Severity' },
                     ]}
                     data={data}
-                    onClick={() => { }}
                     onSort={() => { }}
                     sortKey={''}
                     ascending={true}

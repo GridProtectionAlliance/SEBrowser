@@ -48,8 +48,6 @@ export default class Table<T> extends React.Component<TableProps<T>, {}> {
         super(props);
     }
 
-    componentDidUpdate(prevProps, prevState) {
-    }
 
     render() {
         const rowComponents = this.generateRows();

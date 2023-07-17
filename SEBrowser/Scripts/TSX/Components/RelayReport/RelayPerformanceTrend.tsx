@@ -39,8 +39,7 @@ export default class RelayPerformanceTrend extends React.Component<{ breakerid: 
         if (this.props.breakerid >= 0)
             this.createTableRows(this.props.breakerid, this.props.channelid);
     }
-    componentWillUnmount() {
-    }
+
     componentWillReceiveProps(nextProps) {
         if (nextProps.breakerid >= 0)
             this.createTableRows(nextProps.breakerid, nextProps.channelid);
