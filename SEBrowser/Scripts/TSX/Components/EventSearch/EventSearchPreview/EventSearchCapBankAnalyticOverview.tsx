@@ -24,17 +24,33 @@
 import React from 'react';
 import OpenSEEService from '../../../../TS/Services/OpenSEE';
 import { SEBrowser } from '../../../global';
-import Table from '@gpa-gemstone/react-table';
 
-interface ICapBankAnalytic {
-    ID: number,
-    Phase: string,
-    Status: string,
-    Operation: string,
-    Resonance: boolean,
-    CapBankHealth: string,
-    PreInsertionSwitch: string,
-    Restrike: string
+const Row = (row) => {
+    return (
+        <tr key={row.ID}>
+            <td key={'Phase' + row.ID}>{row.Phase}</td>
+            <td key={'Status' + row.ID}>{row.Status}</td>
+            <td key={'Operation' + row.ID}>{row.Operation}</td>
+            <td key={'Resonance' + row.ID}>{(row.Resonance ? 'Yes' : 'No')}</td>
+            <td key={'Health' + row.ID}>{row.CapBankHealth}</td>
+            <td key={'PIS' + row.ID}>{row.PreInsertionSwitch}</td>
+            <td key={'Restrike' + row.ID}>{row.Restrike}</td>
+        </tr>
+    );
+}
+
+const HeaderRow = () => {
+    return (
+        <tr key='Header'>
+            <th key='Phase'>Phase</th>
+            <th key='Status'>Analysis Status</th>
+            <th key='Operation'>Capacitor Bank Operation</th>
+            <th key='Resonance'>Resonance</th>
+            <th key='Health'>Capacitor Bank Health</th>
+            <th key='Restrike'>Restrike</th>
+            <th key='PIS'>PreInsertionSwitching Condition</th>
+        </tr>
+    );
 }
 
 const EventSearchCapBankAnalyticOverview: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
@@ -43,7 +59,7 @@ const EventSearchCapBankAnalyticOverview: React.FC<SEBrowser.IWidget<unknown>> =
 
     React.useEffect(() => {
         if (props.eventID >= 0)
-            service.getCapBankAnalytic(props.eventID).then(setData);
+            createTableRows(props.eventID);
     }, [props.eventID]);
 
 
