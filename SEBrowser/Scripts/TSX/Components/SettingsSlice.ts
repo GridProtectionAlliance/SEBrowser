@@ -75,9 +75,9 @@ const settingsSlice = createSlice({
                 if (preserved.DateTimeSetting === undefined)
                     state.DateTimeSetting = 'center';
             }
-            
-            state.timeZone = action.payload[0];
-            state.eventSearch.WidgetCategories = action.payload[1];
+
+            state.timeZone = _.cloneDeep(action.payload[0]);
+            state.eventSearch.WidgetCategories = _.cloneDeep(action.payload[1]);
             return state;
         });    
         
