@@ -22,6 +22,7 @@
 //******************************************************************************************************
 
 import Table from '@gpa-gemstone/react-table';
+import { Select } from '@gpa-gemstone/react-forms';
 import moment from 'moment';
 import React from 'react';
 import { SEBrowser } from '../../../../global';
