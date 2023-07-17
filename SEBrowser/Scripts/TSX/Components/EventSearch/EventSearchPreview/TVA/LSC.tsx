@@ -67,31 +67,25 @@ const LSC: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
         <div className="card">
             <div className="card-header">Impacted LSCs:</div>
             <div className="card-body">
-                <div style={{maxHeight: 200, overflowY:'auto'}}>
-                    <table className='table'>
-                        <thead>
-                            <tr>
-                                <th>Facility</th>
-                                <th>Area</th>
-                                <th>Section</th>
-                                <th>Component</th>
-                                <th>Magnitude</th>
-                                <th>Duration</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {lscInfo.map((si, index) => <tr key={index}>
-                                <td><a target="_blank" href={openSEEInstance + '?eventid=' + si.EventID}>{si.Facility}</a></td>
-                                <td>{si.Area}</td>
-                                <td>{si.SectionTitle}</td>
-                                <td>{si.ComponentModel}</td>
-                                <td>{si.Magnitude}</td>
-                                <td>{si.Duration}</td>
-
-                            </tr>) }
-                        </tbody>
-                    </table>
-                </div>
+                <Table
+                        cols={[
+                            { key: 'Facility', field: 'Facility', label: 'Facility', content: (d: ILSC) =><a target="_blank" href={openSEEInstance + '?eventid=' + d.EventID}>{d.Facility}</a> },
+                            { key: 'Area', field: 'Area', label: 'Area'},
+                            { key: 'SectionTitle', field: 'SectionTitle', label: 'Section'},
+                            { key: 'ComponentModel', field: 'ComponentModel', label: 'Component'},
+                            { key: 'Magnitude', field: 'Magnitude', label: 'Magnitude' },
+                            { key: 'Duration', field: 'Duration', label: 'Duration'}
+                        ]}
+                        data={lscInfo}
+                    onClick={() => { }}
+                    onSort={() => { }}
+                    sortKey={''}
+                    ascending={true}
+                    tableClass="table"
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
+                    tbodyStyle={{ display: 'table', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500 }}
+                    rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                    />
             </div>
         </div>
     );
