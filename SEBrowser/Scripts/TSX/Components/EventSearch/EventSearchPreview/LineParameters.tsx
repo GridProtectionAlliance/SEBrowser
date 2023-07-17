@@ -23,6 +23,7 @@
 
 import React from 'react';
 import { SEBrowser } from '../../../global';
+import Table from '@gpa-gemstone/react-table';
 
 const LineParameters: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [hidden, setHidden] = React.useState<boolean>(true);
