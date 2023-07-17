@@ -71,8 +71,6 @@ const EventSearchCorrelatedSags: React.FC<SEBrowser.IWidget<any>> = (props) => {
     return (
         <div className="card">
             <div className="card-header">Correlated Sags:</div>
-
-            <div className="card-body">
             <div className="card-body" >
                 <Table
                         cols={[
@@ -97,7 +95,6 @@ const EventSearchCorrelatedSags: React.FC<SEBrowser.IWidget<any>> = (props) => {
                     />
             </div>
             </div>
-        </div>
     );
 };
 
