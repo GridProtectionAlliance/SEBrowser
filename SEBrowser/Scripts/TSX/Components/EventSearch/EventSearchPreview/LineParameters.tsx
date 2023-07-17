@@ -76,19 +76,23 @@ const LineParameters: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }
 
     function LoopImp() {
-        let rs = (lineParameters.R1 * 2 + lineParameters.R0) / 3;
-        let rsm = rs / lineParameters.Length;
-        let xs = (lineParameters.X1 * 2 + lineParameters.X0) / 3;
-        let xsm = xs / lineParameters.Length;
-        let zs = Math.sqrt(rs ^ 2 + xs ^ 2);
-        let zsm = zs / lineParameters.Length;
-        let angS = Math.atan(xs / rs) * 180 / Math.PI;
-        return (<tbody>
-            <tr><td>{lineParameters.Length}</td><td>{zs.toFixed(3)}</td><td>{angS.toFixed(3)}</td><td>{rs.toFixed(4)}</td><td>{xs.toFixed(4)}</td></tr>
-            <tr><td>Per Mile</td><td>{zsm.toFixed(3)}</td><td>-</td><td>{rsm.toFixed(4)}</td><td>{xsm.toFixed(4)}</td></tr>
-
-        </tbody>)
-
+        const rs = (lineParameters.R1 * 2 + lineParameters.R0) / 3;
+        const rsm = rs / lineParameters.Length;
+        const xs = (lineParameters.X1 * 2 + lineParameters.X0) / 3;
+        const xsm = xs / lineParameters.Length;
+        const zs = Math.sqrt(rs ^ 2 + xs ^ 2);
+        const zsm = zs / lineParameters.Length;
+        const angS = Math.atan(xs / rs) * 180 / Math.PI;
+        return {
+            Length: lineParameters.Length,
+            ZS: zs.toFixed(3),
+            Ang: angS.toFixed(3),
+            RS: rs.toFixed(4),
+            XS: xs.toFixed(4),
+            PerMileZS: zsm.toFixed(3),
+            PerMileRS: rsm.toFixed(4),
+            PerMileXS: xsm.toFixed(4)
+        };
     }
     if (lineParameters == null) return null;
     return (
