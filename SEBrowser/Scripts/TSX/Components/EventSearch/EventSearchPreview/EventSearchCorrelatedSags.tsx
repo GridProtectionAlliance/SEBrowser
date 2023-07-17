@@ -88,12 +88,12 @@ const EventSearchCorrelatedSags: React.FC<SEBrowser.IWidget<unknown>> = (props) 
                     ascending={true}
                     tableClass="table"
                     theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
-                    tbodyStyle={{ display: 'table', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500 }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500 }}
                     rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                     selected={(d: ITimeCorrelatedSags) => d.EventID === props.eventID}
                     />
             </div>
-            </div>
+        </div>
     );
 };
 
