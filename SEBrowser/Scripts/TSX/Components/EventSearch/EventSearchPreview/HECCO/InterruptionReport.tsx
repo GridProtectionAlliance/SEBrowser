@@ -89,8 +89,7 @@ const InterruptionReport: React.FC<SEBrowser.IWidget<any>> = (props) => {
                         </select>
                     </div>
                 </div>
-                <div className='row'>
-                    <div className='col'>
+            <div className="card-body">   
                 <Table<IInterruption>
                     cols={[
                         { key: 'CircuitInfo', field: 'CircuitInfo', label: 'Substation Ckt' },
