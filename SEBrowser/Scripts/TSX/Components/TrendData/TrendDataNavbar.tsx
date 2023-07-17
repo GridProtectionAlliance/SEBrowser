@@ -163,7 +163,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         setTrendFilter({ ...trendFilter, [filterField]: pairs });
     }
 
-    function GetTrendChannels(): JQuery.jqXHR<any[]> {
+    function GetTrendChannels(): JQuery.jqXHR<SEBrowser.ITrendChannel[]> {
         return $.ajax({
             type: "POST",
             url: `${homePath}api/OpenXDA/GetTrendSearchData`,
@@ -437,7 +437,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                 </div>
             </nav>
             <DefaultSelects.Meter
-                Slice={MeterSlice as any}
+                Slice={MeterSlice}
                 Selection={trendFilter.MeterList}
                 OnClose={(selected, conf) => {
                     setShowFilter('None');
@@ -459,7 +459,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                 GetEnum={getEnum}
                 GetAddlFields={getAdditionalMeterFields} />
             <DefaultSelects.Asset
-                Slice={AssetSlice as any}
+                Slice={AssetSlice}
                 Selection={trendFilter.AssetList}
                 OnClose={(selected, conf) => {
                     setShowFilter('None');

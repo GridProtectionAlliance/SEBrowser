@@ -24,7 +24,8 @@ import React from 'react';
 import _ from 'lodash';
 import { SEBrowser } from '../../Global';
 import { ConfigurableTable } from '@gpa-gemstone/react-interactive';
-import { CrossMark } from '@gpa-gemstone/gpa-symbols';
+import { TrashCan } from '@gpa-gemstone/gpa-symbols';
+import { Column } from '@gpa-gemstone/react-table';
 
 type IProps = ICommon & (IMultiProps | ISingleProps);
 
@@ -52,18 +53,43 @@ const TrendChannelTable = (props: IProps) => {
     const [sortField, setSortField] = React.useState<string>('MeterName');
     const [ascending, setAscending] = React.useState<boolean>(true);
 
-    React.useEffect(() => {
-        setTrendChannels(_.orderBy(props.TrendChannels, sortField, (ascending ? 'asc' : 'desc')));
-    }, [props.TrendChannels, sortField, ascending]);
+    const [allCols, setAllCols] =  React.useState<Column<SEBrowser.ITrendChannel>[]>([
+        { key: "Name", field: "Name", label: "Name" },
+        { key: "Description", field: "Description", label: "Description" },
+        { key: "AssetKey", field: "AssetKey", label: "Asset Key" },
+        { key: "AssetName", field: "AssetName", label: "Asset Name" },
+        { key: "MeterKey", field: "MeterKey", label: "Meter Key" },
+        { key: "MeterName", field: "MeterName", label: "Meter Name" },
+        { key: "Phase", field: "Phase", label: "Phase" },
+        { key: "ChannelGroup", field: "ChannelGroup", label: "Channel Group" },
+        { key: "ChannelGroupType", field: "ChannelGroupType", label: "Channel Group Type" },
+    ]);
 
     const removeButton = React.useCallback(
         (channel: SEBrowser.ITrendChannel) => (
             <button type="button"
                 className={'btn float-left'}
                 onClick={(event) => { event.preventDefault(); event.stopPropagation(); props.RemoveChannel(channel.ID) }}>
-                {CrossMark}
+                {TrashCan}
             </button>
         ), [props.RemoveChannel]);
+
+    React.useEffect(() => {
+        const newCols: Column<SEBrowser.ITrendChannel>[] = [...allCols];
+        const index: number = newCols.findIndex((col) => col.key === "RemoveChannel");
+        if (props.RemoveChannel !== undefined && index === -1) {
+            newCols.push({ key: "RemoveChannel", field: "ID", label: "", rowStyle: { width: "50px" }, headerStyle: { width: "50px" }, content: removeButton });
+            setAllCols(newCols);
+        }
+        else if (props.RemoveChannel === undefined && index > -1) {
+            newCols.splice(index, 1);
+            setAllCols(newCols);
+        }
+    }, [props.RemoveChannel]);
+
+    React.useEffect(() => {
+        setTrendChannels(_.orderBy(props.TrendChannels, sortField, (ascending ? 'asc' : 'desc')));
+    }, [props.TrendChannels, sortField, ascending]);
 
     const sortCallback = React.useCallback(
         (data: { colKey: string, colField?: string, ascending: boolean }, event: any) => {
@@ -78,7 +104,7 @@ const TrendChannelTable = (props: IProps) => {
     let onDragStartFunc = undefined;
     if (props.EnableDragDrop ?? false)
         onDragStartFunc = (item: any, event: any) => {
-            let allKeys: string = "";
+            let allKeys = "";
             if (props.Type === 'single')
                 allKeys = item.row.ID;
             else {
@@ -100,18 +126,7 @@ const TrendChannelTable = (props: IProps) => {
         <ConfigurableTable<SEBrowser.ITrendChannel>
             defaultColumns={["Name", "MeterName", "Description", "Phase", (props.RemoveChannel !== undefined ? "RemoveChannel" : "ChannelGroup")]}
             requiredColumns={["Name", "Phase", (props.RemoveChannel !== undefined ? "RemoveChannel" : "ChannelGroup")]}
-            cols={[
-                { key: "Name", field: "Name", label: "Name" },
-                { key: "Description", field: "Description", label: "Description" },
-                { key: "AssetKey", field: "AssetKey", label: "Asset Key" },
-                { key: "AssetName", field: "AssetName", label: "Asset Name" },
-                { key: "MeterKey", field: "MeterKey", label: "Meter Key" },
-                { key: "MeterName", field: "MeterName", label: "Meter Name" },
-                { key: "Phase", field: "Phase", label: "Phase" },
-                { key: "ChannelGroup", field: "ChannelGroup", label: "Channel Group" },
-                { key: "ChannelGroupType", field: "ChannelGroupType", label: "Channel Group Type" },
-                { key: "RemoveChannel", field: "ID", label: "", rowStyle: { width: "50px" }, headerStyle: { width: "50px" }, content: removeButton}
-            ]}
+            cols={allCols}
             data={trendChannels}
             sortKey={sortField}
             ascending={ascending}
@@ -123,13 +138,13 @@ const TrendChannelTable = (props: IProps) => {
                 if (props.Type === "single") props.SetSelected(item.row.ID);
                 // Handling the multi case
                 else {
-                    let newIds: Set<number> = new Set();
+                    const newIds: Set<number> = new Set();
                     if (event.shiftKey) {
-                        let clickIndex: number = trendChannels.findIndex(chan => chan.ID === item.row.ID);
-                        let firstSelectedIndex: number = trendChannels.findIndex(chan => props.SelectedSet.has(chan.ID));
+                        const clickIndex: number = trendChannels.findIndex(chan => chan.ID === item.row.ID);
+                        const firstSelectedIndex: number = trendChannels.findIndex(chan => props.SelectedSet.has(chan.ID));
                         if (firstSelectedIndex >= 0) {
-                            let lowerIndex: number = clickIndex < firstSelectedIndex ? clickIndex : firstSelectedIndex;
-                            let upperIndex: number = clickIndex > firstSelectedIndex ? clickIndex : firstSelectedIndex;
+                            const lowerIndex: number = clickIndex < firstSelectedIndex ? clickIndex : firstSelectedIndex;
+                            const upperIndex: number = clickIndex > firstSelectedIndex ? clickIndex : firstSelectedIndex;
                             for (let index: number = lowerIndex; index <= upperIndex; index++) {
                                 newIds.add(trendChannels[index].ID);
                             }

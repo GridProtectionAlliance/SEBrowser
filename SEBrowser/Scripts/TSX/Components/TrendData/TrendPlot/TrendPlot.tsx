@@ -23,7 +23,7 @@
 import React from 'react';
 import _ from 'lodash';
 import { CreateGuid, SpacedColor } from '@gpa-gemstone/helper-functions';
-import { CrossMark, Pencil, Plus, Flag } from '@gpa-gemstone/gpa-symbols';
+import { TrashCan, Pencil, Plus, Flag } from '@gpa-gemstone/gpa-symbols';
 import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker } from '@gpa-gemstone/react-graph';
 import { LineGraph, ILineSeries } from './LineGraph';
 import { IMultiCheckboxOption, SEBrowser } from '../../../global';
@@ -179,7 +179,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         }).done((data: any[]) => {
             setEventMarkers(data.map(datum => {
                 return { value: moment(datum.Time, eventFormat).valueOf() }
-            }))
+            }));
         });
     }
 
@@ -208,7 +208,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             props.RemovePlot(props.Plot.ID);
             setShowSettings(false);
         }}>
-            {CrossMark}
+            {TrashCan}
         </Button>);
 
     const overlayButton = (
