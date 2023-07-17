@@ -23,8 +23,9 @@
 
 import React from 'react';
 import { SEBrowser } from '../../../../global';
+import Table from '@gpa-gemstone/react-table';
 
-interface LSC {
+interface ILSC {
     Facility: string,
     Area: string,
     SectionTitle: string,
@@ -38,13 +39,13 @@ interface LSC {
 }
 
 const LSC: React.FC<SEBrowser.IWidget<any>> = (props) => {
-    const [lscInfo, setLSCInfo] = React.useState<Array<LSC>>([]);
+    const [lscInfo, setLSCInfo] = React.useState<ILSC[]>([]);
     React.useEffect(() => {
         return GetData();
     }, [props.eventID, ]);
 
     function GetData() {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/LSC/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
