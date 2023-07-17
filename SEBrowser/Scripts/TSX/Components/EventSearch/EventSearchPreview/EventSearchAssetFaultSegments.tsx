@@ -27,7 +27,11 @@ import moment from 'moment';
 import { SEBrowser } from '../../../global';
 import Table from '@gpa-gemstone/react-table';
 
-const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<any>> = (props) => {
+interface IFaultSegment {
+    SegmentType: string;
+    StartTime: string;
+    EndTime: string;
+}
 
     const [tableRows, setTableRows] = React.useState<JSX.Element[]>([]);
     const [count, setCount] = React.useState<number>(0);
