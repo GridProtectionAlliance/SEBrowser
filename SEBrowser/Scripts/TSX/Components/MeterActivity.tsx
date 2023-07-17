@@ -157,7 +157,7 @@ class MostActiveMeters extends React.Component<{}, { meterTable: Array<MostActiv
                         ascending={true}
                         selected={(data) => false }
                         onSort={(data) => { this.setState({ sortField: data.col }, () => this.createTableRows()) }}
-                        onClick={() => { }}
+                        onClick={() => {/*Do Nothing*/}}
                         theadStyle={{ fontSize: 'smaller' }}
                     />
                 </div>
@@ -265,7 +265,7 @@ class LeastActiveMeters extends React.Component<{}, { meterTable: Array<LeastAct
                         selected={(data) => false}
                         ascending={true}
                         onSort={(data) => { this.setState({ sortField: data.col }, () => this.createTableRows()) }}
-                        onClick={() => { }}
+                        onClick={() => { /*Do Nothing*/ }}
                         theadStyle={{ fontSize: 'smaller' }}
                     />
                 </div>

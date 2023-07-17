@@ -41,7 +41,7 @@ interface IProps {
 const MagDurChart = (props: IProps) => {
     const chart = React.useRef(null);
     const count = React.useRef(null);
-    const empty = React.useCallback(() => { }, []);
+    const empty = React.useCallback(() => {/*Do Nothing*/}, []);
     const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
     const magDurCurves = useAppSelector(MagDurCurveSlice.Data) as SEBrowser.MagDurCurve[];
     const [currentCurve, setCurrentCurve] = React.useState<SEBrowser.MagDurCurve>(null)
@@ -229,7 +229,7 @@ interface IEventListProps {
 }
 
 const EventList = (props: IEventListProps) => {
-    const closureHandler = React.useRef<((o: boolean) => void)>(() => { });
+    const closureHandler = React.useRef<((o: boolean) => void)>(() => {/*Do Nothing*/});
 
     const dataFilter = React.useCallback((state: Redux.StoreState) => SelectEventSearchs(state).filter(p =>
         Math.abs(p['MagDurDuration'] - props.Duration) < 1E-10 && Math.abs(p['MagDurMagnitude'] - props.Magnitude) < 0.0001),

@@ -67,7 +67,7 @@ const EventSearchPQI: React.FC<SEBrowser.IWidget<any>> = (props) => {
                                 { key: 'ComponentType', field: 'ComponentType', label: 'Component Type' }
                             ]}
                             data={data}
-                            onSort={() => { }}
+                            onSort={() => {/*Do Nothing*/}}
                             sortKey={''}
                             ascending={true}
                             tableClass="table"

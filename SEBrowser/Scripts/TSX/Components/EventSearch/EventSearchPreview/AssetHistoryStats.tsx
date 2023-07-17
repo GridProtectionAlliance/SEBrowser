@@ -45,7 +45,7 @@ const AssetHistoryStats: React.FC<SEBrowser.IWidget<any>> = (props) => {
                         { key: 'Value', field: 'Value', label: 'Value' }
                     ]}
                     data={Object.entries(statsData).map(([key, value]) => ({ Stat: key, Value: value }))}
-                    onSort={() => { }}
+                    onSort={() => {/*Do Nothing*/}}
                     sortKey={''}
                     ascending={true}
                     tableClass="table"

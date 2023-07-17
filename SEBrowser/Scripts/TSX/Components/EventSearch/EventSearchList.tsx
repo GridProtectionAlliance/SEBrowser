@@ -44,7 +44,7 @@ interface IColumn {
 
 export default function EventSearchList(props: IProps) {
     const ref = React.useRef();
-    const closureHandler = React.useRef<((o: boolean) => void)>(() => { })
+    const closureHandler = React.useRef<((o: boolean) => void)>(() => {/*Do Nothing*/ })
     const count = React.useRef(null);
     const dispatch = useAppDispatch();
     const status = useAppSelector(SelectEventSearchsStatus);
@@ -67,7 +67,7 @@ export default function EventSearchList(props: IProps) {
         if (status != 'unitiated' && status != 'changed') return;
 
         dispatch(FetchEventSearches());
-        return () => {}
+        return () => {/*Do Nothing*/}
 
     }, [status]);
 

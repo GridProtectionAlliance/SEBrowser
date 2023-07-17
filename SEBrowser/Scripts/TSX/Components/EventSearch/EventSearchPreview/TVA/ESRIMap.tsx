@@ -316,7 +316,7 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
                         sortKey={'DisplayTime'}
                         ascending={true}
                         onSort={(d) => {
-                            
+                            /*Do Nothing*/
                         }}
                         theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                         tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: 'calc(30% - 100px)' }}

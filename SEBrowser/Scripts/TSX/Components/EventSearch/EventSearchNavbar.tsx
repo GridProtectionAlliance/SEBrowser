@@ -131,7 +131,7 @@ const EventSearchNavbar = (props: IProps) => {
     function getEnum(setOptions, field) {
         let handle = null;
         if (field.type != 'enum' || field.enum == undefined || field.enum.length != 1)
-            return () => { };
+            return () => {/*Do Nothing*/ };
 
         handle = $.ajax({
             type: "GET",
@@ -626,7 +626,7 @@ const EventSearchNavbar = (props: IProps) => {
                         ]}
                         Title={"Filter by Substation"}
                     GetEnum={getEnum}
-                    GetAddlFields={() => { return () => { } }} />
+                    GetAddlFields={() => { return () => {/*Do Nothing*/} }} />
                 <DefaultSelects.AssetGroup
                     Slice={AssetGroupSlice as any}
                     Selection={assetGroupList}
@@ -647,7 +647,7 @@ const EventSearchNavbar = (props: IProps) => {
                     ]}
                     Title={"Filter by Asset Group"}
                     GetEnum={getEnum}
-                    GetAddlFields={() => { return () => { } }} />
+                    GetAddlFields={() => { return () => {/*Do Nothing*/ } }} />
             </>
     );
 }
