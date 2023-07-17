@@ -33,11 +33,11 @@ interface IFaultSegment {
     EndTime: string;
 }
 
+
 const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [data, setData] = React.useState<IFaultSegment[]>([]);
     const [count, setCount] = React.useState<number>(0);
     const [handle, setHandle] = React.useState<JQuery.jqXHR>();
-
     const seBrowserService = new SEBrowserService();
 
     React.useEffect(() => {
@@ -61,17 +61,23 @@ const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<any>> = (props) 
         <div className="card" style={{ display: count > 0 ? 'block' : 'none' }}>
             <div className="card-header">Fault Evolution Summary:</div>
             <div className="card-body">
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Evolution</th>
-                            <th>Inception</th>
-                            <th>End</th>
-                            <th>Duration (c)</th>
-                        </tr>
-                    </thead>
-                    <tbody>{tableRows}</tbody>
-                </table>
+                <Table<IFaultSegment>
+                    cols={[
+                        { key: 'SegmentType', field: 'SegmentType', label: 'Evolution' },
+                        { key: 'StartTime', field: 'StartTime', label: 'Inception', content: (record) => moment(record.StartTime).format('HH:mm:ss.SSS')},
+                        { key: 'EndTime', field: 'EndTime', label: 'End', content: (record) => moment(record.EndTime).format('HH:mm:ss.SSS')},
+                        { key: 'Duration',field: 'StartTime', label: 'Duration (c)', content: (record) => ((moment(record.EndTime).diff(moment(record.StartTime)) / 16.66667).toFixed(1))}
+                    ]}
+                    data={data}
+                    onClick={() => { }}
+                    onSort={() => { }}
+                    sortKey={''}
+                    ascending={true}
+                    tableClass="table"
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500 }}
+                    rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                />
             </div>
         </div>
     );
