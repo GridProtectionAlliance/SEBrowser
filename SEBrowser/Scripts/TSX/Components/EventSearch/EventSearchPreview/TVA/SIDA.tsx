@@ -67,7 +67,7 @@ const SIDA: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     }
 
     return (
-        <div className="card" style={{ maxHeight: props.maxHeight ?? 500, overflowY: 'auto' }}>
+        <div className="card" >
             <div className="card-header">Corresponding SIDA Reports:</div>
             <div className="card-body">
                 <Table
@@ -90,7 +90,7 @@ const SIDA: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
                     ascending={true}
                     tableClass="table"
                     theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: '50px' }}
-                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%' }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500 }}
                     rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                 />
             </div>
