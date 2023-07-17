@@ -74,21 +74,26 @@ const InterruptionReport: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }
     return (
         <div className="card">
-            <div className="card-header">Interruption Report:</div>
-            <div className="card-body">
-                <div className='row'>
-                    <div className='col'>
-                        <label>Time Window (hrs)</label>
-                        <select value={hours} onChange={(evt) => setHours(parseInt(evt.target.value))}>
-                            <option value={1}>1</option>
-                            <option value={2}>2</option>
-                            <option value={6}>6</option>
-                            <option value={12}>12</option>
-                            <option value={24}>24</option>
-                            <option value={48}>48</option>
-                        </select>
+            <div className="card-header">Interruption Report:
+                <div className='pull-right'>
+                    <div className="form-inline">
+                        <Select
+                            Record={{ hours }}
+                            Field='hours'
+                            Options={[
+                                { Value: "1", Label: "1" },
+                                { Value: "2", Label: "2" },
+                                { Value: "6", Label: "6" },
+                                { Value: "12", Label: "12" },
+                                { Value: "24", Label: "24" },
+                                { Value: "48", Label: "48" }
+                            ]}
+                            Setter={(record) => setHours(record.hours)}
+                            Label="Time Window (hrs)"
+                        />
                     </div>
                 </div>
+            </div>
             <div className="card-body">   
                 <Table<IInterruption>
                     cols={[
@@ -120,8 +125,6 @@ const InterruptionReport: React.FC<SEBrowser.IWidget<any>> = (props) => {
                     tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: 600, height: 600, width: '100%' }}
                     rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                     />
-                    </div>
-                    </div>
             </div>
         </div>
     );
