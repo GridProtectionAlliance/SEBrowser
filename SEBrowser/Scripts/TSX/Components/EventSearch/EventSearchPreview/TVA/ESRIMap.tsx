@@ -279,9 +279,9 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
 
     return (
         <div className="card">
-            <div className="card" >
                 <div className="card-header" >ESRI Map
                     <div className='pull-right'>
+                        <div className="form-inline">
                         <Select
                             Record={{ window }} 
                             Field='window'
@@ -295,8 +295,8 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
                             ]}
                             Setter={(record) => setWindow((record.window))}
                             Label="Time Window (secs)"
-                        />
-                    </div>
+                            />
+                        </div>
                     </div>
                 </div>
                 <link rel="stylesheet" href="node_modules/leaflet/dist/leaflet.css" />
@@ -329,9 +329,9 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
                         rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
                         selected={item => false}
                         />
-                        </div>
+                    </div>
                 </div>
-            </div>
+        </div>
     );
 }
 
