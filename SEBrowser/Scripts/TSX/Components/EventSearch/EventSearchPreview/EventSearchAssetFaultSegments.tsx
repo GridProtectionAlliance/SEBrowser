@@ -25,6 +25,7 @@ import React from 'react';
 import SEBrowserService from './../../../../TS/Services/SEBrowser';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
+import Table from '@gpa-gemstone/react-table';
 
 const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
 
