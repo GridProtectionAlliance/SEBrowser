@@ -25,6 +25,26 @@ import React from 'react';
 import moment from 'moment';
 import { SEBrowser } from '../../../../global';
 
+interface IFaultInfo {
+    FaultTime?: string,
+    FaultDuration?: number,
+    FaultType?: string,
+    FaultDistance?: number,
+    StationID?: string,
+    StationName?: string,
+    LineName?: string,
+    LineAssetKey?: string,
+    DblDist?: number,
+    TreeFaultResistance?: number
+}
+
+interface ILinks {
+    ID: number,
+    Name: string,
+    Display: string,
+    Value: string
+}
+
 const FaultInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [hidden, setHidden] = React.useState<boolean>(true);
     const [faultInfo, setFaultInfo] = React.useState<{ FaultTime?: string, FaultDuration?: number, FaultType?: string, FaultDistance?: number, StationID?: string, StationName?: string, LineName?: string, LineAssetKey?: string, DblDist?: number, TreeFaultResistance?: number}>({});
