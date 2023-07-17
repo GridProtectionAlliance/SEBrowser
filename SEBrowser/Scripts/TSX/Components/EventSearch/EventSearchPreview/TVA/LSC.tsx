@@ -64,7 +64,7 @@ const LSC: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }
 
     return (
-        <div className="card">
+        <div className="card" style={{ maxHeight: props.maxHeight ?? 500, overflowY:'auto' }} >
             <div className="card-header">Impacted LSCs:</div>
             <div className="card-body">
                 <Table
