@@ -53,7 +53,7 @@ const LineParameters: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }, [props.eventID]);
 
     function GetData() {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/OpenXDA/LineParameters/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
