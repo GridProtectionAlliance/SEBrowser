@@ -58,7 +58,7 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
     }
 
     return (
-        <div className="card">
+        <div className="card" style={{ maxHeight: props.maxHeight ?? 500, overflowY: 'auto' }}>
             <div className="card-header">Voltage Disturbance in Waveform:</div>
             <div className="card-body">
                 <Table
@@ -77,7 +77,7 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
                     ascending={true}
                     tableClass="table"
                     theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
-                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500 }}
+                    tbodyStyle={{ display: 'table', overflowY: 'scroll', width: '100%' }}
                     rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                     selected={(r) => r.IsWorstDisturbance}
                 />
