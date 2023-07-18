@@ -202,16 +202,32 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
                     </g>
 
                 </svg>
-                <table className='table'>
-                    <thead><tr><th>Service</th><th>{(xcoord == null ? '' : moment.unix(xcoord).format('MM/DD'))}</th><th>Totals</th></tr></thead>
-                    <tbody>{
-                        Object.keys(tableData).filter(key => key != 'Day').map((key, index) => <tr key={index}><td><span onClick={() => {
-                            tableData[key].Show = !tableData[key].Show
-                            setTableData(tableData);
-                            DrawChart(tableData);
-                        }} style={{ display: 'inline-block', marginRight: 10, height: 20, width: 20, backgroundColor: (tableData[key].Show ? getColor(key) : 'darkgray') }}></span>{key}</td><td>{getValue(key)}</td><td>{tableData[key].Data.reduce((a, b) => a + b)}</td></tr>)
-                    }</tbody>
-                </table>
+                <Table
+                    cols={[
+                        { key: 'service', label: 'Service', field: 'service' },
+                        { key: 'date', label: moment.unix(xcoord).format('MM/DD'), field: 'date' },
+                        { key: 'totals', label: 'Totals', field: 'totals' }
+                    ]}
+                    data={Object.keys(tableData).filter(key => key != 'Day').map((key, index) => {
+                        return {
+                            service: <><span onClick={(evt) => {
+                                tableData[key].Show = !tableData[key].Show
+                                setTableData(tableData);
+                                DrawChart(tableData);
+                            }} style={{ display: 'inline-block', marginRight: 10, height: 20, width: 20, backgroundColor: (tableData[key].Show ? getColor(key) : 'darkgray') }}></span>{key}</>,
+                            date: getValue(key),
+                            totals: tableData[key].Data.reduce((a, b) => a + b)
+                        };
+                    })}
+                    onClick={() => { }}
+                    onSort={() => { }}
+                    sortKey={''}
+                    ascending={true}
+                    tableClass="table"
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.maxHeight ?? 500, width: '100%' }}
+                    rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                />
             </div>
         </div>
     );
