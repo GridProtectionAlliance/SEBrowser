@@ -27,6 +27,14 @@ import moment from 'moment';
 import { SEBrowser } from '../../../global';
 import Table from '@gpa-gemstone/react-table';
 
+interface IEventSearchBreakerPerformance {
+    TTwindow: number,
+    PTwindow: number,
+    TCCwindow: number,
+    L1window: number,
+    L2window: number,
+}
+
 const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const TTwindow = React.useRef(null);
     const PTwindow = React.useRef(null);
@@ -35,6 +43,7 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) 
     const L2window = React.useRef(null);
     const [showRelayHistory, setShowRelayHistory] = React.useState(false);
     const service = new OpenSEEService();
+    const [data, setData] = React.useState<IEventSearchBreakerPerformance[]>([]);
 
     const optionsTripTime: object = {
         canvas: true,
