@@ -95,7 +95,7 @@ const EventSearchTypeFilters = (props: IProps) => {
             let hc = categories[0].height;
             categories.splice(0, 1);
             const index = categories.findIndex(h => h.height <= (navHeight - hc))
-            while (index < 0) {
+            while (index >= 0) {
                 hc = hc + categories[index].height;
                 if (nCollumn == colIndex + 1)
                     flts.push(categories[index]);
