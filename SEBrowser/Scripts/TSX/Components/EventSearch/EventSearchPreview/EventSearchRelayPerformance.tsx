@@ -55,14 +55,18 @@ const EventSearchRelayPerformance: React.FC<SEBrowser.IWidget<any>> = (props) =>
         return relayPerformanceHandle;
             }
 
-            setTableRows(rows);
+    React.useEffect(() => {
+        const handle = getRelayPerformanceData();
+        handle.done((data) => {
+            setData(data);
         });
-    }
+        return () => { if (handle != null && handle.abort != null) handle.abort(); }
+    }, [props.eventID]);
+
 
     return (
         <div className="card">
             <div className="card-header">Breaker Performance:</div>
-
             <div className="card-body">
                 <table className="table">
                     <thead>
