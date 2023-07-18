@@ -38,15 +38,21 @@ const EventSearchFileInfo: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
 const EventSearchRelayPerformance: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [data, setData] = React.useState<IRelayPerformanceTrend[]>([]);
 
-            for (let index = 0; index < data.length; ++index) {
-                const row = data[index];
-                let background = 'default';
-
-                if (row.EventID === props.eventID) {
-                    background = 'lightyellow';
+    let relayPerformanceHandle;
+    function getRelayPerformanceData() {
+        if (relayPerformanceHandle !== undefined) {
+            relayPerformanceHandle.abort();
                 }
+        relayPerformanceHandle = $.ajax({
+            type: "GET",
+            url: `${homePath}api/OpenXDA/GetRelayPerformance/${props.eventID}`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
 
-                rows.push(Row(row, background));
+        return relayPerformanceHandle;
             }
 
             setTableRows(rows);
