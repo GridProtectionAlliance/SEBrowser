@@ -21,7 +21,7 @@
 //
 //******************************************************************************************************
 
-interface State {
+export interface State {
     fromDate: string,
     toDate: string,
     breaker: string

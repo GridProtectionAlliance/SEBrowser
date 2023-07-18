@@ -59,10 +59,10 @@ const EventSearchCapBankAnalyticOverview: React.FC<SEBrowser.IWidget<any>> = (pr
 
     React.useEffect(() => {
         if (props.eventID >= 0)
-            createTableRows(props.eventID);
+            createTableRows();
     }, [props.eventID]);
 
-    function createTableRows(eventID: number) {
+    function createTableRows() {
         
         service.getCapBankAnalytic(props.eventID).done(data => {
             const rows = [];

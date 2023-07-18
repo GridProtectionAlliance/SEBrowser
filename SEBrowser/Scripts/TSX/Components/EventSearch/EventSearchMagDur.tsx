@@ -263,14 +263,14 @@ const EventList = (props: IEventListProps) => {
     }
 
     function LoadColumns() {
-        let c = [{ field: "Time", key: "Time", label: "Time", content: (item, key, fld, style) => ProcessWhitespace(item[fld]) }];
+        let c = [{ field: "Time", key: "Time", label: "Time", content: (item, key, fld) => ProcessWhitespace(item[fld]) }];
         const flds = Object.keys(data[0]).filter(item => item != "Time" && item != "DisturbanceID" && item != "EventID" && item != "EventID1" && item != 'MagDurDuration' && item != 'MagDurMagnitude').sort();
         let keys = [];
         const currentState = localStorage.getItem('SEbrowser.EventSearch.TableCols');
         if (currentState !== null)
             keys = currentState.split(",");
 
-        c = c.concat(flds.filter(f => keys.includes(f)).map(f => ({ field: f, key: f, label: f, content: (item, key, fld, style) => ProcessWhitespace(item[fld]) })));
+        c = c.concat(flds.filter(f => keys.includes(f)).map(f => ({ field: f, key: f, label: f, content: (item, key, fld) => ProcessWhitespace(item[fld]) })));
        
         setCollumns(c);
     }

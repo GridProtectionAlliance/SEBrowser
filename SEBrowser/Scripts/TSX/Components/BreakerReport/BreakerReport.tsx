@@ -20,7 +20,7 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-/// <reference path="BreakerReport.d.ts" />
+import { State } from './BreakerReport';
 
 import * as React from 'react';
 import BreakerReportNavbar from './BreakerReportNavbar';

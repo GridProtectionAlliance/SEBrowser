@@ -37,12 +37,12 @@ export default class RelayPerformanceTrend extends React.Component<{ breakerid: 
 
     componentDidMount() {
         if (this.props.breakerid >= 0)
-            this.createTableRows(this.props.breakerid, this.props.channelid);
+            this.createTableRows();
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.breakerid >= 0)
-            this.createTableRows(nextProps.breakerid, nextProps.channelid);
+            this.createTableRows();
     }
 
     getRelayTrendPerformance(breakerid, channelId): JQuery.jqXHR {
@@ -62,7 +62,7 @@ export default class RelayPerformanceTrend extends React.Component<{ breakerid: 
     }
 
 
-    createTableRows(eventID: number, channelid: number) {
+    createTableRows() {
         this.getRelayTrendPerformance(this.props.breakerid, this.props.channelid).done(data => {
             const rows = [];
             for (let index = 0; index < data.length; ++index) {

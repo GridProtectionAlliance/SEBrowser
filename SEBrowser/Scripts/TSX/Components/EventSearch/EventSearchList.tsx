@@ -80,7 +80,7 @@ export default function EventSearchList(props: IProps) {
 
         if (flds.length != cols.length)
             setCols(flds.map(item => ({
-                field: item, key: item, label: item, content: (item, key, fld, style) => ProcessWhitespace(item[fld]) })))
+                field: item, key: item, label: item, content: (item, key, fld) => ProcessWhitespace(item[fld]) })))
 
     }, [data])
 
@@ -161,7 +161,7 @@ export default function EventSearchList(props: IProps) {
             </div> : null}
             <ConfigurableTable<any>
                     cols={[{
-                        field: "Time", key: "Time", label: "Time", content: (item, key, fld, style) => ProcessWhitespace(item[fld])
+                        field: "Time", key: "Time", label: "Time", content: (item, key, fld) => ProcessWhitespace(item[fld])
                     }, ...cols]}
                     tableClass="table table-hover"
                     data={data}

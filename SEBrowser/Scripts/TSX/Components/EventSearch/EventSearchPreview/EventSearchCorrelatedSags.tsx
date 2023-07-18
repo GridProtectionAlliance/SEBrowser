@@ -47,7 +47,7 @@ const EventSearchCorrelatedSags: React.FC<SEBrowser.IWidget<any>> = (props) => {
         return correlatedSagsHandle;
     }
 
-    function createTableRows(eventID: number) {
+    function createTableRows() {
         getTimeCorrelatedSags(props.eventID).done((data) => {
             const rows = [];
 
@@ -68,7 +68,7 @@ const EventSearchCorrelatedSags: React.FC<SEBrowser.IWidget<any>> = (props) => {
 
     React.useEffect(() => {
         if (props.eventID >= 0) {
-            createTableRows(props.eventID);
+            createTableRows();
         }
     }, [props.eventID]);
 
