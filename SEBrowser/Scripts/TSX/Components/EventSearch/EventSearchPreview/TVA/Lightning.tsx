@@ -47,7 +47,7 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }, [props.eventID]);
 
     function GetData() {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/Lightning/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
@@ -63,11 +63,11 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }
 
     function MakeDict(data) {
-        var dict: { Day: { Data: Array<number> } } = { Day: { Data: [] } };
+        const dict: { Day: { Data: Array<number> } } = { Day: { Data: [] } };
 
         data.forEach((d, i) => {
             Object.keys(d).forEach((key, j) => {
-                if (dict.hasOwnProperty(key))
+                if (Object.prototype.hasOwnProperty.call(dict, key))
                     dict[key].Data.push((key == 'Day' ? moment(d[key]).unix() : d[key]))
                 else
                     dict[key] = { Data: [(key == 'Day' ? moment(d[key]).unix() : d[key])], Show: true }
@@ -79,8 +79,8 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }
 
     function DrawChart(dict: { Day: { Data: Array<number> } }) {
-        let x = scaleLinear().rangeRound([0, props.width]);
-        let y = scaleLinear().rangeRound([height, 0]);
+        const x = scaleLinear().rangeRound([0, props.width]);
+        const y = scaleLinear().rangeRound([height, 0]);
 
         setHidden(Object.keys(dict).length == 0);
 
@@ -88,7 +88,7 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
         Object.keys(dict).forEach((key, index, keys) => {
             if (key == 'Day' || !dict[key].Show) return;
 
-            let newExtent = extent(dict[key].Data);
+            const newExtent = extent(dict[key].Data);
 
             if (yextent == null) {
                 yextent = newExtent;
@@ -100,12 +100,12 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
         });
 
         yextent = [0.90 * yextent[0], 1.10 * yextent[1]]
-        let xextent = extent(dict.Day.Data);
+        const xextent = extent(dict.Day.Data);
 
         y.domain(yextent);
         x.domain(xextent);
 
-        let xax = [xextent[0]];
+        const xax = [xextent[0]];
         let pushVal = xextent[0];
         for (let i = 0; i < 9; i++) {
             pushVal += 86400 * 3
@@ -114,12 +114,12 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
 
         setXaxis(xax);
 
-        let linefunc = line().x(d => x(d[0])).y(d => y(d[1]));
+        const linefunc = line().x(d => x(d[0])).y(d => y(d[1]));
 
-        let newPaths = [];
+        const newPaths = [];
         $.each(Object.keys(dict).filter(x => x != 'Day'), (index, key) => {
             if (!dict[key].Show) return;
-            let d = dict[key].Data.map((a, i) => [dict["Day"].Data[i], a]);
+            const d = dict[key].Data.map((a, i) => [dict["Day"].Data[i], a]);
             newPaths.push(<path key={key} fill='none' strokeLinejoin='round' strokeWidth='1.5' stroke={getColor(key)} d={linefunc(d)} />);
         });
         setPaths(newPaths);
@@ -139,9 +139,9 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
         if (label.indexOf('Weatherbug') >= 0) return '#FF0000';
 
         else {
-            var ranNumOne = Math.floor(Math.random() * 256).toString(16);
-            var ranNumTwo = Math.floor(Math.random() * 256).toString(16);
-            var ranNumThree = Math.floor(Math.random() * 256).toString(16);
+            const ranNumOne = Math.floor(Math.random() * 256).toString(16);
+            const    ranNumTwo = Math.floor(Math.random() * 256).toString(16);
+            const ranNumThree = Math.floor(Math.random() * 256).toString(16);
 
             return `#${(ranNumOne.length > 1 ? ranNumOne : "0" + ranNumOne)}${(ranNumTwo.length > 1 ? ranNumTwo : "0" + ranNumTwo)}${(ranNumThree.length > 1 ? ranNumThree : "0" + ranNumThree)}`;
         }
@@ -153,9 +153,9 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
             setXcoord(null);
         }
         else {
-            let x = scaleLinear().rangeRound([0, props.width]).domain(extent(tableData.Day.Data));
+            const x = scaleLinear().rangeRound([0, props.width]).domain(extent(tableData.Day.Data));
 
-            let newIndex = tableData.Day.Data.map((a, i) => [Math.abs(a - x.invert(evt.nativeEvent.offsetX)), i]).sort(function (a, b) {
+            const newIndex = tableData.Day.Data.map((a, i) => [Math.abs(a - x.invert(evt.nativeEvent.offsetX)), i]).sort(function (a, b) {
                 return a[0] - b[0];
             })[0][1];
 
@@ -167,7 +167,7 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
     function getValue(key: string) {
         if (xcoord == null) return null;
 
-        let arr = tableData.Day.Data.map((x, i) => [x, tableData[key].Data[i]]).filter(x => x[0] >= xcoord);
+        const arr = tableData.Day.Data.map((x, i) => [x, tableData[key].Data[i]]).filter(x => x[0] >= xcoord);
 
         if (arr == undefined || arr.length == 0) return null;
         return arr[0][1];
@@ -190,7 +190,7 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
                         <path stroke='#000' d={`M 0 0 h 0 ${props.width} v -${height} 0 h 0 -${props.width}`} fill='none'></path>
                         {
                             xaxis.map((a, i) => {
-                                let x = scaleLinear().rangeRound([0, props.width]).domain(extent(tableData.Day.Data));
+                                const x = scaleLinear().rangeRound([0, props.width]).domain(extent(tableData.Day.Data));
 
                                 return (
                                     <g key={i} className='tick' opacity='1' transform={`translate(${x(a)},0)`}>
