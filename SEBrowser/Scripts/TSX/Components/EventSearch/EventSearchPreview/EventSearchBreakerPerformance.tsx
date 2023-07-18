@@ -25,6 +25,7 @@ import React from 'react';
 import OpenSEEService from '../../../../TS/Services/OpenSEE';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
+import Table from '@gpa-gemstone/react-table';
 
 const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const TTwindow = React.useRef(null);
