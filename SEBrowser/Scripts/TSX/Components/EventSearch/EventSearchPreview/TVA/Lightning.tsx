@@ -25,6 +25,7 @@ import React from 'react';
 import { scaleLinear, line, extent, select, axisLeft } from 'd3';
 import moment from 'moment';
 import { SEBrowser } from '../../../../global';
+import Table from '@gpa-gemstone/react-table';
 
 const TVALightningChart: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const svgWidth = (window.innerWidth - 300) / 2 - 17 - 40;
