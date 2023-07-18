@@ -303,7 +303,7 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) 
 
     return (
         /*
-        <div className="card" >
+      <div className="card" >
             <div className="card-header">Historic Breaker Performance</div>
             <div className="card-body">
                 <div ref={TTwindow} style={{
@@ -312,13 +312,34 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) 
                     <div ref={TCCwindow} style={{ height: 150, width: 'calc(100%)', margin: '0x', padding: '0px'  display: showRelayHistory ? 'block' : 'none' }}></div>
                     <div ref={L1window} style={{ height: 150, width: 'calc(100%)', margin: '0x', padding: '0px'  display: showRelayHistory ? 'block' : 'none' }}></div>
                     <div ref={L2window} style={{ height: 150, width: 'calc(100%)', margin: '0x', padding: '0px'  display: showRelayHistory ? 'block' : 'none' }}></div>
-            </div>
-            </div>
-        );
-        */
                 </div>
             </div>
         );
+        */
+        <div className="card" >
+            <div className="card-header">Historic Breaker Performance</div>
+            <div className="card-body">
+                <Table
+                    cols={[
+                        { key: 'TTwindow', field: 'TTwindow', label: 'TTwindow' },
+                        { key: 'PTwindow', field: 'PTwindow', label: 'PTwindow' },
+                        { key: 'TCCwindow', field: 'TCCwindow', label: 'TCCwindow' },
+                        { key: 'L1window', field: 'L1window', label: 'L1window' },
+                        { key: 'L2window', field: 'L2window', label: 'L2window' }
+                    ]}
+                    data={data}
+                    onClick={() => { }}
+                    onSort={() => { }}
+                    sortKey={''}
+                    ascending={true}
+                    tableClass="table"
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500 }}
+                    rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                />
+            </div>
+        </div>
+    );
 }
 export default EventSearchBreakerPerformance;
 
