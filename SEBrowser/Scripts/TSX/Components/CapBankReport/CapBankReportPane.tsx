@@ -258,14 +258,14 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
             async: true
         });
 
-        h.then(d => {
+        h.then(() => {
             this.getData();
         })
     }
 
     createPointTable(d: ITrendSeries[], title: string, unit: string) {
 
-        let indices = d.map((item, index) => 0);
+        let indices = d.map(() => 0);
         const rows = [];
 
         while (indices.some((item, index) => item < d[index].data.length)) {

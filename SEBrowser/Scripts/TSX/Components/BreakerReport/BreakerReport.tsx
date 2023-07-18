@@ -31,7 +31,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 declare let homePath: string;
 
-const BreakerReport = (props: {}) => {
+const BreakerReport = () => {
     const [fromDate, setFromDate] = React.useState<string>('');
     const [toDate, setToDate] = React.useState<string>('');
     const [breaker, setBreaker] = React.useState<string>('');

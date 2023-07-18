@@ -37,7 +37,7 @@ import { SplitSection, VerticalSplit } from '@gpa-gemstone/react-interactive';
 
 type tab = 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All' | undefined;
 
-const EventSearch = (props: {}) => {
+const EventSearch = () => {
     const history = useLocation();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();

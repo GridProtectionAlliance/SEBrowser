@@ -65,7 +65,7 @@ const settingsSlice = createSlice({
             state.eventSearch.WidgetCategories = action.payload[1];
         });    
         
-        builder.addCase(LoadSettings.rejected, (state, action) => {
+        builder.addCase(LoadSettings.rejected, (state) => {
             const preserved = readSettings();
 
             if (preserved != undefined) {

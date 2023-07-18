@@ -34,7 +34,7 @@ interface IState {
     searchBarProps: RelayReportNavBarProps,
 }
 
-const RelayReport = (props: {}) => {
+const RelayReport = () => {
     const navigate = useNavigate();
     const history = useLocation();
 

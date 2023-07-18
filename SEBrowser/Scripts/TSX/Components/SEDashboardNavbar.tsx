@@ -24,7 +24,7 @@
 import * as React from 'react';
 declare let homePath: string;
 
-const SEDashbaordNavbar: React.FunctionComponent<{}> = (props) => {
+const SEDashbaordNavbar: React.FunctionComponent<{}> = () => {
         return (
             <nav className="navbar navbar-expand-lg navbar-light bg-light">
 

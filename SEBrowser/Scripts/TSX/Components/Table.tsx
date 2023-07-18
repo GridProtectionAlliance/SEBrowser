@@ -117,7 +117,7 @@ export default class Table<T> extends React.Component<TableProps<T>, {}> {
         this.props.onClick(data, event);
     }
 
-    handleSort(data, event) {
+    handleSort(data) {
         this.props.onSort(data);
     }
 }

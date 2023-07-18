@@ -34,10 +34,10 @@ const PQWeb: React.FC<SEBrowser.IWidget<any>> = (props) => {
             <div className="card-body">
                 <ul className="nav nav-tabs">
                     <li className="nav-item">
-                        <button className={"nav-link" + (tab == 'LSC' ? " active" : "")} onClick={(evt) => setTab('LSC')}>LSC</button>
+                        <button className={"nav-link" + (tab == 'LSC' ? " active" : "")} onClick={() => setTab('LSC')}>LSC</button>
                     </li>
                     <li className="nav-item">
-                        <button className={"nav-link" + (tab == 'All' ? " active" : "")} onClick={(evt) => setTab('All')}>All</button>
+                        <button className={"nav-link" + (tab == 'All' ? " active" : "")} onClick={() => setTab('All')}>All</button>
                     </li>
                 </ul>
 

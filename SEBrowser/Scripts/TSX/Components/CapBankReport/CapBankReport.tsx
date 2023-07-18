@@ -34,7 +34,7 @@ interface IState {
     searchBarProps: CapBankReportNavBarProps,
 }
 
-const CapBankReport = (props: {}) => {
+const CapBankReport = () => {
     const navigate = useNavigate();
     const history = useLocation();
     const [CapBankID, setCapBankID] = React.useState<number>(0);

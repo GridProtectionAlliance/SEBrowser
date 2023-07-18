@@ -117,7 +117,7 @@ const EventSearchOpenSEE: React.FC<SEBrowser.IWidget<any>> = (props) => {
             cache: true,
             async: true
         }).done(data => {
-            datasetter(Object.keys(data).map((key, index, keys) => ({label: key, data: data[key], color: '#ff0000'} as ISeries)))
+            datasetter(Object.keys(data).map((key) => ({label: key, data: data[key], color: '#ff0000'} as ISeries)))
     })
     }
 

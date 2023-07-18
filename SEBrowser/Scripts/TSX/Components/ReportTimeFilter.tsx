@@ -333,7 +333,7 @@ const ReportTimeFilter = (props: IProps) => {
                                 setActiveQP(-1);
                             }} Label='' 
                             Type='datetime-local'
-                            Valid={(record) => { return true; }} Format={momentDateFormat + ' ' + momentTimeFormat} />
+                            Valid={() => { return true; }} Format={momentDateFormat + ' ' + momentTimeFormat} />
                         </div>
                     {/*<div className='col-6'>
                         <TimePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="time"
@@ -351,7 +351,7 @@ const ReportTimeFilter = (props: IProps) => {
                         <Input<SEBrowser.IReportTimeFilter> Record={filter} Field='windowSize' Setter={(r) => {
                             setFilter(r);
                             setActiveQP(-1);
-                        }} Label='' Valid={(record) => { return true; }}
+                        }} Label='' Valid={() => { return true; }}
                             Type='number' />
                         </div>
                         <div className='col-6'>

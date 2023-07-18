@@ -64,8 +64,8 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
     function MakeDict(data) {
         const dict: { Day: { Data: Array<number> } } = { Day: { Data: [] } };
 
-        data.forEach((d, i) => {
-            Object.keys(d).forEach((key, j) => {
+        data.forEach((d) => {
+            Object.keys(d).forEach((key) => {
                 if (Object.prototype.hasOwnProperty.call(dict, key))
                     dict[key].Data.push((key == 'Day' ? moment(d[key]).unix() : d[key]))
                 else
@@ -176,7 +176,7 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
         <div className="card" hidden={hidden}>
             <div className="card-header">30 Day Lightning History:</div>
             <div className="card-body">
-                <svg width={svgWidth} height={svgHeight} onMouseOver={handleMouseOver} onMouseMove={handleMouseOver} onMouseOut={evt => setTooltipX(svgWidth + 1)}>
+                <svg width={svgWidth} height={svgHeight} onMouseOver={handleMouseOver} onMouseMove={handleMouseOver} onMouseOut={() => setTooltipX(svgWidth + 1)}>
                     <path stroke='red' d={`M0,0V0,${height}`} transform={`translate(${tooltipX},0)`}></path>
 
                     <g id='yaxis' transform={`translate(${margin.left},0)`}>
@@ -204,7 +204,7 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
                 <table className='table'>
                     <thead><tr><th>Service</th><th>{(xcoord == null ? '' : moment.unix(xcoord).format('MM/DD'))}</th><th>Totals</th></tr></thead>
                     <tbody>{
-                        Object.keys(tableData).filter(key => key != 'Day').map((key, index) => <tr key={index}><td><span onClick={(evt) => {
+                        Object.keys(tableData).filter(key => key != 'Day').map((key, index) => <tr key={index}><td><span onClick={() => {
                             tableData[key].Show = !tableData[key].Show
                             setTableData(tableData);
                             DrawChart(tableData);

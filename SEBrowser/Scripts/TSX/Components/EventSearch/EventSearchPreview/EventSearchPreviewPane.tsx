@@ -42,7 +42,7 @@ import TVASOE from './TVA/SOE';
 import TVALSC from './TVA/LSC';
 import TVAPQWeb from './TVA/PQWeb';
 import EventSearchPQI from './EventSearchPQI';
-import { useAppDispatch, useAppSelector } from '../../../hooks';
+import { useAppSelector } from '../../../hooks';
 import EventSearchCapBankAnalyticOverview from './EventSearchCapBankAnalyticOverview';
 import { SelectEventSearchByID } from './../EventSearchSlice';
 import InterruptionReport from './HECCO/InterruptionReport';
@@ -59,8 +59,6 @@ interface IProps {
 }
 
 export default function EventPreviewPane(props: IProps) {
-    const dispatch = useAppDispatch();
-
     const categories = useAppSelector(SelectWidgetCategories);
     const [settings, setSettings] = React.useState<SEBrowser.EventPreviewPaneSetting[]>([]);
     const [tab, setTab] = React.useState<string>(props.InitialTab == null || props.InitialTab == undefined ? 'All' : props.InitialTab);

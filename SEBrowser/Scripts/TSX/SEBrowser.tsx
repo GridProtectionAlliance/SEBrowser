@@ -40,7 +40,7 @@ import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { useAppDispatch } from './hooks';
 import { LoadSettings } from './Components/SettingsSlice';
 
-const SEBrowserMainPage = (props: {}) => {
+const SEBrowserMainPage = () => {
     const dispatch = useAppDispatch();
 
     const [links, setLinks] = React.useState<SystemCenter.Types.ValueListItem[]>([]);

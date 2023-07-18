@@ -139,7 +139,7 @@ function DERAnalysisReport() {
             async: true
         }) as JQuery.jqXHR<OpenXDA.Types.Asset[]>;
 
-        handle1.done(d => setDERs(d.map((reg, i) => ({ Value: reg.ID, Text: reg.AssetName, Selected: true }))))
+        handle1.done(d => setDERs(d.map((reg) => ({ Value: reg.ID, Text: reg.AssetName, Selected: true }))))
 
         return () => {
             if (handle1.abort != undefined) handle1.abort();
@@ -230,14 +230,14 @@ function DERAnalysisReport() {
                 <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
                     <Table<DERAnalyticResult>
                         cols={[
-                            { key: 'Time', label: 'Time', field: 'Time', content: (item,key,field, style) => moment(item.Time).format(momentDateFormat + ' ' + momentTimeFormat) },
+                            { key: 'Time', label: 'Time', field: 'Time', content: (item) => moment(item.Time).format(momentDateFormat + ' ' + momentTimeFormat) },
                             { key: 'Meter', label: 'Meter', field: 'Meter' },
                             { key: 'Asset', label: 'Asset', field: 'Asset' },
                             { key: 'Channel', label: 'Channel', field: 'Channel' },
                             { key: 'Regulation', label: 'Regulation', field: 'Regulation' },
                             { key: 'Parameter', label: 'Parameter', field: 'Parameter' },
                             { key: 'Threshold', label: 'Threshold', field: 'Threshold' },
-                            { key: 'Value', label: 'Value', field: 'Value', content: (item, key, field, style) => item.Value.toFixed(2) },
+                            { key: 'Value', label: 'Value', field: 'Value', content: (item) => item.Value.toFixed(2) },
                             { key: 'Scroll', label: '', headerStyle: { width: 19, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
 
                         ]}
@@ -377,7 +377,7 @@ const Graph = (props: DERAnalyticResult) => {
                 Ylabel={GetAxis(props.Regulation)}
                 showMouse={true}
                 useMetricFactors={false}
-                onDataInspect={(tdomain) => ''}>
+                onDataInspect={() => ''}>
                 <Line highlightHover={false} showPoints={false} color={'red'} data={[[data[0][0], props.Threshold], [data[data.length - 1][0], props.Threshold]]} legend={'Threshold'} lineStyle='-' />
                 <Line highlightHover={true} showPoints={false} color={'darkblue'} data={data} legend={'data'} lineStyle='-' />
             </Plot>

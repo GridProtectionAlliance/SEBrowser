@@ -33,8 +33,6 @@ interface ISetting {
     NoteTags: string[]
 }
 
-interface IValue<T> { Value: T }
-
 const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
     const [noteType, setNoteType] = React.useState<OpenXDA.Types.NoteType>({ ID: -1, Name: 'Event', ReferenceTableName: 'Event' });
     const [selectedTags, setSelectedTags] = React.useState<number[]>([]);

@@ -35,7 +35,7 @@ const momentDateFormat = "MM/DD/YYYY";
 let fetchHandle: JQuery.jqXHR<any> | null = null;
 
 // #region [ Thunks ]
-export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (_, { signal, dispatch, getState }) => {
+export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearches', async (_, { signal, getState }) => {
     const time = (getState() as any).EventSearch.TimeRange as SEBrowser.IReportTimeFilter;
     const types = (getState() as any).EventSearch.EventType as number[];
     const characteristics = (getState() as any).EventSearch.EventCharacteristic as SEBrowser.IEventCharacteristicFilters;
