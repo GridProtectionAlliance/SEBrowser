@@ -27,12 +27,15 @@ import moment from 'moment';
 import { SEBrowser } from '../../../global';
 import Table from '@gpa-gemstone/react-table';
 
-const EventSearchFileInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
-    const [tableRows, setTableRows] = React.useState([]);
-
-    React.useEffect(() => {
-        if (props.eventID >= 0) {
-            createTableRows(props.eventID);
+interface IRelayPerformanceTrend {
+    EventID: number,
+    TripInitiate: string,
+    TripTime: string,
+    PickupTime: string,
+    ExtinctionTime: string,
+    TripCoilCondition: number,
+    Imax1: number,
+    Imax2: number
         }
     }, [props.eventID]);
 
