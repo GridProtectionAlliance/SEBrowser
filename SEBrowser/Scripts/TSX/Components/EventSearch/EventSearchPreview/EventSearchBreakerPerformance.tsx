@@ -26,7 +26,6 @@ import OpenSEEService from '../../../../TS/Services/OpenSEE';
 import { SEBrowser } from '../../../global';
 import Table from '@gpa-gemstone/react-table';
 
-const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
 interface IEventSearchBreakerPerformance {
     TTwindow: number,
     PTwindow: number,
@@ -110,9 +109,6 @@ interface IEventSearchBreakerPerformance {
                 </div>
             </div>
         );
-
-
 }
-
 export default EventSearchBreakerPerformance;
 
