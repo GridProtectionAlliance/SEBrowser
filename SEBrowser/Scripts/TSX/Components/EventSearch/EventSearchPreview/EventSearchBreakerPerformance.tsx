@@ -27,6 +27,15 @@ import { SEBrowser } from '../../../global';
 import Table from '@gpa-gemstone/react-table';
 
 const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
+interface IEventSearchBreakerPerformance {
+    TTwindow: number,
+    PTwindow: number,
+    TCCwindow: number,
+    L1window: number,
+    L2window: number,
+}
+
+    const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const TTwindow = React.useRef(null);
     const PTwindow = React.useRef(null);
     const TCCwindow = React.useRef(null);
@@ -34,6 +43,7 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<unknown>> = (pro
     const L2window = React.useRef(null);
     const [showRelayHistory, setShowRelayHistory] = React.useState(false);
     const service = new OpenSEEService();
+    const [data, setData] = React.useState<IEventSearchBreakerPerformance[]>([]);
 
 
     React.useEffect(() => {
