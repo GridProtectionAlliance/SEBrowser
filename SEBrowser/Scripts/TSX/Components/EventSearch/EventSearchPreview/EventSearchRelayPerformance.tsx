@@ -37,12 +37,9 @@ interface IRelayPerformanceTrend {
     Imax1: number,
     Imax2: number
         }
-    }, [props.eventID]);
 
-    function createTableRows(eventID) {
-        const openSEEService = new OpenSEEService();
-        openSEEService.getRelayPerformance(eventID).done((data) => {
-            const rows = [];
+const EventSearchRelayPerformance: React.FC<SEBrowser.IWidget<any>> = (props) => {
+    const [data, setData] = React.useState<IRelayPerformanceTrend[]>([]);
 
             for (let index = 0; index < data.length; ++index) {
                 const row = data[index];
@@ -103,6 +100,4 @@ const HeaderRow = () => {
     );
 }
 
-export default EventSearchFileInfo;
-
-
+export default EventSearchRelayPerformance;
