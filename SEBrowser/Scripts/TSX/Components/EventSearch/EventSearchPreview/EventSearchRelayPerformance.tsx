@@ -36,7 +36,7 @@ interface IRelayPerformanceTrend {
     TripCoilCondition: number,
     Imax1: number,
     Imax2: number
-        }
+}
 
 const EventSearchRelayPerformance: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [data, setData] = React.useState<IRelayPerformanceTrend[]>([]);
@@ -45,7 +45,7 @@ const EventSearchRelayPerformance: React.FC<SEBrowser.IWidget<any>> = (props) =>
     function getRelayPerformanceData() {
         if (relayPerformanceHandle !== undefined) {
             relayPerformanceHandle.abort();
-                }
+        }
         relayPerformanceHandle = $.ajax({
             type: "GET",
             url: `${homePath}api/OpenXDA/GetRelayPerformance/${props.eventID}`,
@@ -56,7 +56,7 @@ const EventSearchRelayPerformance: React.FC<SEBrowser.IWidget<any>> = (props) =>
         });
 
         return relayPerformanceHandle;
-            }
+    }
 
     React.useEffect(() => {
         const handle = getRelayPerformanceData();
@@ -97,34 +97,6 @@ const EventSearchRelayPerformance: React.FC<SEBrowser.IWidget<any>> = (props) =>
                 />
             </div>
         </div>
-    );
-}
-
-const Row = (row, background) => {
-    return (
-        <tr style={{ background: background }} key={row.EventID}>
-            <td key={'EventID' + row.EventID}><a id="eventLink" href={homePath + 'Main/OpenSEE?eventid=' + row.EventID}><div style={{ width: '100%', height: '100%' }}>{row.EventID}</div></a></td>
-            <td key={'InitiateTime' + row.EventID}>{moment(row.TripInitiate).format('DD/MM/YY HH:MM:ss.SSSS')}</td>
-            <td key={'TripTime' + row.EventID}>{row.TripTime} micros</td>
-            <td key={'PickupTime' + row.EventID}>{row.PickupTime} micros</td>
-            <td key={'TripCoilCondition' + row.EventID}>{row.TripCoilCondition.toFixed(2)} A/s</td>
-            <td key={'L1' + row.EventID}>{row.Imax1.toFixed(3)} A</td>
-            <td key={'L2' + row.EventID}>{row.Imax2.toFixed(3)} A</td>
-        </tr>
-    );
-}
-
-const HeaderRow = () => {
-    return (
-        <tr key='Header'>
-            <th key='EventID'>Event ID</th>
-            <th key='InitiateTime'>Trip Initiation Time</th>
-            <th key='TripTime'>Trip Time</th>
-            <th key='PickupTime'>Pickup Time</th>
-            <th key='TripCoilCondition'>Trip Coil Condition</th>
-            <th key='L1'>L1</th>
-            <th key='L2'>L2</th>
-        </tr>
     );
 }
 
