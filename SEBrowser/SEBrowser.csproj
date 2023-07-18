@@ -483,7 +483,6 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchList.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchNavbar.tsx" />
     <None Include="Scripts\TSX\Components\MeterActivity.tsx" />
-    <None Include="Scripts\TSX\Components\SEDashboardNavbar.tsx" />
     <None Include="Scripts\TSX\Components\RelayReport\RelayPerformanceTrend.tsx" />
     <None Include="Scripts\TSX\Components\RelayReport\RelayReport.tsx" />
     <None Include="Scripts\TSX\Components\RelayReport\RelayReportNavBar.tsx" />
