@@ -23,7 +23,7 @@
 //
 //******************************************************************************************************
 import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
-import { forEach } from 'lodash';
+import { cloneDeep } from 'lodash';
 import { Redux, SEBrowser } from '../global';
 
 declare let homePath: string;
@@ -45,7 +45,7 @@ const defaultState = {
 const settingsSlice = createSlice({
     name: 'Settings',
 
-    initialState: defaultState as Redux.SettingsState,
+    initialState: cloneDeep(defaultState) as Redux.SettingsState,
 
     reducers: {
         SetEventSearch: (state: Redux.SettingsState, action: { type: string, payload: Redux.IEventSearchSettings }) => {
@@ -67,7 +67,7 @@ const settingsSlice = createSlice({
             const preserved = readSettings();
 
             if (preserved == undefined)
-                state = defaultState;
+                state = cloneDeep(defaultState);
             else {
                 if (preserved.eventSearch != undefined) {
                     state.eventSearch = preserved.eventSearch;
@@ -76,8 +76,8 @@ const settingsSlice = createSlice({
                     state.DateTimeSetting = 'center';
             }
 
-            state.timeZone = _.cloneDeep(action.payload[0]);
-            state.eventSearch.WidgetCategories = _.cloneDeep(action.payload[1]);
+            state.timeZone = cloneDeep(action.payload[0]);
+            state.eventSearch.WidgetCategories = cloneDeep(action.payload[1]);
             return state;
         });    
         
