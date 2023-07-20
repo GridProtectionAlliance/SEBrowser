@@ -46,8 +46,8 @@ interface ITimeFilter {
 
 interface IQuickSelect { label: string, createFilter: (timeZone: string) => SEBrowser.IReportTimeFilter }
 
-const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS"; // Also is the gemstone format
+export const momentDateFormat = "MM/DD/YYYY";
+export const momentTimeFormat = "HH:mm:ss.SSS"; // Also is the gemstone format
 
 
 const AvailableQuickSelects: IQuickSelect[] = [
