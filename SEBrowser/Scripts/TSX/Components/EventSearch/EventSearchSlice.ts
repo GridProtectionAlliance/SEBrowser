@@ -387,9 +387,9 @@ function computeReset(state: Redux.EventSearchState, eventTypes: OpenXDA.Types.E
     return event && types && state.SelectedAssets.length == 0 && state.SelectedStations.length == 0 && state.SelectedMeters.length == 0 && state.SelectedGroups.length == 0;
 }
 
-function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: number[],
+export function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: number[],
     time: SEBrowser.IReportTimeFilter, assets: SystemCenter.Types.DetailedAsset[], groups: OpenXDA.Types.AssetGroup[],
-    meters: SystemCenter.Types.DetailedMeter[], stations: SystemCenter.Types.DetailedLocation[]): any {
+    meters: SystemCenter.Types.DetailedMeter[], stations: SystemCenter.Types.DetailedLocation[], eventID: number = null): any {
     const result: any = {};
     if (assets.length > 0 && assets.length < 100) {
         let i = 0;
@@ -428,66 +428,75 @@ function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type:
         })
     }
 
-    if (event.durationMin != 0)
-        result['durationMin'] = event.durationMin
-    if (event.durationMax != 0)
-        result['durationMax'] = event.durationMax
+    if (event != null) {
+        if (event.durationMin != 0)
+            result['durationMin'] = event.durationMin
+        if (event.durationMax != 0)
+            result['durationMax'] = event.durationMax
 
-    if (event.transientMin != 0)
-        result['transientMin'] = event.transientMin
-    if (event.transientMax != 0)
-        result['transientMax'] = event.transientMax
+        if (event.transientMin != 0)
+            result['transientMin'] = event.transientMin
+        if (event.transientMax != 0)
+            result['transientMax'] = event.transientMax
 
-    if (event.sagMin != 0)
-        result['sagMin'] = event.sagMin
-    if (event.sagMax != 0)
-        result['sagMax'] = event.sagMax
+        if (event.sagMin != 0)
+            result['sagMin'] = event.sagMin
+        if (event.sagMax != 0)
+            result['sagMax'] = event.sagMax
 
-    if (event.swellMax != 0)
-        result['swellMax'] = event.swellMax
-    if (event.swellMin != 0)
-        result['swellMin'] = event.swellMin
+        if (event.swellMax != 0)
+            result['swellMax'] = event.swellMax
+        if (event.swellMin != 0)
+            result['swellMin'] = event.swellMin
 
-    if (event.sagType != 'both')
-        result['sagType'] = event.sagType
-    if (event.swellType != 'both')
-        result['swellType'] = event.swellType
-    if (event.transientType != 'both')
-        result['transientType'] = event.transientType
+        if (event.sagType != 'both')
+            result['sagType'] = event.sagType
+        if (event.swellType != 'both')
+            result['swellType'] = event.swellType
+        if (event.transientType != 'both')
+            result['transientType'] = event.transientType
 
-    if (event.curveID != 1)
-        result['curveID'] = event.curveID
-    if (!event.curveInside)
-        result['curveInside'] = false
-    if (!event.curveOutside)
-        result['curveOutside'] = false;
+        if (event.curveID != 1)
+            result['curveID'] = event.curveID
+        if (!event.curveInside)
+            result['curveInside'] = false
+        if (!event.curveOutside)
+            result['curveOutside'] = false;
 
-    if (!event.phases.AN)
-        result['AN'] = false;
-    if (!event.phases.BN)
-        result['BN'] = false;
-    if (!event.phases.CN)
-        result['CN'] = false;
-    if (!event.phases.AB)
-        result['AB'] = false;
-    if (!event.phases.BC)
-        result['BC'] = false;
-    if (!event.phases.CA)
-        result['CA'] = false;
-    if (!event.phases.ABG)
-        result['ABG'] = false;
-    if (!event.phases.BCG)
-        result['BCG'] = false;
-    if (!event.phases.ABC)
-        result['ABC'] = false;
-    if (!event.phases.ABCG)
-        result['ABCG'] = false;
+        if (!event.phases.AN)
+            result['AN'] = false;
+        if (!event.phases.BN)
+            result['BN'] = false;
+        if (!event.phases.CN)
+            result['CN'] = false;
+        if (!event.phases.AB)
+            result['AB'] = false;
+        if (!event.phases.BC)
+            result['BC'] = false;
+        if (!event.phases.CA)
+            result['CA'] = false;
+        if (!event.phases.ABG)
+            result['ABG'] = false;
+        if (!event.phases.BCG)
+            result['BCG'] = false;
+        if (!event.phases.ABC)
+            result['ABC'] = false;
+        if (!event.phases.ABCG)
+            result['ABCG'] = false;
+    }
 
-    result["date"] = time.date;
-    result["time"] = time.time;
-    result["windowSize"] = time.windowSize;
-    result["timeWindowUnits"] = time.timeWindowUnits;
+    if (time != null) {
+        result["date"] = time.date;
+        result["time"] = time.time;
+        console.log(time.date);
+        console.log(time.time);
+        result["windowSize"] = time.windowSize;
+        result["timeWindowUnits"] = time.timeWindowUnits;
+    }
 
+    if (eventID != null) {
+        result['eventid'] = eventID;
+    }
 
     return result;
 }

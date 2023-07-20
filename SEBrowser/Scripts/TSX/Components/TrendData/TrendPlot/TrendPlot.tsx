@@ -22,13 +22,17 @@
 //******************************************************************************************************
 import React from 'react';
 import _ from 'lodash';
+import queryString from 'querystring';
+import moment from 'moment';
 import { CreateGuid, SpacedColor } from '@gpa-gemstone/helper-functions';
 import { TrashCan, Pencil, Plus, Flag } from '@gpa-gemstone/gpa-symbols';
 import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker } from '@gpa-gemstone/react-graph';
+import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { LineGraph, ILineSeries } from './LineGraph';
 import { IMultiCheckboxOption, SEBrowser } from '../../../global';
+import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
+import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
 import { SettingsOverlay } from './SettingsOverlay';
-import moment from 'moment';
 
 //TODO: move to global
 interface ITrendPlot {
@@ -74,7 +78,9 @@ interface IVertHori {
 }
 
 interface IEventMarker {
-    value: number
+    value: number,
+    meterKey: string,
+    eventID: number
 }
 
 type SeriesSettings = ILineSeries;
@@ -178,9 +184,32 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             async: true
         }).done((data: any[]) => {
             setEventMarkers(data.map(datum => {
-                return { value: moment(datum.Time, eventFormat).valueOf() }
+                return { value: moment(datum.Time, eventFormat).valueOf(), meterKey: datum["Meter Key"], eventID: datum["EventID"] }
             }));
         });
+    }
+
+    function navigateEvent(marker: IEventMarker): () => void {
+        const meter: SystemCenter.Types.DetailedMeter = {
+            ID: props.Plot.Channels.find(channel => channel.MeterKey === marker.meterKey).MeterID,
+            AssetKey: '',
+            Name: '',
+            Location: '',
+            MappedAssets: 0,
+            Make: '',
+            Model: ''
+        }
+        const time = moment(marker.value, "x");
+        const timeFilter: SEBrowser.IReportTimeFilter = {
+            date: time.format(momentDateFormat),
+            time: time.format(momentTimeFormat),
+            windowSize: 1,
+            timeWindowUnits: 3,
+        }
+        const queryParams = GenerateQueryParams(null, [], timeFilter, [], [], [meter], [], marker.eventID);
+        const queryUrl = queryString.stringify(queryParams, "&", "=", { encodeURIComponent: queryString.escape });
+        const handle = setTimeout(() => window.open(`${window.location.origin}/eventsearch?${queryUrl}`, '_blank'), 500);
+        return (() => { clearTimeout(handle); })
     }
 
     const handleChannelDrop = React.useCallback((event: any) => {
@@ -304,7 +333,8 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
                     {eventMarkers.map((marker, i) =>
                         <VerticalMarker key={"Event_" + i}
-                            Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}/>
+                            Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
+                            onClick={(value) => { if (customSelect.current !== "drag") return; navigateEvent(marker); }} />
                     )}
                     {verticalMarkers.map((marker, i) =>
                         <VerticalMarker key={"Vert_" + i}
