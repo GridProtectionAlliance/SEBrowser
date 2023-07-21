@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  EventSearchRelayPerformance.tsx - Gbtc
+//  EventSearchBreakerPerformance.tsx - Gbtc
 //
 //  Copyright © 2019, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -303,7 +303,7 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) 
 
     return (
         /*
-      <div className="card" >
+      <div className="card">
             <div className="card-header">Historic Breaker Performance</div>
             <div className="card-body">
                 <div ref={TTwindow} style={{
@@ -316,7 +316,7 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) 
             </div>
         );
         */
-        <div className="card" >
+        <div className="card">
             <div className="card-header">Historic Breaker Performance</div>
             <div className="card-body">
                 <Table

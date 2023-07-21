@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  TVAESRIMap.tsx - Gbtc
+//  SIDA.tsx - Gbtc
 //
 //  Copyright © 2020, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -67,7 +67,7 @@ const SIDA: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }
 
     return (
-        <div className="card" >
+        <div className="card">
             <div className="card-header">Corresponding SIDA Reports:</div>
             <div className="card-body">
                 <Table

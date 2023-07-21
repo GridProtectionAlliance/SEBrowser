@@ -52,7 +52,7 @@ const EventSearchPQI: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }
 
     return (
-        <div className="card" >
+        <div className="card">
             <div className="card-header">Power Quality Investigator:</div>
             <div className="card-body">
                 <div className='row'>

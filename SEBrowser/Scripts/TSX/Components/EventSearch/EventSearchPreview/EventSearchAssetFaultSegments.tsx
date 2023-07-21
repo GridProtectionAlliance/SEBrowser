@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  EventSearchAssetVoltageDisturbances.tsx - Gbtc
+//  EventSearchAssetFaultSegments.tsx - Gbtc
 //
 //  Copyright © 2019, Grid Protection Alliance.  All Rights Reserved.
 //
