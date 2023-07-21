@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  SOE.tsx - Gbtc
+//  InterruptionReport.tsx - Gbtc
 //
 //  Copyright © 2020, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -115,7 +115,7 @@ const InterruptionReport: React.FC<SEBrowser.IWidget<any>> = (props) => {
                     ]}
                     data={data}
                     onSort={() => {/*Do Nothing*/ }}
-                    sortKey={'TimeOut'}
+                    sortKey={''}
                     ascending={true}
                     tableClass="table"
                     theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}

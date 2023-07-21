@@ -104,7 +104,7 @@ const SOE: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
                         ]}
                         data={soeInfo.filter(si => !statusFilter[si.Status.toLowerCase()])}
                         onSort={() => { /*Do Nothing*/ }}
-                        sortKey={'Time'}
+                        sortKey={''}
                         ascending={true}
                         tableClass="table"
                         keySelector={data => data.Time}

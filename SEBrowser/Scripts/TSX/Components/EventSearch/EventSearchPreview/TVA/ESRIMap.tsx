@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  TVAESRIMap.tsx - Gbtc
+//  ESRIMap.tsx - Gbtc
 //
 //  Copyright © 2020, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -320,7 +320,7 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
                             ]}
                         tableClass="table table-hover"
                         data={lightningInfo}
-                        sortKey={'DisplayTime'}
+                        sortKey={''}
                         ascending={true}
                         onSort={() => {/*Do Nothing*/}}
                         theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
