@@ -48,7 +48,7 @@ const EventSearchCapBankAnalyticOverview: React.FC<SEBrowser.IWidget<unknown>> =
 
 
     return (
-        <div className="card" >
+        <div className="card">
             <div className="card-header">EPRI Capacitor Bank Analytic:</div>
             <div className="card-body">
                 <Table
