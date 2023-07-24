@@ -333,8 +333,8 @@ const ReportTimeFilter = (props: IProps) => {
                                 setActiveQP(-1);
                             }} Label='' 
                             Type='datetime-local'
-                            Valid={() => { return true; }} Format={momentDateFormat + ' ' + momentTimeFormat} />
-                        </div>
+                            Valid={() => true} Format={momentDateFormat + ' ' + momentTimeFormat} />
+                    </div>
                     </div>
 
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
