@@ -82,8 +82,8 @@ const EventSearchCorrelatedSags: React.FC<SEBrowser.IWidget<unknown>> = (props) 
                             { key: 'LineName', field: 'LineName', label: 'Line Name'}
                         ]}
                         data={data}
-                    onClick={() => { }}
-                    onSort={() => { }}
+                    onClick={() => { /* Do Nothing */ }}
+                    onSort={() => { /* Do Nothing */ }}
                     sortKey={''}
                     ascending={true}
                     tableClass="table"

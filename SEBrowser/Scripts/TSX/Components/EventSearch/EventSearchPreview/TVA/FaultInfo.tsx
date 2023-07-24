@@ -143,8 +143,8 @@ const FaultInfo: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
 
                     ]}
                     data={faultInfo}
-                    onClick={() => { }}
-                    onSort={() => { }}
+                    onClick={() => { /* Do Nothing */ }}
+                    onSort={() => { /* Do Nothing */ }}
                     sortKey={''}
                     ascending={true}
                     tableClass="table"

@@ -98,8 +98,8 @@ const EventSearchFileInfo: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
                         { key: 'mapping', field: 'Mapping', label: 'Mapping' },
                     ]}
                     data={mappedChannels}
-                    onClick={() => { }}
-                    onSort={() => { }}
+                    onClick={() => { /* Do Nothing */ }}
+                    onSort={() => { /* Do Nothing */ }}
                     sortKey={''}
                     ascending={true}
                     tableClass="table"

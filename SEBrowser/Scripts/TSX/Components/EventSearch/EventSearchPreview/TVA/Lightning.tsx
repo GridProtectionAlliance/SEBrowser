@@ -219,8 +219,8 @@ const TVALightningChart: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
                             totals: tableData[key].Data.reduce((a, b) => a + b)
                         };
                     })}
-                    onClick={() => { }}
-                    onSort={() => { }}
+                    onClick={() => { /* Do Nothing */ }}
+                    onSort={() => { /* Do Nothing */ }}
                     sortKey={''}
                     ascending={true}
                     tableClass="table"

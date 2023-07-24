@@ -77,8 +77,8 @@ const LSC: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
                             { key: 'Duration', field: 'Duration', label: 'Duration'}
                         ]}
                         data={lscInfo}
-                    onClick={() => { }}
-                    onSort={() => { }}
+                    onClick={() => { /* Do Nothing */ }}
+                    onSort={() => { /* Do Nothing */ }}
                     sortKey={''}
                     ascending={true}
                     tableClass="table"

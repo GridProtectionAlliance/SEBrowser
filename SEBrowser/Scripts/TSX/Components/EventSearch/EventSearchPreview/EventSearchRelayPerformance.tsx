@@ -100,8 +100,8 @@ const EventSearchRelayPerformance: React.FC<SEBrowser.IWidget<any>> = (props) =>
                         { key: 'L2', field: 'Imax2', label: 'L2', content: (d) => `${d.Imax2.toFixed(3)} A` },
                     ]}
                     data={data}
-                    onClick={() => { }}
-                    onSort={() => { }}
+                    onClick={() => { /* Do Nothing */ }}
+                    onSort={() => { /* Do Nothing */ }}
                     sortKey={''}
                     ascending={true}
                     tableClass="table"

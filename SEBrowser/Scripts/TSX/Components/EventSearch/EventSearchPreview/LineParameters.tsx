@@ -118,8 +118,8 @@ const LineParameters: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
                         { key: 'PerMileXS', field: 'PerMileXS', label: 'Per Mile XS' }
                     ]}
                     data={[loopParameters]} 
-                    onClick={() => { }}
-                    onSort={() => { }}
+                    onClick={() => { /* Do Nothing */ }}
+                    onSort={() => { /* Do Nothing */ }}
                     sortKey={''}
                     ascending={true}
                     tableClass="table"

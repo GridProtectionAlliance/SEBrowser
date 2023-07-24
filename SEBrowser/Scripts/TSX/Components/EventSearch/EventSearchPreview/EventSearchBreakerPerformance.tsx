@@ -123,8 +123,8 @@ interface IEventSearchBreakerPerformance {
                         { key: 'L2window', field: 'L2window', label: 'L2window' }
                     ]}
                     data={data}
-                    onClick={() => { }}
-                    onSort={() => { }}
+                    onClick={() => { /* Do Nothing */ }}
+                    onSort={() => { /* Do Nothing */ }}
                     sortKey={''}
                     ascending={true}
                     tableClass="table"

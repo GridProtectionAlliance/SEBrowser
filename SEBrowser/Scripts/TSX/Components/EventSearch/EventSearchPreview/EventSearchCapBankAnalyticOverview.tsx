@@ -62,8 +62,8 @@ const EventSearchCapBankAnalyticOverview: React.FC<SEBrowser.IWidget<unknown>> =
                         { key: 'PIS', field: 'PreInsertionSwitch', label: 'PreInsertionSwitching Condition' }
                     ]}
                     data={data}
-                    onClick={() => { }}
-                    onSort={() => { }}
+                    onClick={() => { /* Do Nothing */ }}
+                    onSort={() => { /* Do Nothing */ }}
                     sortKey={''}
                     ascending={true}
                     tableClass="table"

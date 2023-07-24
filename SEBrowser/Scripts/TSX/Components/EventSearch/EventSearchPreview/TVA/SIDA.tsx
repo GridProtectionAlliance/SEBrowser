@@ -84,8 +84,8 @@ const SIDA: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
                         { key: 'internalexternal', field: 'internalexternal', label: 'Int/Ext' },
                     ]}
                     data={sidaInfo}
-                    onClick={() => { }}
-                    onSort={() => { }}
+                    onClick={() => { /* Do Nothing */ }}
+                    onSort={() => { /* Do Nothing */ }}
                     sortKey=''
                     ascending={true}
                     tableClass="table"

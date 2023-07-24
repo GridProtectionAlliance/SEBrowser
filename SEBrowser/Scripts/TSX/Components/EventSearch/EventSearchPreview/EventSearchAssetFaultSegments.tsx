@@ -68,8 +68,8 @@ const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<any>> = (props) 
                         { key: 'Duration',field: 'StartTime', label: 'Duration (c)', content: (record) => ((moment(record.EndTime).diff(moment(record.StartTime)) / 16.66667).toFixed(1))}
                     ]}
                     data={data}
-                    onClick={() => { }}
-                    onSort={() => { }}
+                    onClick={() => { /* Do Nothing */ }}
+                    onSort={() => { /* Do Nothing */ }}
                     sortKey={''}
                     ascending={true}
                     tableClass="table"
