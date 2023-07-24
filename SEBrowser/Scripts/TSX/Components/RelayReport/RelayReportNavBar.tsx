@@ -61,7 +61,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
     const [channels, setChannels] = React.useState<Channel[]>([]);
 
     React.useEffect(() => {
-        let handle = getSubstationData();
+        const handle = getSubstationData();
         return () => { if (handle != null && handle.abort != null) handle.abort(); }
     }, [])
 

@@ -88,7 +88,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
             getStartEndTime(getMoment(props.date, props.time), props.windowSize, props.timeWindowUnits)[1],
             props.timeWindowUnits);
 
-        let h = $.ajax({
+        const h = $.ajax({
             type: "GET",
             url: `${homePath}api/PQDashboard/RelayReport/getRelayPerformance?lineID=${props.BreakerID}&channelID=${props.ChannelID}}&date=${props.date}` +
                 `&time=${props.time}&timeWindowunits=${adjustedTime[0]}&windowSize=${adjustedTime[1]}`,

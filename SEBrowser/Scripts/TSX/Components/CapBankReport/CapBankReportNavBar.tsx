@@ -128,7 +128,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
 
     setDate(filter: SEBrowser.IReportTimeFilter) {
 
-        var object = _.clone(this.props) as CapBankReportNavBarProps;
+        const object = _.clone(this.props) as CapBankReportNavBarProps;
         object.TimeFilter = filter;
         this.props.stateSetter({ searchBarProps: object });
     }

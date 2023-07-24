@@ -42,7 +42,7 @@ interface ITimeFilter {
     timeWindowUnits: number,
     windowSize: number,
     halfWindowSize: number,
-};
+}
 
 interface IQuickSelect { label: string, createFilter: (timeZone: string) => SEBrowser.IReportTimeFilter }
 
@@ -373,7 +373,7 @@ const ReportTimeFilter = (props: IProps) => {
                                     centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
                                     startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat),
                                     endTime: endTime.format(momentDateFormat + ' ' + momentTimeFormat)
-                                }));;
+                                }));
                                 setActiveQP(-1);
                             }}
                                 Label='Time Window Center:'
@@ -466,7 +466,7 @@ const ReportTimeFilter = (props: IProps) => {
                                     halfWindowSize: window,
                                     startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat),
                                     endTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat)
-                                }));;
+                                }));
                                 setActiveQP(-1);
                             }} Label='' Valid={(record) => { return true; }}
                                 Type='number' />
@@ -482,7 +482,7 @@ const ReportTimeFilter = (props: IProps) => {
                                         timeWindowUnits: r.timeWindowUnits,              
                                         startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat),
                                         endTime: endTime.format(momentDateFormat + ' ' + momentTimeFormat)
-                                    }));;
+                                    }));
                                     setActiveQP(-1);
                                 }}
                                 Options={[
@@ -534,7 +534,7 @@ const ReportTimeFilter = (props: IProps) => {
                                         timeWindowUnits: r.timeWindowUnits,
                                         centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
                                         endTime: endTime.format(momentDateFormat + ' ' + momentTimeFormat)
-                                    }));;
+                                    }));
                                     setActiveQP(-1);
                                 }}
                                 Options={[
@@ -586,7 +586,7 @@ const ReportTimeFilter = (props: IProps) => {
                                     timeWindowUnits: r.timeWindowUnits,
                                     centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
                                     startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat)
-                                }));;
+                                }));
                                 setActiveQP(-1);
                             }}
                                 Options={[

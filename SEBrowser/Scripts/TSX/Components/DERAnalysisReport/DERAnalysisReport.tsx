@@ -155,7 +155,7 @@ function DERAnalysisReport() {
             getStartEndTime(getMoment(date, time), windowSize, timeWindowUnits)[1],
             timeWindowUnits);
 
-        let handle1 = $.ajax({
+        const handle1 = $.ajax({
             type: "POST",
             url: `${homePath}api/DERReport`,
             contentType: "application/json; charset=utf-8",
