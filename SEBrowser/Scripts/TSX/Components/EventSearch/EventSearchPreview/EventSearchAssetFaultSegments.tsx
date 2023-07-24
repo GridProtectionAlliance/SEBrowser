@@ -32,7 +32,6 @@ interface IFaultSegment {
     StartTime: string;
     EndTime: string;
 }
-const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
 
 const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [data, setData] = React.useState<IFaultSegment[]>([]);

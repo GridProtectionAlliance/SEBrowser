@@ -277,7 +277,7 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
     }
 
     return (
-        <div className="card" style={{ maxHeight: props.maxHeigh ?? '50vh' }}>
+        <div className="card" style={{ maxHeight: props.maxHeight ?? '50vh' }}>
             <div className="card" style={{ position: 'sticky', top: 0, zIndex: 2, backgroundColor: '#f5f5f5' }}>
                 <div className="card-header" >ESRI Map
                     <div className='pull-right'>
@@ -330,6 +330,7 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
                         />
                     </div>
                 </div>
+            </div>
         </div>
     );
 }

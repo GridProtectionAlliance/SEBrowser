@@ -48,9 +48,13 @@ interface ILoopImpedance {
 const LineParameters: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const [hidden, setHidden] = React.useState<boolean>(true);
     const [lineParameters, setLineParameters] = React.useState<ILineParameters>(null);
+    const [loopParameters, setLoopParemeters] = React.useState<ILoopImpedance>(null);
+
     React.useEffect(() => {
         return GetData();
     }, [props.eventID]);
+
+    React.useEffect(() => { if (lineParameters != null) LoopImp(); }, [lineParameters])
 
     function GetData() {
         const handle = $.ajax({
@@ -83,12 +87,17 @@ const LineParameters: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
         const zs = Math.sqrt(rs ^ 2 + xs ^ 2);
         const zsm = zs / lineParameters.Length;
         const angS = Math.atan(xs / rs) * 180 / Math.PI;
-        return (<tbody>
-            <tr><td>{lineParameters.Length}</td><td>{zs.toFixed(3)}</td><td>{angS.toFixed(3)}</td><td>{rs.toFixed(4)}</td><td>{xs.toFixed(4)}</td></tr>
-            <tr><td>Per Mile</td><td>{zsm.toFixed(3)}</td><td>-</td><td>{rsm.toFixed(4)}</td><td>{xsm.toFixed(4)}</td></tr>
 
-        </tbody>)
-
+        setLoopParemeters({
+            Length: lineParameters.Length,
+            ZS: zs.toFixed(3),
+            Ang: angS.toFixed(3),
+            RS: rs.toFixed(4),
+            XS: xs.toFixed(4),
+            PerMileZS: zsm.toFixed(3),
+            PerMileRS: rsm.toFixed(4),
+            PerMileXS: xsm.toFixed(4)
+        })
     }
     if (lineParameters == null) return null;
     return (
@@ -108,7 +117,7 @@ const LineParameters: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
                         { key: 'PerMileRS', field: 'PerMileRS', label: 'Per Mile RS' },
                         { key: 'PerMileXS', field: 'PerMileXS', label: 'Per Mile XS' }
                     ]}
-                    data={[LoopImp()]} 
+                    data={[loopParameters]} 
                     onClick={() => { }}
                     onSort={() => { }}
                     sortKey={''}

@@ -27,33 +27,50 @@ import moment from 'moment';
 import { SEBrowser } from '../../../global';
 import Table from '@gpa-gemstone/react-table';
 
-const EventSearchFileInfo: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
-    const [tableRows, setTableRows] = React.useState([]);
-
-    React.useEffect(() => {
-        if (props.eventID >= 0) {
-            createTableRows(props.eventID);
-        }
+interface IRelayPerformanceTrend {
+    BreakerID: number,
+    EventID: number,
+    Imax1: number,
+    Imax2: number,
+    TripInitiate: number,
+    TripTime: number,
+    PickupTime: number,
+    TripCoilCondition: number,
+    TripCoilConditionAlert: number,
+    TripTimeAlert: number,
+    PickupTimeAlert: number,
+    TripCoilChannelID: number,
+    Tmax1: number,
+    TplungerLatch: number,
+    IplungerLatch: number,
+    Idrop: number,
+    TiDrop: number,
+    Tend: number,
+    TripTimeCurrent: number,
+    PickupTimeCurrent: number,
+    TripCoilConditionTime: number,
+    ExtinctionTimeA: number,
+    ExtinctionTimeB: number,
+    ExtinctionTimeC: number,
+    I2CA: number,
+    I2CB: number,
+    I2CC: number,
+    EventType: number
+}
 
 const EventSearchRelayPerformance: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [data, setData] = React.useState<IRelayPerformanceTrend[]>([]);
 
-    let relayPerformanceHandle;
     function getRelayPerformanceData() {
-        if (relayPerformanceHandle !== undefined) {
-            relayPerformanceHandle.abort();
-                }
-        relayPerformanceHandle = $.ajax({
+       return  $.ajax({
             type: "GET",
             url: `${homePath}api/OpenXDA/GetRelayPerformance/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: true,
             async: true
-        });
-
-        return relayPerformanceHandle;
-            }
+       });
+    }
 
     React.useEffect(() => {
         const handle = getRelayPerformanceData();
@@ -77,7 +94,7 @@ const EventSearchRelayPerformance: React.FC<SEBrowser.IWidget<any>> = (props) =>
                         { key: 'TripInitiate', label: 'Trip Initiation Time', content: (d) => moment(d.TripInitiate).format('MM/DD/YY HH:mm:ss.SSSS') },
                         { key: 'TripTime', label: 'Trip Time', content: (d) => `${d.TripTime} micros` },
                         { key: 'PickupTime', label: 'Pickup Time', content: (d) => `${d.PickupTime} micros` },
-                        { key: 'ExtinctionTime', field: 'ExtinctionTime', label: 'Extinction Time', content: () => `micros` },
+                        { key: 'ExtinctionTime', field: 'ExtinctionTimeA', label: 'Extinction Time', content: () => `micros` },
                         { key: 'TripCoilCondition', field: 'TripCoilCondition', label: 'Trip Coil Condition', content: (d) => `${d.TripCoilCondition.toFixed(2)} A/s` },
                         { key: 'L1', field: 'Imax1', label: 'L1', content: (d) => `${d.Imax1.toFixed(3)} A` },
                         { key: 'L2', field: 'Imax2', label: 'L2', content: (d) => `${d.Imax2.toFixed(3)} A` },
