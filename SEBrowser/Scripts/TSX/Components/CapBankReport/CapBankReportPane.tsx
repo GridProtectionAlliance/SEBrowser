@@ -211,8 +211,8 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         if (this.eventTableHandle !== undefined)
             this.eventTableHandle.abort();
 
-        const adjustedTimeFrame = findAppropriateUnit(
-            ...getStartEndTime(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time), this.props.TimeFilter.windowSize, this.props.TimeFilter.timeWindowUnits),
+        const adjustedTimeFrame = findAppropriateUnit(getMoment(this.props.TimeFilter.date),
+            getStartEndTime(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time), this.props.TimeFilter.windowSize, this.props.TimeFilter.timeWindowUnits)[1],
             this.props.TimeFilter.timeWindowUnits);
 
         this.eventTableHandle = $.ajax({
@@ -669,8 +669,8 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         if (this.trendHandle !== undefined)
             this.trendHandle.abort();
 
-        const adjustedTimeFrame = findAppropriateUnit(
-            ...getStartEndTime(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time), this.props.TimeFilter.windowSize, this.props.TimeFilter.timeWindowUnits),
+        const adjustedTimeFrame = findAppropriateUnit(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time),
+            getStartEndTime(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time), this.props.TimeFilter.windowSize, this.props.TimeFilter.timeWindowUnits)[0],
             this.props.TimeFilter.timeWindowUnits);
 
         this.trendHandle = $.ajax({

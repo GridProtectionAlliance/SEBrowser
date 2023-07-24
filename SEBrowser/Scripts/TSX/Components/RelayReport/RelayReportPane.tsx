@@ -84,8 +84,8 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
 
     function getRelayPerformance(): JQuery.jqXHR<IRelayPerformance[]> {
 
-        const adjustedTime = findAppropriateUnit(
-            ...getStartEndTime(getMoment(props.date, props.time), props.windowSize, props.timeWindowUnits),
+        const adjustedTime = findAppropriateUnit(getMoment(props.date, props.time),
+            getStartEndTime(getMoment(props.date, props.time), props.windowSize, props.timeWindowUnits)[1],
             props.timeWindowUnits);
 
         let h = $.ajax({

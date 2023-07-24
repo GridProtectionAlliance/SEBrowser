@@ -151,8 +151,8 @@ function DERAnalysisReport() {
 
     React.useEffect(() => {
 
-        const adjustedTime = findAppropriateUnit(
-            ...getStartEndTime(getMoment(date, time), windowSize, timeWindowUnits),
+        const adjustedTime = findAppropriateUnit(getMoment(date, time),
+            getStartEndTime(getMoment(date, time), windowSize, timeWindowUnits)[1],
             timeWindowUnits);
 
         let handle1 = $.ajax({
