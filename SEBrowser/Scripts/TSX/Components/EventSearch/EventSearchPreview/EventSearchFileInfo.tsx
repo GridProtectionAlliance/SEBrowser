@@ -23,6 +23,7 @@
 
 import React from 'react';
 import { SEBrowser } from '../../../global';
+import  Table  from '@gpa-gemstone/react-table'; 
 
 const EventSearchFileInfo: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
 
@@ -88,13 +89,24 @@ const EventSearchFileInfo: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
             </div>
 
             <div className="card-body">
-                <table className="table"><thead><tr><th>File:</th><td style={{borderBottom: '2px solid #dee2e6'}}>{fileName}</td></tr></thead></table>
-                <h6>Mapped Channels</h6>
-                <table className="table">
-                    <thead><tr><th>Channel</th><th>Mapping</th></tr></thead>
-                    <tbody>{mappedChannels.map((mc, index) => <tr key={index}><td>{mc.Channel}</td><td>{mc.Mapping}</td></tr>)}</tbody>
-                </table>
+                <div className="card-header"><th>File:</th><td style={{borderBottom: '2px solid #dee2e6'}}>{fileName}</td></div>
 
+                <div className="card-header">Mapped Channels</div>
+                <Table
+                    cols={[
+                        { key: 'channel', field: 'Channel', label: 'Channel' },
+                        { key: 'mapping', field: 'Mapping', label: 'Mapping' },
+                    ]}
+                    data={mappedChannels}
+                    onClick={() => { /* Do Nothing */ }}
+                    onSort={() => { /* Do Nothing */ }}
+                    sortKey={''}
+                    ascending={true}
+                    tableClass="table"
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500 }}
+                    rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                />
             </div>
         </div>
     );

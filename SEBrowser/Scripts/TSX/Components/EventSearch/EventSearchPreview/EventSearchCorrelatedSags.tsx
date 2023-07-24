@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  EventSearchAssetVoltageDisturbances.tsx - Gbtc
+//  EventSearchCorrelatedSags.tsx - Gbtc
 //
 //  Copyright © 2019, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -24,20 +24,32 @@
 import React from 'react';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
+import Table from '@gpa-gemstone/react-table';
+
+interface ITimeCorrelatedSags {
+    EventID: number;
+    EventType: string;
+    SagMagnitudePercent: number;
+    SagDurationMilliseconds: number;
+    SagDurationCycles: number;
+    StartTime: string;
+    MeterName: string;
+    LineName: string;
+}
 
 const EventSearchCorrelatedSags: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
-    const [tableRows, setTableRows] = React.useState([]);
+    const [data, setData] = React.useState<ITimeCorrelatedSags[]>([]);
 
     let correlatedSagsHandle;
 
-    function getTimeCorrelatedSags(eventid: number) {
+    function getTimeCorrelatedSags() {
         if (correlatedSagsHandle !== undefined) {
             correlatedSagsHandle.abort();
         }
 
         correlatedSagsHandle = $.ajax({
             type: 'GET',
-            url: `${homePath}api/OpenXDA/GetTimeCorrelatedSags?eventId=${eventid}`,
+            url: `${homePath}api/OpenXDA/GetTimeCorrelatedSags?eventId=${props.eventID}`,
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
             cache: true,
@@ -47,74 +59,43 @@ const EventSearchCorrelatedSags: React.FC<SEBrowser.IWidget<unknown>> = (props) 
         return correlatedSagsHandle;
     }
 
-    function createTableRows() {
-        getTimeCorrelatedSags(props.eventID).done((data) => {
-            const rows = [];
-
-            for (let index = 0; index < data.length; ++index) {
-                const row = data[index];
-                let background = 'default';
-
-                if (row.EventID === props.eventID) {
-                    background = 'lightyellow';
-                }
-
-                rows.push(Row(row, background));
-            }
-
-            setTableRows(rows);
-        });
-    }
-
     React.useEffect(() => {
-        if (props.eventID >= 0) {
-            createTableRows();
-        }
+        const handle = getTimeCorrelatedSags();
+        handle.done((data) => {
+            setData(data);
+        });
+        return () => { if (handle != null && handle.abort != null) handle.abort(); }
     }, [props.eventID]);
 
     return (
         <div className="card">
             <div className="card-header">Correlated Sags:</div>
-
-            <div className="card-body">
-                <table className="table">
-                    <thead>
-                        <HeaderRow />
-                    </thead>
-                    <tbody>{tableRows}</tbody>
-                </table>
+            <div className="card-body" >
+                <Table
+                        cols={[
+                            { key: 'EventID', field: 'EventID', label: 'Event ID', content: (d: ITimeCorrelatedSags) => <a id="eventLink" href={openSEEInstance + '?eventid=' + d.EventID} target='_blank'><div style={{ width: '100%', height: '100%' }}>{d.EventID}</div></a> },
+                            { key: 'EventType', field: 'EventType', label: 'Event Type'},
+                            { key: 'SagMagnitude', field: 'SagMagnitudePercent', label: 'Magnitude'},
+                            { key: 'SagDuration', field: 'SagDurationMilliseconds', label: 'Duration', content: (d: ITimeCorrelatedSags) => `${d.SagDurationMilliseconds} ms (${d.SagDurationCycles} cycles)` },
+                            { key: 'StartTime', field: 'StartTime', label: 'Start Time', content: (d: ITimeCorrelatedSags) => moment(d.StartTime).format('HH:mm:ss.SSS') },
+                            { key: 'MeterName', field: 'MeterName', label: 'Meter Name'},
+                            { key: 'LineName', field: 'LineName', label: 'Line Name'}
+                        ]}
+                        data={data}
+                    onClick={() => { /* Do Nothing */ }}
+                    onSort={() => { /* Do Nothing */ }}
+                    sortKey={''}
+                    ascending={true}
+                    tableClass="table"
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500 }}
+                    rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                    selected={(d: ITimeCorrelatedSags) => d.EventID === props.eventID}
+                    />
             </div>
         </div>
     );
 };
 
-const Row = (row, background) => {
-
-    return (
-        <tr style={{ background: background }} key={row.EventID}>
-            <td key={'EventID' + row.EventID}><a id="eventLink" href={openSEEInstance + '?eventid=' + row.EventID} target='_blank'><div style={{ width: '100%', height: '100%' }}>{row.EventID}</div></a></td>
-            <td key={'EventType' + row.EventID}>{row.EventType}</td>
-            <td key={'SagMagnitude' + row.EventID}>{row.SagMagnitudePercent}%</td>
-            <td key={'SagDuration' + row.EventID}>{row.SagDurationMilliseconds} ms ({row.SagDurationCycles} cycles)</td>
-            <td key={'StartTime' + row.EventID}>{moment(row.StartTime).format('HH:mm:ss.SSS')}</td>
-            <td key={'MeterName' + row.EventID}>{row.MeterName}</td>
-            <td key={'LineName' + row.EventID}>{row.LineName}</td>
-        </tr>
-    );
-}
-
-const HeaderRow = () => {
-    return (
-        <tr key='Header'>
-            <th key='EventID'>Event ID</th>
-            <th key='EventType'>Event Type</th>
-            <th key='SagMagnitude'>Magnitude</th>
-            <th key='SagDuration'>Duration</th>
-            <th key='StartTime'>Start Time</th>
-            <th key='MeterName'>Meter Name</th>
-            <th key='LineName'>Line Name</th>
-        </tr>
-    );
-}
 
 export default EventSearchCorrelatedSags;

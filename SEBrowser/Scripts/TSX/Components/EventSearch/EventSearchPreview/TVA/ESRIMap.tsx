@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  TVAESRIMap.tsx - Gbtc
+//  ESRIMap.tsx - Gbtc
 //
 //  Copyright © 2020, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -29,6 +29,7 @@ import moment from 'moment';
 import { SEBrowser } from '../../../../global';
 import { Application } from '@gpa-gemstone/application-typings';
 import Table from '@gpa-gemstone/react-table';
+import { Select } from '@gpa-gemstone/react-forms';
 
 interface ILightningStrike {
     Service: string, DisplayTime: string, Amplitude: number, Latitude: number, Longitude: number
@@ -276,20 +277,26 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
     }
 
     return (
-        <div className="card">
-            <div className="card-header">ESRI Map</div>
-            <div className="card-body">
-                <div className='row'>
-                    <div className='col'>
-                        <label>Time Window (secs)</label>
-                        <select value={window} onChange={(evt) => setWindow(parseInt(evt.target.value))}>
-                            <option value="2">+/- 2 sec</option>
-                            <option value="5">+/- 5 sec</option>
-                            <option value="10">+/- 10 sec</option>
-                            <option value="20">+/- 20 sec</option>
-                            <option value="30">+/- 30 sec</option>
-                            <option value="60">+/- 60 sec</option>
-                        </select>
+        <div className="card" style={{ maxHeight: props.maxHeight ?? '50vh' }}>
+            <div className="card" style={{ position: 'sticky', top: 0, zIndex: 2, backgroundColor: '#f5f5f5' }}>
+                <div className="card-header" >ESRI Map
+                    <div className='pull-right'>
+                        <div className="form-inline">
+                        <Select
+                            Record={{ window }} 
+                            Field='window'
+                            Options={[
+                                { Value: "2", Label: "+/- 2 sec" },
+                                { Value: "5", Label: "+/- 5 sec" },
+                                { Value: "10", Label: "+/- 10 sec" },
+                                { Value: "20", Label: "+/- 20 sec" },
+                                { Value: "30", Label: "+/- 30 sec" },
+                                { Value: "60", Label: "+/- 60 sec" }
+                            ]}
+                            Setter={(record) => setWindow((record.window))}
+                            Label="Time Window (secs)"
+                            />
+                        </div>
                     </div>
                 </div>
                 <link rel="stylesheet" href="node_modules/leaflet/dist/leaflet.css" />
@@ -313,18 +320,18 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
                             ]}
                         tableClass="table table-hover"
                         data={lightningInfo}
-                        sortKey={'DisplayTime'}
+                        sortKey={''}
                         ascending={true}
                         onSort={() => {/*Do Nothing*/}}
                         theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                        tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: 'calc(30% - 100px)' }}
+                        tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.maxHeight ?? 500 }}
                         rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
                         selected={() => false}
                         />
-                        </div>
+                    </div>
                 </div>
             </div>
-            </div>
+        </div>
     );
 }
 

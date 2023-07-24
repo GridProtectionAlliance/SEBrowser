@@ -77,7 +77,7 @@ const StructureInfo: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
                     {structureInfo.map((si, index) => <option value={index}>{si.StrNumber}</option>)}
                 </select>
             </div>
-            <div className="card-body">
+            <div className="card-body" style={{ maxHeight: props.maxHeight ?? 500, overflowY: 'scroll'}}>
                 <table className='table'>
                     <thead><tr><th>Number</th><th>Lat</th><th>Lon</th></tr></thead>
                     <tbody>

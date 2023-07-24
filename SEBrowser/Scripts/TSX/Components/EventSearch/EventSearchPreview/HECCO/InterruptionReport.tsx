@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  SOE.tsx - Gbtc
+//  InterruptionReport.tsx - Gbtc
 //
 //  Copyright © 2020, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -22,6 +22,7 @@
 //******************************************************************************************************
 
 import Table from '@gpa-gemstone/react-table';
+import { Select } from '@gpa-gemstone/react-forms';
 import moment from 'moment';
 import React from 'react';
 import { SEBrowser } from '../../../../global';
@@ -71,23 +72,27 @@ const InterruptionReport: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }
     return (
         <div className="card">
-            <div className="card-header">Interruption Report:</div>
-            <div className="card-body">
-                <div className='row'>
-                    <div className='col'>
-                        <label>Time Window (hrs)</label>
-                        <select value={hours} onChange={(evt) => setHours(parseInt(evt.target.value))}>
-                            <option value={1}>1</option>
-                            <option value={2}>2</option>
-                            <option value={6}>6</option>
-                            <option value={12}>12</option>
-                            <option value={24}>24</option>
-                            <option value={48}>48</option>
-                        </select>
+            <div className="card-header">Interruption Report:
+                <div className='pull-right'>
+                    <div className="form-inline">
+                        <Select
+                            Record={{ hours }}
+                            Field='hours'
+                            Options={[
+                                { Value: "1", Label: "1" },
+                                { Value: "2", Label: "2" },
+                                { Value: "6", Label: "6" },
+                                { Value: "12", Label: "12" },
+                                { Value: "24", Label: "24" },
+                                { Value: "48", Label: "48" }
+                            ]}
+                            Setter={(record) => setHours(record.hours)}
+                            Label="Time Window (hrs)"
+                        />
                     </div>
                 </div>
-                <div className='row'>
-                    <div className='col'>
+            </div>
+            <div className="card-body">   
                 <Table<IInterruption>
                     cols={[
                         { key: 'CircuitInfo', field: 'CircuitInfo', label: 'Substation Ckt' },
@@ -110,15 +115,13 @@ const InterruptionReport: React.FC<SEBrowser.IWidget<any>> = (props) => {
                     ]}
                     data={data}
                     onSort={() => {/*Do Nothing*/ }}
-                    sortKey={'TimeOut'}
+                    sortKey={''}
                     ascending={true}
                     tableClass="table"
                     theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
-                    tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: 600, height: 600, width: '100%' }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.maxHeight ?? 500, width: '100%' }}
                     rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                     />
-                    </div>
-                    </div>
             </div>
         </div>
     );

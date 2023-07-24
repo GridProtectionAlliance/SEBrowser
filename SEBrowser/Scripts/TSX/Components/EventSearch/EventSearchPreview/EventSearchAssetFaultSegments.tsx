@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  EventSearchAssetVoltageDisturbances.tsx - Gbtc
+//  EventSearchAssetFaultSegments.tsx - Gbtc
 //
 //  Copyright © 2019, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -25,19 +25,30 @@ import React from 'react';
 import SEBrowserService from './../../../../TS/Services/SEBrowser';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
+import Table from '@gpa-gemstone/react-table';
 
-const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
+interface IFaultSegment {
+    SegmentType: string;
+    StartTime: string;
+    EndTime: string;
+}
 
-    const [tableRows, setTableRows] = React.useState<JSX.Element[]>([]);
+const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<any>> = (props) => {
+    const [data, setData] = React.useState<IFaultSegment[]>([]);
     const [count, setCount] = React.useState<number>(0);
     const [handle, setHandle] = React.useState<JQuery.jqXHR>();
-
     const seBrowserService = new SEBrowserService();
 
     React.useEffect(() => {
         if (props.eventID >= 0) {
-            createTableRows(props.eventID);
+            const handle = seBrowserService.getEventSearchAsssetFaultSegmentsData(props.eventID).done((data: IFaultSegment[]) => {
+                setData(data);
+                setCount(data.length);
+            });
+
+            setHandle(handle);
         }
+
         return () => {
             if (handle?.abort != undefined) {
                 handle.abort();
@@ -45,44 +56,30 @@ const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<unknown>> = (pro
         };
     }, [props.eventID]);
 
-    const createTableRows = (eventID: number) => {
-        const handle = seBrowserService.getEventSearchAsssetFaultSegmentsData(eventID).done((data) => {
-            const rows = data.map((d, i) => (
-                <tr key={i}>
-                    <td>{d.SegmentType}</td>
-                    <td>{moment(d.StartTime).format('HH:mm:ss.SSS')}</td>
-                    <td>{moment(d.EndTime).format('HH:mm:ss.SSS')}</td>
-                    <td>{(moment(d.EndTime).diff(moment(d.StartTime)) / 16.66667).toFixed(1)}</td>
-                </tr>
-            ));
-
-            setTableRows(rows);
-            setCount(rows.length);
-        });
-
-        setHandle(handle);
-    };
-
     return (
         <div className="card" style={{ display: count > 0 ? 'block' : 'none' }}>
             <div className="card-header">Fault Evolution Summary:</div>
-
             <div className="card-body">
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Evolution</th>
-                            <th>Inception</th>
-                            <th>End</th>
-                            <th>Duration (c)</th>
-                        </tr>
-                    </thead>
-                    <tbody>{tableRows}</tbody>
-                </table>
+                <Table<IFaultSegment>
+                    cols={[
+                        { key: 'SegmentType', field: 'SegmentType', label: 'Evolution' },
+                        { key: 'StartTime', field: 'StartTime', label: 'Inception', content: (record) => moment(record.StartTime).format('HH:mm:ss.SSS')},
+                        { key: 'EndTime', field: 'EndTime', label: 'End', content: (record) => moment(record.EndTime).format('HH:mm:ss.SSS')},
+                        { key: 'Duration',field: 'StartTime', label: 'Duration (c)', content: (record) => ((moment(record.EndTime).diff(moment(record.StartTime)) / 16.66667).toFixed(1))}
+                    ]}
+                    data={data}
+                    onClick={() => { /* Do Nothing */ }}
+                    onSort={() => { /* Do Nothing */ }}
+                    sortKey={''}
+                    ascending={true}
+                    tableClass="table"
+                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 50 }}
+                    tbodyStyle={{ display: 'block', overflowY: 'scroll', width: '100%', maxHeight: props.maxHeight ?? 500 }}
+                    rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                />
             </div>
         </div>
     );
-
 }
 
 export default EventSearchAssetFaultSegments;

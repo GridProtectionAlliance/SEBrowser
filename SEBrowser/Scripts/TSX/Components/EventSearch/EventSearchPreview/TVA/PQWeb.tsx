@@ -42,10 +42,10 @@ const PQWeb: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
                 </ul>
 
                 <div className="tab-content">
-                    <div style={{ height: 400, maxHeight: 400, overflowY: 'hidden' }} className={"tab-pane fade" + (tab == 'LSC' ? " show active" : "")}>
+                    <div style={{ height: 400, maxHeight: props.maxHeight ?? 400, overflowY: 'hidden' }} className={"tab-pane fade" + (tab == 'LSC' ? " show active" : "")}>
                         <iframe style={{ height: 'inherit', width: '100%'}} src={`${faultLocationInstance}/pqwebreport.asp?sitefilter=LSC&t=${moment(props.startTime).format('YYYY-MM-DD HH:mm:ss')}`}/>
                     </div>
-                    <div style={{ height: 400, maxHeight: 400, overflowY: 'hidden' }} className={"tab-pane fade" + (tab == 'All' ? " show active" : "")}>
+                    <div style={{ height: 400, maxHeight: props.maxHeight ?? 400, overflowY: 'hidden' }} className={"tab-pane fade" + (tab == 'All' ? " show active" : "")}>
                         <iframe style={{ height: 'inherit', width: '100%' }} src={`${faultLocationInstance}/pqwebreport.asp?t=${moment(props.startTime).format('YYYY-MM-DD HH:mm:ss')}`}/>
                     </div>
                 </div>

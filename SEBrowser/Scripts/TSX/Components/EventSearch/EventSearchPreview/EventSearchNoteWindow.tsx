@@ -69,7 +69,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
             setNoteType(noteTypes[0]);
     }, [noteTypes, noteType])
     function getNoteType(): JQuery.jqXHR<OpenXDA.Types.NoteType[]> {
-        const handle = $.ajax({
+        const  handle = $.ajax({
             type: "GET",
             url: `${homePath}api/OpenXDA/NoteType`,
             contentType: "application/json; charset=utf-8",
@@ -169,7 +169,7 @@ const NoteWidget: React.FC<SEBrowser.IWidget<ISetting>> = (props) => {
         id = ids.LocationID;
 
     return (
-        <div className='card'>
+        <div className='card' style={{ maxHeight: props.maxHeight ?? 500 , overflowY: 'auto'} }>
             <div className='card-header'>Notes</div>
             <div className='card-body'>
                 <div className='row'>
