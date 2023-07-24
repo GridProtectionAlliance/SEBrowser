@@ -335,14 +335,6 @@ const ReportTimeFilter = (props: IProps) => {
                             Type='datetime-local'
                             Valid={() => { return true; }} Format={momentDateFormat + ' ' + momentTimeFormat} />
                         </div>
-                    {/*<div className='col-6'>
-                        <TimePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="time"
-                            Setter={(r) => {
-                            setFilter(r);
-                            setActiveQP(-1);
-                            }}
-                            Label='' Valid={(record) => { return true; }} Step={0.001} />
-                        </div>*/}
                     </div>
 
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>

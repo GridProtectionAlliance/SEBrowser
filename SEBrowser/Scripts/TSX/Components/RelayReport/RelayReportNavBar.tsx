@@ -225,7 +225,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Substation: </label>
                                     <div className="form-group" style={{ height: 30 }}>
                                         <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            setStation(Number(e.target.value));
+                                            setStation(parseInt(e.target.value.toString()));
                                         }} value={props.StationId}>
                                             {substations.map((item,index) => <option key={index} value={item.LocationID} > {item.AssetName} </option>)}
                                         </select>
