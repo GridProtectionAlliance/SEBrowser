@@ -21,7 +21,7 @@
 //
 //******************************************************************************************************
 
-declare var homePath: string;
+declare let homePath: string;
 
 export default class SEBrowserdService {
     mostActiveMeterHandle: JQuery.jqXHR;

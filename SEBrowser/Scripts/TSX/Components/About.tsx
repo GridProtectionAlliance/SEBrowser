@@ -58,15 +58,13 @@ export default function About () {
                         <ul>
                             <li><u>Waveform View Check Boxes</u> - These check boxes are used to select the individual charts that are displayed for each waveform being displayed.  Options are voltages, currents, and digitals.</li>
                             <li><u>Info, Compare and Analytics Tabs</u> - These tabs are used to show summary information about the waveform of focus, select one of from 20+ analytics to perform on the waveform-of-focus, or to
-	                        find additional waveforms to compare to the waveform-of-focus -- and might be interesting, for example, in the case of double-ended fault location.</li>
+                            find additional waveforms to compare to the waveform-of-focus -- and might be interesting, for example, in the case of double-ended fault location.</li>
                             <li><u>Data Tools Menu</u> - This menu allows the user to "pop up" tools to display additional information about the waveform-of-focus.</li>
-                            <li><u>Region Select Zooming</u> - The waveform initially loads with the the time-scale set to the full length of the waveform capture. With the mouse, the user can select a region of the waveform to zoom in and see more detail.</li>
-	                        <li><u>Reset Zoom</u> - After zooming in, this button can be used to set the time-scale back to the full length of the waveform.</li>
+                            <li><u>Region Select Zooming</u> - The waveform initially loads with the the time-scale set to the full length of the waveform capture. With the mouse, the user can select a region of the waveform to zoom in and see more detail.</li><li><u>Reset Zoom</u> - After zooming in, this button can be used to set the time-scale back to the full length of the waveform.</li>
                             <li><u>Forward and Back Navigation</u> - Using the collection of controls in the upper-right of the openSEE display, the user can select the basis for changing to a new waveform-of-focus.  A selection of "system" means that user can step forward or back
-	                        to next event in the openXDA base globally (for all DFRs, PQ Meters, etc.),
-	                        i.e., what havened immediately previously or next on the system relative to the current waveform-of-focus.  A selection of "asset" (or "line") limits this navigation to just events on this asset.
-	                        A selection of "meter" limits this navigation to just events recored by this substation device.</li>
-                                <li><u>Chart Trace Section</u> - To the right of each chart, the user has the ability to turn on and off individual traces.  Tabs are provided to organize these selections by data type.</li>
+                            to next event in the openXDA base globally (for all DFRs, PQ Meters, etc.),i.e., what havened immediately previously or next on the system relative to the current waveform-of-focus. A selection of "asset" (or "line") limits this navigation to just events on this asset.
+                            A selection of "meter" limits this navigation to just events recored by this substation device.</li>
+                            <li><u>Chart Trace Section</u> - To the right of each chart, the user has the ability to turn on and off individual traces. Tabs are provided to organize these selections by data type.</li>
                         </ul>
 
                         <p>

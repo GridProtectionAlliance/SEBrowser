@@ -34,7 +34,7 @@ interface IState {
     searchBarProps: CapBankReportNavBarProps,
 }
 
-const CapBankReport = (props: {}) => {
+const CapBankReport = () => {
     const navigate = useNavigate();
     const history = useLocation();
     const [CapBankID, setCapBankID] = React.useState<number>(0);
@@ -55,7 +55,7 @@ const CapBankReport = (props: {}) => {
     const [PhaseFilter, setPhaseFilter] = React.useState<number[]>([]);
 
     React.useEffect(() => {
-        var query = queryString.parse(history.search.replace("?", ""), "&", "=");
+        const query = queryString.parse(history.search.replace("?", ""), "&", "=");
 
         setCapBankID(query['capBankId'] != undefined ? parseInt(query['capBankId'] as string) : -1);
         setDate(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat));
@@ -81,8 +81,8 @@ const CapBankReport = (props: {}) => {
             selectedBank, StationId, numBanks, ResFilt, StatFilt,
             OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter };
 
-        let q = queryString.stringify(state, "&", "=");
-        let handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
+        const q = queryString.stringify(state, "&", "=");
+        const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
 
     }, [CapBankID, date, time, windowSize, timeWindowUnits,

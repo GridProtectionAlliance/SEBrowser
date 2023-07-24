@@ -49,26 +49,29 @@ const EventSearchTypeFilters = (props: IProps) => {
 
     React.useEffect(() => {
         let navHeight = props.Height;
-        let heights = evtTypeCategories.map(h => h.height);
-        if (heights.some(h => h > navHeight))
+        const heights = evtTypeCategories.map(h => h.height);
+        if (heights.some(h => h > navHeight)) {
             navHeight = Math.max(...heights);
+        }
 
         let nCollumn = 0;
         heights.sort();
+
         while (heights.length > 0) {
             nCollumn = nCollumn + 1;
             let hc = heights[0];
             heights.splice(0, 1);
-            while (true) {
-                const index = heights.findIndex(h => h <= (navHeight - hc))
-                if (index < 0 || heights[index] == 0)
-                    break;
+
+            let index = heights.findIndex(h => h <= (navHeight - hc));
+            while (index >= 0 && heights[index] !== 0) {
                 hc = hc + heights[index];
                 heights.splice(index, 1);
+                index = heights.findIndex(h => h <= (navHeight - hc));
             }
         }
-        setnCol(nCollumn)
-    }, [evtTypeCategories, props.Height])
+        setnCol(nCollumn);
+    }, [evtTypeCategories, props.Height]);
+
 
     React.useEffect(() => {
         if (evtTypeStatus == 'changed' || evtTypeStatus == 'unintiated')
@@ -91,10 +94,8 @@ const EventSearchTypeFilters = (props: IProps) => {
                 flts.push(categories[0]);
             let hc = categories[0].height;
             categories.splice(0, 1);
-            while (true) {
-                const index = categories.findIndex(h => h.height <= (navHeight - hc))
-                if (index < 0)
-                    break;
+            const index = categories.findIndex(h => h.height <= (navHeight - hc))
+            while (index >= 0) {
                 hc = hc + categories[index].height;
                 if (nCollumn == colIndex + 1)
                     flts.push(categories[index]);
@@ -124,7 +125,7 @@ const EventSearchTypeFilters = (props: IProps) => {
         const index = evtTypeCategories.findIndex(c => c.label == label)
         if (index > -1 && evtTypeCategories[index].height != h)
             setEvtTypeCategories((d) => {
-                let u = _.cloneDeep(d);
+                const u = _.cloneDeep(d);
                 u[index].height = h;
                 return u;
             })

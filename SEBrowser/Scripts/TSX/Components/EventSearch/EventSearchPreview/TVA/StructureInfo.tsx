@@ -24,7 +24,7 @@
 import React from 'react';
 import { SEBrowser } from '../../../../global';
 
-const StructureInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
+const StructureInfo: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const [structureInfo, setStructureInfo] = React.useState<Array<{ StrNumber: string, Latitude: number, Longitude: number, Imagepath: string }>>([]);
     const [selectedIndex, setSelectedIndex] = React.useState<number>(-1);
 
@@ -67,7 +67,7 @@ const StructureInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
         setSelectedIndex(parseInt(event.target.value));
     };
 
-    let test = '\\\\Images\\noimage.jpg';
+    const test = '\\\\Images\\noimage.jpg';
 
     return (
         <div className="card">

@@ -37,14 +37,14 @@ interface LSC {
     EventID: number
 }
 
-const LSC: React.FC<SEBrowser.IWidget<any>> = (props) => {
+const LSC: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const [lscInfo, setLSCInfo] = React.useState<Array<LSC>>([]);
     React.useEffect(() => {
         return GetData();
     }, [props.eventID, ]);
 
     function GetData() {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/LSC/${props.eventID}`,
             contentType: "application/json; charset=utf-8",

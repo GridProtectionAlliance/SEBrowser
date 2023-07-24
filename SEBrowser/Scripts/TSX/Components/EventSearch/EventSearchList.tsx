@@ -44,7 +44,7 @@ interface IColumn {
 
 export default function EventSearchList(props: IProps) {
     const ref = React.useRef();
-    const closureHandler = React.useRef<((o: boolean) => void)>(() => { })
+    const closureHandler = React.useRef<((o: boolean) => void)>(() => {/*Do Nothing*/ })
     const count = React.useRef(null);
     const dispatch = useAppDispatch();
     const status = useAppSelector(SelectEventSearchsStatus);
@@ -67,8 +67,6 @@ export default function EventSearchList(props: IProps) {
         if (status != 'unitiated' && status != 'changed') return;
 
         dispatch(FetchEventSearches());
-        return () => {}
-
     }, [status]);
 
     React.useEffect(() => {
@@ -80,7 +78,7 @@ export default function EventSearchList(props: IProps) {
 
         if (flds.length != cols.length)
             setCols(flds.map(item => ({
-                field: item, key: item, label: item, content: (item, key, fld, style) => ProcessWhitespace(item[fld]) })))
+                field: item, key: item, label: item, content: (item, key, fld) => ProcessWhitespace(item[fld]) })))
 
     }, [data])
 
@@ -95,7 +93,7 @@ export default function EventSearchList(props: IProps) {
     function handleKeyPress(event) {
         if (data.length == 0) return;
 
-        var index = data.map(a => a.EventID.toString()).indexOf(props.eventid.toString());
+        const index = data.map(a => a.EventID.toString()).indexOf(props.eventid.toString());
 
         if (event.keyCode == 40) // arrow down key
         {
@@ -126,15 +124,15 @@ export default function EventSearchList(props: IProps) {
 
     function setScrollBar() {
 
-        var rowHeight = $(ReactDOM.findDOMNode(ref.current)).find('tbody').children()[0].clientHeight;
-        var index = data.map(a => a.EventID.toString()).indexOf(props.eventid.toString());
-        var tableHeight = data.length * rowHeight;
-        var windowHeight = window.innerHeight - 314;
-        var tableSectionCount = Math.ceil(tableHeight / windowHeight);
-        var tableSectionHeight = Math.ceil(tableHeight / tableSectionCount);
-        var rowsPerSection = tableSectionHeight / rowHeight;
-        var sectionIndex = Math.floor(index / rowsPerSection);
-        var scrollTop = $(ReactDOM.findDOMNode(ref.current)).find('tbody').scrollTop();
+        const rowHeight = $(ReactDOM.findDOMNode(ref.current)).find('tbody').children()[0].clientHeight;
+        const index = data.map(a => a.EventID.toString()).indexOf(props.eventid.toString());
+        const tableHeight = data.length * rowHeight;
+        const windowHeight = window.innerHeight - 314;
+        const tableSectionCount = Math.ceil(tableHeight / windowHeight);
+        const tableSectionHeight = Math.ceil(tableHeight / tableSectionCount);
+        const rowsPerSection = tableSectionHeight / rowHeight;
+        const sectionIndex = Math.floor(index / rowsPerSection);
+        const scrollTop = $(ReactDOM.findDOMNode(ref.current)).find('tbody').scrollTop();
 
         if(scrollTop <= sectionIndex * tableSectionHeight || scrollTop >= (sectionIndex + 1) * tableSectionHeight - tableSectionHeight/2)
             $(ReactDOM.findDOMNode(ref.current)).find('tbody').scrollTop(sectionIndex * tableSectionHeight);
@@ -143,7 +141,7 @@ export default function EventSearchList(props: IProps) {
     function ProcessWhitespace(txt: string | number): React.ReactNode {
         if (txt == null)
             return <>N/A</>
-        let lines = txt.toString().split("<br>");
+        const lines = txt.toString().split("<br>");
         return lines.map((item, index) => {
             if (index == 0)
                 return <> {item} </>
@@ -161,7 +159,7 @@ export default function EventSearchList(props: IProps) {
             </div> : null}
             <ConfigurableTable<any>
                     cols={[{
-                        field: "Time", key: "Time", label: "Time", content: (item, key, fld, style) => ProcessWhitespace(item[fld])
+                        field: "Time", key: "Time", label: "Time", content: (item, key, fld) => ProcessWhitespace(item[fld])
                     }, ...cols]}
                     tableClass="table table-hover"
                     data={data}

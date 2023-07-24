@@ -29,7 +29,7 @@ const AngleIcon: React.FunctionComponent<{ ascending: boolean }> = (props) => <s
 export interface TableProps<T> {
     cols: Array<{ key: keyof (T) | null, label: string, headerStyle?: React.CSSProperties, rowStyle?: React.CSSProperties, content?(item: T, key: keyof (T), style: React.CSSProperties): React.ReactNode }>,
     data: Array<T>,
-    onClick: (data: { col: keyof (T), row: T, data: T[keyof (T)] }, event: any) => void,
+    onClick: (data: { col: keyof (T), row: T, data: T[keyof (T)] }, event: React.MouseEvent<HTMLElement>) => void,
     sortField: string,
     ascending: boolean,
     onSort(data: { col: keyof (T), asending: boolean }): void,
@@ -43,17 +43,15 @@ export interface TableProps<T> {
     rowStyle?: React.CSSProperties,
 }
 
-export default class Table<T> extends React.Component<TableProps<T>, {}> {
+export default class Table<T> extends React.Component<TableProps<T>> {
     constructor(props) {
         super(props);
     }
 
-    componentDidUpdate(prevProps, prevState) {
-    }
 
     render() {
-        var rowComponents = this.generateRows();
-        var headerComponents = this.generateHeaders();
+        const rowComponents = this.generateRows();
+        const headerComponents = this.generateHeaders();
         return (
             <table className={(this.props.tableClass != undefined ? this.props.tableClass : '')} style={this.props.tableStyle}>
                 <thead style={this.props.theadStyle}>{headerComponents}</thead>
@@ -65,8 +63,8 @@ export default class Table<T> extends React.Component<TableProps<T>, {}> {
     generateHeaders() {
         if (this.props.cols.length == 0) return null;
 
-        var cells = this.props.cols.map((colData, index) => {
-            var style;
+        const cells = this.props.cols.map((colData, index) => {
+            let style;
             if (colData.headerStyle != undefined) {
                 style = colData.headerStyle;
             }
@@ -76,7 +74,7 @@ export default class Table<T> extends React.Component<TableProps<T>, {}> {
             if (style.cursor == undefined)
                 style.cursor = 'pointer';
 
-            return <th key={index} style={style} onClick={(e) => this.handleSort({ col: colData.key, ascending: this.props.ascending }, e)}>{colData.label}{(this.props.sortField == colData.key ? <AngleIcon ascending={this.props.ascending} /> : null)}</th>
+            return <th key={index} style={style} onClick={() => this.handleSort({ col: colData.key, ascending: this.props.ascending })}>{colData.label}{(this.props.sortField == colData.key ? <AngleIcon ascending={this.props.ascending} /> : null)}</th>
         });
 
         return <tr>{cells}</tr>;
@@ -86,8 +84,8 @@ export default class Table<T> extends React.Component<TableProps<T>, {}> {
         if (this.props.data.length == 0) return null;
 
         return this.props.data.map((item, index) => {
-            var cells = this.props.cols.map(colData => {
-                var style = _.clone(colData.rowStyle);
+            const cells = this.props.cols.map(colData => {
+                const style = _.clone(colData.rowStyle);
                 return <td
                     key={index.toString() + item[colData.key] + colData.key}
                     style={style}
@@ -97,7 +95,7 @@ export default class Table<T> extends React.Component<TableProps<T>, {}> {
                 </td>
             });
 
-            var style;
+            let style;
 
             if (this.props.rowStyle != undefined) {
                 style = _.clone(this.props.rowStyle);
@@ -115,11 +113,11 @@ export default class Table<T> extends React.Component<TableProps<T>, {}> {
         });
     }
 
-    handleClick(data: { col: keyof (T), row: T, data: any }, event) {
+    handleClick(data: { col: keyof (T), row: T, data: T[keyof T] }, event) {
         this.props.onClick(data, event);
     }
 
-    handleSort(data, event) {
+    handleSort(data) {
         this.props.onSort(data);
     }
-};
+}

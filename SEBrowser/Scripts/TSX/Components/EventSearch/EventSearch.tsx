@@ -25,7 +25,6 @@
 
 import React from 'react';
 import EventSearchList from './EventSearchList';
-import { History } from 'history';
 import EventSearchNavbar from './EventSearchNavbar';
 import EventPreviewPane from './EventSearchPreview/EventSearchPreviewPane';
 import queryString from 'querystring';
@@ -35,11 +34,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SplitSection, VerticalSplit } from '@gpa-gemstone/react-interactive';
 
-interface IProps { }
 
 type tab = 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All' | undefined;
 
-const EventSearch = (props: IProps) => {
+const EventSearch = () => {
     const history = useLocation();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
@@ -54,7 +52,7 @@ const EventSearch = (props: IProps) => {
     const evtList = useAppSelector(SelectEventList);
 
     React.useEffect(() => {
-        var query = queryString.parse(history.search.replace("?",""), "&", "=", { decodeURIComponent: queryString.unescape });
+        const query = queryString.parse(history.search.replace("?",""), "&", "=", { decodeURIComponent: queryString.unescape });
 
         dispatch(ProcessQuery(query));
 
@@ -67,8 +65,8 @@ const EventSearch = (props: IProps) => {
 
    
     React.useEffect(() => {
-        let q = queryString.stringify(queryParam, "&", "=", { encodeURIComponent: queryString.escape });
-        let handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
+        const q = queryString.stringify(queryParam, "&", "=", { encodeURIComponent: queryString.escape });
+        const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
     }, [queryParam])
 
@@ -82,7 +80,7 @@ const EventSearch = (props: IProps) => {
 
 
     function getShowNav(): boolean {
-        if (localStorage.hasOwnProperty('SEbrowser.EventSearch.ShowNav'))
+        if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.EventSearch.ShowNav'))
             return JSON.parse(localStorage.getItem('SEbrowser.EventSearch.ShowNav'))
         else
             return true;

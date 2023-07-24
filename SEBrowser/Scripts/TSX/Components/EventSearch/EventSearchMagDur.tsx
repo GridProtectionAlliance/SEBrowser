@@ -22,13 +22,12 @@
 //******************************************************************************************************
 
 import * as React from 'react';
-import * as _ from 'lodash';
 import { SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs, SelectCharacteristicFilter, SelectEventSearchsSortField, SelectEventSearchsAscending, Sort } from './EventSearchSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { OpenXDA, Redux, SEBrowser } from '../../global';
+import { Redux, SEBrowser } from '../../global';
 import { MagDurCurveSlice } from '../../Store';
 import { Line, Plot, Circle, AggregatingCircles } from '@gpa-gemstone/react-graph';
-import { SelectEventSearchSettings, SetEventSearch } from '../SettingsSlice';
+import { SelectEventSearchSettings } from '../SettingsSlice';
 import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
 import Table, { Column } from '@gpa-gemstone/react-table';
 
@@ -42,7 +41,7 @@ interface IProps {
 const MagDurChart = (props: IProps) => {
     const chart = React.useRef(null);
     const count = React.useRef(null);
-    const empty = React.useCallback(() => { }, []);
+    const empty = React.useCallback(() => {/*Do Nothing*/}, []);
     const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
     const magDurCurves = useAppSelector(MagDurCurveSlice.Data) as SEBrowser.MagDurCurve[];
     const [currentCurve, setCurrentCurve] = React.useState<SEBrowser.MagDurCurve>(null)
@@ -115,8 +114,8 @@ const MagDurChart = (props: IProps) => {
     function generateCurve(curve: SEBrowser.MagDurCurve) {
        
         if (curve.LowerCurve == null && curve.UpperCurve == null) {
-            let pt = curve.Area.split(',');
-            let cu = pt.map(point => { let s = point.trim().split(" "); return [parseFloat(s[0]), parseFloat(s[1])] as [number, number]; })
+            const pt = curve.Area.split(',');
+            const cu = pt.map(point => { const s = point.trim().split(" "); return [parseFloat(s[0]), parseFloat(s[1])] as [number, number]; })
             return cu;
         }
 
@@ -227,10 +226,10 @@ interface IEventListProps {
     Duration: number;
     Height: number;
     Width: number;
-};
+}
 
 const EventList = (props: IEventListProps) => {
-    const closureHandler = React.useRef<((o: boolean) => void)>(() => { });
+    const closureHandler = React.useRef<((o: boolean) => void)>(() => {/*Do Nothing*/});
 
     const dataFilter = React.useCallback((state: Redux.StoreState) => SelectEventSearchs(state).filter(p =>
         Math.abs(p['MagDurDuration'] - props.Duration) < 1E-10 && Math.abs(p['MagDurMagnitude'] - props.Magnitude) < 0.0001),
@@ -255,7 +254,7 @@ const EventList = (props: IEventListProps) => {
     function ProcessWhitespace(txt: string | number): React.ReactNode {
         if (txt == null)
             return <>N/A</>
-        let lines = txt.toString().split("<br>");
+        const lines = txt.toString().split("<br>");
         return lines.map((item, index) => {
             if (index == 0)
                 return <> {item} </>
@@ -264,14 +263,14 @@ const EventList = (props: IEventListProps) => {
     }
 
     function LoadColumns() {
-        let c = [{ field: "Time", key: "Time", label: "Time", content: (item, key, fld, style) => ProcessWhitespace(item[fld]) }];
+        let c = [{ field: "Time", key: "Time", label: "Time", content: (item, key, fld) => ProcessWhitespace(item[fld]) }];
         const flds = Object.keys(data[0]).filter(item => item != "Time" && item != "DisturbanceID" && item != "EventID" && item != "EventID1" && item != 'MagDurDuration' && item != 'MagDurMagnitude').sort();
         let keys = [];
         const currentState = localStorage.getItem('SEbrowser.EventSearch.TableCols');
         if (currentState !== null)
             keys = currentState.split(",");
 
-        c = c.concat(flds.filter(f => keys.includes(f)).map(f => ({ field: f, key: f, label: f, content: (item, key, fld, style) => ProcessWhitespace(item[fld]) })));
+        c = c.concat(flds.filter(f => keys.includes(f)).map(f => ({ field: f, key: f, label: f, content: (item, key, fld) => ProcessWhitespace(item[fld]) })));
        
         setCollumns(c);
     }

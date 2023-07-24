@@ -34,20 +34,20 @@ import CapBankReport from './Components/CapBankReport/CapBankReport';
 import DERAnalysisReport from './Components/DERAnalysisReport/DERAnalysisReport';
 
 import { SystemCenter } from '@gpa-gemstone/application-typings';
-import { Application, Page, Section, Modal } from '@gpa-gemstone/react-interactive';
+import { Application, Page, Section } from '@gpa-gemstone/react-interactive';
 import Settings from './Settings';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { useAppDispatch } from './hooks';
 import { LoadSettings } from './Components/SettingsSlice';
 
-const SEBrowserMainPage = (props: {}) => {
+const SEBrowserMainPage = () => {
     const dispatch = useAppDispatch();
 
     const [links, setLinks] = React.useState<SystemCenter.Types.ValueListItem[]>([]);
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
 
     React.useEffect(() => {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/ValueList/Group/CustomReports`,
             contentType: "application/json; charset=utf-8",

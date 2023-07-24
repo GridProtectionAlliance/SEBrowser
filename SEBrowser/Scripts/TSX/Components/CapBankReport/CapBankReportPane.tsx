@@ -164,7 +164,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
     }
 
     componentDidUpdate(oldProps: CapBankReportNavBarProps) {
-        let newProps = _.clone(this.props);
+        const newProps = _.clone(this.props);
         if (!_.isEqual(newProps, oldProps) && newProps.CapBankID >= 0) {
             this.getData();
             this.getTimeLimits()
@@ -249,7 +249,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
     }
 
     updateCapBank() {
-        let h = $.ajax({
+        const h = $.ajax({
             type: "GET",
             url: `${homePath}api/PQDashboard/CapBankReport/SetCapBank/${this.state.SelectedEvent}/${this.state.SelectedCapBank}`,
             contentType: "application/json; charset=utf-8",
@@ -258,18 +258,18 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
             async: true
         });
 
-        h.then(d => {
+        h.then(() => {
             this.getData();
         })
     }
 
     createPointTable(d: ITrendSeries[], title: string, unit: string) {
 
-        let indices = d.map((item, index) => 0);
+        let indices = d.map(() => 0);
         const rows = [];
 
         while (indices.some((item, index) => item < d[index].data.length)) {
-            let T = Math.min(...indices.map((item, index) => item < d[index].data.length ? d[index].data[item][0] : NaN).filter(n => !isNaN(n)));
+            const T = Math.min(...indices.map((item, index) => item < d[index].data.length ? d[index].data[item][0] : NaN).filter(n => !isNaN(n)));
             rows.push(<tr onClick={() => window.open('./eventsearch?line=true&date=' + moment.utc(T).format('MM/DD/YYYY') + '&time=' + moment.utc(T).format('HH:mm:ss.SSS') + '&windowSize=1&timeWindowUnits=1&tab=All&eventid=-1', "_blank")}>
                 <td>{moment.utc(T).format('MM/DD/YY HH:mm:ss.SSS')}</td>
                 {d.map((item, index) => <td key={index}>{indices[index] < item.data.length && item.data[indices[index]][0] == T ? item.data[indices[index]][1].toPrecision(6) : 'N/A'}</td>)}
@@ -298,7 +298,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         if (this.props.CapBankID == -1) return <div></div>;
 
 
-        let bankOptions = [];
+        const bankOptions = [];
         let i;
         for (i = 0; i < this.props.numBanks; i++) {
             bankOptions.push(<option key={i} value={i + 1}> {i + 1} </option>)
@@ -655,8 +655,8 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
     }
 
     getTimeLimits() {
-        let dT = this.props.windowSize;
-        let Tcenter = moment.utc(this.props.date + " " + this.props.time,"MM/DD/YYYY HH:mm:ss.SSSS");
+        const dT = this.props.windowSize;
+        const Tcenter = moment.utc(this.props.date + " " + this.props.time,"MM/DD/YYYY HH:mm:ss.SSSS");
         let dUnit: moment.unitOfTime.DurationConstructor;
 
         if (this.props.timeWindowUnits == 0)
@@ -676,9 +676,9 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         else if (this.props.timeWindowUnits == 7)
             dUnit = "y"
 
-        let Tstart = cloneDeep(Tcenter);
+        const Tstart = cloneDeep(Tcenter);
         Tstart.subtract(dT, dUnit);
-        let Tend = cloneDeep(Tcenter);
+        const Tend = cloneDeep(Tcenter);
         Tend.add(dT, dUnit);
 
         this.setState({ Tstart: Tstart.valueOf(), Tend: Tend.valueOf()})

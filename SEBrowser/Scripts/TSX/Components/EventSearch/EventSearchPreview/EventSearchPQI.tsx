@@ -22,24 +22,21 @@
 //******************************************************************************************************
 
 import React from 'react';
-import moment from 'moment';
 import Table from '@gpa-gemstone/react-table';
 import { PQI } from '@gpa-gemstone/application-typings';
 import { SEBrowser } from '../../../global';
 
 
-const EventSearchPQI: React.FC<SEBrowser.IWidget<any>> = (props) => {
+const EventSearchPQI: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const [data, setData] = React.useState<PQI.Types.Equipment[]>([]);
-    const [state, setState] = React.useState<('loading' | 'idle' | 'error')>('idle');
 
     React.useEffect(() => {
-        let handle = getData();
+        const handle = getData();
         return () => { if (handle != null && handle.abort != null) handle.abort(); }
     }, [])
 
     function getData() {
 
-        setState('loading');
         return $.ajax({
             type: "GET",
             url: `${homePath}api/PQI/GetEquipment/${props.eventID}`,
@@ -47,7 +44,7 @@ const EventSearchPQI: React.FC<SEBrowser.IWidget<any>> = (props) => {
             dataType: 'json',
             cache: true,
             async: true
-        }).done((d) => { setData(d); setState('idle'); }).fail(() => setState('error'));
+        }).done((d) => { setData(d); });
 
     }
 
@@ -68,8 +65,7 @@ const EventSearchPQI: React.FC<SEBrowser.IWidget<any>> = (props) => {
                                 { key: 'ComponentType', field: 'ComponentType', label: 'Component Type' }
                             ]}
                             data={data}
-                            onClick={() => { }}
-                            onSort={() => { }}
+                            onSort={() => {/*Do Nothing*/}}
                             sortKey={''}
                             ascending={true}
                             tableClass="table"

@@ -38,17 +38,15 @@ interface IInterruption {
 
 const InterruptionReport: React.FC<SEBrowser.IWidget<any>> = (props) => {
     const [data, setData] = React.useState<IInterruption[]>([]);
-    const [state, setState] = React.useState<('loading' | 'idle' | 'error')>('idle');
     const [hours, setHours] = React.useState<number>(6);
 
     React.useEffect(() => {
-        let handle = getData();
+        const handle = getData();
         return () => { if (handle != null && handle.abort != null) handle.abort();}
     }, [hours])
 
     function getData() {
 
-        setState('loading');
         return $.ajax({
             type: "GET",
             url: `${homePath}api/InterruptionReport/GetEvents/${hours}/${props.eventID}`,
@@ -56,7 +54,7 @@ const InterruptionReport: React.FC<SEBrowser.IWidget<any>> = (props) => {
             dataType: 'json',
             cache: true,
             async: true
-        }).done((d) => { setData(d); setState('idle'); }).fail(() => setState('error'));
+        }).done((d) => { setData(d); });
 
     }
 
@@ -111,8 +109,7 @@ const InterruptionReport: React.FC<SEBrowser.IWidget<any>> = (props) => {
                         { key: 'Explanation', field: 'Explanation', label: 'Explanation' }
                     ]}
                     data={data}
-                    onClick={() => { }}
-                    onSort={() => { }}
+                    onSort={() => {/*Do Nothing*/ }}
                     sortKey={'TimeOut'}
                     ascending={true}
                     tableClass="table"

@@ -4,13 +4,13 @@ import { SEBrowser } from '../../../global';
 import Table from '@gpa-gemstone/react-table';
 import { Select } from '@gpa-gemstone/react-forms';
 
-const AssetHistoryTable: React.FC<SEBrowser.IWidget<any>> = (props) => {
+const AssetHistoryTable: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const [historyData, setHistoryData] = React.useState<Array<any>>([]);
     const [count, setCount] = React.useState<number>(10);
     const [assetName, setAssetName] = React.useState<string>('');
 
     React.useEffect(() => {
-        let handle = getHistoryData();
+        const handle = getHistoryData();
         handle.done((data) => {
             setHistoryData(data);
 
@@ -60,8 +60,7 @@ const AssetHistoryTable: React.FC<SEBrowser.IWidget<any>> = (props) => {
                         { key: 'Link', field: 'ID', label: '', content: (d) => <a href={openSEEInstance + '?eventid=' + d.ID} target="_blank">View in OpenSEE</a> },
                     ]}
                     data={historyData}
-                    onClick={() => { }}
-                    onSort={() => { }}
+                    onSort={() => {/*Do Nothing*/}}
                     sortKey={''}
                     ascending={true}
                     tableClass="table"

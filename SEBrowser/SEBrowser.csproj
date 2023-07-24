@@ -409,7 +409,7 @@
     <Content Include="Images\SE Browser Spelled out - 40 high.png" />
     <Content Include="Readme.txt" />
     <Content Include="Scripts\Lib\bootstrap4-datetimepicker.min.js" />
-    <Content Include="Scripts\SEBrowser.js">
+	<Content Include="Scripts\SEBrowser.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Shared\Content\Readme.txt" />
@@ -476,14 +476,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\TSX\Components\About.tsx" />
-    <None Include="Scripts\TSX\Components\BreakerReport\BreakerReport.d.ts" />
     <None Include="Scripts\TSX\Components\BreakerReport\BreakerReport.tsx" />
     <None Include="Scripts\TSX\Components\BreakerReport\BreakerReportNavbar.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearch.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchList.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchNavbar.tsx" />
     <None Include="Scripts\TSX\Components\MeterActivity.tsx" />
-    <None Include="Scripts\TSX\Components\SEDashboardNavbar.tsx" />
     <None Include="Scripts\TSX\Components\RelayReport\RelayPerformanceTrend.tsx" />
     <None Include="Scripts\TSX\Components\RelayReport\RelayReport.tsx" />
     <None Include="Scripts\TSX\Components\RelayReport\RelayReportNavBar.tsx" />

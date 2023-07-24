@@ -24,6 +24,7 @@ bld/
 [Cc]onfiguration[Cc]ache/
 Publish
 SEBrowser/DynamicAssemblies/
+SEBrowser/Scripts/SEBrowser.js
 
 # Visual Studio 2015 cache/options directory
 .vs/

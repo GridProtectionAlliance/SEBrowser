@@ -26,7 +26,7 @@ import SEBrowserService from './../../../../TS/Services/SEBrowser';
 import moment from 'moment';
 import { SEBrowser } from '../../../global';
 
-const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<any>> = (props) => {
+const EventSearchAssetFaultSegments: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
 
     const [tableRows, setTableRows] = React.useState<JSX.Element[]>([]);
     const [count, setCount] = React.useState<number>(0);

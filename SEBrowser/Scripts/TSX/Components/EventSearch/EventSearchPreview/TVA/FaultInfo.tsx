@@ -25,7 +25,7 @@ import React from 'react';
 import moment from 'moment';
 import { SEBrowser } from '../../../../global';
 
-const FaultInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
+const FaultInfo: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const [hidden, setHidden] = React.useState<boolean>(true);
     const [faultInfo, setFaultInfo] = React.useState<{ FaultTime?: string, FaultDuration?: number, FaultType?: string, FaultDistance?: number, StationID?: string, StationName?: string, LineName?: string, LineAssetKey?: string, DblDist?: number, TreeFaultResistance?: number}>({});
     const [links, setLinks] = React.useState<Array<{ID: number, Name:string, Display: string, Value: string}>>([])
@@ -34,7 +34,7 @@ const FaultInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }, [props.eventID]);
 
     function GetData() {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/OpenXDA/FaultInfo/${props.eventID}`,
             contentType: "application/json; charset=utf-8",
@@ -43,7 +43,7 @@ const FaultInfo: React.FC<SEBrowser.IWidget<any>> = (props) => {
             async: true
         });
 
-        let handle2 = $.ajax({
+        const handle2 = $.ajax({
             type: "GET",
             url: `${homePath}api/SEBrowser/GetLinks/FaultInfo`,
             contentType: "application/json; charset=utf-8",

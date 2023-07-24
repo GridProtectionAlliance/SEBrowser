@@ -74,12 +74,12 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
     }, [])
 
     React.useEffect(() => {
-        let handle = getSubstationData();
+        const handle = getSubstationData();
         return () => { if (handle != null && handle.abort != null) handle.abort(); }
     }, [])
 
     React.useEffect(() => {
-        let handle = getBreakerData();
+        const handle = getBreakerData();
         return () => { if (handle != null && handle.abort != null) handle.abort(); }
     }, [props.StationId]);
 
@@ -98,7 +98,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
     }, [breakers, props.BreakerID])
 
     React.useEffect(() => {
-        let handle = getCoilData();
+        const handle = getCoilData();
         return () => { if (handle != null && handle.abort != null) handle.abort(); }
     }, [props.BreakerID]);
 
@@ -110,7 +110,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
     }, [channels, props.ChannelID])
 
     function getBreakerData(): JQuery.jqXHR<Breaker[] >{
-        let h = $.ajax({
+        const h = $.ajax({
             type: "GET",
             url: `${homePath}api/PQDashboard/RelayReport/GetBreakerData?locationID=${props.StationId}`,
             contentType: "application/json; charset=utf-8",
@@ -129,7 +129,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
     }
 
     function getSubstationData(): JQuery.jqXHR<Substation[]> {
-        let h =  $.ajax({
+        const h =  $.ajax({
             type: "GET",
             url: `${homePath}api/PQDashboard/RelayReport/GetSubstationData`,
             contentType: "application/json; charset=utf-8",
@@ -148,7 +148,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
 
     
     function getCoilData(): JQuery.jqXHR<Channel[]> {
-        let h = $.ajax({
+        const h = $.ajax({
             type: "GET",
             url: `${homePath}api/PQDashboard/RelayReport/GetCoilData?lineID=${props.BreakerID}`,
             contentType: "application/json; charset=utf-8",
@@ -165,49 +165,49 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
     }
 
     function setStation(id: number) {
-        var object = _.clone(props) as RelayReportNavBarProps;
+        const object = _.clone(props) as RelayReportNavBarProps;
         object.StationId = id;
         props.stateSetter({ searchBarProps: object });
     }
 
 
     function setBreaker(id: number) {
-        var object = _.clone(props) as RelayReportNavBarProps;
+        const object = _.clone(props) as RelayReportNavBarProps;
         object.BreakerID = id;
         props.stateSetter({ searchBarProps: object });
     }
 
 
     function setChannel(id: number) {
-        var object = _.clone(props) as RelayReportNavBarProps;
+        const object = _.clone(props) as RelayReportNavBarProps;
         object.ChannelID = id;
         props.stateSetter({ searchBarProps: object });
     }
 
     function setDate(date: string) {
 
-        var object = _.clone(props) as RelayReportNavBarProps;
+        const object = _.clone(props) as RelayReportNavBarProps;
         object.date = date;
         props.stateSetter({ searchBarProps: object });
     }
 
     function setTime(time: string) {
 
-        var object = _.clone(props) as RelayReportNavBarProps;
+        const object = _.clone(props) as RelayReportNavBarProps;
         object.time = time;
         props.stateSetter({ searchBarProps: object });
     }
 
     function setTimeWindowUnits(timeWindowUnits: number) {
 
-        var object = _.clone(props) as RelayReportNavBarProps;
+        const object = _.clone(props) as RelayReportNavBarProps;
         object.timeWindowUnits = timeWindowUnits;
         props.stateSetter({ searchBarProps: object });
     }
 
     function setWindowSize(windowSize: number) {
 
-        var object = _.clone(this.props) as RelayReportNavBarProps;
+        const object = _.clone(this.props) as RelayReportNavBarProps;
         object.windowSize = windowSize;
         props.stateSetter({ searchBarProps: object });
     }
@@ -225,7 +225,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Substation: </label>
                                     <div className="form-group" style={{ height: 30 }}>
                                         <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            setStation((e.target as any).value);
+                                            setStation(parseInt(e.target.value.toString()));
                                         }} value={props.StationId}>
                                             {substations.map((item,index) => <option key={index} value={item.LocationID} > {item.AssetName} </option>)}
                                         </select>
@@ -233,7 +233,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Breaker: </label>
                                     <div className="form-group" style={{ height: 30 }}>
                                         <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            setBreaker(parseInt((e.target as any).value.toString()));
+                                            setBreaker(parseInt(e.target.value.toString()));
                                         }} value={props.BreakerID}>
                                             {breakers.map((item,index) => <option key={index} value={item.AssetId} > {item.AssetName} </option>)}
                                         </select>
@@ -241,7 +241,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Trip Coil: </label>
                                     <div className="form-group" style={{ height: 30 }}>
                                         <select  style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            setChannel(parseInt((e.target as any).value.toString()));
+                                            setChannel(parseInt(e.target.value.toString()));
                                         }} value={props.ChannelID}>
                                             {channels.map((item,index) => <option key={index} value={item.ID} > {item.Name} </option>)}
                                         </select>

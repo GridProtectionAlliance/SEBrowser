@@ -22,7 +22,6 @@
 //******************************************************************************************************
 import React from 'react';
 import 'moment';
-import _ from 'lodash';
 
 
 interface S { ID: number }

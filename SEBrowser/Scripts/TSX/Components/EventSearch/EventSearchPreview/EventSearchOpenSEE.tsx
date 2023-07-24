@@ -43,7 +43,7 @@ interface IPartialOpenseeSettings {
     }
 }
 
-const EventSearchOpenSEE: React.FC<SEBrowser.IWidget<any>> = (props) => {
+const EventSearchOpenSEE: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const divref = React.useRef(null);
 
     const [VData, setVData] = React.useState<ISeries[]>([]);
@@ -117,7 +117,7 @@ const EventSearchOpenSEE: React.FC<SEBrowser.IWidget<any>> = (props) => {
             cache: true,
             async: true
         }).done(data => {
-            datasetter(Object.keys(data).map((key, index, keys) => ({label: key, data: data[key], color: '#ff0000'} as ISeries)))
+            datasetter(Object.keys(data).map((key) => ({label: key, data: data[key], color: '#ff0000'} as ISeries)))
     })
     }
 
@@ -148,7 +148,7 @@ const EventSearchOpenSEE: React.FC<SEBrowser.IWidget<any>> = (props) => {
     
 
             // overwrite options if new options are available
-            let state: IPartialOpenseeSettings = JSON.parse(serializedState);
+            const state: IPartialOpenseeSettings = JSON.parse(serializedState);
 
             Object.keys(defaultSettings.Colors).forEach((key) => {
                 if (state.Colors[key] == undefined)

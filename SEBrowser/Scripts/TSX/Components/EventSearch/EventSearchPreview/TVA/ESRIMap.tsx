@@ -22,9 +22,8 @@
 //******************************************************************************************************
 
 import React from 'react';
-import leaflet, { LatLngTuple } from 'leaflet';
+import leaflet from 'leaflet';
 import { basemapLayer, dynamicMapLayer } from 'esri-leaflet';
-import proj4 from 'proj4';
 import 'proj4leaflet';
 import moment from 'moment';
 import { SEBrowser } from '../../../../global';
@@ -57,7 +56,7 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
     const [lightningInfo, setLightningInfo] = React.useState<ILightningStrike[]>([]);
     const [faultInfo, setFaultInfo] = React.useState<Array<{ StationName: string, Inception: number, Latitude: number, Longitude: number, Distance: number, AssetName }>>([]);
     const [window, setWindow] = React.useState<number>(2);
-
+  
 
     /* Get Lightning Info */
     React.useEffect(() => {
@@ -169,7 +168,7 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
             async: true
 
         }).done(lineGeometeries => {
-            let params = {
+            const params = {
                 f: 'json',
                 unionResults: true,
                 geodesic: false,
@@ -187,7 +186,7 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
                 cache: false,
                 async: true
             }).always(rsp => {
-                let buffer = leaflet.Proj.geoJson(poly(JSON.parse(rsp.responseText).geometries[0]), {
+                const buffer = leaflet.Proj.geoJson(poly(JSON.parse(rsp.responseText).geometries[0]), {
                     style: function (feature) {
                         return { color: feature.properties.color, opacity: feature.properties.opacity };
                     }
@@ -208,7 +207,7 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
     */
 
     function poly(geometry): any {
-        var outPut = {
+        const outPut = {
             "type": "FeatureCollection",
             "features": []
         };
@@ -217,14 +216,14 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
             outPut.features.push({ type: 'Feature', properties: { color: 'black', opacity: 1 }, geometry: { "type": "Polygon", "coordinates": geometry.rings }, crs: { type: "name", properties: { name: "EPSG:3857" } } });
         } else {
             /*if it isn't that easy then we have to start checking ring direction, basically the ring goes clockwise its part of the polygon, if it goes counterclockwise it is a hole in the polygon, but geojson does it by haveing an array with the first element be the polygons and the next elements being holes in it*/
-            var ccc = dP(geometry.rings);
-            var d = ccc[0];
-            var dd = ccc[1];
-            var r = [];
+            const ccc = dP(geometry.rings);
+            const d = ccc[0];
+            const dd = ccc[1];
+            const r = [];
             if (dd.length === 0) {
                 /*if their are no holes we don't need to worry about this, but do need to stuck each ring inside its own array*/
-                var l2 = d.length;
-                var i3 = 0;
+                const l2 = d.length;
+                let i3 = 0;
                 while (l2 > i3) {
                     r.push([d[i3]]);
                     i3++;
@@ -247,10 +246,10 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
 
     function dP(a) {
         //returns an array of 2 arrays, the first being all the clockwise ones, the second counter clockwise
-        var d = [];
-        var dd = [];
-        var l = a.length;
-        var ii = 0;
+        const d = [];
+        const dd = [];
+        const l = a.length;
+        let ii = 0;
         while (l > ii) {
             if (c(a[ii])) {
                 d.push(a[ii]);
@@ -264,9 +263,9 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
 
     function c(a) {
         //return true if clockwise
-        var l = a.length - 1;
-        var i = 0;
-        var o = 0;
+        const l = a.length - 1;
+        let i = 0;
+        let o = 0;
 
         while (l > i) {
             o += (a[i][0] * a[i + 1][1] - a[i + 1][0] * a[i][1]);
@@ -316,14 +315,11 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
                         data={lightningInfo}
                         sortKey={'DisplayTime'}
                         ascending={true}
-                        onSort={(d) => {
-                            
-                        }}
-                        onClick={(item) => { }}
+                        onSort={() => {/*Do Nothing*/}}
                         theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                         tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: 'calc(30% - 100px)' }}
                         rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
-                        selected={item => false}
+                        selected={() => false}
                         />
                         </div>
                 </div>

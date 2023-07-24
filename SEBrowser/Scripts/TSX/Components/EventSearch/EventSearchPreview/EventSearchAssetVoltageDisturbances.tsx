@@ -39,7 +39,7 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
     const [data, setData] = React.useState<IDisturbanceData[]>([]);
 
     React.useEffect(() => {
-        let handle = getDisturbanceData();
+        const handle = getDisturbanceData();
         handle.done((data) => {
             setData(data);
         });
@@ -71,8 +71,7 @@ const EventSearchAssetVoltageDisturbances: React.FC<SEBrowser.IWidget<any>> = (p
                         { key: 'SeverityCode', field: 'SeverityCode', label: 'Severity' },
                     ]}
                     data={data}
-                    onClick={() => { }}
-                    onSort={() => { }}
+                    onSort={() => {/*Do Nothing*/}}
                     sortKey={''}
                     ascending={true}
                     tableClass="table"

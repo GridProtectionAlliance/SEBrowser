@@ -26,19 +26,16 @@ import Table from './Table';
 import SEBrowserService from './../../TS/Services/SEBrowser';
 import moment from 'moment';
 
-declare var xdaInstance: string;
-declare var homePath: string;
+declare let xdaInstance: string;
+declare let homePath: string;
 
-const updateInterval = 300000;
-const rowsPerPage = 7;
 //const autoUpdate = setInterval(
 //    function () {
 //        //buildMeterActivityTables();
 //    }, updateInterval);
 
 const momentFormat = "YYYY/MM/DD HH:mm:ss";
-const dateTimeFormat = "yyyy/MM/dd HH:mm:ss";
-const MeterActivity: React.FunctionComponent<{}> = (props) => {
+const MeterActivity: React.FunctionComponent = () => {
 
     return (
         <div id="meterActivityContainer" style={{ width: '100%', height: '100%', textAlign: 'center', backgroundColor: '#064e1b', padding: 20 }}>
@@ -67,7 +64,7 @@ interface MostActiveMeterActivityRow {
     '30Days': number
 }
 
-class MostActiveMeters extends React.Component<{}, { meterTable: Array<MostActiveMeterActivityRow>, sortField: string, rowsPerPage: number }>{
+class MostActiveMeters extends React.Component<unknown, { meterTable: Array<MostActiveMeterActivityRow>, sortField: string, rowsPerPage: number }>{
     seBrowserService: SEBrowserService;
     constructor(props) {
         super(props);
@@ -99,19 +96,20 @@ class MostActiveMeters extends React.Component<{}, { meterTable: Array<MostActiv
     }
 
     resize() {
-        var headerHeight = $(this.refs.divElement).find('th').innerHeight();
-        if (headerHeight == headerHeight) rowHeight = 43;
+        const headerHeight = $(this.refs.divElement).find('th').innerHeight();
 
         const height = $(this.refs.divElement).height() - headerHeight;
 
-        var rowHeight = $(this.refs.divElement).find('td').innerHeight();
+        let rowHeight = $(this.refs.divElement).find('td').innerHeight();
+        if (headerHeight == headerHeight) rowHeight = 43;
+
         if (rowHeight == undefined) rowHeight = 48;
 
         this.setState({ rowsPerPage: Math.floor(height / rowHeight) }, () => this.createTableRows());
     }
 
     createContent(item, key: keyof (MostActiveMeterActivityRow)) {
-        var context = '';
+        let context = '';
         if (key == '24Hours') {
             context = '24h';
         }
@@ -148,17 +146,17 @@ class MostActiveMeters extends React.Component<{}, { meterTable: Array<MostActiv
                     <Table<MostActiveMeterActivityRow>
                         cols={[
                             { key: 'AssetKey', label: 'Name', headerStyle: { width: 'calc(40%)' } },
-                            { key: '24Hours', label: 'Files(Evts) 24H', headerStyle: { width: '20%' }, content: (item, key, style) => this.createContent(item, key) },
-                            { key: '7Days', label: 'Files(Evts) 7D', headerStyle: { width: '20%' }, content: (item, key, style) => this.createContent(item, key) },
-                            { key: '30Days', label: 'Files(Evts) 30D', headerStyle: { width: '20%' }, content: (item, key, style) => this.createContent(item, key) },
+                            { key: '24Hours', label: 'Files(Evts) 24H', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key) },
+                            { key: '7Days', label: 'Files(Evts) 7D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key) },
+                            { key: '30Days', label: 'Files(Evts) 30D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key) },
                         ]}
                         tableClass="table"
                         data={this.state.meterTable}
                         sortField={this.state.sortField}
                         ascending={true}
-                        selected={(data) => false }
+                        selected={() => false }
                         onSort={(data) => { this.setState({ sortField: data.col }, () => this.createTableRows()) }}
-                        onClick={() => { }}
+                        onClick={() => {/*Do Nothing*/}}
                         theadStyle={{ fontSize: 'smaller' }}
                     />
                 </div>
@@ -176,7 +174,7 @@ interface LeastActiveMeterActivityRow {
     FirstEventID: number
 }
         
-class LeastActiveMeters extends React.Component<{}, { meterTable: Array<LeastActiveMeterActivityRow>, sortField: keyof(LeastActiveMeterActivityRow), rowsPerPage: number }>{
+class LeastActiveMeters extends React.Component<unknown, { meterTable: Array<LeastActiveMeterActivityRow>, sortField: keyof(LeastActiveMeterActivityRow), rowsPerPage: number }>{
     seBrowserService: SEBrowserService;
     constructor(props) {
         super(props);
@@ -203,12 +201,12 @@ class LeastActiveMeters extends React.Component<{}, { meterTable: Array<LeastAct
 
 
     resize() {
-        var headerHeight = $(this.refs.divElement).find('th').innerHeight();
-        if (headerHeight == headerHeight) rowHeight = 43;
+        const headerHeight = $(this.refs.divElement).find('th').innerHeight();
 
         const height = $(this.refs.divElement).height() - headerHeight;
 
-        var rowHeight = $(this.refs.divElement).find('td').innerHeight();
+        let rowHeight = $(this.refs.divElement).find('td').innerHeight();
+        if (headerHeight == headerHeight) rowHeight = 43;
         if (rowHeight == undefined) rowHeight = 48;
 
         this.setState({ rowsPerPage: Math.floor(height / rowHeight) }, () => this.createTableRows());
@@ -222,7 +220,7 @@ class LeastActiveMeters extends React.Component<{}, { meterTable: Array<LeastAct
     }
 
     createContent(item: LeastActiveMeterActivityRow, key: keyof(LeastActiveMeterActivityRow)) {
-        var context = '';
+        let context = '';
         if (key == '180Days') {
             context = '180d';
         }
@@ -256,17 +254,17 @@ class LeastActiveMeters extends React.Component<{}, { meterTable: Array<LeastAct
                     <Table<LeastActiveMeterActivityRow>
                         cols={[
                             { key: 'AssetKey', label: 'Name', headerStyle: { width: 'calc(40%)' } },
-                            { key: '30Days', label: 'Files(Events) 30D', headerStyle: { width: '20%' }, content: (item, key, style) => this.createContent(item, key)  },
-                            { key: '90Days', label: 'Files(Events) 90D', headerStyle: { width: '20%' }, content: (item, key, style) => this.createContent(item, key)  },
-                            { key: '180Days', label: 'Files(Events) 180D', headerStyle: { width: '20%' }, content: (item, key, style) => this.createContent(item, key)  },
+                            { key: '30Days', label: 'Files(Events) 30D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key)  },
+                            { key: '90Days', label: 'Files(Events) 90D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key)  },
+                            { key: '180Days', label: 'Files(Events) 180D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key)  },
                         ]}
                         tableClass="table"
                         data={this.state.meterTable}
                         sortField={this.state.sortField}
-                        selected={(data) => false}
+                        selected={() => false}
                         ascending={true}
                         onSort={(data) => { this.setState({ sortField: data.col }, () => this.createTableRows()) }}
-                        onClick={() => { }}
+                        onClick={() => { /*Do Nothing*/ }}
                         theadStyle={{ fontSize: 'smaller' }}
                     />
                 </div>
@@ -276,7 +274,7 @@ class LeastActiveMeters extends React.Component<{}, { meterTable: Array<LeastAct
 
 }
 
-class FilesProcessed extends React.Component<{}, { meterTable: Array<JSX.Element>, sortField: string}>{
+class FilesProcessed extends React.Component<unknown, { meterTable: Array<JSX.Element>, sortField: string}>{
     seBrowserService: SEBrowserService;
     constructor(props) {
         super(props);
@@ -297,7 +295,7 @@ class FilesProcessed extends React.Component<{}, { meterTable: Array<JSX.Element
     createTableRows() {
         this.seBrowserService.getFilesProcessedMeterActivityData(this.state.sortField).done(data => {
             this.setState({
-                meterTable: data.map((x, i) => <ListItem key={x.FilePath} CreationTime={x.CreationTime} FilePath={x.FilePath} FileGroupID={x.FileGroupID}/>) });
+                meterTable: data.map((x) => <ListItem key={x.FilePath} CreationTime={x.CreationTime} FilePath={x.FilePath} FileGroupID={x.FileGroupID}/>) });
         });
     }
 
@@ -327,22 +325,22 @@ const ListItem = (props: { CreationTime: string, FilePath: string, FileGroupID: 
 
     React.useEffect(() => {
         seBrowserService.getFileGroupEvents(props.FileGroupID).done(data => {
-            var arr = data.map(x => <tr key={x.ID} ><td><a style={{ color: 'blue' }} href={homePath + 'Main/OpenSEE?eventid=' + x.ID} target="_blank">{x.LineName}</a></td><td>{moment.utc(x.StartTime).format('MM/DD/YY HH:mm:ss')}</td><td>{x.EventTypeName}</td></tr>);
+            const arr = data.map(x => <tr key={x.ID} ><td><a style={{ color: 'blue' }} href={homePath + 'Main/OpenSEE?eventid=' + x.ID} target="_blank">{x.LineName}</a></td><td>{moment.utc(x.StartTime).format('MM/DD/YY HH:mm:ss')}</td><td>{x.EventTypeName}</td></tr>);
             setEventTable(arr);
         });
     }, []);
 
     function buildFileGroupContent(row) {
-        var filepathParts = row.FilePath.split('\\');
-        var fullFilename = filepathParts[filepathParts.length - 1];
-        var filenameParts = fullFilename.split('.');
-        var filenameWithoutExtension = filenameParts.splice(0, filenameParts.length - 1).join('.');
-        var filenameParts = filenameWithoutExtension.split(',');
-        var shortFilename = "";
+        const filepathParts = row.FilePath.split('\\');
+        const fullFilename = filepathParts[filepathParts.length - 1];
+        let filenameParts = fullFilename.split('.');
+        const filenameWithoutExtension = filenameParts.splice(0, filenameParts.length - 1).join('.');
+        filenameParts = filenameWithoutExtension.split(',');
+        let shortFilename = "";
 
         // This is to eliminate the timestamp in the fullFilename for the shortFilename
-        var inTimestamp = true;
-        for (var i = 0; i < filenameParts.length; i++) {
+        let inTimestamp = true;
+        for (let i = 0; i < filenameParts.length; i++) {
             if (inTimestamp) {
                 if (!(/^-?\d/.test(filenameParts[i]))) {
                     inTimestamp = false;
@@ -358,7 +356,7 @@ const ListItem = (props: { CreationTime: string, FilePath: string, FileGroupID: 
             shortFilename = filenameWithoutExtension;
         }
 
-        var html = <a href={xdaInstance + '/Workbench/DataFiles.cshtml'} title={fullFilename} style={{ color: 'blue' }} target="_blank">{shortFilename}</a>;
+        const html = <a href={xdaInstance + '/Workbench/DataFiles.cshtml'} title={fullFilename} style={{ color: 'blue' }} target="_blank">{shortFilename}</a>;
 
         return html;
     }

@@ -28,7 +28,7 @@ import EventSearchReducer from './Components/EventSearch/EventSearchSlice';
 import { SettingsReducer } from './Components/SettingsSlice';
 import { SEBrowser,  } from './global';
 
-declare var homePath: string;
+declare let homePath: string;
 
 //Dispatch and Selector Typed
 export type AppDispatch = typeof store.dispatch;

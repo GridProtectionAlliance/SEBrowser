@@ -20,7 +20,7 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-declare var homePath: string;
+declare let homePath: string;
 
 import * as React from 'react';
 import moment from 'moment';
@@ -37,13 +37,12 @@ export default class RelayPerformanceTrend extends React.Component<{ breakerid: 
 
     componentDidMount() {
         if (this.props.breakerid >= 0)
-            this.createTableRows(this.props.breakerid, this.props.channelid);
+            this.createTableRows();
     }
-    componentWillUnmount() {
-    }
+
     componentWillReceiveProps(nextProps) {
         if (nextProps.breakerid >= 0)
-            this.createTableRows(nextProps.breakerid, nextProps.channelid);
+            this.createTableRows();
     }
 
     getRelayTrendPerformance(breakerid, channelId): JQuery.jqXHR {
@@ -63,12 +62,12 @@ export default class RelayPerformanceTrend extends React.Component<{ breakerid: 
     }
 
 
-    createTableRows(eventID: number, channelid: number) {
+    createTableRows() {
         this.getRelayTrendPerformance(this.props.breakerid, this.props.channelid).done(data => {
-            var rows = [];
-            for (var index = 0; index < data.length; ++index) {
-                var row = data[index];
-                var background = 'default';
+            const rows = [];
+            for (let index = 0; index < data.length; ++index) {
+                const row = data[index];
+                const background = 'default';
 
                 rows.push(Row(row, background));
             }

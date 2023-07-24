@@ -24,7 +24,7 @@ import * as React from 'react';
 import { SEBrowser } from '../global';
 import moment from 'moment';
 import momentTZ from 'moment-timezone';
-import { TimePicker, DatePicker, Select, Input } from '@gpa-gemstone/react-forms'
+import { DatePicker, Select, Input } from '@gpa-gemstone/react-forms'
 import { useSelector } from 'react-redux';
 import { SelectTimeZone } from './SettingsSlice';
 
@@ -333,16 +333,8 @@ const ReportTimeFilter = (props: IProps) => {
                                 setActiveQP(-1);
                             }} Label='' 
                             Type='datetime-local'
-                            Valid={(record) => { return true; }} Format={momentDateFormat + ' ' + momentTimeFormat} />
-                        </div>
-                    {/*<div className='col-6'>
-                        <TimePicker<SEBrowser.IReportTimeFilter> Record={filter} Field="time"
-                            Setter={(r) => {
-                            setFilter(r);
-                            setActiveQP(-1);
-                            }}
-                            Label='' Valid={(record) => { return true; }} Step={0.001} />
-                        </div>*/}
+                            Valid={() => true} Format={momentDateFormat + ' ' + momentTimeFormat} />
+                    </div>
                     </div>
 
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
@@ -351,7 +343,7 @@ const ReportTimeFilter = (props: IProps) => {
                         <Input<SEBrowser.IReportTimeFilter> Record={filter} Field='windowSize' Setter={(r) => {
                             setFilter(r);
                             setActiveQP(-1);
-                        }} Label='' Valid={(record) => { return true; }}
+                        }} Label='' Valid={() => { return true; }}
                             Type='number' />
                         </div>
                         <div className='col-6'>

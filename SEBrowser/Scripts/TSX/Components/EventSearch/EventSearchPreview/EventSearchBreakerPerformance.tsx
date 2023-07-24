@@ -23,10 +23,9 @@
 
 import React from 'react';
 import OpenSEEService from '../../../../TS/Services/OpenSEE';
-import moment from 'moment';
 import { SEBrowser } from '../../../global';
 
-const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) => {
+const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const TTwindow = React.useRef(null);
     const PTwindow = React.useRef(null);
     const TCCwindow = React.useRef(null);
@@ -35,217 +34,11 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) 
     const [showRelayHistory, setShowRelayHistory] = React.useState(false);
     const service = new OpenSEEService();
 
-    const optionsTripTime: object = {
-        canvas: true,
-        legend: { show: false },
-        axisLabels: { show: true },
-        grid: {
-            autoHighlight: false,
-            clickable: true,
-            hoverable: true,
-            markings: [],
-        },
-        xaxis: { show: false },
-        yaxis: {
-            show: true,
-            axisLabel: 'Trip (micros)',
-            labelWidth: 50,
-        },
-        points: {
-            show: true,
-            fill: true,
-            fillColor: "#000000"
-        },
-        lines: {
-            show: true,
-        },
-        series:
-        {
-            dashes:
-            {
-                show: true,
-                dashLength: 5
-            },
-            shadowSize: 0
-        }
-    }
-
-    const optionsPickupTime: object = {
-        canvas: true,
-        legend: { show: false },
-        axisLabels: { show: true },
-        grid: {
-            autoHighlight: false,
-            clickable: true,
-            hoverable: true,
-            markings: [],
-        },
-        xaxis: { show: false },
-        yaxis: {
-            show: true,
-            axisLabel: 'Pickup (micros)',
-            labelWidth: 50,
-        },
-        points: {
-            show: true,
-            fill: true,
-            fillColor: "#000000"
-        },
-        lines: {
-            show: true,
-        },
-        series:
-        {
-            dashes: {
-                show: true,
-                dashLength: 5
-            },
-            shadowSize: 0
-        }
-    }
-
-    const optionsTripCoilCondition: object = {
-        canvas: true,
-        legend: { show: false },
-        axisLabels: { show: true },
-        grid: {
-            autoHighlight: false,
-            clickable: true,
-            hoverable: true,
-            markings: [],
-        },
-        xaxis: { show: false },
-        yaxis: {
-            show: true,
-            axisLabel: 'TCC (A/s)',
-            labelWidth: 50,
-        },
-        points: {
-            show: true,
-            fill: true,
-            fillColor: "#000000"
-        },
-        lines: {
-            show: true,
-        },
-        series:
-        {
-            dashes: {
-                show: true,
-                dashLength: 5
-            },
-            shadowSize: 0
-        }
-    }
-
-    const optionsImax1: object = {
-        canvas: true,
-        legend: { show: false },
-        axisLabels: { show: true },
-        grid: {
-            autoHighlight: false,
-            clickable: true,
-            hoverable: true,
-            markings: [],
-        },
-        xaxis: { show: false },
-        yaxis: {
-            show: true,
-            axisLabel: 'Imax 1 (A)',
-            labelWidth: 50,
-        },
-        points: {
-            show: true,
-            fill: true,
-            fillColor: "#000000"
-        },
-        lines: {
-            show: true,
-        }
-    }
-
-    const optionsImax2: object = {
-        canvas: true,
-        legend: { show: false },
-        axisLabels: { show: true },
-        grid: {
-            autoHighlight: false,
-            clickable: true,
-            hoverable: true,
-            markings: [],
-        },
-        xaxis: {
-            mode: "time",
-            reserveSpace: false,
-            ticks: (axis) => {
-                var ticks = [],
-                    delta = (axis.max - axis.min) / 11,
-                    start = floorInBase(axis.min, axis.delta),
-                    i = 0,
-                    v = Number.NaN,
-                    prev;
-
-                for (var i = 1; i < 11; ++i) {
-                    ticks.push(axis.min + i * delta);
-                }
-
-                return ticks;
-            },
-            tickFormatter: (value, axis) => {
-                if (axis.delta < 1) {
-                    return (moment(value).format("mm:ss.SS") + "<br>" + "Test");
-                    // var trunc = value - this.floorInBase(value, 1000);
-                    // return this.defaultTickFormatter(trunc, axis) + " ms";
-                }
-
-                if (axis.delta < 1000) {
-                    return (moment(value).format("mm:ss.SS") + "<br>" + "Test");
-                }
-                else {
-                    return moment(value).format("MM/DD/YY");
-                }
-            },
-            tickLength: 5
-        },
-        yaxis: {
-            show: true,
-            axisLabel: 'Imax 2 (A)',
-            labelWidth: 50,
-        },
-        points: {
-            show: true,
-            fill: true,
-            fillColor: "#000000"
-        },
-        lines: { show: true }
-    }
 
     React.useEffect(() => {
         getData(props);
     }, [])
 
-    function floorInBase(n, base) {
-        return base * Math.floor(n / base);
-    }
-
-    function getColor(label) {
-        if (label.indexOf('VA') >= 0) return '#A30000';
-        if (label.indexOf('VB') >= 0) return '#0029A3';
-        if (label.indexOf('VC') >= 0) return '#007A29';
-        if (label.indexOf('VN') >= 0) return '#c3c3c3';
-        if (label.indexOf('IA') >= 0) return '#FF0000';
-        if (label.indexOf('IB') >= 0) return '#0066CC';
-        if (label.indexOf('IC') >= 0) return '#33CC33';
-        if (label.indexOf('IR') >= 0) return '#c3c3c3';
-
-        else {
-            var ranNumOne = Math.floor(Math.random() * 256).toString(16);
-            var ranNumTwo = Math.floor(Math.random() * 256).toString(16);
-            var ranNumThree = Math.floor(Math.random() * 256).toString(16);
-
-            return `#${(ranNumOne.length > 1 ? ranNumOne : "0" + ranNumOne)}${(ranNumTwo.length > 1 ? ranNumTwo : "0" + ranNumTwo)}${(ranNumThree.length > 1 ? ranNumThree : "0" + ranNumThree)}`;
-        }
-    }
 
     function getData(props) {
         /*
@@ -255,7 +48,7 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) 
         $(this.refs.L1window).children().remove();
         $(this.refs.L2window).children().remove();
         */
-        var pixels = (window.innerWidth - 300 - 40) / 2;
+        const pixels = (window.innerWidth - 300 - 40) / 2;
 
         service.getStatisticData(props.eventid, pixels, "History").then(data => {
 
@@ -265,11 +58,11 @@ const EventSearchBreakerPerformance: React.FC<SEBrowser.IWidget<any>> = (props) 
             }
             setShowRelayHistory(true);
 
-            var tripTimeVessel = [];
-            var pickupTimeVessel = [];
-            var tripCoilConditionVessel = [];
-            var l1Vessel = [];
-            var l2Vessel = [];
+            const tripTimeVessel = [];
+            const pickupTimeVessel = [];
+            const tripCoilConditionVessel = [];
+            const l1Vessel = [];
+            const l2Vessel = [];
 
             $.each(data.Data, (index, value) => {
                 if (value.MeasurementType == "TripTime") { tripTimeVessel.push({ label: value.ChartLabel, data: value.DataPoints, color: this.getColor(value.ChartLabel) }) }

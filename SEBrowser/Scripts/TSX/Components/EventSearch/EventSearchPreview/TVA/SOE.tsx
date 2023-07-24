@@ -27,11 +27,11 @@ import { MultiCheckBoxSelect, Select } from '@gpa-gemstone/react-forms';
 import Table from '@gpa-gemstone/react-table';
 import cloneDeep from 'lodash/cloneDeep';
 
-interface ISOEFilters { abnormal: boolean, close: boolean, no: boolean, normal: boolean, received: boolean, start: boolean, trip: boolean, yes: boolean };
+interface ISOEFilters { abnormal: boolean, close: boolean, no: boolean, normal: boolean, received: boolean, start: boolean, trip: boolean, yes: boolean }
 
-interface SOEInfo { Time: string, Alarm: string, Status: string };
+interface SOEInfo { Time: string, Alarm: string, Status: string }
 
-const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
+const SOE: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const [soeInfo, setSOEInfo] = React.useState<SOEInfo[]>([]);
     const [statusFilter, setStatusFilter] = React.useState<ISOEFilters>({ abnormal: false, close: false, no: false, normal: false, received: false, start: false, trip: false, yes: false })
     const [timeWindow, setTimeWindow] = React.useState<number>(2);
@@ -41,7 +41,7 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
     }, [props.eventID, timeWindow, statusFilter]);
 
     function GetData() {
-        let handle = $.ajax({
+        const handle = $.ajax({
             type: "GET",
             url: `${homePath}api/SOE/${props.eventID}/${timeWindow}`,
             contentType: "application/json; charset=utf-8",
@@ -82,11 +82,11 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
                             Options={Object.keys(statusFilter).map((k, i) => ({ Value: i, Text: k, Selected: statusFilter[k] }))}
                             Label={'Filter Out: '}
                             OnChange={(evt, options) => {
-                                let filters = cloneDeep(statusFilter)
-                                let filterKeys = Object.keys(filters);
+                                const filters = cloneDeep(statusFilter)
+                                const filterKeys = Object.keys(filters);
 
                                 options.forEach((option) => {
-                                    let key = filterKeys[option.Value];
+                                    const key = filterKeys[option.Value];
                                     filters[key as keyof ISOEFilters] = !filters[key as keyof ISOEFilters];
                                 });
 
@@ -103,8 +103,7 @@ const SOE: React.FC<SEBrowser.IWidget<any>> = (props) => {
                             { key: "Status", label: "Status", field: "Status" }
                         ]}
                         data={soeInfo.filter(si => !statusFilter[si.Status.toLowerCase()])}
-                        onClick={() => { }}
-                        onSort={() => { }}
+                        onSort={() => { /*Do Nothing*/ }}
                         sortKey={'Time'}
                         ascending={true}
                         tableClass="table"
