@@ -35,7 +35,7 @@ declare let homePath: string;
 //    }, updateInterval);
 
 const momentFormat = "YYYY/MM/DD HH:mm:ss";
-const MeterActivity: React.FunctionComponent<{}> = () => {
+const MeterActivity: React.FunctionComponent = () => {
 
     return (
         <div id="meterActivityContainer" style={{ width: '100%', height: '100%', textAlign: 'center', backgroundColor: '#064e1b', padding: 20 }}>
@@ -64,7 +64,7 @@ interface MostActiveMeterActivityRow {
     '30Days': number
 }
 
-class MostActiveMeters extends React.Component<{}, { meterTable: Array<MostActiveMeterActivityRow>, sortField: string, rowsPerPage: number }>{
+class MostActiveMeters extends React.Component<unknown, { meterTable: Array<MostActiveMeterActivityRow>, sortField: string, rowsPerPage: number }>{
     seBrowserService: SEBrowserService;
     constructor(props) {
         super(props);
@@ -174,7 +174,7 @@ interface LeastActiveMeterActivityRow {
     FirstEventID: number
 }
         
-class LeastActiveMeters extends React.Component<{}, { meterTable: Array<LeastActiveMeterActivityRow>, sortField: keyof(LeastActiveMeterActivityRow), rowsPerPage: number }>{
+class LeastActiveMeters extends React.Component<unknown, { meterTable: Array<LeastActiveMeterActivityRow>, sortField: keyof(LeastActiveMeterActivityRow), rowsPerPage: number }>{
     seBrowserService: SEBrowserService;
     constructor(props) {
         super(props);
@@ -274,7 +274,7 @@ class LeastActiveMeters extends React.Component<{}, { meterTable: Array<LeastAct
 
 }
 
-class FilesProcessed extends React.Component<{}, { meterTable: Array<JSX.Element>, sortField: string}>{
+class FilesProcessed extends React.Component<unknown, { meterTable: Array<JSX.Element>, sortField: string}>{
     seBrowserService: SEBrowserService;
     constructor(props) {
         super(props);

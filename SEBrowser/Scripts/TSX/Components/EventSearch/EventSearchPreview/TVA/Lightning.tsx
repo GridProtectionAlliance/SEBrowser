@@ -26,7 +26,7 @@ import { scaleLinear, line, extent, select, axisLeft } from 'd3';
 import moment from 'moment';
 import { SEBrowser } from '../../../../global';
 
-const TVALightningChart: React.FC<SEBrowser.IWidget<any>> = (props) => {
+const TVALightningChart: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const svgWidth = (window.innerWidth - 300) / 2 - 17 - 40;
     const svgHeight = 200;
     const margin = { top: 0, right: 0, bottom: 20, left: 40 };

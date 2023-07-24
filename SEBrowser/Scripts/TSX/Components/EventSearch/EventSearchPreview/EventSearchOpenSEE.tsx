@@ -43,7 +43,7 @@ interface IPartialOpenseeSettings {
     }
 }
 
-const EventSearchOpenSEE: React.FC<SEBrowser.IWidget<any>> = (props) => {
+const EventSearchOpenSEE: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const divref = React.useRef(null);
 
     const [VData, setVData] = React.useState<ISeries[]>([]);

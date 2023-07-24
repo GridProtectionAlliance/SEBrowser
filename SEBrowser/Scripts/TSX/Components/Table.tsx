@@ -29,7 +29,7 @@ const AngleIcon: React.FunctionComponent<{ ascending: boolean }> = (props) => <s
 export interface TableProps<T> {
     cols: Array<{ key: keyof (T) | null, label: string, headerStyle?: React.CSSProperties, rowStyle?: React.CSSProperties, content?(item: T, key: keyof (T), style: React.CSSProperties): React.ReactNode }>,
     data: Array<T>,
-    onClick: (data: { col: keyof (T), row: T, data: T[keyof (T)] }, event: any) => void,
+    onClick: (data: { col: keyof (T), row: T, data: T[keyof (T)] }, event: React.MouseEvent<HTMLElement>) => void,
     sortField: string,
     ascending: boolean,
     onSort(data: { col: keyof (T), asending: boolean }): void,
@@ -43,7 +43,7 @@ export interface TableProps<T> {
     rowStyle?: React.CSSProperties,
 }
 
-export default class Table<T> extends React.Component<TableProps<T>, {}> {
+export default class Table<T> extends React.Component<TableProps<T>> {
     constructor(props) {
         super(props);
     }
@@ -74,7 +74,7 @@ export default class Table<T> extends React.Component<TableProps<T>, {}> {
             if (style.cursor == undefined)
                 style.cursor = 'pointer';
 
-            return <th key={index} style={style} onClick={(e) => this.handleSort({ col: colData.key, ascending: this.props.ascending }, e)}>{colData.label}{(this.props.sortField == colData.key ? <AngleIcon ascending={this.props.ascending} /> : null)}</th>
+            return <th key={index} style={style} onClick={() => this.handleSort({ col: colData.key, ascending: this.props.ascending })}>{colData.label}{(this.props.sortField == colData.key ? <AngleIcon ascending={this.props.ascending} /> : null)}</th>
         });
 
         return <tr>{cells}</tr>;
@@ -113,7 +113,7 @@ export default class Table<T> extends React.Component<TableProps<T>, {}> {
         });
     }
 
-    handleClick(data: { col: keyof (T), row: T, data: any }, event) {
+    handleClick(data: { col: keyof (T), row: T, data: T[keyof T] }, event) {
         this.props.onClick(data, event);
     }
 

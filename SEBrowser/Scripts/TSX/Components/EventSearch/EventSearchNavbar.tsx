@@ -563,7 +563,7 @@ const EventSearchNavbar = (props: IProps) => {
             </nav>
 
                     <DefaultSelects.Meter
-                        Slice={MeterSlice as any}
+                        Slice={MeterSlice}
                         Selection={meterList}
                         OnClose={(selected, conf) => {
                             setFilter('None');
@@ -586,7 +586,7 @@ const EventSearchNavbar = (props: IProps) => {
                         GetEnum={getEnum}
                         GetAddlFields={getAdditionalMeterFields} />
                 <DefaultSelects.Asset
-                        Slice={AssetSlice as any}
+                        Slice={AssetSlice}
                         Selection={assetList}
                         OnClose={(selected, conf) => {
                             setFilter('None');
@@ -607,7 +607,7 @@ const EventSearchNavbar = (props: IProps) => {
                         GetEnum={getEnum}
                         GetAddlFields={getAdditionalAssetFields} />
             <DefaultSelects.Location
-                Slice={LocationSlice as any}
+                Slice={LocationSlice}
                         Selection={locationList}
                         OnClose={(selected, conf) => {
                             setFilter('None');
@@ -628,7 +628,7 @@ const EventSearchNavbar = (props: IProps) => {
                     GetEnum={getEnum}
                     GetAddlFields={() => { return () => {/*Do Nothing*/} }} />
                 <DefaultSelects.AssetGroup
-                    Slice={AssetGroupSlice as any}
+                    Slice={AssetGroupSlice}
                     Selection={assetGroupList}
                     OnClose={(selected, conf) => {
                         setFilter('None');

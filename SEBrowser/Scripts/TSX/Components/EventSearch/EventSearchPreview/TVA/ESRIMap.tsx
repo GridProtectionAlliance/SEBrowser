@@ -56,7 +56,7 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
     const [lightningInfo, setLightningInfo] = React.useState<ILightningStrike[]>([]);
     const [faultInfo, setFaultInfo] = React.useState<Array<{ StationName: string, Inception: number, Latitude: number, Longitude: number, Distance: number, AssetName }>>([]);
     const [window, setWindow] = React.useState<number>(2);
-
+  
 
     /* Get Lightning Info */
     React.useEffect(() => {

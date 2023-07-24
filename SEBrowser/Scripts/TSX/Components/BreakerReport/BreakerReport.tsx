@@ -20,8 +20,6 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-import { State } from './BreakerReport';
-
 import * as React from 'react';
 import BreakerReportNavbar from './BreakerReportNavbar';
 import * as queryString from 'querystring';
@@ -30,6 +28,12 @@ import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 declare let homePath: string;
+
+interface State {
+    fromDate: string,
+    toDate: string,
+    breaker: string
+}
 
 const BreakerReport = () => {
     const [fromDate, setFromDate] = React.useState<string>('');

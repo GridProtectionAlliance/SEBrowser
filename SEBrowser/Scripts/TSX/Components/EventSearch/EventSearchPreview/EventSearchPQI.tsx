@@ -27,9 +27,8 @@ import { PQI } from '@gpa-gemstone/application-typings';
 import { SEBrowser } from '../../../global';
 
 
-const EventSearchPQI: React.FC<SEBrowser.IWidget<any>> = (props) => {
+const EventSearchPQI: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const [data, setData] = React.useState<PQI.Types.Equipment[]>([]);
-    const [state, setState] = React.useState<('loading' | 'idle' | 'error')>('idle');
 
     React.useEffect(() => {
         const handle = getData();
@@ -38,7 +37,6 @@ const EventSearchPQI: React.FC<SEBrowser.IWidget<any>> = (props) => {
 
     function getData() {
 
-        setState('loading');
         return $.ajax({
             type: "GET",
             url: `${homePath}api/PQI/GetEquipment/${props.eventID}`,
@@ -46,7 +44,7 @@ const EventSearchPQI: React.FC<SEBrowser.IWidget<any>> = (props) => {
             dataType: 'json',
             cache: true,
             async: true
-        }).done((d) => { setData(d); setState('idle'); }).fail(() => setState('error'));
+        }).done((d) => { setData(d); });
 
     }
 

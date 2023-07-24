@@ -25,7 +25,7 @@ import React from 'react';
 import moment from 'moment';
 import { SEBrowser } from '../../../../global';
 
-const PQWeb: React.FC<SEBrowser.IWidget<any>> = (props) => {
+const PQWeb: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const [tab, setTab] = React.useState<'LSC' | 'All'>('LSC');
 
     return (

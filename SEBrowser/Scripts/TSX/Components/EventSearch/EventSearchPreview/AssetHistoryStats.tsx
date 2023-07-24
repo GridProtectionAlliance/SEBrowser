@@ -13,9 +13,8 @@ interface IStatsData {
     AssetName: string;
 }
 
-const AssetHistoryStats: React.FC<SEBrowser.IWidget<any>> = (props) => {
+const AssetHistoryStats: React.FC<SEBrowser.IWidget<unknown>> = (props) => {
     const [statsData, setStatsData] = React.useState<IStatsData[]>([]);
-
 
     React.useEffect(() => {
         getStatsData();

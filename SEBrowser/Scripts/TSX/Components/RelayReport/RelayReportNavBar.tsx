@@ -225,7 +225,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Substation: </label>
                                     <div className="form-group" style={{ height: 30 }}>
                                         <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            setStation((e.target as any).value);
+                                            setStation(Number(e.target.value));
                                         }} value={props.StationId}>
                                             {substations.map((item,index) => <option key={index} value={item.LocationID} > {item.AssetName} </option>)}
                                         </select>
@@ -233,7 +233,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Breaker: </label>
                                     <div className="form-group" style={{ height: 30 }}>
                                         <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            setBreaker(parseInt((e.target as any).value.toString()));
+                                            setBreaker(parseInt(e.target.value.toString()));
                                         }} value={props.BreakerID}>
                                             {breakers.map((item,index) => <option key={index} value={item.AssetId} > {item.AssetName} </option>)}
                                         </select>
@@ -241,7 +241,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Trip Coil: </label>
                                     <div className="form-group" style={{ height: 30 }}>
                                         <select  style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            setChannel(parseInt((e.target as any).value.toString()));
+                                            setChannel(parseInt(e.target.value.toString()));
                                         }} value={props.ChannelID}>
                                             {channels.map((item,index) => <option key={index} value={item.ID} > {item.Name} </option>)}
                                         </select>
