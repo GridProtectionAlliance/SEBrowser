@@ -48,8 +48,8 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     const sortKey = (getState() as Redux.StoreState).EventSearch.SortField;
     const ascending = (getState() as Redux.StoreState).EventSearch.Ascending;
 
-    const adjustedTime = findAppropriateUnit(
-        ...getStartEndTime(getMoment(time.date, time.time), time.windowSize, time.timeWindowUnits),
+    const adjustedTime = findAppropriateUnit(getMoment(time.date, time.time),
+        getStartEndTime(getMoment(time.date, time.time), time.windowSize, time.timeWindowUnits)[1],
         time.timeWindowUnits);
 
 

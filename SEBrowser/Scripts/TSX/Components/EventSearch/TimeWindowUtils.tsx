@@ -59,8 +59,9 @@ export function findAppropriateUnit(startTime: moment.Moment, endTime: moment.Mo
 }
 
 export function getStartEndTime(center: moment.Moment, duration: number, unit: number): [moment.Moment, moment.Moment] {
-    const start = center.clone().subtract(duration, momentUnit(unit));
-    const end = center.clone().add(duration, momentUnit(unit));
+    const d = moment.duration(duration, momentUnit(unit));
+    const start = center.clone().subtract(d.asHours(), 'h');
+    const end = center.clone().add(d.asHours(), 'h');
     return [start, end]
 }
 
