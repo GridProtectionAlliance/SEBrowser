@@ -194,11 +194,11 @@ namespace SEBrowser.Controllers
                 sortBy = $"ORDER BY [{sortBy}] {(postData.ascending ? "ASC" : "DESC")}";
 
                 string query =
-                    $@"SELECT  
+                    $@"SELECT TOP {postData.numberResults ?? "100"} 
                         {Collumns}
                     FROM 
                         ( 
-                            SELECT TOP {postData.numberResults ?? "100"} 
+                            SELECT 
                                 Event.ID EventID, 
                                 EventWorstDisturbance.WorstDisturbanceID DisturbanceID, 
                                 FaultSummary.FaultNumber FaultID 
