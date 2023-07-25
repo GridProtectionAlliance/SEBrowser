@@ -63,10 +63,10 @@ const EventSearchTypeFilters = (props: IProps) => {
             heights.splice(0, 1);
 
             let index = heights.findIndex(h => h <= (navHeight - hc));
-            while (index >= 0 && heights[index] !== 0) {
+            while (index >= 0 && heights[index] != 0) {
                 hc = hc + heights[index];
                 heights.splice(index, 1);
-                index = heights.findIndex(h => h <= (navHeight - hc));
+                index = heights.findIndex(h => h <= (navHeight - hc))
             }
         }
         setnCol(nCollumn);
@@ -94,12 +94,13 @@ const EventSearchTypeFilters = (props: IProps) => {
                 flts.push(categories[0]);
             let hc = categories[0].height;
             categories.splice(0, 1);
-            const index = categories.findIndex(h => h.height <= (navHeight - hc))
+            let index = categories.findIndex(h => h.height <= (navHeight - hc))
             while (index >= 0) {
                 hc = hc + categories[index].height;
                 if (nCollumn == colIndex + 1)
                     flts.push(categories[index]);
                 categories.splice(index, 1);
+                index = categories.findIndex(h => h.height <= (navHeight - hc))
             }
         }
 
