@@ -26,7 +26,8 @@ import moment from 'moment';
 import momentTZ from 'moment-timezone';
 import { DatePicker, Select, Input } from '@gpa-gemstone/react-forms'
 import { useSelector } from 'react-redux';
-import { SelectTimeZone } from './SettingsSlice';
+import { SelectTimeZone, SelectDateTimeSetting } from './SettingsSlice';
+import { findAppropriateUnit, getMoment, getStartEndTime, momentUnit } from './EventSearch/TimeWindowUtils';
 
 interface IProps {
     filter: SEBrowser.IReportTimeFilter;
@@ -34,7 +35,16 @@ interface IProps {
     showQuickSelect: boolean
 }
 
-interface IQuickSelect { label: string, createFilter: (timeZone: string) =>  SEBrowser.IReportTimeFilter }
+interface ITimeFilter {
+    centerTime: string,
+    startTime: string,
+    endTime: string,
+    timeWindowUnits: number,
+    windowSize: number,
+    halfWindowSize: number,
+}
+
+interface IQuickSelect { label: string, createFilter: (timeZone: string) => SEBrowser.IReportTimeFilter }
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS"; // Also is the gemstone format
@@ -289,68 +299,294 @@ const AvailableQuickSelects: IQuickSelect[] = [
 
 
 const ReportTimeFilter = (props: IProps) => {
-    const [filter, setFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.filter)
     const timeZone = useSelector(SelectTimeZone);
     const [activeQP, setActiveQP] = React.useState<number>(-1);
-    const [currentTime, setCurrentTime] = React.useState<{ Value: string }>({ Value: filter.date + 'T' + filter.time + "[Z]" });
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const [filter, setFilter] = React.useState<ITimeFilter>({
+        centerTime: props.filter.date + ' ' + props.filter.time,
+        startTime: getMoment(props.filter.date, props.filter.time)
+            .subtract(props.filter.windowSize, momentUnit(props.filter.timeWindowUnits))
+            .format(momentDateFormat + ' ' + momentTimeFormat),
+        endTime: getMoment(props.filter.date,props.filter.time)
+            .add(props.filter.windowSize, momentUnit(props.filter.timeWindowUnits))
+            .format(momentDateFormat + ' ' + momentTimeFormat),
+        timeWindowUnits: props.filter.timeWindowUnits,
+        windowSize: props.filter.windowSize*2,
+        halfWindowSize: props.filter.windowSize,
+    });
 
-
+    
     React.useEffect(() => {
-        if (isEqual(props.filter, filter))
+        if (isEqual(filter, props.filter))
             return;
-        setFilter(props.filter);
-    }, [props.filter])
-
-    React.useEffect(() => {
-        const t = filter.date + 'T' + filter.time + "[Z]";
-        if (t !== currentTime.Value)
-            setCurrentTime({ Value: t });
-    }, [filter]);
-
-    React.useEffect(() => {
-        if (isEqual(props.filter, filter))
-            return;
-        props.setFilter(filter);
+        props.setFilter({
+            time: filter.centerTime.split(' ')[1],
+            date: filter.centerTime.split(' ')[0],
+            windowSize: filter.halfWindowSize,
+            timeWindowUnits: filter.timeWindowUnits
+        });
     }, [filter])
 
-    function isEqual(flt1: SEBrowser.IReportTimeFilter, flt2: SEBrowser.IReportTimeFilter) {
-        return flt1.date == flt2.date && flt1.time == flt2.time &&
+    function isEqual(flt1: ITimeFilter, flt2: SEBrowser.IReportTimeFilter) {
+        const t = flt2.date + ' ' + flt2.time;
+        return flt1.centerTime == t &&
             flt1.timeWindowUnits == flt2.timeWindowUnits &&
-            flt1.windowSize == flt2.windowSize;
+            flt1.windowSize == flt2.windowSize * 2;
     }
+
+    React.useEffect(() => {
+        if (isEqual(filter, props.filter))
+            return;
+
+        const durationValue = props.filter.windowSize;
+        const dUnits = props.filter.timeWindowUnits;
+
+        const centerTime = getMoment(props.filter.date, props.filter.time);
+        const [startTime, endTime] = getStartEndTime(centerTime, durationValue, dUnits);
+        
+        setFilter(prevState => ({
+            ...prevState,
+            centerTime: centerTime.format('MM/DD/YYYY HH:mm:ss.SSS') ,
+            startTime: startTime.format('MM/DD/YYYY HH:mm:ss.SSS'),
+            endTime: endTime.format('MM/DD/YYYY HH:mm:ss.SSS'),
+            timeWindowUnits: dUnits,
+            windowSize: durationValue * 2,
+            halfWindowSize: durationValue,
+        }));
+
+    }, [props.filter]);
+   
 
     return (
         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
             <legend className="w-auto" style={{ fontSize: 'large' }}>Date/Time Filter:</legend>
-                <div className="">
-                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window Center: </label>
-                    <div className="row">
+                {dateTimeSetting === 'center' ?
+                <div className="row">
                     <div className='col-12'>
-                        <DatePicker<{ Value: string }> Record={currentTime} Field="Value"
+                        <DatePicker< ITimeFilter > Record={filter} Field="centerTime"
                             Setter={(r) => {
-                                const t = r.Value;
-                                setFilter((f) => ({ ...f, date: t.split(" ")[0], time: t.split(" ")[1] }));
-                                setActiveQP(-1);
-                            }} Label='' 
-                            Type='datetime-local'
-                            Valid={() => true} Format={momentDateFormat + ' ' + momentTimeFormat} />
-                    </div>
-                    </div>
+                                const centerTime = getMoment(r.centerTime);
+                                const [startTime, endTime] = getStartEndTime(centerTime, filter.halfWindowSize, filter.timeWindowUnits);
 
+                                setFilter(prevFilter => ({
+                                    ...prevFilter,
+                                    centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                    startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                    endTime: endTime.format(momentDateFormat + ' ' + momentTimeFormat)
+                                }));
+                                setActiveQP(-1);
+                            }}
+                                Label='Time Window Center:'
+                            Type='datetime-local'
+                            Valid={(record) => { return true; }} Format={momentDateFormat + ' ' + momentTimeFormat} />
+                        </div>
+                    </div>
+                            : null
+                        }
+            {dateTimeSetting === 'startWindow' || dateTimeSetting === 'startEnd' ?
+                <div className="row"> 
+                    <div className='col-12'>
+                            <DatePicker< ITimeFilter > Record={filter} Field="startTime"
+                                Setter={(r) => {
+                                    const startTime = getMoment(r.startTime);
+                                    let window = filter.windowSize;
+                                    let unit = filter.timeWindowUnits;
+                                    if (dateTimeSetting === 'startEnd') {
+                                        [unit, window] = findAppropriateUnit(startTime, getMoment(filter.endTime));
+                                    }
+
+                                    const d = moment.duration(window / 2, momentUnit(unit));
+                                    const centerTime = startTime.clone().add(d.asHours(), 'h');
+                                    const endTime = centerTime.clone().add(d.asHours(), 'h');
+                                    setFilter({
+                                        centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                        startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                        endTime: endTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                        windowSize: window,
+                                        halfWindowSize: window / 2,
+                                        timeWindowUnits: unit
+
+                                    });
+                                    setActiveQP(-1);
+                                }}
+                                Label='Start of Time Window:'
+                                Type='datetime-local'
+                                Valid={() => true} Format={momentDateFormat + ' ' + momentTimeFormat}
+                            />
+                    </div> 
+                </div>
+                            : null
+                        }
+            {dateTimeSetting === 'endWindow' || dateTimeSetting === 'startEnd' ?
+                    <div className="row"> 
+                        <div className='col-12'>
+                            <DatePicker<ITimeFilter> Record={filter} Field="endTime"
+                                Setter={(r) => {
+                                    const endTime = getMoment(r.endTime);
+                                    let window = filter.windowSize;
+                                    let unit = filter.timeWindowUnits;
+                                    if (dateTimeSetting === 'startEnd') {
+                                        [unit, window] = findAppropriateUnit(getMoment(filter.startTime), endTime);
+                                    }
+                                    const d = moment.duration(window / 2, momentUnit(unit));
+                                    const centerTime = endTime.clone().subtract(d.asHours(), 'h');
+                                    const startTime = centerTime.clone().subtract(d.asHours(), 'h');
+                                    setFilter({
+                                        centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                        startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                        endTime: endTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                        windowSize: window,
+                                        halfWindowSize: window / 2,
+                                        timeWindowUnits: unit
+
+                                    });
+                                    setActiveQP(-1);
+                                }}
+                                Label='End of Time Window :'
+                                Type='datetime-local'
+                                Valid={() =>  true } Format={momentDateFormat + ' ' + momentTimeFormat}
+                            />
+                    </div>
+                    </div>
+                : null
+                }
+                {dateTimeSetting === 'center' ?
+                <>
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
                     <div className="row">
-                    <div className='col-6'>
-                        <Input<SEBrowser.IReportTimeFilter> Record={filter} Field='windowSize' Setter={(r) => {
-                            setFilter(r);
-                            setActiveQP(-1);
-                        }} Label='' Valid={() => { return true; }}
-                            Type='number' />
+                        <div className='col-6'>
+                            <Input<ITimeFilter> Record={filter} Field='halfWindowSize' Setter={(r) => {
+                                const window = r.halfWindowSize;
+                                const centerTime = getMoment(filter.centerTime);
+                                const [startTime, endTime] = getStartEndTime(centerTime, window, filter.timeWindowUnits);
+
+                                setFilter(prevFilter => ({
+                                    ...prevFilter,
+                                    windowSize: 2 * window,
+                                    halfWindowSize: window,
+                                    startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                    endTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat)
+                                }));
+                                setActiveQP(-1);
+                            }} Label='' Valid={(record) => { return true; }}
+                                Type='number' />
                         </div>
                         <div className='col-6'>
-                        <Select<SEBrowser.IReportTimeFilter> Record={filter} Label=''
-                            Field='timeWindowUnits'
+                            <Select<ITimeFilter> Record={filter} Label=''
+                                Field='timeWindowUnits'
+                                Setter={(r) => {
+                                    const centerTime = getMoment(filter.centerTime);
+                                    const [startTime, endTime] = getStartEndTime(centerTime, filter.halfWindowSize, r.timeWindowUnits);
+                                    setFilter(prevFilter => ({
+                                        ...prevFilter,
+                                        timeWindowUnits: r.timeWindowUnits,              
+                                        startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                        endTime: endTime.format(momentDateFormat + ' ' + momentTimeFormat)
+                                    }));
+                                    setActiveQP(-1);
+                                }}
+                                Options={[
+                                    { Value: '7', Label: 'Year' },
+                                    { Value: '6', Label: 'Month' },
+                                    { Value: '5', Label: 'Week' },
+                                    { Value: '4', Label: 'Day' },
+                                    { Value: '3', Label: 'Hour' },
+                                    { Value: '2', Label: 'Minute' },
+                                    { Value: '1', Label: 'Second' },
+                                    { Value: '0', Label: 'Millisecond' }
+                                ]} />
+                        </div>
+                    </div>
+                </>
+                : null
+                }
+                {dateTimeSetting === 'startWindow' ?
+                <>
+                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+): </label>
+                    <div className="row">
+                        <div className='col-6'>
+                            <Input<ITimeFilter> Record={filter} Field='windowSize' Setter={(r) => {
+                                const startTime = getMoment(filter.startTime);
+                                const d = moment.duration(r.windowSize / 2, momentUnit(filter.timeWindowUnits));
+                                const centerTime = startTime.clone().add(d.asHours(), 'h');
+                                const endTime = centerTime.clone().add(d.asHours(), 'h');
+                                setFilter(prevFilter => ({
+                                    ...prevFilter,
+                                    windowSize: r.windowSize,
+                                    halfWindowSize: r.windowSize / 2,
+                                    centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                    endTime: endTime.format(momentDateFormat + ' ' + momentTimeFormat)
+                                }));
+                                setActiveQP(-1);
+                            }} Label='' Valid={(record) => { return true; }}
+                                Type='number' />
+                        </div>
+                        <div className='col-6'>
+                            <Select<ITimeFilter> Record={filter} Label=''
+                                Field='timeWindowUnits'
+                                Setter={(r) => {
+                                    const startTime = getMoment(filter.startTime);
+                                    const d = moment.duration(filter.halfWindowSize, momentUnit(r.timeWindowUnits));
+                                    const centerTime = startTime.clone().add(d.asHours(), 'h');
+                                    const endTime = centerTime.clone().add(d.asHours(), 'h');
+                                    setFilter(prevFilter => ({
+                                        ...prevFilter,
+                                        timeWindowUnits: r.timeWindowUnits,
+                                        centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                        endTime: endTime.format(momentDateFormat + ' ' + momentTimeFormat)
+                                    }));
+                                    setActiveQP(-1);
+                                }}
+                                Options={[
+                                    { Value: '7', Label: 'Year' },
+                                    { Value: '6', Label: 'Month' },
+                                    { Value: '5', Label: 'Week' },
+                                    { Value: '4', Label: 'Day' },
+                                    { Value: '3', Label: 'Hour' },
+                                    { Value: '2', Label: 'Minute' },
+                                    { Value: '1', Label: 'Second' },
+                                    { Value: '0', Label: 'Millisecond' }
+                                ]} />
+                        </div>
+                    </div>
+                </>
+                : null
+                }
+                {dateTimeSetting === 'endWindow' ?
+                    <>
+                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(-): </label>
+                    <div className="row">
+                        <div className='col-6'>
+                            <Input<ITimeFilter> Record={filter} Field='windowSize' Setter={(r) => {
+                                const endTime = getMoment(filter.endTime);
+                                const d = moment.duration(r.windowSize / 2, momentUnit(filter.timeWindowUnits));
+                                const centerTime = endTime.clone().subtract(d.asHours(), 'h');
+                                const startTime = centerTime.clone().subtract(d.asHours(), 'h');
+                                setFilter(prevFilter => ({
+                                    ...prevFilter,
+                                    windowSize: r.windowSize,
+                                    halfWindowSize: r.windowSize/2,
+                                    centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                    startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat)
+                                }));
+                                setActiveQP(-1);
+                            }} Label='' Valid={(record) => { return true; }}
+                                Type='number' />
+                        </div>
+                        <div className='col-6'>
+                            <Select<ITimeFilter> Record={filter} Label=''
+                                Field='timeWindowUnits'
                             Setter={(r) => {
-                                setFilter(r);
+                                const endTime = getMoment(filter.endTime);
+                                const d = moment.duration(filter.halfWindowSize, momentUnit(r.timeWindowUnits));
+                                const centerTime = endTime.clone().subtract(d.asHours(), 'h');
+                                const startTime = centerTime.clone().subtract(d.asHours(), 'h');
+                                setFilter(prevFilter => ({
+                                    ...prevFilter,
+                                    timeWindowUnits: r.timeWindowUnits,
+                                    centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                    startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat)
+                                }));
                                 setActiveQP(-1);
                             }}
                                 Options={[
@@ -362,49 +598,52 @@ const ReportTimeFilter = (props: IProps) => {
                                     { Value: '2', Label: 'Minute' },
                                     { Value: '1', Label: 'Second' },
                                     { Value: '0', Label: 'Millisecond' }
-                            ]} />
+                                ]} />
                         </div>
-                </div>
-            </div>
+                    </div>
+                </>
+                : null
+                }
+
             {props.showQuickSelect ?
-                <div className="row" style={{width: '100%'}}>
-                    
-                        {AvailableQuickSelects.map((qs, i) => {
-                            if (i % 3 !== 0)
-                                return null;
-                            return (
-                                <div key={i} className={"col-3"} style={{ paddingLeft: (i %12 == 0 ? 15 : 0), paddingRight: (i % 12 == 9 ? 15 : 2), marginTop: 10 }}>
-                                    <ul className="list-group" key={i}>
-                                        <li key={i} style={{ cursor: 'pointer' }}
+                <div className="row" style={{ width: '100%' }}>
+
+                    {AvailableQuickSelects.map((qs, i) => {
+                        if (i % 3 !== 0)
+                            return null;
+                        return (
+                            <div key={i} className={"col-3"} style={{ paddingLeft: (i % 12 == 0 ? 15 : 0), paddingRight: (i % 12 == 9 ? 15 : 2), marginTop: 10 }}>
+                                <ul className="list-group" key={i}>
+                                    <li key={i} style={{ cursor: 'pointer' }}
+                                        onClick={() => {
+                                            props.setFilter(AvailableQuickSelects[i].createFilter(timeZone));
+                                            setActiveQP(i);
+                                        }}
+                                        className={"item badge badge-" + (i == activeQP ? "primary" : "secondary")}>{AvailableQuickSelects[i].label}
+                                    </li>
+                                    {i + 1 < AvailableQuickSelects.length ?
+                                        <li key={i + 1} style={{ marginTop: 3, cursor: 'pointer' }}
+                                            className={"item badge badge-" + (i + 1 == activeQP ? "primary" : "secondary")}
                                             onClick={() => {
-                                                props.setFilter(AvailableQuickSelects[i].createFilter(timeZone));
-                                                setActiveQP(i);
-                                            }}
-                                            className={"item badge badge-" + (i == activeQP? "primary" : "secondary")}>{AvailableQuickSelects[i].label}
-                                        </li>
-                                        {i + 1 < AvailableQuickSelects.length ?
-                                            <li key={i + 1} style={{ marginTop: 3, cursor: 'pointer' }}
-                                                className={"item badge badge-" + (i+1 == activeQP ? "primary" : "secondary")}
-                                                onClick={() => {
-                                                    props.setFilter(AvailableQuickSelects[i + 1].createFilter(timeZone));
-                                                    setActiveQP(i+1)
-                                                }}>
-                                            {AvailableQuickSelects[i+ 1].label}
+                                                props.setFilter(AvailableQuickSelects[i + 1].createFilter(timeZone));
+                                                setActiveQP(i + 1)
+                                            }}>
+                                            {AvailableQuickSelects[i + 1].label}
                                         </li> : null}
-                                        {i + 2 < AvailableQuickSelects.length ?
-                                            <li key={i + 2}
-                                                style={{ marginTop: 3, cursor: 'pointer' }}
-                                                className={"item badge badge-" + (i+2 == activeQP ? "primary" : "secondary")}
-                                                onClick={() => {
-                                                    props.setFilter(AvailableQuickSelects[i + 2].createFilter(timeZone));
-                                                    setActiveQP(i + 2);
-                                                }}>
-                                            {AvailableQuickSelects[i+ 2].label}
+                                    {i + 2 < AvailableQuickSelects.length ?
+                                        <li key={i + 2}
+                                            style={{ marginTop: 3, cursor: 'pointer' }}
+                                            className={"item badge badge-" + (i + 2 == activeQP ? "primary" : "secondary")}
+                                            onClick={() => {
+                                                props.setFilter(AvailableQuickSelects[i + 2].createFilter(timeZone));
+                                                setActiveQP(i + 2);
+                                            }}>
+                                            {AvailableQuickSelects[i + 2].label}
                                         </li> : null}
-                                    </ul>
-                                </div>
-                            )
-                        })}
+                                </ul>
+                            </div>
+                        )
+                    })}
                 </div>
                 : null}
         </fieldset>

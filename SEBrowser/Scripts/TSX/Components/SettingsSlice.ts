@@ -22,8 +22,9 @@
 //       Cleaned up Settings code.
 //
 //******************************************************************************************************
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { Redux } from '../global';
+import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
+import { cloneDeep } from 'lodash';
+import { Redux, SEBrowser } from '../global';
 
 declare let homePath: string;
 
@@ -31,22 +32,32 @@ export const LoadSettings = createAsyncThunk('Settings/LoadSettingsThunk', async
     return Promise.all([loadTimeZone(), loadWidgetCategories()])
 });
 
+const defaultState = {
+    eventSearch: {
+        NumberResults: 100,
+        WidgetCategories: [],
+        AggregateMagDur: true,
+    },
+    timeZone: 'UTC',
+    DateTimeSetting: 'center'
+} as Redux.SettingsState;
 
 const settingsSlice = createSlice({
     name: 'Settings',
 
-    initialState: {
-        eventSearch: {
-            NumberResults: 100,
-            WidgetCategories: [],
-            AggregateMagDur: true,
-        },
-        timeZone: 'UTC',
-    } as Redux.SettingsState,
+    initialState: cloneDeep(defaultState) as Redux.SettingsState,
 
     reducers: {
         SetEventSearch: (state: Redux.SettingsState, action: { type: string, payload: Redux.IEventSearchSettings }) => {
             state.eventSearch = action.payload;
+            saveSettings(state);
+        },
+        SetGeneral: (state: Redux.SettingsState, action: {
+            type: string,
+            payload: { DateTime?: SEBrowser.TimeWindowMode }
+        }) => {
+            if (action.payload.DateTime !== undefined)
+                state.DateTimeSetting = action.payload.DateTime;
             saveSettings(state);
         },
     },
@@ -55,25 +66,36 @@ const settingsSlice = createSlice({
         builder.addCase(LoadSettings.fulfilled, (state, action) => {
             const preserved = readSettings();
 
-            if (preserved != undefined) {
-                state.eventSearch = preserved.eventSearch;
+            if (preserved == undefined)
+                state = cloneDeep(defaultState);
+            else {
+                if (preserved.eventSearch != undefined) {
+                    state.eventSearch = preserved.eventSearch;
+                }
+                if (preserved.DateTimeSetting === undefined)
+                    state.DateTimeSetting = 'center';
             }
-            else
-                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true };
 
-            state.timeZone = action.payload[0];
-            state.eventSearch.WidgetCategories = action.payload[1];
+            state.timeZone = cloneDeep(action.payload[0]);
+            state.eventSearch.WidgetCategories = cloneDeep(action.payload[1]);
+            return state;
         });    
         
         builder.addCase(LoadSettings.rejected, (state) => {
             const preserved = readSettings();
 
-            if (preserved != undefined) {
-                state.eventSearch = preserved.eventSearch;
+            if (preserved == undefined)
+                state = defaultState;
+            else {
+                if (preserved.eventSearch != undefined) {
+                    state.eventSearch = preserved.eventSearch;
+                }
+                if (preserved.DateTimeSetting === undefined)
+                    state.DateTimeSetting = 'center';
             }
-            else
-                state.eventSearch = { NumberResults: 100, WidgetCategories: [], AggregateMagDur: true };
+
             state.timeZone = 'UTC';
+            return state;
         });
     }
     
@@ -126,7 +148,10 @@ function loadWidgetCategories() {
 
 
 export const SettingsReducer = settingsSlice.reducer
-export const { SetEventSearch } = settingsSlice.actions
+export const { SetEventSearch, SetGeneral } = settingsSlice.actions
 export const SelectEventSearchSettings = (state: Redux.StoreState) => state.Settings.eventSearch
 export const SelectTimeZone = (state: Redux.StoreState) => state.Settings.timeZone
 export const SelectWidgetCategories = (state: Redux.StoreState) => state.Settings.eventSearch.WidgetCategories
+export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.DateTimeSetting
+export const SelectGeneralSettings = createSelector(
+    SelectDateTimeSetting, (dateTime) => ({ DateTime: dateTime }));

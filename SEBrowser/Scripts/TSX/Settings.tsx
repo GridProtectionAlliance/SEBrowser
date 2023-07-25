@@ -22,30 +22,57 @@
 //******************************************************************************************************
 import * as React from 'react';
 import { Modal } from '@gpa-gemstone/react-interactive';
-import { CheckBox, Input } from '@gpa-gemstone/react-forms';
+import { CheckBox, Input, Select } from '@gpa-gemstone/react-forms';
 import { useAppDispatch, useAppSelector } from './hooks';
-import { SelectEventSearchSettings, SetEventSearch } from './Components/SettingsSlice';
+import { SelectEventSearchSettings, SelectGeneralSettings, SetEventSearch, SetGeneral } from './Components/SettingsSlice';
 import { Redux } from './global';
 import { FetchEventSearches } from './Components/EventSearch/EventSearchSlice';
-
-
 
 const Settings = (props: { Show: boolean, Close: () => void }) => {
     const dispatch = useAppDispatch();
     const evtSearchsettings = useAppSelector(SelectEventSearchSettings)
+    const generalSettings = useAppSelector(SelectGeneralSettings);
+
     const [evtSearch, setEvtSearch] = React.useState<Redux.IEventSearchSettings>()
+    const [general, setGeneral] = React.useState<any>()
+
+    const searchSettingsOptions = [
+        {
+            Value: 'center',
+            Label: 'Center Date/Time and Window',
+        },
+        {
+            Value: 'startWindow',
+            Label: 'Start Date/Time and Window',
+        },
+        {
+            Value: 'endWindow',
+            Label: 'End Date/Time and Window',
+        },
+        {
+            Value: 'startEnd',
+            Label: 'Start and End Date/Time',
+        },
+    ];
 
     React.useEffect(() => {
         setEvtSearch(evtSearchsettings);
     }, [evtSearchsettings])
 
     React.useEffect(() => {
-        if (props.Show)
+        setGeneral(generalSettings);
+    }, [generalSettings])
+
+    React.useEffect(() => {
+        if (props.Show) {
             setEvtSearch(evtSearchsettings);
+            setGeneral(generalSettings);
+        }
     }, [props.Show])
 
     function save() {
         dispatch(SetEventSearch(evtSearch));
+        dispatch(SetGeneral(general));
         dispatch(FetchEventSearches());
     }
 
@@ -62,12 +89,35 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>Event Search Settings:</legend>
                                 <div className={"row"}>
                                     <div className={'col'}>
-                                        <Input<Redux.IEventSearchSettings> Record={evtSearch} Field='NumberResults' Setter={setEvtSearch} Valid={() => true } Label='Number of Results' Type='integer' />
+                                    <Input<Redux.IEventSearchSettings>
+                                        Record={evtSearch} Field='NumberResults'
+                                        Setter={setEvtSearch} Valid={() => true}
+                                        Label='Number of Results' Type='integer' />
                                     </div>
                             </div>
                             <div className={"row"}>
                                 <div className={'col'}>
-                                    <CheckBox<Redux.IEventSearchSettings> Record={evtSearch} Field='AggregateMagDur' Setter={setEvtSearch} Label='Aggregate Events on Mag-Dur chart' />
+                                    <CheckBox<Redux.IEventSearchSettings>
+                                        Record={evtSearch}
+                                        Field='AggregateMagDur'
+                                        Setter={setEvtSearch}
+                                        Label='Aggregate Events on Mag-Dur chart' />
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div className="col-6">
+                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>General Settings:</legend>
+                            <div className="row">
+                                <div className="col">
+                                    <Select
+                                        Options={searchSettingsOptions}
+                                        Record={general}
+                                        Field='DateTime'
+                                        Setter={(g) => setGeneral(g)}
+                                        Label='Date/Time Filter Mode'
+                                    />
                                 </div>
                             </div>
                             </fieldset>

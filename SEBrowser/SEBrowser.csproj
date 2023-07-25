@@ -529,6 +529,7 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewPane.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\LineParameters.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchTypeFilter.tsx" />
+    <Content Include="Scripts\TSX\Components\EventSearch\TimeWindowUtils.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\AssetHistoryStats.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\AssetHistoryTable.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\SettingsSlice.ts" />

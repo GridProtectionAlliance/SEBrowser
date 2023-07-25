@@ -29,6 +29,7 @@ import moment from 'moment';
 import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, EventTypeSlice, LocationSlice, MeterSlice } from '../../Store';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
+import { findAppropriateUnit, getStartEndTime, getMoment } from './TimeWindowUtils';
 
 const momentDateFormat = "MM/DD/YYYY";
 
@@ -44,9 +45,16 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     const locationList = (getState() as any).EventSearch.SelectedStations as SystemCenter.Types.DetailedLocation[];
     const groupList = (getState() as any).EventSearch.SelectedGroups as OpenXDA.Types.AssetGroup[];
     const settings = (getState() as Redux.StoreState).Settings.eventSearch;
+    const sortKey = (getState() as Redux.StoreState).EventSearch.SortField;
+    const ascending = (getState() as Redux.StoreState).EventSearch.Ascending;
+
+    const adjustedTime = findAppropriateUnit(getMoment(time.date, time.time),
+        getStartEndTime(getMoment(time.date, time.time), time.windowSize, time.timeWindowUnits)[1],
+        time.timeWindowUnits);
+
 
     const filter = {
-        date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,
+        date: time.date, time: time.time, windowSize: adjustedTime[1], timeWindowUnits: adjustedTime[0],
         typeIDs: types,
         durationMin: characteristics.durationMin ?? 0, durationMax: characteristics.durationMax ?? 0,
         phases: {
@@ -63,7 +71,9 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     } 
 
     const additionalArguments = {
-        numberResults: settings.NumberResults
+        numberResults: settings.NumberResults,
+        ascending,
+        sortKey
     }
 
     if (fetchHandle != null && fetchHandle.abort != null)
@@ -80,6 +90,10 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
 
     return await handle;
 });
+
+export const Sort = createAsyncThunk('EventSearchs/Sort', async (arg: { SortField: string, Ascending: boolean }, { signal, getState, dispatch }) => {
+    return dispatch(FetchEventSearches());
+})
 
 export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async (query: queryString.ParsedUrlQuery , { dispatch, getState }) => {
     let state = getState() as Redux.StoreState;
@@ -157,7 +171,12 @@ export const EventSearchsSlice = createSlice({
             sagType: 'both', swellType: 'both', transientType: 'both',
             curveID: 1, curveInside: true, curveOutside: true
         },
-        TimeRange: { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 7, timeWindowUnits: 4 },
+        TimeRange: {
+            date: moment.utc().subtract(84,'h').format(momentDateFormat),
+            time: '12:00:00.000',
+            windowSize: 84,
+            timeWindowUnits: 3
+        },
         EventType: [],
         isReset: true,
         SelectedAssets: [],
@@ -170,15 +189,6 @@ export const EventSearchsSlice = createSlice({
         ActiveFetchID: []
     } as Redux.EventSearchState,
     reducers: {
-        Sort: (state, action) => {
-            if (state.SortField === action.payload.SortField)
-                state.Ascending = !action.payload.Ascending;
-            else
-                state.SortField = action.payload.SortField;
-
-            const sorted = _.orderBy(state.Data, [state.SortField], [state.Ascending ? "asc" : "desc"])
-            state.Data = sorted;
-        },
         ProcessQuery: (state, action: PayloadAction<{
             query: queryString.ParsedUrlQuery, assets: SystemCenter.Types.DetailedAsset[],
             groups: OpenXDA.Types.AssetGroup[], locations: SystemCenter.Types.DetailedLocation[],
@@ -306,14 +316,20 @@ export const EventSearchsSlice = createSlice({
             state.Error = action.error.message;
 
         });
+        builder.addCase(Sort.pending, (state, action) => {
+            if (state.SortField === action.meta.arg.SortField)
+                state.Ascending = !action.meta.arg.Ascending;
+            else
+                state.SortField = action.meta.arg.SortField;
+           
+        });
+
     }
 
 });
 // #endregion
 
 // #region [ Selectors ]
-export const { Sort } = EventSearchsSlice.actions;
-
 export default EventSearchsSlice.reducer;
 export const SelectEventSearchs = (state: Redux.StoreState) => state.EventSearch.Data;
 export const SelectEventSearchByID = (state: Redux.StoreState, id: number) => state.EventSearch.Data.find(ds => ds.EventID === id);

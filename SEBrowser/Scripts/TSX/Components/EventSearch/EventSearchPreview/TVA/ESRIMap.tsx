@@ -24,13 +24,13 @@
 import React from 'react';
 import leaflet from 'leaflet';
 import { basemapLayer, dynamicMapLayer } from 'esri-leaflet';
-import 'proj4leaflet';
 import moment from 'moment';
 import { SEBrowser } from '../../../../global';
 import { Application } from '@gpa-gemstone/application-typings';
 import Table from '@gpa-gemstone/react-table';
 import { Select } from '@gpa-gemstone/react-forms';
 
+require("leaflet_css");
 interface ILightningStrike {
     Service: string, DisplayTime: string, Amplitude: number, Latitude: number, Longitude: number
 }
@@ -57,7 +57,7 @@ const ESRIMap: React.FC<SEBrowser.IWidget<ISettings>> = (props) => {
     const [lightningInfo, setLightningInfo] = React.useState<ILightningStrike[]>([]);
     const [faultInfo, setFaultInfo] = React.useState<Array<{ StationName: string, Inception: number, Latitude: number, Longitude: number, Distance: number, AssetName }>>([]);
     const [window, setWindow] = React.useState<number>(2);
-  
+
 
     /* Get Lightning Info */
     React.useEffect(() => {

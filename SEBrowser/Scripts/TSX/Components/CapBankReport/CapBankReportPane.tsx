@@ -27,6 +27,7 @@ import { CapBankReportNavBarProps } from './CapBankReportNavBar';
 import _, { cloneDeep } from 'lodash';
 import { Warning, Modal } from '@gpa-gemstone/react-interactive';
 import { Plot, Line } from '@gpa-gemstone/react-graph'
+import { findAppropriateUnit, getMoment, getStartEndTime } from '../EventSearch/TimeWindowUtils';
 
 interface ITrendSeries {
 
@@ -210,10 +211,14 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         if (this.eventTableHandle !== undefined)
             this.eventTableHandle.abort();
 
+        const adjustedTimeFrame = findAppropriateUnit(getMoment(this.props.TimeFilter.date),
+            getStartEndTime(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time), this.props.TimeFilter.windowSize, this.props.TimeFilter.timeWindowUnits)[1],
+            this.props.TimeFilter.timeWindowUnits);
+
         this.eventTableHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${this.props.CapBankID}&date=${this.props.date}` +
-                `&time=${this.props.time}&timeWindowunits=${this.props.timeWindowUnits}&windowSize=${this.props.windowSize}` +
+            url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${this.props.CapBankID}&date=${this.props.TimeFilter.date}` +
+                `&time=${this.props.TimeFilter.time}&timeWindowunits=${adjustedTimeFrame[0]}&windowSize=${adjustedTimeFrame[1]}` +
                 `&bankNum=${this.props.selectedBank}` + this.getFilterString(),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
@@ -655,32 +660,8 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
     }
 
     getTimeLimits() {
-        const dT = this.props.windowSize;
-        const Tcenter = moment.utc(this.props.date + " " + this.props.time,"MM/DD/YYYY HH:mm:ss.SSSS");
-        let dUnit: moment.unitOfTime.DurationConstructor;
-
-        if (this.props.timeWindowUnits == 0)
-            dUnit = "ms";
-        else if (this.props.timeWindowUnits == 1)
-            dUnit = "s"
-        else if (this.props.timeWindowUnits == 2)
-            dUnit = "m"
-        else if (this.props.timeWindowUnits == 3)
-            dUnit = "h"
-        else if (this.props.timeWindowUnits == 4)
-            dUnit = "d"
-        else if (this.props.timeWindowUnits == 5)
-            dUnit = "w"
-        else if (this.props.timeWindowUnits == 6)
-            dUnit = "M"
-        else if (this.props.timeWindowUnits == 7)
-            dUnit = "y"
-
-        const Tstart = cloneDeep(Tcenter);
-        Tstart.subtract(dT, dUnit);
-        const Tend = cloneDeep(Tcenter);
-        Tend.add(dT, dUnit);
-
+        const [Tstart, Tend] = getStartEndTime(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time),
+            this.props.TimeFilter.windowSize, this.props.TimeFilter.timeWindowUnits);
         this.setState({ Tstart: Tstart.valueOf(), Tend: Tend.valueOf()})
     }
 
@@ -688,10 +669,14 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         if (this.trendHandle !== undefined)
             this.trendHandle.abort();
 
+        const adjustedTimeFrame = findAppropriateUnit(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time),
+            getStartEndTime(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time), this.props.TimeFilter.windowSize, this.props.TimeFilter.timeWindowUnits)[0],
+            this.props.TimeFilter.timeWindowUnits);
+
         this.trendHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/GetTrend?capBankId=${this.props.CapBankID}&date=${this.props.date}` +
-                `&time=${this.props.time}&timeWindowunits=${this.props.timeWindowUnits}&windowSize=${this.props.windowSize}` +
+            url: `${homePath}api/PQDashboard/CapBankReport/GetTrend?capBankId=${this.props.CapBankID}&date=${this.props.TimeFilter.date}` +
+                `&time=${this.props.TimeFilter.time}&timeWindowunits=${adjustedTimeFrame[0]}&windowSize=${adjustedTimeFrame[1]}` +
                 `&bankNum=${this.props.selectedBank}` + this.getFilterString(),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',

@@ -60,37 +60,25 @@ interface IProps {
 
 export default function EventPreviewPane(props: IProps) {
     const categories = useAppSelector(SelectWidgetCategories);
-    const [settings, setSettings] = React.useState<SEBrowser.EventPreviewPaneSetting[]>([]);
-    const [tab, setTab] = React.useState<string>(props.InitialTab == null || props.InitialTab == undefined ? 'All' : props.InitialTab);
+    const [tab, setTab] = React.useState<string>(props.InitialTab == null || props.InitialTab == undefined ? '' : props.InitialTab);
     const [widgets, setWidgets] = React.useState<SEBrowser.IWidgetView[]>([]);
     const event: any = useAppSelector((state: Redux.StoreState) => SelectEventSearchByID(state,props.EventID));
-    React.useEffect(() => {
-        const h = GetSettings();
-        return () => { if (h != null && h.abort != null) h.abort(); }
-    }, []);
-
+   
     React.useEffect(() => {
         const h = loadWidgetCategories();
         return () => { if (h != null && h.abort != null) h.abort(); }
     }, [tab])
 
     React.useEffect(() => {
-        if (settings.length > 0 && settings.findIndex(s => s.ID.toString() == tab) == -1)
-            setTab(settings[0].ID.toString());
-    }, [tab, settings])
+        if (categories.length > 0 && categories.findIndex(s => s.ID.toString() == tab) == -1)
+            setTab(categories[0].ID.toString());
+    }, [tab, categories])
 
-    function GetSettings() {
-        return $.ajax({
-            type: "GET",
-            url: `${homePath}api/SEBrowser/GetEventPreviewPaneSettings`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: true,
-            async: true
-        }).done((settings: Array<SEBrowser.EventPreviewPaneSetting>) => setSettings(settings));
-    }
+   
 
     function loadWidgetCategories() {
+        if (tab == '') return null;
+
         return $.ajax({
             type: "GET",
             url: `${homePath}api/openXDA/Widget/${tab}`,
@@ -102,7 +90,7 @@ export default function EventPreviewPane(props: IProps) {
     }
 
 
-        if (event == undefined || settings.length == 0) return <div></div>;
+    if (event == undefined || categories.length == 0) return <div></div>;
 
         return (
             <>
@@ -112,49 +100,49 @@ export default function EventPreviewPane(props: IProps) {
                 <div style={{ height: props.Height - 37.5, maxHeight: props.Height - 37.5, overflowY: 'scroll', overflowX: 'hidden' }}>
                     {widgets.filter(widget => widget.Enabled).map((widget, index) => {
                         if (widget.Name === 'EventSearchOpenSEE')
-                            return <EventSearchOpenSEE key={index} eventID={props.EventID} />;
+                            return <EventSearchOpenSEE key={index} eventID={props.EventID} maxHeight={props.Height-37.5} />;
                         else if (widget.Name === 'pqi')
-                            return <EventSearchPQI key={index} eventID={props.EventID} />;
+                            return <EventSearchPQI key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'EventSearchFaultSegments')
-                            return <EventSearchFaultSegments key={index} eventID={props.EventID} />;
+                            return <EventSearchFaultSegments key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'EventSearchAssetVoltageDisturbances')
-                            return <EventSearchAssetVoltageDisturbances key={index} eventID={props.EventID} />;
+                            return <EventSearchAssetVoltageDisturbances key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'EventSearchCorrelatedSags')
-                            return <EventSearchCorrelatedSags key={index} eventID={props.EventID} />;
+                            return <EventSearchCorrelatedSags key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'TVAESRIMap')
-                            return <TVAESRIMap key={index} eventID={props.EventID} />;
+                            return <TVAESRIMap key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'TVAFaultInfo')
-                            return <TVAFaultInfo key={index} eventID={props.EventID} />;
+                            return <TVAFaultInfo key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'LineParameters')
-                            return <LineParameters key={index} eventID={props.EventID} />;
+                            return <LineParameters key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'TVALightning')
-                            return <TVALightningChart key={index} eventID={props.EventID} />;
+                            return <TVALightningChart key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'TVASIDA')
-                            return <TVASIDA key={index} eventID={props.EventID} />;
+                            return <TVASIDA key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'TVASOE')
-                            return <TVASOE key={index} eventID={props.EventID} />;
+                            return <TVASOE key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'TVALSC')
-                            return <TVALSC key={index} eventID={props.EventID} />;
+                            return <TVALSC key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'TVAPQWeb')
-                            return <TVAPQWeb key={index} eventID={props.EventID} startTime={event.FileStartTime} />;
+                            return <TVAPQWeb key={index} eventID={props.EventID} startTime={event.FileStartTime} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'TVAStructureInfo')
-                            return <StructureInfo key={index} eventID={props.EventID} />;
+                            return <StructureInfo key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'EventSearchFileInfo')
-                            return <EventSearchFileInfo key={index} eventID={props.EventID} />;
+                            return <EventSearchFileInfo key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'EventSearchRelayPerformance')
-                            return <EventSearchRelayPerformance key={index} eventID={props.EventID} />;
+                            return <EventSearchRelayPerformance key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'EventSearchBreakerPerformance')
-                            return <EventSearchBreakerPerformance key={index} eventID={props.EventID} />;
+                            return <EventSearchBreakerPerformance key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'EventSearchCapBankAnalyticOverview')
-                            return <EventSearchCapBankAnalyticOverview key={index} eventID={props.EventID} />;
+                            return <EventSearchCapBankAnalyticOverview key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'EventSearchNoteWindow')
-                            return <EventSearchNoteWindow key={index} eventID={props.EventID} />;
+                            return <EventSearchNoteWindow key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'HECCOIR')
-                            return <InterruptionReport key={index} eventID={props.EventID} />;
+                            return <InterruptionReport key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'AssetHistoryTable')
-                            return <AssetHistoryTable key={index} eventID={props.EventID} />;
+                            return <AssetHistoryTable key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'AssetHistoryStats')
-                            return <AssetHistoryStats key={index} eventID={props.EventID} />;
+                            return <AssetHistoryStats key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                     })}
                 </div>
         </>)

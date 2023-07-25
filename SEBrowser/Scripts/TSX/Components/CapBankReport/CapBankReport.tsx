@@ -26,6 +26,7 @@ import CapBankReportPane from './CapBankReportPane';
 import * as queryString from 'querystring';
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { SEBrowser } from '../../global';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -38,10 +39,12 @@ const CapBankReport = () => {
     const navigate = useNavigate();
     const history = useLocation();
     const [CapBankID, setCapBankID] = React.useState<number>(0);
-    const [date, setDate] = React.useState<string>('');
-    const [time, setTime] = React.useState<string>('');
-    const [windowSize, setWindowSize] = React.useState<number>(0);
-    const [timeWindowUnits, setTimeWindowUnits] = React.useState<number>(0);
+    const [time, setTime] = React.useState<SEBrowser.IReportTimeFilter>({
+        date: '1/1/2000',
+        time: '12:00:00',
+        windowSize: 1,
+        timeWindowUnits: 1
+        });
     const [selectedBank, setSelectedBank] = React.useState<number>(0);
     const [StationId, setStationID] = React.useState<number>(0);
     const [numBanks, setNumBanks] = React.useState<number>(0);
@@ -58,10 +61,13 @@ const CapBankReport = () => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
 
         setCapBankID(query['capBankId'] != undefined ? parseInt(query['capBankId'] as string) : -1);
-        setDate(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat));
-        setTime(query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat));
-        setWindowSize(query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10);
-        setTimeWindowUnits(query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2);
+        const time = {
+            date: query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat),
+            time: query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat),
+            windowSize: query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10,
+            timeWindowUnits: query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2
+        }
+        setTime(time);
         setSelectedBank(query['selectedBank'] != undefined ? parseInt(query['selectedBank'].toString()) : -1);
         setStationID(query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1);
         setNumBanks(0);
@@ -77,7 +83,8 @@ const CapBankReport = () => {
 
     React.useEffect(() => {
         const state = {
-            CapBankID, date, time, windowSize, timeWindowUnits,
+            CapBankID,
+            date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,
             selectedBank, StationId, numBanks, ResFilt, StatFilt,
             OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter };
 
@@ -85,16 +92,13 @@ const CapBankReport = () => {
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
 
-    }, [CapBankID, date, time, windowSize, timeWindowUnits,
+    }, [CapBankID, time,
         selectedBank, StationId, numBanks, ResFilt, StatFilt,
         OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter])
 
     function setState(a: IState) {
         setCapBankID(a.searchBarProps.CapBankID);
-        setDate(a.searchBarProps.date);
-        setTime(a.searchBarProps.time);
-        setWindowSize(a.searchBarProps.windowSize);
-        setTimeWindowUnits(a.searchBarProps.timeWindowUnits);
+        setTime(a.searchBarProps.TimeFilter);
         setSelectedBank(a.searchBarProps.selectedBank);
         setStationID(a.searchBarProps.StationId);
         setNumBanks(a.searchBarProps.numBanks);
@@ -108,7 +112,7 @@ const CapBankReport = () => {
     }
 
     const searchBarProps: CapBankReportNavBarProps = {
-        CapBankID, date, time, windowSize, timeWindowUnits,
+        CapBankID, TimeFilter: time, 
         selectedBank, StationId, numBanks, ResFilt, StatFilt,
         OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter,
         stateSetter: setState

@@ -26,6 +26,7 @@ using GSF;
 using GSF.Data;
 using GSF.Data.Model;
 using GSF.Web;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using openXDA.Model;
 using System;
 using System.Collections.Generic;
@@ -39,6 +40,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using System.Windows.Forms;
 
 namespace SEBrowser.Controllers
 {
@@ -48,6 +50,54 @@ namespace SEBrowser.Controllers
     {
         #region [ Members ]
         const string SettingsCategory = "systemSettings";
+
+        private string m_collumns = null;
+        private Dictionary<string, string> m_sortCollumns = null;
+
+        public string Collumns 
+        {
+            get
+            {
+                if (m_collumns is null)
+                    using (AdoDataConnection connection = new(SettingsCategory))
+                    {
+                        DataTable collumns = connection.RetrieveData(@"
+                            SELECT COLUMN_NAME,TABLE_NAME
+                                FROM INFORMATION_SCHEMA.COLUMNS 
+                            WHERE TABLE_NAME = 'SEBrowser.EventSearchEventView'
+                                OR TABLE_NAME = 'SEBrowser.EventSearchDetailsView' 
+                                AND COLUMN_NAME NOT LIKE 'Sort.%'");
+                        m_collumns = String.Join(",",collumns.Select()
+                            .Select(r => $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}]")
+                            );
+                    }
+                return m_collumns;
+            }
+        }
+
+        public Dictionary<string,string> SortCollumns
+        {
+            get
+            {
+                if (m_sortCollumns is null)
+                    using (AdoDataConnection connection = new(SettingsCategory))
+                    {
+                        DataTable collumns = connection.RetrieveData(@"
+                            SELECT COLUMN_NAME,TABLE_NAME
+                                FROM INFORMATION_SCHEMA.COLUMNS 
+                            WHERE (TABLE_NAME = 'SEBrowser.EventSearchEventView'
+                                OR TABLE_NAME = 'SEBrowser.EventSearchDetailsView') 
+                                AND COLUMN_NAME LIKE 'Sort.%'");
+                        m_sortCollumns = collumns.Select()
+                            .ToDictionary(
+                            r => r["COLUMN_NAME"].ToString().Split('.')[1],
+                            r => $"[{r["TABLE_NAME"]}.{r["COLUMN_NAME"]}]");
+                           ;
+                    }
+                return m_sortCollumns;
+            }
+        }
+
         #endregion
         #region [ Constructors ]
         public OpenXDAController() : base() { }
@@ -91,6 +141,8 @@ namespace SEBrowser.Controllers
             public List<int> groupIDs { get; set; }
             public List<int> locationIDs { get; set; }
             public string numberResults { get; set; }
+            public bool ascending { get; set; }
+            public string sortKey { get; set; }
         }
 
         enum TimeWindowUnits
@@ -136,13 +188,17 @@ namespace SEBrowser.Controllers
                 filters += $"{(string.IsNullOrEmpty(eventCharacteristic) ? "" : $"AND {eventCharacteristic}")} ";
                 filters += $"{(string.IsNullOrEmpty(asset) ? "" : $"AND {asset}")}";
 
+                string sortBy = postData.sortKey ?? "Time";
+                if (!SortCollumns.TryGetValue(sortBy, out sortBy))
+                    sortBy = postData.sortKey ?? "Time";
+                sortBy = $"ORDER BY [{sortBy}] {(postData.ascending ? "ASC" : "DESC")}";
+
                 string query =
-                    $@"SELECT  
-                        [SEBrowser.EventSearchEventView].*, 
-                        [SEBrowser.EventSearchDetailsView].* 
+                    $@"SELECT TOP {postData.numberResults ?? "100"} 
+                        {Collumns}
                     FROM 
                         ( 
-                            SELECT TOP {postData.numberResults ?? "100"} 
+                            SELECT 
                                 Event.ID EventID, 
                                 EventWorstDisturbance.WorstDisturbanceID DisturbanceID, 
                                 FaultSummary.FaultNumber FaultID 
@@ -182,7 +238,7 @@ namespace SEBrowser.Controllers
                                 (Main.DisturbanceID IS NOT NULL AND [SEBrowser.EventSearchDetailsView].DisturbanceID = Main.DisturbanceID) OR 
                                 (Main.FaultID IS NOT NULL AND [SEBrowser.EventSearchDetailsView].FaultID = Main.FaultID) OR 
                                 (COALESCE([SEBrowser.EventSearchDetailsView].DisturbanceID, Main.DisturbanceID) IS NULL AND COALESCE([SEBrowser.EventSearchDetailsView].FaultID, Main.FaultID) IS NULL) 
-                            )";
+                            ) {sortBy}";
 
                 DataTable table = connection.RetrieveData(query, dateTime);
 

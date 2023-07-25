@@ -23,7 +23,7 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import 'moment';
+import moment from 'moment';
 import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../hooks';
@@ -37,6 +37,8 @@ import { Input, Select, MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { SEBrowser } from '../../Global';
 import EventSearchTypeFilters from './EventSearchTypeFilter';
+import { SelectDateTimeSetting, SelectEventSearchSettings, SelectTimeZone } from '../SettingsSlice';
+import { getMoment, getStartEndTime, readableUnit } from './TimeWindowUtils';
 
 interface IProps {
     toggleVis: () => void,
@@ -44,6 +46,9 @@ interface IProps {
     setHeight: (h: number) => void
 }
 
+const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
+const momentDateFormat = "MM/DD/YYYY";
+const momentTimeFormat = "HH:mm:ss.SSS";
 
 const EventSearchNavbar = (props: IProps) => {
     const navRef = React.useRef(null);
@@ -54,6 +59,7 @@ const EventSearchNavbar = (props: IProps) => {
     const eventTypeFilter = useAppSelector(SelectTypeFilter);
     const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
     const magDurCurves = useAppSelector(MagDurCurveSlice.Data);
+    const timeZone = useAppSelector(SelectTimeZone);
 
     const assetGroupList = useAppSelector(SelectAssetGroupList);
 
@@ -72,6 +78,7 @@ const EventSearchNavbar = (props: IProps) => {
     const [newEventCharacteristicFilter, setNewEventCharacteristicFilter] = React.useState<SEBrowser.IEventCharacteristicFilters>(null);
     const [newTypeFilter, setNewTypeFilter] = React.useState<number[]>(null);
     const lineNeutralOptions = [{ Value: 'LL', Label: 'LL' }, { Value: 'LN', Label: 'LN' }, { Value: 'both', Label: 'LL/LN' }];
+    const dateTimeSetting = useAppSelector(SelectDateTimeSetting)
 
     React.useLayoutEffect(() => setHeight(navRef?.current?.offsetHeight ?? 0))
     React.useEffect(() => props.setHeight(height), [height])
@@ -80,6 +87,8 @@ const EventSearchNavbar = (props: IProps) => {
     React.useEffect(() => { setNewEventCharacteristicFilter(eventCharacteristicFilter) }, [eventCharacteristicFilter])
 
     const [newPhases, setNewPhases] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([]);
+
+    const [timeRange, setTimeRange] = React.useState<string>('');
 
     React.useEffect(() => {
         setNewEventCharacteristicFilter(eventCharacteristicFilter);
@@ -109,25 +118,30 @@ const EventSearchNavbar = (props: IProps) => {
         }));
     }, [newEventCharacteristicFilter, newTypeFilter]);   
 
+    React.useEffect(() => {
+        let r = "";
+        const center = getMoment(timeFilter.date, timeFilter.time);
+        const [start, end] = getStartEndTime(center, timeFilter.windowSize, timeFilter.timeWindowUnits);
+        
+        if (dateTimeSetting == 'startWindow' || dateTimeSetting == 'startEnd')
+            r = `${start.format(momentDateTimeFormat)} (${timeZone})`;
+        else if (dateTimeSetting == 'endWindow')
+            r = `${end.format(momentDateTimeFormat)} (${timeZone})`;
+        else if (dateTimeSetting == 'center')
+            r = `${center.format(momentDateTimeFormat)} (${timeZone})`;
 
-    function formatWindowUnit(i: number) {
-        if (i == 7)
-            return "Years";
-        if (i == 6)
-            return "Months";
-        if (i == 5)
-            return "Weeks";
-        if (i == 4)
-            return "Days";
-        if (i == 3)
-            return "Hours";
-        if (i == 2)
-            return "Minutes";
-        if (i == 1)
-            return "Seconds";
-        return "Milliseconds";
-    }
+        if (dateTimeSetting == 'startEnd')
+            r += ` to ${end.format(momentDateTimeFormat)} (${timeZone})`;
+        else if (dateTimeSetting == 'center')
+            r += ` +/- ${timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
+        else if (dateTimeSetting == 'startWindow')
+            r += ` + ${2*timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
+        else if (dateTimeSetting == 'endWindow')
+            r += ` - ${2*timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
 
+        setTimeRange(r);
+    }, [timeFilter, dateTimeSetting, timeZone])
+  
     function getEnum(setOptions, field) {
         let handle = null;
         if (field.type != 'enum' || field.enum == undefined || field.enum.length != 1)
@@ -285,7 +299,7 @@ const EventSearchNavbar = (props: IProps) => {
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <div className="navbar-nav mr-auto">
                         <span className="navbar-text">
-                            {timeFilter.date} {timeFilter.time} +/- {timeFilter.windowSize} {formatWindowUnit(timeFilter.timeWindowUnits)}
+                            {timeRange}
                         </span>
                     </div>
                     <div className="navbar-nav ml-auto" >

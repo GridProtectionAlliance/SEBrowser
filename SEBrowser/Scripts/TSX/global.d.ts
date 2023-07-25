@@ -60,7 +60,7 @@ export namespace Redux {
         Status: SEBrowser.Status,
         Data: T[],
         Error: null | string,
-        SortField: keyof T,
+        SortField: string,
         Ascending: boolean,
         Record?: T,
     }
@@ -79,17 +79,21 @@ export namespace Redux {
 
     interface SettingsState {
         eventSearch: IEventSearchSettings,
-        timeZone: string
+        timeZone: string,
+        DateTimeSetting: SEBrowser.TimeWindowMode
     }
 
     interface IEventSearchSettings {
         NumberResults: number,
         WidgetCategories: SEBrowser.IWidgetCategory[],
         AggregateMagDur: boolean
+        
     }
 }
 export namespace SEBrowser {
     type Status = 'loading' | 'idle' | 'error' | 'changed' | 'unitiated';
+    type TimeWindowMode =   'center' | 'startWindow' | 'endWindow' | 'startEnd';
+      
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
     interface EventPreviewPaneSetting { ID: number, Name: string, Show: boolean, OrderBy: number }
     interface IReportTimeFilter { date: string, time: string, windowSize: number, timeWindowUnits: number }
