@@ -208,7 +208,10 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         }
         const queryParams = GenerateQueryParams(null, [], timeFilter, [], [], [meter], [], marker.eventID);
         const queryUrl = queryString.stringify(queryParams, "&", "=", { encodeURIComponent: queryString.escape });
-        const handle = setTimeout(() => window.open(`${window.location.origin}/eventsearch?${queryUrl}`, '_blank'), 500);
+        const baseUrl = window.location.pathname.split('/');
+        const urlIndex = baseUrl.indexOf("trenddata");
+        baseUrl.splice(urlIndex, baseUrl.length - urlIndex);
+        const handle = setTimeout(() => window.open(`${baseUrl.join('/')}/eventsearch?${queryUrl}`, '_blank'), 500);
         return (() => { clearTimeout(handle); })
     }
 
