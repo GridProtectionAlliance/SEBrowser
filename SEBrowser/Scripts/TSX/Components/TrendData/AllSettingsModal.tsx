@@ -24,13 +24,12 @@
 import React from 'react';
 import moment from 'moment';
 import _ from 'lodash';
-import TrendSearchNavbar from './TrendDataNavbar';
-import { TrendPlot, ITrendPlot } from './TrendPlot/TrendPlot';
-import { Modal, OverlayDrawer } from '@gpa-gemstone/react-interactive';
+import { Modal } from '@gpa-gemstone/react-interactive';
 import { PlotSettings } from './TrendPlot/PlotSettings';
+import { TrendSearch } from '../../Global';
 
 const momentDateFormat = "MM/DD/YYYY";
-const defaultPlot: ITrendPlot = {
+const defaultPlot: TrendSearch.ITrendPlot = {
     TimeFilter: { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 12, timeWindowUnits: 3 },
     Type: 'Line',
     Channels: [],
@@ -45,19 +44,19 @@ const defaultPlot: ITrendPlot = {
 interface IProps {
     Show: boolean,
     SetShow: (value: boolean) => void,
-    ApplyFieldToAll: (record: ITrendPlot, field: keyof (ITrendPlot)) => void
+    ApplyFieldToAll: (record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)) => void
 }
 
 const AllSettingsModal = React.memo((props: IProps) => {
     const [confirmDisabled, setConfirmDisabled] = React.useState<boolean>(false);
-    const [allPlot, setAllPlot] = React.useState<ITrendPlot>(defaultPlot);
+    const [allPlot, setAllPlot] = React.useState<TrendSearch.ITrendPlot>(defaultPlot);
 
     const settingsModalCallback = React.useCallback((
         (confirmed: boolean) => {
             if (confirmed)
                 Object.keys(allPlot).forEach((field: string) => {
                     if (!_.isEqual(allPlot[field], defaultPlot[field]))
-                        props.ApplyFieldToAll(allPlot, field as keyof (ITrendPlot))
+                        props.ApplyFieldToAll(allPlot, field as keyof (TrendSearch.ITrendPlot))
             });
             setAllPlot(defaultPlot);
             props.SetShow(false);

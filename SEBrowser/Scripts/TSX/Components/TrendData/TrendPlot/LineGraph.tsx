@@ -23,7 +23,7 @@
 import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
-import { IMultiCheckboxOption, SEBrowser } from '../../../Global';
+import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../Global';
 import { Application } from '@gpa-gemstone/application-typings';
 import { LoadingIcon, ServerErrorIcon } from '@gpa-gemstone/react-interactive';
 import { Button, Line, Plot } from '@gpa-gemstone/react-graph';
@@ -43,7 +43,7 @@ interface IProps {
 }
 
 interface ILineSeries{
-    Channel: SEBrowser.ITrendChannel,
+    Channel: TrendSearch.ITrendChannel,
     AvgLineType?: ':' | '-',
     MinMaxLineType?: ':' | '-',
     RightAxis?: boolean
@@ -121,7 +121,7 @@ const LineGraph = React.memo((props: IProps) => {
         setTimeLimits(chartData === undefined ? [0, 1] : [chartData.AvgSeries[0][0], chartData.AvgSeries[chartData.AvgSeries.length - 1][0]]);
     }, [allChartData]);
 
-    function GetTrendData(channels: number[], startTime: string, endTime: string): JQuery.jqXHR<SEBrowser.IPQData[]> {
+    function GetTrendData(channels: number[], startTime: string, endTime: string): JQuery.jqXHR<TrendSearch.IPQData[]> {
         if (channels.length === 0) {
             setAllChartData(CulledTrendData());
             return null;
@@ -139,7 +139,7 @@ const LineGraph = React.memo((props: IProps) => {
             dataType: 'json',
             cache: false,
             async: true
-        }).done((data: SEBrowser.IPQData[]) => {
+        }).done((data: TrendSearch.IPQData[]) => {
             const newData: IChartData[] =
                 data.map(channelInfo => {
                     const timeSeries = channelInfo.Points.map(dataPoint => moment(dataPoint.Timestamp, serverFormat).valueOf());

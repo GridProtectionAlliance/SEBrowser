@@ -26,7 +26,7 @@ import { GenericSlice } from '@gpa-gemstone/react-interactive';
 import { configureStore } from '@reduxjs/toolkit';
 import EventSearchReducer from './Components/EventSearch/EventSearchSlice';
 import { SettingsReducer } from './Components/SettingsSlice';
-import { SEBrowser,  } from './global';
+import { SEBrowser, TrendSearch } from './global';
 
 declare let homePath: string;
 
@@ -42,7 +42,7 @@ export const AssetSlice = new GenericSlice<SystemCenter.Types.DetailedAsset>("As
 export const LocationSlice = new GenericSlice<SystemCenter.Types.DetailedLocation>("Location", `${homePath}api/OpenXDA/Location`, "LocationKey", true);
 export const EventTypeSlice = new GenericSlice<OpenXDA.Types.EventType>("EventType", `${homePath}api/OpenXDA/EventType`, "Category", true);
 export const PhaseSlice = new GenericSlice<OpenXDA.Types.Phase>("Phase", `${homePath}api/OpenXDA/Phase`, "Name");
-export const ChannelGroupSlice = new GenericSlice<SEBrowser.ChannelGroup>("ChannelGroup", `${homePath}api/openXDA/ChannelGroup`, "Name");
+export const ChannelGroupSlice = new GenericSlice<TrendSearch.ChannelGroup>("ChannelGroup", `${homePath}api/openXDA/ChannelGroup`, "Name");
 
 export const EventNoteSlice = new GenericSlice<OpenXDA.Types.Note>("EventNote", `${homePath}api/OpenXDA/Note/Event`, "Timestamp", true);
 

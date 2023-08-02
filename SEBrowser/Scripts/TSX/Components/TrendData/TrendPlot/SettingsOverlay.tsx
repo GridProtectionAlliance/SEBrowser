@@ -25,24 +25,21 @@ import _ from 'lodash';
 import { Portal } from 'react-portal';
 import { BlockPicker } from 'react-color';
 import { ILineSeries } from './LineGraph';
-import { IMultiCheckboxOption, SEBrowser } from '../../../global';
-import ReportTimeFilter from '../../ReportTimeFilter';
-import { CheckBox, Input, MultiCheckBoxSelect, Select, TextArea } from '@gpa-gemstone/react-forms';
+import { TrendSearch } from '../../../global';
+import { CheckBox, Input, Select, TextArea } from '@gpa-gemstone/react-forms';
 import TrendChannelTable from '../TrendChannelTable';
 import { TabSelector, Warning } from '@gpa-gemstone/react-interactive';
-import { ITrendPlot, IMarker } from './TrendPlot';
 import { PlotSettings } from './PlotSettings';
-import Table from '@gpa-gemstone/react-table';
 import TrendMarkerTable from '../TrendMarkerTable';
 import { CrossMark, Plus } from '@gpa-gemstone/gpa-symbols';
 
 interface IOverlayProps {
     // Manage Plot
-    Plot: ITrendPlot,
-    SetPlot: (id: string, record: ITrendPlot, field: keyof (ITrendPlot)) => void,
+    Plot: TrendSearch.ITrendPlot,
+    SetPlot: (id: string, record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)) => void,
     // Manage Markers
-    Markers: IMarker[],
-    SetMarkers: (markers: IMarker[]) => void,
+    Markers: TrendSearch.IMarker[],
+    SetMarkers: (markers: TrendSearch.IMarker[]) => void,
     // Assumption that this doesnt change outside of this overlay
     SeriesSettings?: SeriesSettings[]
     SetSeriesSettings: (newSettings: SeriesSettings[]) => void
@@ -70,11 +67,11 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
     const [currentSettingsChannel, setCurrentSettingsChannel] = React.useState<number>(undefined);
 
     const [currentSettingsMarker, setCurrentSettingsMarker] = React.useState<string>(undefined);
-    const [currentMarker, setCurrentMarker] = React.useState<IMarker>(undefined);
-    const [markersBuffer, setMarkersBuffer] = React.useState<IMarker[]>([]);
+    const [currentMarker, setCurrentMarker] = React.useState<TrendSearch.IMarker>(undefined);
+    const [markersBuffer, setMarkersBuffer] = React.useState<TrendSearch.IMarker[]>([]);
 
     // Settings Buffers
-    const [plotSettingsBuffer, setPlotSettingsBuffer] = React.useState<ITrendPlot>(null);
+    const [plotSettingsBuffer, setPlotSettingsBuffer] = React.useState<TrendSearch.ITrendPlot>(null);
     const [seriesSettingsBuffer, setSeriesSettingsBuffer] = React.useState<SeriesSettings>(undefined);
     const [seriesSettingsMultiBuffer, setSeriesSettingsMultiBuffer] = React.useState<SeriesSettings[]>([]);
 
@@ -129,7 +126,7 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
         setSeriesSettingsBuffer(props.SeriesSettings.find(setting => setting.Channel.ID === currentSettingsChannel));
     }, [currentSettingsChannel]);
 
-    function checkAndSetValue(field: keyof(ITrendPlot)): void {
+    function checkAndSetValue(field: keyof(TrendSearch.ITrendPlot)): void {
         if (!_.isEqual(props[field], plotSettingsBuffer[field]))
             props.SetPlot(props.Plot.ID, plotSettingsBuffer, field);
     }
@@ -148,7 +145,7 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
         const allChannels = [...props.Plot.Channels];
         const index = allChannels.findIndex(channel => channel.ID === id);
         allChannels.splice(index, 1);
-        const newPlot: ITrendPlot = { ...props.Plot };
+        const newPlot: TrendSearch.ITrendPlot = { ...props.Plot };
         newPlot.Channels = allChannels;
         props.SetPlot(props.Plot.ID, newPlot, 'Channels')
     }, [props.SetPlot, props.Plot.Channels]);
@@ -171,7 +168,7 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
         setMarkersBuffer(allMarkers);
     }, [markersBuffer, setMarkersBuffer]);
 
-    const getNewMarkerList = React.useCallback((marker: IMarker) => {
+    const getNewMarkerList = React.useCallback((marker: TrendSearch.IMarker) => {
         const allMarkers = [...markersBuffer];
         const index = allMarkers.findIndex(mark => mark.ID === marker.ID);
         allMarkers.splice(index, 1, marker);
@@ -234,12 +231,12 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                                     <div className="col" style={{ width: '60%' }} ref={sideMarkerRef}>
                                         {currentMarker === undefined ? null :
                                             <>
-                                                <Select<IMarker> Record={currentMarker} Label={'Marker Symbol'} Field={'symbol'} Setter={setCurrentMarker} Options={markerSymbolOptions} />
-                                                <Input<IMarker> Record={currentMarker} Label={'Infobox Opacity'} Field={'opacity'} Setter={setCurrentMarker} Valid={() => {
+                                                <Select<TrendSearch.IMarker> Record={currentMarker} Label={'Marker Symbol'} Field={'symbol'} Setter={setCurrentMarker} Options={markerSymbolOptions} />
+                                                <Input<TrendSearch.IMarker> Record={currentMarker} Label={'Infobox Opacity'} Field={'opacity'} Setter={setCurrentMarker} Valid={() => {
                                                     //TODO: this must be between 0-1
                                                     return true;
                                                 }} />
-                                                <TextArea<IMarker> Record={currentMarker} Label={'Marker Note'} Field={'note'} Setter={setCurrentMarker} Rows={3} Valid={() => true } />
+                                                <TextArea<TrendSearch.IMarker> Record={currentMarker} Label={'Marker Note'} Field={'note'} Setter={setCurrentMarker} Rows={3} Valid={() => true } />
                                             </>
                                         }
                                     </div>
@@ -253,7 +250,7 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                             onClick={() => {
                                 if (confirmDisabled) return;
                                 // Each of the fields that are set global to all channels
-                                Object.keys(plotSettingsBuffer).forEach(field => checkAndSetValue(field as keyof (ITrendPlot)));
+                                Object.keys(plotSettingsBuffer).forEach(field => checkAndSetValue(field as keyof (TrendSearch.ITrendPlot)));
                                 // Remove settings that got changed from base, then add back in
                                 let newSettings = [...props.SeriesSettings]
                                     .filter(setting =>

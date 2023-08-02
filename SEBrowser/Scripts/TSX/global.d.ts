@@ -125,6 +125,10 @@ export namespace SEBrowser {
     }
 
     // Temporary until next gpa-gemstone update
+    interface IWidgetCategory { ID: number, Name: string, OrderBy: number }
+}
+
+export namespace TrendSearch {
     interface ChannelGroup {
         ID: number,
         Name: string,
@@ -159,7 +163,36 @@ export namespace SEBrowser {
         }[]
     }
 
-    interface IWidgetCategory { ID: number, Name: string, OrderBy: number }
+    interface ITrendPlot {
+        // Represents Data Needed by Outer
+        TimeFilter: SEBrowser.IReportTimeFilter,
+        Type: 'Line',
+        Channels: SEBrowser.ITrendChannel[],
+        PlotFilter: IMultiCheckboxOption[],
+        ID: string,
+        // Represents Non-default Data
+        Title?: string,
+        XAxisLabel?: string,
+        YLeftLabel?: string,
+        YRightLabel?: string,
+        Metric?: boolean,
+        Width: number,
+        Height: number
+    }
+
+    interface IMarker {
+        // Symbolic marker
+        ID: string,
+        symbol: string,
+        xPos: number,
+        yPos: number,
+        radius: number,
+        // Infobox
+        note: string,
+        xBox: number,
+        yBox: number,
+        opacity: number
+    }
 }
 
 export namespace OpenXDA {

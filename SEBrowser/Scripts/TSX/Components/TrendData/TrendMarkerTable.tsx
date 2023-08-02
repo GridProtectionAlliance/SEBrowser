@@ -24,11 +24,11 @@ import React from 'react';
 import _ from 'lodash';
 import { CrossMark } from '@gpa-gemstone/gpa-symbols';
 import Table from '@gpa-gemstone/react-table';
-import { IMarker } from './TrendPlot/TrendPlot';
+import { TrendSearch } from '../../global';
 import moment from 'moment';
 
 interface IProps {
-    Markers: IMarker[],
+    Markers: TrendSearch.IMarker[],
     RemoveMarker?: (id: string) => void,
     Selected: string,
     SetSelected: (id: string) => void,
@@ -36,7 +36,7 @@ interface IProps {
 }
 
 const TrendMarkerTable = (props: IProps) => {
-    const [trendMarkers, setTrendMarkers] = React.useState<IMarker[]>([]);
+    const [trendMarkers, setTrendMarkers] = React.useState<TrendSearch.IMarker[]>([]);
     const [sortField, setSortField] = React.useState<string>('MeterName');
     const [ascending, setAscending] = React.useState<boolean>(true);
 
@@ -45,7 +45,7 @@ const TrendMarkerTable = (props: IProps) => {
     }, [props.Markers, sortField, ascending]);
 
     const removeButton = React.useCallback(
-        (marker: IMarker) => (
+        (marker: TrendSearch.IMarker) => (
             <button type="button"
                 className={'btn float-left'}
                 onClick={(event) => { event.preventDefault(); event.stopPropagation(); props.RemoveMarker(marker.ID) }}>
@@ -64,7 +64,7 @@ const TrendMarkerTable = (props: IProps) => {
         }, [ascending]);
 
     return (
-        <Table<IMarker>
+        <Table<TrendSearch.IMarker>
             cols={[
                 { key: "symbol", field: "symbol", label: "" },
                 { key: "xPos", field: "xPos", label: "Time", content: (item) => moment(item.xPos).format("MM/DD/YYYY hh:mm:ss.SSS") },

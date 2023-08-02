@@ -23,21 +23,22 @@
 
 import React from 'react';
 import TrendSearchNavbar from './TrendDataNavbar';
-import { TrendPlot, ITrendPlot } from './TrendPlot/TrendPlot';
+import TrendPlot from './TrendPlot/TrendPlot';
+import { TrendSearch } from '../../Global';
 import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
 import AllSettingsModal from './AllSettingsModal';
 
 const TrendData = () => {
-    const closureHandler = React.useRef<((o: boolean) => void)>(() => { });
+    const closureHandler = React.useRef<((o: boolean) => void)>(() => { return; });
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
     const [navHeight, setNavHeight] = React.useState<number>(0);
-    const [plotList, setPlotList] = React.useState<ITrendPlot[]>([]);
+    const [plotList, setPlotList] = React.useState<TrendSearch.ITrendPlot[]>([]);
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
     const overlayPortalID = "TrendDataChartPortal";
     const overlayDrawer = "TrendDataNavbar";
 
     function getShowNav(): boolean {
-        if (localStorage.hasOwnProperty('SEbrowser.TrendData.ShowNav'))
+        if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.TrendData.ShowNav'))
             return JSON.parse(localStorage.getItem('SEbrowser.TrendData.ShowNav'));
         else
             return true;
@@ -50,32 +51,22 @@ const TrendData = () => {
         setPlotList(newList);
     }), [plotList]);
 
-    const setPlot = React.useCallback(((ID: string, record: ITrendPlot, field: keyof (ITrendPlot)) => {
+    const setPlot = React.useCallback(((ID: string, record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)) => {
         const index = plotList.findIndex(item => item.ID === ID);
         const newList: any[] = [...plotList];
         newList[index][field] = record[field] as any;
         setPlotList(newList);
     }), [plotList]);
 
-    const setAllPlot = React.useCallback(((record: ITrendPlot, field: keyof (ITrendPlot)) => {
+    const setAllPlot = React.useCallback(((record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)) => {
         const newList: any[] = [...plotList];
-        newList.forEach((item: ITrendPlot, index: number) => {
+        newList.forEach((item: TrendSearch.ITrendPlot, index: number) => {
             newList[index][field] = record[field];
         });
         setPlotList(newList);
     }), [plotList]);
 
-    const concatNewContainers = React.useCallback(((newContainers: ITrendPlot[]) => {
-        for (const container of newContainers) {
-            if (container.Channels.length === 0) continue;
-            let title = container.Channels.some(channel => channel.MeterID !== container.Channels[0].MeterID) ?
-                "Multi-Meter " : (container.Channels[0].MeterShortName ?? container.Channels[0].MeterName);
-            title += container.Channels.some(channel => channel.AssetID !== container.Channels[0].AssetID) ?
-                "" : ` - ${container.Channels[0].AssetName}`
-            title += container.Channels.some(channel => channel.ChannelGroup !== container.Channels[0].ChannelGroup) ?
-                "" : ` - ${container.Channels[0].ChannelGroup}`
-            container.Title = title;
-        }
+    const concatNewContainers = React.useCallback(((newContainers: TrendSearch.ITrendPlot[]) => {
         setPlotList(plotList.concat(newContainers));
     }), [plotList, setPlotList]);
 

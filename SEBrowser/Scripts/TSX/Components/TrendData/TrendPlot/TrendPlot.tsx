@@ -29,47 +29,21 @@ import { TrashCan, Pencil, Plus, Flag } from '@gpa-gemstone/gpa-symbols';
 import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker } from '@gpa-gemstone/react-graph';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { LineGraph, ILineSeries } from './LineGraph';
-import { IMultiCheckboxOption, SEBrowser } from '../../../global';
+import { SEBrowser, TrendSearch } from '../../../global';
 import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
 import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
 import { SettingsOverlay } from './SettingsOverlay';
 
 //TODO: move to global
-interface ITrendPlot {
-    TimeFilter: SEBrowser.IReportTimeFilter,
-    Type: 'Line',
-    Channels: SEBrowser.ITrendChannel[],
-    PlotFilter: IMultiCheckboxOption[],
-    ID: string,
-    Width: number,
-    Height: number,
-    Title?: string,
-    XAxisLabel?: string,
-    Metric?: boolean
-}
 
 interface IContainerProps {
     // Manage Plot
-    Plot: ITrendPlot,
-    SetPlot: (id: string, record: ITrendPlot, field: keyof (ITrendPlot)) => void,
+    Plot: TrendSearch.ITrendPlot,
+    SetPlot: (id: string, record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)) => void,
     RemovePlot: (id: string) => void,
     // Manage Overlay
     HandleOverlay: (open: boolean) => void,
     OverlayPortalID: string
-}
-
-interface IMarker {
-    // Symbolic marker
-    ID: string,
-    symbol: string,
-    xPos: number,
-    yPos: number,
-    radius: number,
-    // Infobox
-    note: string,
-    xBox: number,
-    yBox: number,
-    opacity: number
 }
 
 interface IVertHori {
@@ -93,9 +67,10 @@ const TrendPlot = React.memo((props: IContainerProps) => {
 
     // Plot Saved Settings
     const [plotAllSeriesSettings, setPlotAllSeriesSettings] = React.useState<SeriesSettings[]>(null);
+    const ChangedProperties = new Set<string>();
 
     // Plot Markers
-    const [symbolicMarkers, setSymbolicMarkers] = React.useState<IMarker[]>([]);
+    const [symbolicMarkers, setSymbolicMarkers] = React.useState<TrendSearch.IMarker[]>([]);
     const [verticalMarkers, setVerticalMarkers] = React.useState<IVertHori[]>([]);
     const [horizontalMarkers, setHorizontalMarkers] = React.useState<IVertHori[]>([]);
 
@@ -125,14 +100,14 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         const useAssetAppend: boolean = props.Plot.Channels.some((channel) =>
             channel.AssetKey !== props.Plot.Channels[0].AssetKey);
 
-        const constructLabel: (channel: SEBrowser.ITrendChannel) => string = (channel) => {
+        const constructLabel: (channel: TrendSearch.ITrendChannel) => string = (channel) => {
             let label: string = channel.Name;
             label = (useAssetAppend ? `${channel.AssetName} - ` : "") + label;
             label = (useMeterAppend ? `${channel.MeterShortName ?? channel.MeterName} - ` : "") + label;
             return label;
         };
 
-        const getDefaultValue: (channel: SEBrowser.ITrendChannel) => SeriesSettings = (channel) => {
+        const getDefaultValue: (channel: TrendSearch.ITrendChannel) => SeriesSettings = (channel) => {
             switch (props.Plot.Type) {
                 case 'Line': default:
                     return ({
@@ -150,6 +125,17 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             ))
         );
     }, [props.Plot.Type, props.Plot.Channels]);
+
+    // Set default plot settings
+    React.useEffect(() => {
+        let title = props.Plot.Channels.some(channel => channel.MeterID !== props.Plot.Channels[0].MeterID) ?
+            "Multi-Meter " : (props.Plot.Channels[0].MeterShortName ?? props.Plot.Channels[0].MeterName);
+        title += props.Plot.Channels.some(channel => channel.AssetID !== props.Plot.Channels[0].AssetID) ?
+            "" : ` - ${props.Plot.Channels[0].AssetName}`
+        title += props.Plot.Channels.some(channel => channel.ChannelGroup !== props.Plot.Channels[0].ChannelGroup) ?
+            "" : ` - ${props.Plot.Channels[0].ChannelGroup}`
+        props.Plot.Title = title;
+    }, []);
 
     // Handle the overlay
     React.useEffect(() => {
@@ -229,7 +215,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             channelIdSet.add(channel.ID);
             return true;
         });
-        const newPlot: ITrendPlot = { ...props.Plot, Channels: allChannels };
+        const newPlot: TrendSearch.ITrendPlot = { ...props.Plot, Channels: allChannels };
         props.SetPlot(props.Plot.ID, newPlot, 'Channels');
     }, [props.Plot.Channels, props.SetPlot]);
 
@@ -310,7 +296,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         }
     }, [symbolicMarkers, setSymbolicMarkers, verticalMarkers, setVerticalMarkers, horizontalMarkers, setHorizontalMarkers]);
 
-    const setMarker = React.useCallback((ID: string, value: any, field: keyof (IMarker)) => {
+    const setMarker = React.useCallback((ID: string, value: any, field: keyof (TrendSearch.IMarker)) => {
         const index = symbolicMarkers.findIndex(item => item.ID === ID);
         const newList: any[] = [...symbolicMarkers];
         newList[index][field] = value;
@@ -340,7 +326,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     {eventMarkers.map((marker, i) =>
                         <VerticalMarker key={"Event_" + i}
                             Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
-                            onClick={(value) => { if (customSelect.current !== "drag") return; navigateEvent(marker); }} />
+                            onClick={() => { if (customSelect.current !== "drag") return; navigateEvent(marker); }} />
                     )}
                     {verticalMarkers.map((marker, i) =>
                         <VerticalMarker key={"Vert_" + i}
@@ -377,4 +363,4 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     );
 });
 
-export { TrendPlot, ITrendPlot, IMarker };
+export default TrendPlot;

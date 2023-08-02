@@ -26,7 +26,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { AssetSlice, MeterSlice, PhaseSlice, ChannelGroupSlice } from '../../Store';
-import { SEBrowser, IMultiCheckboxOption } from '../../Global';
+import { SEBrowser, TrendSearch, IMultiCheckboxOption } from '../../Global';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { DefaultSelects } from '@gpa-gemstone/common-pages';
@@ -35,7 +35,6 @@ import { CrossMark, SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { CreateGuid } from '@gpa-gemstone/helper-functions';
 import ReportTimeFilter from '../ReportTimeFilter';
 import NavbarFilterButton from '../Common/NavbarFilterButton';
-import { ITrendPlot } from './TrendPlot/TrendPlot';
 import TrendChannelTable from './TrendChannelTable';
 
 interface IProps {
@@ -44,7 +43,7 @@ interface IProps {
     SetHeight: (h: number) => void,
     SetShowAllSettings: (show: boolean) => void,
     DisableAllSettings: boolean
-    AddNewCharts: (chartData: ITrendPlot[]) => void
+    AddNewCharts: (chartData: TrendSearch.ITrendPlot[]) => void
 }
 
 interface IKeyValuePair {
@@ -80,7 +79,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [channelGroupOptions, setChannelGroupOptions] = React.useState<IMultiCheckboxOption[]>([]);
     const [linePlotOptions, setLinePlotOptions] = React.useState<IMultiCheckboxOption[]>([{ Value: "min", Text: "Minimum", Selected: true }, { Value: "max", Text: "Maximum", Selected: true }, { Value: "avg", Text: "Average/Values", Selected: true }]);
 
-    const [trendChannels, setTrendChannels] = React.useState<SEBrowser.ITrendChannel[]>([]);
+    const [trendChannels, setTrendChannels] = React.useState<TrendSearch.ITrendChannel[]>([]);
     const [selectedSet, setSelectedSet] = React.useState<Set<number>>(new Set<number>());
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
@@ -163,7 +162,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         setTrendFilter({ ...trendFilter, [filterField]: pairs });
     }
 
-    function GetTrendChannels(): JQuery.jqXHR<SEBrowser.ITrendChannel[]> {
+    function GetTrendChannels(): JQuery.jqXHR<TrendSearch.ITrendChannel[]> {
         return $.ajax({
             type: "POST",
             url: `${homePath}api/OpenXDA/GetTrendSearchData`,
@@ -172,7 +171,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             dataType: 'json',
             cache: true,
             async: true
-        }).done((data: SEBrowser.ITrendChannel[]) => {
+        }).done((data: TrendSearch.ITrendChannel[]) => {
             setTrendChannels(data);
             setSelectedSet(new Set<number>());
         });
@@ -382,8 +381,8 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             if (selectedSet.size === 0) return;
                             const selectedChannels = trendChannels.filter(chan => selectedSet.has(chan.ID));
                             props.AddNewCharts([{
-                                TimeFilter: timeFilter, Type: 'Line', Channels: selectedChannels, ID: CreateGuid(), Height: 50, Width: 50,
-                                PlotFilter: linePlotOptions
+                                TimeFilter: timeFilter, Type: 'Line', Channels: selectedChannels, ID: CreateGuid(),
+                                PlotFilter: linePlotOptions, Width: 50, Height: 50
                             }]);
                         }}>
                         <span>{SVGIcons.Document}</span>
@@ -396,11 +395,11 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         data-tooltip='Multi-Line' onMouseEnter={() => setHover('Multi-Line')} onMouseLeave={() => setHover('None')}
                         onClick={() => {
                             if (selectedSet.size === 0) return;
-                            const selectedChannels: SEBrowser.ITrendChannel[] = trendChannels.filter(chan => selectedSet.has(chan.ID));
-                            const meterPlotChannels: SEBrowser.ITrendChannel[][] = [];
+                            const selectedChannels: TrendSearch.ITrendChannel[] = trendChannels.filter(chan => selectedSet.has(chan.ID));
+                            const meterPlotChannels: TrendSearch.ITrendChannel[][] = [];
                             selectedChannels.forEach(channel => {
                                 const listIndex = meterPlotChannels.findIndex(channelList => channelList[0].MeterKey === channel.MeterKey);
-                                let newList: SEBrowser.ITrendChannel[];
+                                let newList: TrendSearch.ITrendChannel[];
                                 if (listIndex > -1) {
                                     newList = meterPlotChannels[listIndex];
                                     newList.push(channel);
@@ -413,8 +412,8 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             props.AddNewCharts(
                                 meterPlotChannels.map(channelList => {
                                     return ({
-                                        TimeFilter: timeFilter, Type: 'Line', Channels: channelList, ID: CreateGuid(), Height: 50, Width: 50,
-                                        PlotFilter: linePlotOptions
+                                        TimeFilter: timeFilter, Type: 'Line', Channels: channelList, ID: CreateGuid(),
+                                        PlotFilter: linePlotOptions, Width: 50, Height: 50
                                     });
                                 })
                             );

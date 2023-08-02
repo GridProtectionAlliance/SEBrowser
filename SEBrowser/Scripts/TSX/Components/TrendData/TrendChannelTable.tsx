@@ -22,7 +22,7 @@
 //******************************************************************************************************
 import React from 'react';
 import _ from 'lodash';
-import { SEBrowser } from '../../Global';
+import { TrendSearch } from '../../Global';
 import { ConfigurableTable } from '@gpa-gemstone/react-interactive';
 import { TrashCan } from '@gpa-gemstone/gpa-symbols';
 import { Column } from '@gpa-gemstone/react-table';
@@ -30,7 +30,7 @@ import { Column } from '@gpa-gemstone/react-table';
 type IProps = ICommon & (IMultiProps | ISingleProps);
 
 interface ICommon {
-    TrendChannels: SEBrowser.ITrendChannel[],
+    TrendChannels: TrendSearch.ITrendChannel[],
     RemoveChannel?: (id: number) => void,
     EnableDragDrop?: boolean,
     Height: number
@@ -49,11 +49,11 @@ interface ISingleProps {
 }
 
 const TrendChannelTable = (props: IProps) => {
-    const [trendChannels, setTrendChannels] = React.useState<SEBrowser.ITrendChannel[]>([]);
+    const [trendChannels, setTrendChannels] = React.useState<TrendSearch.ITrendChannel[]>([]);
     const [sortField, setSortField] = React.useState<string>('MeterName');
     const [ascending, setAscending] = React.useState<boolean>(true);
 
-    const [allCols, setAllCols] =  React.useState<Column<SEBrowser.ITrendChannel>[]>([
+    const [allCols, setAllCols] = React.useState<Column<TrendSearch.ITrendChannel>[]>([
         { key: "Name", field: "Name", label: "Name" },
         { key: "Description", field: "Description", label: "Description" },
         { key: "AssetKey", field: "AssetKey", label: "Asset Key" },
@@ -66,7 +66,7 @@ const TrendChannelTable = (props: IProps) => {
     ]);
 
     const removeButton = React.useCallback(
-        (channel: SEBrowser.ITrendChannel) => (
+        (channel: TrendSearch.ITrendChannel) => (
             <button type="button"
                 className={'btn float-left'}
                 onClick={(event) => { event.preventDefault(); event.stopPropagation(); props.RemoveChannel(channel.ID) }}>
@@ -75,7 +75,7 @@ const TrendChannelTable = (props: IProps) => {
         ), [props.RemoveChannel]);
 
     React.useEffect(() => {
-        const newCols: Column<SEBrowser.ITrendChannel>[] = [...allCols];
+        const newCols: Column<TrendSearch.ITrendChannel>[] = [...allCols];
         const index: number = newCols.findIndex((col) => col.key === "RemoveChannel");
         if (props.RemoveChannel !== undefined && index === -1) {
             newCols.push({ key: "RemoveChannel", field: "ID", label: "", rowStyle: { width: "50px" }, headerStyle: { width: "50px" }, content: removeButton });
@@ -123,7 +123,7 @@ const TrendChannelTable = (props: IProps) => {
         };
 
     return (
-        <ConfigurableTable<SEBrowser.ITrendChannel>
+        <ConfigurableTable<TrendSearch.ITrendChannel>
             defaultColumns={["Name", "MeterName", "Description", "Phase", (props.RemoveChannel !== undefined ? "RemoveChannel" : "ChannelGroup")]}
             requiredColumns={["Name", "Phase", (props.RemoveChannel !== undefined ? "RemoveChannel" : "ChannelGroup")]}
             cols={allCols}
