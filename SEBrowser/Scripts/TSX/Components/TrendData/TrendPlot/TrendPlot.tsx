@@ -135,7 +135,10 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         const getDefaultValue: (channel: SEBrowser.ITrendChannel) => SeriesSettings = (channel) => {
             switch (props.Plot.Type) {
                 case 'Line': default:
-                    return ({ Channel: channel, Color: SpacedColor(0.9, 0.9), MinMaxLineType: ':', AvgLineType: '-', Label: constructLabel(channel) })
+                    return ({
+                        Channel: channel, Color: SpacedColor(0.9, 0.9), MinMaxLineType: ':', AvgLineType: '-',
+                        Label: constructLabel(channel), RightAxis: channel.ChannelGroup !== props.Plot.Channels[0].ChannelGroup
+                    })
             }
         };
 

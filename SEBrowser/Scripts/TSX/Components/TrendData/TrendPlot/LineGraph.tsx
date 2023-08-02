@@ -46,6 +46,7 @@ interface ILineSeries{
     Channel: SEBrowser.ITrendChannel,
     AvgLineType?: ':' | '-',
     MinMaxLineType?: ':' | '-',
+    RightAxis?: boolean
     Label?: string,
     Color?: string
 }
@@ -194,18 +195,22 @@ const LineGraph = React.memo((props: IProps) => {
                 <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} showBorder={false}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect}
                     legend={'bottom'} useMetricFactors={props.Metric ?? false}
-                    Tlabel={props.XAxisLabel ?? 'Time'} Ylabel={'Units'} showMouse={true}>
+                    Tlabel={props.XAxisLabel ?? 'Time'} Ylabel={'Units'} YRightlabel={'Imoyd'} showMouse={true}>
                     {allChartData.flatMap((chartData, index) => {
                         const lineArray: JSX.Element[] = [];
                         const channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === chartData.ChannelID);
                         const baseLabel: string = channelSetting?.Label ?? channelSetting?.Channel?.Name ?? "Unknown Channel";
                         const colorValue: string = channelSetting?.Color ?? "#E41000";
+                        const axis = (channelSetting?.RightAxis ?? false) ? 'right' : 'left';
                         if (displayAvg && chartData.AvgSeries.length > 0)
-                            lineArray.push(<Line highlightHover={false} key={"avg" + index} showPoints={false} lineStyle={channelSetting?.AvgLineType ?? '-'} color={colorValue} data={chartData.AvgSeries} legend={baseLabel + " avg"} />);
+                            lineArray.push(<Line highlightHover={false} key={"avg" + index} showPoints={false} lineStyle={channelSetting?.AvgLineType ?? '-'}
+                                color={colorValue} data={chartData.AvgSeries} legend={baseLabel + " avg"} axis={axis} />);
                         if (displayMin && chartData.MinSeries.length > 0)
-                            lineArray.push(<Line highlightHover={false} key={"min" + index} showPoints={false} lineStyle={channelSetting?.MinMaxLineType ?? ':'} color={colorValue} data={chartData.MinSeries} legend={baseLabel + " min"} />);
+                            lineArray.push(<Line highlightHover={false} key={"min" + index} showPoints={false} lineStyle={channelSetting?.MinMaxLineType ?? ':'}
+                                color={colorValue} data={chartData.MinSeries} legend={baseLabel + " min"} axis={axis} />);
                         if (displayMax && chartData.MaxSeries.length > 0)
-                            lineArray.push(<Line highlightHover={false} key={"max" + index} showPoints={false} lineStyle={channelSetting?.MinMaxLineType ?? ':'} color={colorValue} data={chartData.MaxSeries} legend={baseLabel + " max"} />);
+                            lineArray.push(<Line highlightHover={false} key={"max" + index} showPoints={false} lineStyle={channelSetting?.MinMaxLineType ?? ':'}
+                                color={colorValue} data={chartData.MaxSeries} legend={baseLabel + " max"} axis={axis} />);
                         return lineArray;
                     })}
                     {props.children}

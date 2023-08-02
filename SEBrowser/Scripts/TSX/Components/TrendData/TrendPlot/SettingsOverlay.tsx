@@ -27,7 +27,7 @@ import { BlockPicker } from 'react-color';
 import { ILineSeries } from './LineGraph';
 import { IMultiCheckboxOption, SEBrowser } from '../../../global';
 import ReportTimeFilter from '../../ReportTimeFilter';
-import { Input, MultiCheckBoxSelect, Select, TextArea } from '@gpa-gemstone/react-forms';
+import { CheckBox, Input, MultiCheckBoxSelect, Select, TextArea } from '@gpa-gemstone/react-forms';
 import TrendChannelTable from '../TrendChannelTable';
 import { TabSelector, Warning } from '@gpa-gemstone/react-interactive';
 import { ITrendPlot, IMarker } from './TrendPlot';
@@ -217,6 +217,7 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                                                 <Input<SeriesSettings> Record={seriesSettingsBuffer} Label={'Legend Label'} Field={'Label'} Setter={setSeriesSettingsBuffer} Valid={() => true} />
                                                 <Select<SeriesSettings> Record={seriesSettingsBuffer} Label={'Average Line Style'} Field={'AvgLineType'} Setter={setSeriesSettingsBuffer} Options={lineTypeOptions} />
                                                 <Select<SeriesSettings> Record={seriesSettingsBuffer} Label={'Min/Max Line Style'} Field={'MinMaxLineType'} Setter={setSeriesSettingsBuffer} Options={lineTypeOptions} />
+                                                <CheckBox<SeriesSettings> Record={seriesSettingsBuffer} Label={'Move to Right Axis'} Field={'RightAxis'} Setter={setSeriesSettingsBuffer} />
                                             </>
                                         }
                                     </div>
