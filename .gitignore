@@ -19,6 +19,7 @@ x64/
 x86/
 build/
 bld/
+**/Scripts/*.png
 [Bb]in/
 [Oo]bj/
 [Cc]onfiguration[Cc]ache/
