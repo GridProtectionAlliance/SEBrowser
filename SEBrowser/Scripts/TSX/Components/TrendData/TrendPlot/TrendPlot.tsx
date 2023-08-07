@@ -202,7 +202,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             async: true
         }).done((data: any[]) => {
             setEventMarkers(data.map(datum => {
-                return { value: moment(datum.Time, eventFormat).valueOf(), meterKey: datum["Meter Key"], eventID: datum["EventID"] }
+                return { value: moment.utc(datum.Time, eventFormat).valueOf(), meterKey: datum["Meter Key"], eventID: datum["EventID"] }
             }));
         });
     }
@@ -217,7 +217,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             Make: '',
             Model: ''
         }
-        const time = moment(marker.value, "x");
+        const time = moment.utc(marker.value, "x");
         const timeFilter: SEBrowser.IReportTimeFilter = {
             date: time.format(momentDateFormat),
             time: time.format(momentTimeFormat),
