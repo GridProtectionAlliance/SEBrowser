@@ -38,6 +38,8 @@ interface IProps {
     Title?: string,
     Metric?: boolean,
     XAxisLabel?: string,
+    YLeftLabel?: string,
+    YRightLabel?: string,
     AlwaysRender: React.ReactNode,
     children: React.ReactNode
 }
@@ -59,8 +61,8 @@ interface IChartData {
 }
 
 // Formats that will be used for dateBoxes
-const timeFilterFormat = "MM/DD/YYYYhh:mm:ss.SSS";
-const serverFormat = "YYYY-MM-DD[T]hh:mm:ss.SSS[Z]";
+const timeFilterFormat = "MM/DD/YYYYHH:mm:ss.SSS";
+const serverFormat = "YYYY-MM-DD[T]HH:mm:ss.SSSZ";
 
 // TODO: These can be in a shared place with eventSearchBar
 function formatWindowUnit(i: number) {
@@ -142,7 +144,7 @@ const LineGraph = React.memo((props: IProps) => {
         }).done((data: TrendSearch.IPQData[]) => {
             const newData: IChartData[] =
                 data.map(channelInfo => {
-                    const timeSeries = channelInfo.Points.map(dataPoint => moment(dataPoint.Timestamp, serverFormat).valueOf());
+                    const timeSeries = channelInfo.Points.map(dataPoint => moment.utc(dataPoint.Timestamp, serverFormat).valueOf());
                     const channelID = Number("0x" + channelInfo.ChannelID);
                     return ({
                         ChannelID: channelID,
@@ -194,8 +196,8 @@ const LineGraph = React.memo((props: IProps) => {
                 {props.Title !== undefined ? <h4 style={{ textAlign: "center", width: `${props.Width}px` }}>{props.Title}</h4> : null}
                 <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} showBorder={false}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect}
-                    legend={'bottom'} useMetricFactors={props.Metric ?? false}
-                    Tlabel={props.XAxisLabel ?? 'Time'} Ylabel={'Units'} YRightlabel={'Imoyd'} showMouse={true}>
+                    legend={'bottom'} useMetricFactors={props.Metric} holdMenuOpen={true}
+                    Tlabel={props.XAxisLabel} Ylabel={props.YLeftLabel} YRightlabel={props.YRightLabel} showMouse={true}>
                     {allChartData.flatMap((chartData, index) => {
                         const lineArray: JSX.Element[] = [];
                         const channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === chartData.ChannelID);
