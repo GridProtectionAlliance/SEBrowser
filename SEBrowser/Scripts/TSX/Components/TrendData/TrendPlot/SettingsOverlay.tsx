@@ -126,8 +126,8 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
         setSeriesSettingsBuffer(props.SeriesSettings.find(setting => setting.Channel.ID === currentSettingsChannel));
     }, [currentSettingsChannel]);
 
-    function checkAndSetValue(field: keyof(TrendSearch.ITrendPlot)): void {
-        if (!_.isEqual(props[field], plotSettingsBuffer[field]))
+    function checkAndSetValue(field: keyof (TrendSearch.ITrendPlot)): void {
+        if (!_.isEqual(props.Plot[field], plotSettingsBuffer[field]))
             props.SetPlot(props.Plot.ID, plotSettingsBuffer, field);
     }
 
