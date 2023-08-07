@@ -67,7 +67,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
 
     // Plot Saved Settings
     const [plotAllSeriesSettings, setPlotAllSeriesSettings] = React.useState<SeriesSettings[]>(null);
-    const ChangedProperties = new Set<string>();
+    const changedProperties = React.useRef<Set<string>>(new Set<string>());
 
     // Plot Markers
     const [symbolicMarkers, setSymbolicMarkers] = React.useState<TrendSearch.IMarker[]>([]);
@@ -128,14 +128,43 @@ const TrendPlot = React.memo((props: IContainerProps) => {
 
     // Set default plot settings
     React.useEffect(() => {
-        let title = props.Plot.Channels.some(channel => channel.MeterID !== props.Plot.Channels[0].MeterID) ?
-            "Multi-Meter " : (props.Plot.Channels[0].MeterShortName ?? props.Plot.Channels[0].MeterName);
-        title += props.Plot.Channels.some(channel => channel.AssetID !== props.Plot.Channels[0].AssetID) ?
-            "" : ` - ${props.Plot.Channels[0].AssetName}`
-        title += props.Plot.Channels.some(channel => channel.ChannelGroup !== props.Plot.Channels[0].ChannelGroup) ?
-            "" : ` - ${props.Plot.Channels[0].ChannelGroup}`
-        props.Plot.Title = title;
-    }, []);
+        if (plotAllSeriesSettings === null) return;
+        const newPlot = { ...props.Plot };
+        if (!changedProperties.current.has('Title')) {
+            let title = plotAllSeriesSettings.some(series => series.Channel.MeterID !== plotAllSeriesSettings[0].Channel.MeterID) ?
+                "Multi-Meter " : (plotAllSeriesSettings[0].Channel.MeterShortName ?? plotAllSeriesSettings[0].Channel.MeterName);
+            title += plotAllSeriesSettings.some(series => series.Channel.AssetID !== plotAllSeriesSettings[0].Channel.AssetID) ?
+                "" : ` - ${plotAllSeriesSettings[0].Channel.AssetName}`;
+            title += plotAllSeriesSettings.some(series => series.Channel.ChannelGroup !== plotAllSeriesSettings[0].Channel.ChannelGroup) ?
+                "" : ` - ${plotAllSeriesSettings[0].Channel.ChannelGroup}`;
+            newPlot.Title = title;
+            props.SetPlot(newPlot.ID, newPlot, 'Title');
+        }
+        if (!changedProperties.current.has('XAxisLabel')) {
+            newPlot.XAxisLabel = "Time";
+            props.SetPlot(newPlot.ID, newPlot, 'XAxisLabel');
+        }
+
+        // Need this function for vertical labels
+        const vertLabelFunc = (field: 'YRightLabel'|'YLeftLabel') => {
+            const isOnAxis = (isRightAxis: boolean): boolean => (isRightAxis === ('YRightLabel' === field));
+            const firstOnAxis = plotAllSeriesSettings.find(series => isOnAxis(series.RightAxis));
+            if (firstOnAxis === undefined) return;
+            let label = plotAllSeriesSettings.some(series => isOnAxis(series.RightAxis) && series.Channel.ChannelGroupType !== firstOnAxis.Channel.ChannelGroupType) ?
+                "Values" : firstOnAxis.Channel.ChannelGroupType;
+            label += ` (${plotAllSeriesSettings.some(series => isOnAxis(series.RightAxis) && series.Channel.Unit !== firstOnAxis.Channel.Unit) ?
+                "Various" : firstOnAxis.Channel.Unit})`;
+            newPlot[field] = label;
+            props.SetPlot(newPlot.ID, newPlot, field);
+        }
+
+        if (!changedProperties.current.has('YLeftLabel'))
+            vertLabelFunc('YLeftLabel');
+        if (!changedProperties.current.has('YRightLabel'))
+            vertLabelFunc('YRightLabel');
+
+
+    }, [plotAllSeriesSettings]);
 
     // Handle the overlay
     React.useEffect(() => {
@@ -203,6 +232,12 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         const handle = setTimeout(() => window.open(`${baseUrl.join('/')}/eventsearch?${queryUrl}`, '_blank'), 500);
         return (() => { clearTimeout(handle); })
     }
+
+    // Setter to also track what has been changed manually
+    const handleSetPlot = React.useCallback((id: string, record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)) => {
+        props.SetPlot(id, record, field);
+        changedProperties.current.add(field);
+    }, [props.SetPlot, changedProperties]);
 
     const handleChannelDrop = React.useCallback((event: any) => {
         event.preventDefault();
@@ -321,7 +356,8 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         <div className="col" style={{ width: props.Plot.Width - 1 + '%', height: props.Plot.Height-1 + '%', float: 'left' }} ref={chartRef} onDragOver={handleDragOver} onDrop={handleChannelDrop}>
             {props.Plot.Type === 'Line' ?
                 <LineGraph ChannelInfo={plotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
-                    Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric}
+                    Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel}
+                    Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric}
                     OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
                     {eventMarkers.map((marker, i) =>
                         <VerticalMarker key={"Event_" + i}
@@ -357,7 +393,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     )}
                     {customSelectButton("symbol", Plus)} {customSelectButton("horizontal", "-")} {customSelectButton("vertical", "|")} {eventButton}
                 </LineGraph> : null}
-            <SettingsOverlay SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings} SetShow={setShowSettings} Show={showSettings} SetPlot={props.SetPlot}
+            <SettingsOverlay SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings} SetShow={setShowSettings} Show={showSettings} SetPlot={handleSetPlot}
             OverlayPortalID={props.OverlayPortalID} Plot={props.Plot} Markers={symbolicMarkers} SetMarkers={setSymbolicMarkers} />
         </div>
     );

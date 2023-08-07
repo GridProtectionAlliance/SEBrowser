@@ -63,6 +63,14 @@ const PlotSettings = React.memo((props: IProps) => {
                 </div>
                 <div className="row">
                     <div className="col" style={{ width: '50%' }}>
+                        <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Left Axis Label'} Field={'YLeftLabel'} Setter={props.SetPlot} Valid={() => true} />
+                    </div>
+                    <div className="col" style={{ width: '50%' }}>
+                        <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Right Axis Label'} Field={'YRightLabel'} Setter={props.SetPlot} Valid={() => true} />
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col" style={{ width: '50%' }}>
                         <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Height (%)'} Field={'Height'} Setter={props.SetPlot} Valid={validateTrendPlot} Feedback="Must be a percentage value" />
                     </div>
                     <div className="col" style={{ width: '50%' }}>
