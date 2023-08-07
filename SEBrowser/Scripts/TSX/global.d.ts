@@ -148,7 +148,8 @@ export namespace TrendSearch {
         MeterShortName: string,
         Phase: string,
         ChannelGroup: string,
-        ChannelGroupType: string
+        ChannelGroupType: string,
+        Unit: string
     }
 
     interface IPQData {

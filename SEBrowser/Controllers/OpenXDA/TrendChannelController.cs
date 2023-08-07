@@ -104,7 +104,8 @@ namespace SEBrowser.Controllers.OpenXDA
                         Meter.ShortName AS MeterShortName,
 	                    Phase.Name AS Phase,
 	                    ChannelGroup.Name AS ChannelGroup,
-	                    ChannelGroupType.DisplayName AS ChannelGroupType
+	                    ChannelGroupType.DisplayName AS ChannelGroupType,
+	                    ChannelGroupType.Unit
                     FROM 
 	                    Channel LEFT JOIN
 	                    Phase ON Channel.PhaseID = Phase.ID LEFT JOIN
