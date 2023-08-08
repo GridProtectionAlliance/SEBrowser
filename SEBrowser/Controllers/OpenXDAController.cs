@@ -783,41 +783,6 @@ namespace SEBrowser.Controllers
 
         }
 
-        [Route("LineParameters/{eventID:int}"), HttpGet]
-        public IHttpActionResult GetLineParameters(int eventID)
-        {
-            using (AdoDataConnection connection = new(SettingsCategory))
-            {
-                try
-                {
-
-                    const string SQL = @"
-                        SELECT
-	                        LineView.*
-                        FROM
-	                        LineView JOIN
-	                        Event ON Event.AssetID = LineView.ID
-                        WHERE
-	                        Event.ID = {0}
-                    ";
-
-                    DataTable dataTable = connection.RetrieveData(SQL, eventID);
-
-                    return Ok(dataTable);
-
-                }
-                catch (Exception ex)
-                {
-                    return InternalServerError(ex);
-                }
-
-            }
-
-        }
-
-
-
-
         [Route("GetRelayPerformance"), HttpGet]
         public DataTable GetRelayPerformance()
         {

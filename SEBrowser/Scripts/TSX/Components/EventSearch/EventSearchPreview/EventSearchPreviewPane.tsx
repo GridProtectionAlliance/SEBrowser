@@ -35,7 +35,6 @@ import TVAESRIMap from './TVA/ESRIMap';
 import EventSearchOpenSEE from './EventSearchOpenSEE';
 import TVALightningChart from './TVA/Lightning';
 import TVAFaultInfo from './TVA/FaultInfo';
-import LineParameters from './LineParameters';
 import StructureInfo from './TVA/StructureInfo';
 import TVASIDA from './TVA/SIDA';
 import TVASOE from './TVA/SOE';
@@ -50,7 +49,7 @@ import { SelectWidgetCategories } from '../../SettingsSlice';
 import { TabSelector } from '@gpa-gemstone/react-interactive';
 import AssetHistoryTable from './AssetHistoryTable';
 import AssetHistoryStats from './AssetHistoryStats';
-
+import WidgetRouter from '../../../../../EventWidgets/TSX/WidgetWrapper';
 
 interface IProps {
     EventID: number,
@@ -98,6 +97,7 @@ export default function EventPreviewPane(props: IProps) {
                     return { Id: t.ID.toString(), Label: t.Name }
                 }) } />
                 <div style={{ height: props.Height - 37.5, maxHeight: props.Height - 37.5, overflowY: 'scroll', overflowX: 'hidden' }}>
+                    
                     {widgets.filter(widget => widget.Enabled).map((widget, index) => {
                         if (widget.Name === 'EventSearchOpenSEE')
                             return <EventSearchOpenSEE key={index} eventID={props.EventID} maxHeight={props.Height-37.5} />;
@@ -114,7 +114,16 @@ export default function EventPreviewPane(props: IProps) {
                         else if (widget.Name === 'TVAFaultInfo')
                             return <TVAFaultInfo key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'LineParameters')
-                            return <LineParameters key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
+                            return <WidgetRouter
+                                Widget={widget}
+                                DisturbanceID={0}
+                                StartTime={event.FileStartTime}
+                                EventID={props.EventID}
+                                FaultID={0}
+                                Height={props.Height}
+                                HomePath={`${homePath}api`}
+                                Roles={[]}
+                            />
                         else if (widget.Name === 'TVALightning')
                             return <TVALightningChart key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'TVASIDA')

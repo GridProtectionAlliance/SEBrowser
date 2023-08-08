@@ -474,6 +474,13 @@
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EventWidgets\Controller\LineParameters.cs" />
+    <None Include="package.json" />
+    <None Include="EventWidgets\TSX\global.tsx" />
+    <None Include="EventWidgets\TSX\WidgetWrapper.tsx" />
+    <None Include="EventWidgets\TSX\Widget\LineParameters.tsx" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="Scripts\Dist\" />
   </ItemGroup>
   <ItemGroup>
@@ -529,7 +536,6 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchNoteWindow.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchOpenSEE.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewPane.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\LineParameters.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchTypeFilter.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\TimeWindowUtils.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\AssetHistoryStats.tsx" />
