@@ -148,13 +148,24 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         // Need this function for vertical labels
         const vertLabelFunc = (field: 'YRightLabel'|'YLeftLabel') => {
             const isOnAxis = (isRightAxis: boolean): boolean => (isRightAxis === ('YRightLabel' === field));
-            const firstOnAxis = plotAllSeriesSettings.find(series => isOnAxis(series.RightAxis));
-            if (firstOnAxis === undefined) return;
-            let label = plotAllSeriesSettings.some(series => isOnAxis(series.RightAxis) && series.Channel.ChannelGroupType !== firstOnAxis.Channel.ChannelGroupType) ?
-                "Values" : firstOnAxis.Channel.ChannelGroupType;
-            label += ` (${plotAllSeriesSettings.some(series => isOnAxis(series.RightAxis) && series.Channel.Unit !== firstOnAxis.Channel.Unit) ?
-                "Various" : firstOnAxis.Channel.Unit})`;
-            newPlot[field] = label;
+            const constructLabel = (field: keyof TrendSearch.ITrendChannel, maxUniques: number): string => {
+                const foundArray = Array<string | number>(maxUniques + 1);
+                let label = "";
+                for (let index = 0; index < foundArray.length; index++) {
+                    const firstOnAxis = plotAllSeriesSettings.find(series => isOnAxis(series.RightAxis) && foundArray.find(type => type === series.Channel[field]) === undefined);
+                    if (firstOnAxis === undefined) break;
+                    foundArray[index] = firstOnAxis.Channel[field];
+                    if (index !== 0)
+                        label += '/';
+                    if (index !== foundArray.length -1)
+                        label += `${firstOnAxis.Channel[field]}`;
+                    else
+                        label += '...';
+                }
+                return label;
+            }
+            const numberOfItems = 2;
+            newPlot[field] = `${constructLabel('ChannelGroupType', numberOfItems)} (${constructLabel('Unit', numberOfItems)})`;
             props.SetPlot(newPlot.ID, newPlot, field);
         }
 
