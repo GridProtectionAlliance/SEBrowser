@@ -80,7 +80,7 @@ const SEBrowserMainPage = () => {
         <>
             <Application
                 HomePath={homePath} DefaultPath={"eventsearch"}
-                Logo={homePath + "Images/SE Browser Spelled out - 40 high.png"}
+                Logo={homePath + "Images/PQBrowserLight"}
                 Version={version}
                 NavBarContent={<ul className="navbar-nav mr-l">
                     <li className="nav-item" style={{ width: '84px' }}>
