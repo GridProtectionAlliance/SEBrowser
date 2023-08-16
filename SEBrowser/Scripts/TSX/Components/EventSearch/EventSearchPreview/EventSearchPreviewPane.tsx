@@ -36,7 +36,6 @@ import EventSearchOpenSEE from './EventSearchOpenSEE';
 import TVALightningChart from './TVA/Lightning';
 import TVAFaultInfo from './TVA/FaultInfo';
 import StructureInfo from './TVA/StructureInfo';
-import TVASIDA from './TVA/SIDA';
 import TVASOE from './TVA/SOE';
 import TVALSC from './TVA/LSC';
 import TVAPQWeb from './TVA/PQWeb';
@@ -126,8 +125,6 @@ export default function EventPreviewPane(props: IProps) {
                             />
                         else if (widget.Name === 'TVALightning')
                             return <TVALightningChart key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'TVASIDA')
-                            return <TVASIDA key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'TVASOE')
                             return <TVASOE key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                         else if (widget.Name === 'TVALSC')
