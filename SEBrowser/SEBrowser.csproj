@@ -523,7 +523,6 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\Lightning.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\LSC.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\PQWeb.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\SIDA.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\SOE.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\StructureInfo.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchRelayPerformance.tsx" />
