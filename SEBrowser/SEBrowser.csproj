@@ -518,7 +518,6 @@
     <None Include="Scripts\TSX\Components\Modal.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\FaultInfo.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\Lightning.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\LSC.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\PQWeb.tsx" />
