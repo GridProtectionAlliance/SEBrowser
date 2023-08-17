@@ -541,7 +541,6 @@
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\AssetHistoryTable.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\SettingsSlice.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\HECCO\InterruptionReport.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPQI.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
     <None Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
