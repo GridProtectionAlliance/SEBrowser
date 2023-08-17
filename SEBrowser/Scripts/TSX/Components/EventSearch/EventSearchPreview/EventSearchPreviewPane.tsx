@@ -23,31 +23,11 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import EventSearchNoteWindow from './EventSearchNoteWindow';
-import EventSearchAssetVoltageDisturbances from './EventSearchAssetVoltageDisturbances';
-import EventSearchFaultSegments from './EventSearchAssetFaultSegments';
-import EventSearchCorrelatedSags from './EventSearchCorrelatedSags';
-import EventSearchRelayPerformance from './EventSearchRelayPerformance';
 import { Redux, SEBrowser } from '../../../global'
-import EventSearchBreakerPerformance from './EventSearchBreakerPerformance';
-import EventSearchFileInfo from './EventSearchFileInfo';
-import TVAESRIMap from './TVA/ESRIMap';
-import EventSearchOpenSEE from './EventSearchOpenSEE';
-import TVALightningChart from './TVA/Lightning';
-import TVAFaultInfo from './TVA/FaultInfo';
-import StructureInfo from './TVA/StructureInfo';
-import TVASOE from './TVA/SOE';
-import TVALSC from './TVA/LSC';
-import TVAPQWeb from './TVA/PQWeb';
-import EventSearchPQI from './EventSearchPQI';
 import { useAppSelector } from '../../../hooks';
-import EventSearchCapBankAnalyticOverview from './EventSearchCapBankAnalyticOverview';
 import { SelectEventSearchByID } from './../EventSearchSlice';
-import InterruptionReport from './HECCO/InterruptionReport';
 import { SelectWidgetCategories } from '../../SettingsSlice';
 import { TabSelector } from '@gpa-gemstone/react-interactive';
-import AssetHistoryTable from './AssetHistoryTable';
-import AssetHistoryStats from './AssetHistoryStats';
 import WidgetRouter from '../../../../../EventWidgets/TSX/WidgetWrapper';
 
 interface IProps {
@@ -61,7 +41,12 @@ export default function EventPreviewPane(props: IProps) {
     const [tab, setTab] = React.useState<string>(props.InitialTab == null || props.InitialTab == undefined ? '' : props.InitialTab);
     const [widgets, setWidgets] = React.useState<SEBrowser.IWidgetView[]>([]);
     const event: any = useAppSelector((state: Redux.StoreState) => SelectEventSearchByID(state,props.EventID));
-   
+
+    const widgetNames = ['LineParameters', 'EventSearchOpenSEE', 'TVAFaultInfo', 'TVAESRIMap', 'EventSearchFaultSegments',
+        'EventSearchAssetVoltageDisturbances', 'EventSearchCorrelatedSags', 'TVASOE', 'pqi', 'EventSearchFileInfo', 'EventSearchNoteWindow',
+        'TVALightning', 'TVAStructureInfo', 'TVASLC', 'TVAPQWeb', 'HECCOIR', 'EventSearchRelayPerformance', 'EventSearchBreakerPerformance',
+        'EventSearchCapBankAnalyticOverview', 'AssetHistoryStats', 'AssetHistoryTable']
+        
     React.useEffect(() => {
         const h = loadWidgetCategories();
         return () => { if (h != null && h.abort != null) h.abort(); }
@@ -72,7 +57,6 @@ export default function EventPreviewPane(props: IProps) {
             setTab(categories[0].ID.toString());
     }, [tab, categories])
 
-   
 
     function loadWidgetCategories() {
         if (tab == '') return null;
@@ -96,23 +80,8 @@ export default function EventPreviewPane(props: IProps) {
                     return { Id: t.ID.toString(), Label: t.Name }
                 }) } />
                 <div style={{ height: props.Height - 37.5, maxHeight: props.Height - 37.5, overflowY: 'scroll', overflowX: 'hidden' }}>
-                    
-                    {widgets.filter(widget => widget.Enabled).map((widget, index) => {
-                        if (widget.Name === 'EventSearchOpenSEE')
-                            return <EventSearchOpenSEE key={index} eventID={props.EventID} maxHeight={props.Height-37.5} />;
-                        else if (widget.Name === 'pqi')
-                            return <EventSearchPQI key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'EventSearchFaultSegments')
-                            return <EventSearchFaultSegments key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'EventSearchAssetVoltageDisturbances')
-                            return <EventSearchAssetVoltageDisturbances key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'EventSearchCorrelatedSags')
-                            return <EventSearchCorrelatedSags key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'TVAESRIMap')
-                            return <TVAESRIMap key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'TVAFaultInfo')
-                            return <TVAFaultInfo key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'LineParameters')
+                    {widgets.filter(widget => widget.Enabled).map((widget) => {
+                         if (widgetNames.includes(widget.Name))
                             return <WidgetRouter
                                 Widget={widget}
                                 DisturbanceID={0}
@@ -123,32 +92,6 @@ export default function EventPreviewPane(props: IProps) {
                                 HomePath={`${homePath}api`}
                                 Roles={[]}
                             />
-                        else if (widget.Name === 'TVALightning')
-                            return <TVALightningChart key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'TVASOE')
-                            return <TVASOE key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'TVALSC')
-                            return <TVALSC key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'TVAPQWeb')
-                            return <TVAPQWeb key={index} eventID={props.EventID} startTime={event.FileStartTime} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'TVAStructureInfo')
-                            return <StructureInfo key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'EventSearchFileInfo')
-                            return <EventSearchFileInfo key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'EventSearchRelayPerformance')
-                            return <EventSearchRelayPerformance key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'EventSearchBreakerPerformance')
-                            return <EventSearchBreakerPerformance key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'EventSearchCapBankAnalyticOverview')
-                            return <EventSearchCapBankAnalyticOverview key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'EventSearchNoteWindow')
-                            return <EventSearchNoteWindow key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'HECCOIR')
-                            return <InterruptionReport key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'AssetHistoryTable')
-                            return <AssetHistoryTable key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
-                        else if (widget.Name === 'AssetHistoryStats')
-                            return <AssetHistoryStats key={index} eventID={props.EventID} maxHeight={props.Height - 37.5} />;
                     })}
                 </div>
         </>)
