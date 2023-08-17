@@ -64,10 +64,12 @@ namespace SEBrowser.Controllers
         {
             using (AdoDataConnection connection = new AdoDataConnection(SettingsCategory))
             {
-                string systemTime = connection.ExecuteScalar<string>("SELECT TOP 1 [Value] FROM [Setting] WHERE Name = 'System.XDATimeZone'");
+                // Seperate setting from system setting due to UNIX/Windows differences, since Windows does not use the IANA timezones, and js requires them
+                string systemTime = connection.ExecuteScalar<string>("SELECT TOP 1 [Value] FROM [SEBrowser.Setting] WHERE Name = 'System.IANATimeZone'");
+
                 if (string.IsNullOrEmpty(systemTime))
                     return Ok(0);
-                return Ok(TimeZoneInfo.FindSystemTimeZoneById(systemTime).DisplayName);
+                return Ok(systemTime);
             }
         }
         #endregion
