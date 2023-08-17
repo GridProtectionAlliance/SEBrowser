@@ -531,7 +531,7 @@
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchTypeFilter.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\TimeWindowUtils.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\AssetHistoryStats.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\AssetHistoryTable.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\AssetHistoryTable.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\SettingsSlice.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPQI.tsx" />
