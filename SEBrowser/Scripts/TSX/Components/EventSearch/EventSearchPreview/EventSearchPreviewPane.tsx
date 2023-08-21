@@ -41,11 +41,6 @@ export default function EventPreviewPane(props: IProps) {
     const [tab, setTab] = React.useState<string>(props.InitialTab == null || props.InitialTab == undefined ? '' : props.InitialTab);
     const [widgets, setWidgets] = React.useState<SEBrowser.IWidgetView[]>([]);
     const event: any = useAppSelector((state: Redux.StoreState) => SelectEventSearchByID(state,props.EventID));
-
-    const widgetNames = ['LineParameters', 'EventSearchOpenSEE', 'TVAFaultInfo', 'TVAESRIMap', 'EventSearchFaultSegments',
-        'EventSearchAssetVoltageDisturbances', 'EventSearchCorrelatedSags', 'TVASOE', 'pqi', 'EventSearchFileInfo', 'EventSearchNoteWindow',
-        'TVALightning', 'TVAStructureInfo', 'TVASLC', 'TVAPQWeb', 'HECCOIR', 'EventSearchRelayPerformance', 'EventSearchBreakerPerformance',
-        'EventSearchCapBankAnalyticOverview', 'AssetHistoryStats', 'AssetHistoryTable']
         
     React.useEffect(() => {
         const h = loadWidgetCategories();
@@ -81,7 +76,6 @@ export default function EventPreviewPane(props: IProps) {
                 }) } />
                 <div style={{ height: props.Height - 37.5, maxHeight: props.Height - 37.5, overflowY: 'scroll', overflowX: 'hidden' }}>
                     {widgets.filter(widget => widget.Enabled).map((widget) => {
-                         if (widgetNames.includes(widget.Name))
                             return <WidgetRouter
                                 Widget={widget}
                                 DisturbanceID={0}
@@ -91,6 +85,7 @@ export default function EventPreviewPane(props: IProps) {
                                 Height={props.Height}
                                 HomePath={`${homePath}api`}
                                 Roles={[]}
+                                key={widget.ID}
                             />
                     })}
                 </div>
