@@ -524,7 +524,7 @@
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\AssetHistoryStats.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\AssetHistoryTable.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\ESRIMap.tsx" />
-    <TypeScriptCompile Include="EventWidgets\TSX\Widget\AssestVoltageDisturbances.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\AssetVoltageDisturbances.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\EventSearchAssetFaultSegments.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\EventSearchBreakerPerformance.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\EventSearchCapBankAnalyticOverview.tsx" />
