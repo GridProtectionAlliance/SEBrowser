@@ -42,8 +42,11 @@ interface IProps {
     ShowNav: boolean,
     SetHeight: (h: number) => void,
     SetShowAllSettings: (show: boolean) => void,
-    DisableAllSettings: boolean
-    AddNewCharts: (chartData: TrendSearch.ITrendPlot[]) => void
+    DisableAllSettings: boolean,
+    AddNewCharts: (chartData: TrendSearch.ITrendPlot[]) => void,
+    // Set for defaults
+    TimeFilter: SEBrowser.IReportTimeFilter,
+    LinePlot: IMultiCheckboxOption[],
 }
 
 interface IKeyValuePair {
@@ -72,12 +75,12 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
 
     const [showFilter, setShowFilter] = React.useState<('None' | 'Meter' | 'Asset')>('None');
 
-    const [timeFilter, setTimeFilter] = React.useState<SEBrowser.IReportTimeFilter>(null);
+    const [timeFilter, setTimeFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.TimeFilter);
 
     const [trendFilter, setTrendFilter] = React.useState<ITrendDataFilter>(null);
     const [phaseOptions, setPhaseOptions] = React.useState<IMultiCheckboxOption[]>([]);
     const [channelGroupOptions, setChannelGroupOptions] = React.useState<IMultiCheckboxOption[]>([]);
-    const [linePlotOptions, setLinePlotOptions] = React.useState<IMultiCheckboxOption[]>([{ Value: "min", Text: "Minimum", Selected: true }, { Value: "max", Text: "Maximum", Selected: true }, { Value: "avg", Text: "Average/Values", Selected: true }]);
+    const [linePlotOptions, setLinePlotOptions] = React.useState<IMultiCheckboxOption[]>(props.LinePlot);
 
     const [trendChannels, setTrendChannels] = React.useState<TrendSearch.ITrendChannel[]>([]);
     const [selectedSet, setSelectedSet] = React.useState<Set<number>>(new Set<number>());
@@ -85,9 +88,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
 
     // Button Consts
     const [hover, setHover] = React.useState<'None'|'Show'|'Hide'|'Cog'|'Single-Line'|'Multi-Line'>('None');
-
-    const momentDateFormat = "MM/DD/YYYY";
-    const baseTimeFilter = { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 12, timeWindowUnits: 3 }
 
     // Page effects
     React.useLayoutEffect(() => {
@@ -105,6 +105,15 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     React.useEffect(() => {
         makeMultiCheckboxOptions(trendFilter?.ChannelGroups, setChannelGroupOptions, allChannelGroups);
     }, [allChannelGroups, trendFilter]);
+
+    // Update Default Values
+    React.useEffect(() => {
+        setLinePlotOptions(props.LinePlot);
+    }, [props.LinePlot]);
+
+    React.useEffect(() => {
+        setTimeFilter(props.TimeFilter);
+    }, [props.TimeFilter]);
 
     // Slice dispatches
     React.useEffect(() => {
@@ -135,7 +144,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             MeterList: [],
             AssetList: []
         });
-        setTimeFilter(baseTimeFilter);
     }, [channelGroupStatus, phaseStatus]);
 
     function makeKeyValuePairs(allKeys: { ID: number, Name: string, Description: string }[], defaultTrueSet?: Set<string>): IKeyValuePair[] {
@@ -335,7 +343,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                                     />
                                 </div>
                             </div>
-                            <label style={{ width: '100%', position: 'relative', float: "left" }}>Lines Plotted: </label>
+                            <label style={{ width: '100%', position: 'relative', float: "left" }}>Series Plotted: </label>
                             <div className="row">
                                 <div className={"col"}>
                                     <MultiCheckBoxSelect
@@ -382,7 +390,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             const selectedChannels = trendChannels.filter(chan => selectedSet.has(chan.ID));
                             props.AddNewCharts([{
                                 TimeFilter: timeFilter, Type: 'Line', Channels: selectedChannels, ID: CreateGuid(),
-                                PlotFilter: linePlotOptions, Width: 50, Height: 50
+                                PlotFilter: linePlotOptions
                             }]);
                         }}>
                         <span>{SVGIcons.Document}</span>
@@ -413,7 +421,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                                 meterPlotChannels.map(channelList => {
                                     return ({
                                         TimeFilter: timeFilter, Type: 'Line', Channels: channelList, ID: CreateGuid(),
-                                        PlotFilter: linePlotOptions, Width: 50, Height: 50
+                                        PlotFilter: linePlotOptions
                                     });
                                 })
                             );

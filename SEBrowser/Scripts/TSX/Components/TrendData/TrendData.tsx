@@ -109,6 +109,8 @@ const TrendData = () => {
                 DisableAllSettings={plotList.length === 0} //TODO: Does this count as a function? Should this be a const with callback?
                 SetShowAllSettings={setShowSettings}
                 AddNewCharts={concatNewContainers}
+                TimeFilter={defaultPlotSettings.TimeFilter}
+                LinePlot={defaultPlotSettings.PlotFilter}
             />
             <div style={{ width: '100%', height: (showNav ? 'calc(100% - ' + navHeight + 'px)' : 'calc( 100% - 52px)'), overflowY: 'scroll' }}>
                 {plotList.map(element => <TrendPlot key={element.ID}
