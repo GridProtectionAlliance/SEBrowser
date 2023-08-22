@@ -22,20 +22,34 @@
 //******************************************************************************************************
 
 import React from 'react';
+import moment from 'moment';
+import _ from 'lodash';
 import TrendSearchNavbar from './TrendDataNavbar';
 import TrendPlot from './TrendPlot/TrendPlot';
 import { TrendSearch } from '../../Global';
 import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
 import AllSettingsModal from './AllSettingsModal';
 
+const momentDateFormat = "MM/DD/YYYY";
+
 const TrendData = () => {
     const closureHandler = React.useRef<((o: boolean) => void)>(() => { return; });
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
     const [navHeight, setNavHeight] = React.useState<number>(0);
     const [plotList, setPlotList] = React.useState<TrendSearch.ITrendPlot[]>([]);
+    const [defaultPlotSettings, setDefaultPlotSettings] = React.useState<TrendSearch.ITrendPlot>({
+        TimeFilter: { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 12, timeWindowUnits: 3 },
+        Type: 'Line',
+        Channels: [],
+        PlotFilter: [{ Text: "Minimum", Value: "min", Selected: true }, { Text: "Maximum", Value: "max", Selected: true }, { Text: "Average/Values", Value: "avg", Selected: true }],
+        ID: "blank",
+        Width: 50,
+        Height: 50
+    });
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
     const overlayPortalID = "TrendDataChartPortal";
     const overlayDrawer = "TrendDataNavbar";
+    const defaultsApplied = ["Title", "XAxisLabel", "YLeftLabel", "YRightLabel", "Metric", "Width", "Height"];
 
     function getShowNav(): boolean {
         if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.TrendData.ShowNav'))
@@ -63,11 +77,19 @@ const TrendData = () => {
         newList.forEach((item: TrendSearch.ITrendPlot, index: number) => {
             newList[index][field] = record[field];
         });
+        setDefaultPlotSettings({ ...defaultPlotSettings, [field]: record[field] });
         setPlotList(newList);
     }), [plotList]);
 
     const concatNewContainers = React.useCallback(((newContainers: TrendSearch.ITrendPlot[]) => {
-        setPlotList(plotList.concat(newContainers));
+        const defaultAppliedContainers = _.cloneDeep(newContainers);
+        defaultsApplied.forEach(field => {
+            if (defaultPlotSettings[field] != null)
+                defaultAppliedContainers.forEach(container => {
+                    container[field] = defaultPlotSettings[field];
+                });
+        });
+        setPlotList(plotList.concat(defaultAppliedContainers));
     }), [plotList, setPlotList]);
 
     const closeSettings = React.useCallback((
@@ -97,7 +119,7 @@ const TrendData = () => {
             <OverlayDrawer Title={''} Open={false} Location={'top'} Target={overlayDrawer} GetOverride={(s) => { closureHandler.current = s; }} HideHandle={true}>
                 <div id={overlayPortalID} style={{opacity: 1, background: undefined, color: 'black' }} />
             </OverlayDrawer>
-            <AllSettingsModal Show={showSettings} SetShow={setShowSettings} ApplyFieldToAll={setAllPlot} />
+            <AllSettingsModal Show={showSettings} SetShow={setShowSettings} ApplyFieldToAll={setAllPlot} Defaults={defaultPlotSettings} SetDefaults={setDefaultPlotSettings} />
         </div>
     );
 }
