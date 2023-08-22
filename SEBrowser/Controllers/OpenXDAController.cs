@@ -489,39 +489,6 @@ namespace SEBrowser.Controllers
 
         }
 
-        [Route("GetEventSearchHistoryStats/{eventID:int}"), HttpGet]
-        public DataTable GetEventSearchHistoryStats(int eventID)
-        {
-            using AdoDataConnection connection = new(SettingsCategory);
-            DataTable stats = connection.RetrieveData(@" 
-                    SELECT
-	                    ROUND(MAX(VPeak)/Asset.VoltageKV/1000, 3) as VPeakMax,
-	                    MAX(VMax) as VMax,
-	                    MIN(VMin) as VMin,
-	                    MAX(IMax) as IMax,
-	                    MAX(I2tMax) as I2tMax,
-	                    ROUND(MAX(IPeak),3) as IPeakMax,
-	                    ROUND(AVG(InitialMW),3) as AVGMW,
-                        Asset.AssetName
-                    FROM
-	                    Asset  JOIN
-	                    Event ON Event.AssetID = Asset.ID JOIN
-	                    EventStat ON EventStat.EventID = Event.ID  OUTER APPLY
-	                    (SELECT ROUND(MAX(VMax)/Asset.VoltageKV/1000,3) as VMax FROM (VALUES(VAMax), (VBMax), (VCMax), (VABMax), (VBCMax), (VCAMax)) AS VMaxView(VMax)) as VMax OUTER APPLY
-	                    (SELECT ROUND(MIN(VMin)/Asset.VoltageKV/1000,3) as VMin FROM (VALUES(VAMin), (VBMin), (VCMin), (VABMin), (VBCMin), (VCAMin)) AS VMinView(VMin)) as VMin OUTER APPLY
-	                    (SELECT ROUND(MAX(IMax),3) as IMax FROM (VALUES(IAMax), (IBMax), (ICMax)) AS IMaxView(IMax)) as IMax OUTER APPLY
-	                    (SELECT ROUND(MAX(I2tMax),3) as I2tMax FROM (VALUES(IA2t), (IB2t), (IC2t)) AS I2tView(I2tMax)) as I2tMax
-                    WHERE Asset.ID = (SELECT AssetID FROM Event WHERE ID = {0})
-                    GROUP BY VoltageKV, Asset.AssetName
-                    "
-                , eventID);
-
-            return stats;
-
-        }
-
-
-
         [Route("GetEventSearchMeterMakes"), HttpGet]
         public IHttpActionResult GetEventSearchMeterMakes()
         {

@@ -441,6 +441,7 @@
     <Compile Include="Controllers\MeterActivity\MeterActivityController.cs" />
     <Compile Include="Controllers\OpenXDA\ModelControlers.cs" />
     <Compile Include="Controllers\TVA\PQIController.cs" />
+    <Compile Include="EventWidgets\Controller\AssetHistoryStats.cs" />
     <Compile Include="Model\StandardMagDurCurve.cs" />
     <Compile Include="Controllers\OpenXDA\NoteController.cs" />
     <Compile Include="Controllers\OpenXDA\FaultInfoController.cs" />
