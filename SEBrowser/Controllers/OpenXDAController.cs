@@ -460,35 +460,6 @@ namespace SEBrowser.Controllers
 
         }
 
-        [Route("GetEventSearchHistory/{eventID:int}/{count:int}"), HttpGet]
-        public DataTable GetEventSearchHistory(int eventID, int count = 10)
-        {
-            using (AdoDataConnection connection = new(SettingsCategory))
-            {
-                DataTable table = connection.RetrieveData(@" 
-                    SELECT
-                        TOP " + count.ToString() + @"
-	                    EventType.Name as EventType,
-	                    Event.StartTime,
-	                    Event.ID,
-                        Asset.AssetName
-                    FROM
-	                    Event JOIN
-                        Asset ON Event.AssetID = Asset.ID JOIN
-	                    EventType ON Event.EventTypeID = EventType.ID JOIN
-	                    Event as OrgEvt ON Event.MeterID = OrgEvt.MeterID AND Event.AssetID = OrgEvt.AssetID AND Event.ID != OrgEvt.ID
-                    WHERE 
-	                    OrgEvt.ID = {0}
-                    ORDER BY 
-                        Event.StartTime DESC
-                    "
-                    , eventID);
-
-                return table;
-            }
-
-        }
-
         [Route("GetEventSearchMeterMakes"), HttpGet]
         public IHttpActionResult GetEventSearchMeterMakes()
         {
