@@ -177,8 +177,8 @@ export namespace TrendSearch {
         YLeftLabel?: string,
         YRightLabel?: string,
         Metric?: boolean,
-        Width: number,
-        Height: number
+        Width?: number,
+        Height?: number
     }
 
     interface IMarker {

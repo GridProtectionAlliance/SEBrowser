@@ -90,9 +90,17 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         setChartHeight(chartRef?.current?.offsetHeight ?? 500);
     });
 
+    // Pre-filter settings that shouldn't get auto-updated
+    React.useEffect(() => {
+        Object.keys(props.Plot).forEach((field: string) => {
+            if (props.Plot != null)
+                changedProperties.current.add(field);
+        });
+    }, []);
+
     // Set default channel settings
     React.useEffect(() => {
-        //These two are only used in the label construction
+        // These two are only used in the label construction
         // If two channels are found with different meternames, we must append the meter name to the channel name
         const useMeterAppend: boolean = props.Plot.Channels.some((channel) =>
             channel.MeterKey !== props.Plot.Channels[0].MeterKey);
@@ -364,7 +372,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     }, [horizontalMarkers, setHorizontalMarkers]);
 
     return (
-        <div className="col" style={{ width: props.Plot.Width - 1 + '%', height: props.Plot.Height-1 + '%', float: 'left' }} ref={chartRef} onDragOver={handleDragOver} onDrop={handleChannelDrop}>
+        <div className="col" style={{ width: (props.Plot.Width ?? 100) - 1 + '%', height: (props.Plot.Height ?? 50) - 1 + '%', float: 'left' }} ref={chartRef} onDragOver={handleDragOver} onDrop={handleChannelDrop}>
             {props.Plot.Type === 'Line' ?
                 <LineGraph ChannelInfo={plotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
                     Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel}
