@@ -551,47 +551,6 @@ namespace SEBrowser.Controllers
 
         }
 
-        [Route("GetFaultInfo/{eventID:int}"), HttpGet]
-        public IHttpActionResult GetFaultInfo(int eventID)
-        {
-            using (AdoDataConnection connection = new(SettingsCategory))
-            {
-                try
-                {
-
-                    const string SQL = @"
-                        select 
-	                        Distance,
-	                        Asset.AssetKey as AssetName,
-	                        Location.LocationKey as StationName,
-                            FaultSummary.Inception, 
-	                        Structure.Latitude,
-	                        Structure.Longitude
-                        FROM
-	                        FaultSummary JOIN
-	                        Event ON Event.ID = FaultSummary.EventID JOIN
-	                        Asset ON Event.AssetID = Asset.ID JOIN
-	                        Meter ON event.MeterID = MEter.ID JOIN
-	                        Location ON Meter.LocationID = Location.ID LEFT JOIN 
-                            NearestStructure ON FaultSummary.ID = NearestStructure.FaultSummaryID LEFT JOIN
-	                        Structure ON NearestStructure.StructureID = Structure.ID
-                        WHERE
-	                        FaultSummary.EventID = {0} AND FaultSummary.IsSelectedAlgorithm = 1
-                    ";
-
-                    DataTable dataTable = connection.RetrieveData(SQL, eventID);
-
-                    return Ok(dataTable);
-
-                }
-                catch (Exception ex)
-                {
-                    return InternalServerError(ex);
-                }
-
-            }
-
-        }
 
         [Route("GetLightningInfo/{eventID:int}/{timeWindow:int}"), HttpGet]
         public IHttpActionResult GetLightningInfo(int eventID, int timeWindow)
