@@ -448,6 +448,7 @@
     <Compile Include="EventWidgets\Controller\ESRIMap.cs" />
     <Compile Include="EventWidgets\Controller\FaultInfo.cs" />
     <Compile Include="EventWidgets\Controller\FileInfo.cs" />
+    <Compile Include="EventWidgets\Controller\Lightning.cs" />
     <Compile Include="EventWidgets\Controller\NoteWindow.cs" />
     <Compile Include="EventWidgets\Controller\OpenSEE.cs" />
     <Compile Include="EventWidgets\Controller\SOE.cs" />
