@@ -486,41 +486,6 @@ namespace SEBrowser.Controllers
 
         }
 
-
-
-        [Route("GetLightningInfo/{eventID:int}/{timeWindow:int}"), HttpGet]
-        public IHttpActionResult GetLightningInfo(int eventID, int timeWindow)
-        {
-            using (AdoDataConnection connection = new(SettingsCategory))
-            {
-                try
-                {
-
-                    const string SQL = @"
-                        SELECT
-	                        Service, DisplayTime, Amplitude, Latitude,Longitude
-                        FROM
-	                        LightningStrike JOIN
-	                        Event ON LightningStrike.EventID = Event.ID JOIN
-	                        FaultSummary ON Event.ID = FaultSummary.EventID AND FaultSummary.IsSelectedAlgorithm = 1
-                        WHERE
-	                        Event.ID = {0} AND CAST(LightningStrike.DisplayTime as datetime2) BETWEEN DateAdd(S,-{1}, FaultSummary.Inception) AND  DateAdd(S,{1}, FaultSummary.Inception)
-                    ";
-
-                    DataTable dataTable = connection.RetrieveData(SQL, eventID, timeWindow);
-
-                    return Ok(dataTable);
-
-                }
-                catch (Exception ex)
-                {
-                    return InternalServerError(ex);
-                }
-
-            }
-
-        }
-
         [Route("GetRelayPerformance"), HttpGet]
         public DataTable GetRelayPerformance()
         {

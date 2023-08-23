@@ -445,6 +445,7 @@
     <Compile Include="EventWidgets\Controller\AssetHistoryStats.cs" />
 	<Compile Include="EventWidgets\Controller\AssetVoltageDisturbances.cs" />
     <Compile Include="EventWidgets\Controller\CorrelatedSags.cs" />
+    <Compile Include="EventWidgets\Controller\ESRIMap.cs" />
     <Compile Include="EventWidgets\Controller\FaultInfo.cs" />
     <Compile Include="EventWidgets\Controller\FileInfo.cs" />
     <Compile Include="EventWidgets\Controller\NoteWindow.cs" />
