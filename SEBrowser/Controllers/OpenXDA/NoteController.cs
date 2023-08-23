@@ -34,19 +34,6 @@ using System.Web.Http;
 
 namespace SEBrowser.Controllers.OpenXDA
 {
-    [RoutePrefix("api/OpenXDA/NoteType")]
-    public class NoteTypeController : ModelController<LimitedNoteType> { }
-
-    [RootQueryRestriction("[ReferenceTableName] IN ('Event', 'Meter', 'Asset', 'Location')")]
-    public class LimitedNoteType : NoteType
-    { }
-
-    [RoutePrefix("api/OpenXDA/NoteTag")]
-    public class NoteTagController : ModelController<NoteTag> { }
-
-    [RoutePrefix("api/OpenXDA/NoteApp")]
-    public class NoteAppController : ModelController<NoteApplication> { }
-
     [RootQueryRestriction("[NoteTypeID] = (SELECT TOP 1 ID FROM NoteType WHERE ReferenceTableName = 'Meter')")]
     public class MeterNote : Notes 
     {
