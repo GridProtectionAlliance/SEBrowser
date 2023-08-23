@@ -486,65 +486,6 @@ namespace SEBrowser.Controllers
 
         }
 
-        [Route("GetTimeCorrelatedSags"), HttpGet]
-        public DataTable GetTimeCorrelatedSags()
-        {
-            const string TimeCorrelatedSagsSQL =
-                "SELECT " +
-                "    Event.ID AS EventID, " +
-                "    EventType.Name AS EventType, " +
-                "    FORMAT(Sag.PerUnitMagnitude * 100.0, '0.#') AS SagMagnitudePercent, " +
-                "    FORMAT(Sag.DurationSeconds * 1000.0, '0') AS SagDurationMilliseconds, " +
-                "    FORMAT(Sag.DurationCycles, '0.##') AS SagDurationCycles, " +
-                "    Event.StartTime, " +
-                "    Meter.Name AS MeterName, " +
-                "    Asset.AssetName " +
-                "FROM " +
-                "    Event JOIN " +
-                "    EventType ON Event.EventTypeID = EventType.ID JOIN " +
-                "    Meter ON Event.MeterID = Meter.ID JOIN " +
-                "    MeterAsset ON " +
-                "        Event.MeterID = MeterAsset.MeterID AND " +
-                "        Event.AssetID = MeterAsset.AssetID JOIN" +
-                "   Asset ON Asset.ID = MeterAsset.AssetID  CROSS APPLY " +
-                "    ( " +
-                "        SELECT TOP 1 " +
-                "            Disturbance.PerUnitMagnitude, " +
-                "            Disturbance.DurationSeconds, " +
-                "            Disturbance.DurationCycles " +
-                "        FROM " +
-                "            Disturbance JOIN " +
-                "            EventType DisturbanceType ON Disturbance.EventTypeID = DisturbanceType.ID JOIN " +
-                "            Phase ON " +
-                "                Disturbance.PhaseID = Phase.ID AND " +
-                "                Phase.Name = 'Worst' " +
-                "        WHERE " +
-                "            Disturbance.EventID = Event.ID AND " +
-                "            DisturbanceType.Name = 'Sag' AND " +
-                "            Disturbance.StartTime <= {1} AND " +
-                "            Disturbance.EndTime >= {0} " +
-                "        ORDER BY PerUnitMagnitude DESC " +
-                "    ) Sag " +
-                "ORDER BY " +
-                "    Event.StartTime, " +
-                "    Sag.PerUnitMagnitude";
-
-            Dictionary<string, string> query = Request.QueryParameters();
-            int eventID = int.Parse(query["eventId"]);
-
-            if (eventID <= 0) return new DataTable();
-            using (AdoDataConnection connection = new(SettingsCategory))
-            {
-                double timeTolerance = connection.ExecuteScalar<double>("SELECT Value FROM Setting WHERE Name = 'TimeTolerance'");
-                DateTime startTime = connection.ExecuteScalar<DateTime>("SELECT StartTime FROM Event WHERE ID = {0}", eventID);
-                DateTime endTime = connection.ExecuteScalar<DateTime>("SELECT EndTime FROM Event WHERE ID = {0}", eventID);
-                DateTime adjustedStartTime = startTime.AddSeconds(-timeTolerance);
-                DateTime adjustedEndTime = endTime.AddSeconds(timeTolerance);
-                DataTable dataTable = connection.RetrieveData(TimeCorrelatedSagsSQL, adjustedStartTime, adjustedEndTime);
-                return dataTable;
-            }
-        }
-
         [Route("GetFileName/{eventID:int}"), HttpGet]
         public IHttpActionResult GetFileName(int eventID)
         {

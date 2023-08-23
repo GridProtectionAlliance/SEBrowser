@@ -443,6 +443,8 @@
     <Compile Include="Controllers\TVA\PQIController.cs" />
     <Compile Include="EventWidgets\Controller\AssetHistoryTable.cs" />
     <Compile Include="EventWidgets\Controller\AssetHistoryStats.cs" />
+	<Compile Include="EventWidgets\Controller\AssetVoltageDisturbances.cs" />
+    <Compile Include="EventWidgets\Controller\CorrelatedSags.cs" />
     <Compile Include="Model\StandardMagDurCurve.cs" />
     <Compile Include="Controllers\OpenXDA\NoteController.cs" />
     <Compile Include="Controllers\OpenXDA\FaultInfoController.cs" />
