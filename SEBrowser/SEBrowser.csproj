@@ -440,7 +440,7 @@
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\MeterActivity\MeterActivityController.cs" />
     <Compile Include="Controllers\OpenXDA\ModelControlers.cs" />
-    <Compile Include="Controllers\TVA\PQIController.cs" />
+    <Compile Include="EventWidgets\Controller\AssetFaultSegments.cs" />
     <Compile Include="EventWidgets\Controller\AssetHistoryTable.cs" />
     <Compile Include="EventWidgets\Controller\AssetHistoryStats.cs" />
 	<Compile Include="EventWidgets\Controller\AssetVoltageDisturbances.cs" />

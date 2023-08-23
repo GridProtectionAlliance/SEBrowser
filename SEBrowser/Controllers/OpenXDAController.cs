@@ -432,33 +432,6 @@ namespace SEBrowser.Controllers
             return string.Join(" AND ", assets);
         }
 
-        [Route("GetEventSearchFaultSegments"), HttpGet]
-        public DataTable GetEventSearchFaultSegments()
-        {
-            using (AdoDataConnection connection = new(SettingsCategory))
-            {
-                Dictionary<string, string> query = Request.QueryParameters();
-                int eventID = int.Parse(query["EventID"]);
-
-                DataTable table = connection.RetrieveData(@" 
-                    SELECT
-	                    SegmentType.Name as SegmentType, 
-	                    FaultSegment.StartTime,
-	                    FaultSegment.EndTime
-                    FROM
-	                    FaultSegment JOIN
-	                    SegmentType ON FaultSegment.SegmentTypeID = SegmentType.ID	                    
-                    WHERE
-                        eventid = {0} AND
-                        SegmentType.Name != 'Fault'
-                    ORDER BY FaultSegment.StartTime
-                    ", eventID
-                    );
-
-                return table;
-            }
-
-        }
 
         [Route("GetEventSearchMeterMakes"), HttpGet]
         public IHttpActionResult GetEventSearchMeterMakes()
