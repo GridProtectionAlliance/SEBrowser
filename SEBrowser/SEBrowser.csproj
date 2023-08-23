@@ -446,6 +446,7 @@
 	<Compile Include="EventWidgets\Controller\AssetVoltageDisturbances.cs" />
     <Compile Include="EventWidgets\Controller\CorrelatedSags.cs" />
     <Compile Include="EventWidgets\Controller\FaultInfo.cs" />
+    <Compile Include="EventWidgets\Controller\FileInfo.cs" />
     <Compile Include="Model\StandardMagDurCurve.cs" />
     <Compile Include="Controllers\OpenXDA\NoteController.cs" />
     <Compile Include="Controllers\OpenXDA\FaultInfoController.cs" />
