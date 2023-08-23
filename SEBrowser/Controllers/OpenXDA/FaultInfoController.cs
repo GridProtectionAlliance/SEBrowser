@@ -48,47 +48,6 @@ namespace SEBrowser.Controllers.OpenXDA
     {
         const string SettingsCategory = "systemSettings";
 
-        [Route("{eventID:int}"), HttpGet]
-        public IHttpActionResult Get(int eventID) {
-            try
-            {
-                using (AdoDataConnection connection = new(SettingsCategory))
-                {
-
-                    string query = @"
-					SELECT 
-						Event.ID,
-						FaultSummary.Inception as FaultTime,
-						Event.AssetID,
-						Meter.Name as StationName, 
-						Location.LocationKey as StationID, 
-						LineView.AssetKey as LineAssetKey, 
-						LineView.AssetName as LineName, 
-						LineView.Length,
-						ROUND(FaultSummary.Distance,2) as FaultDistance, 
-						FaultSummary.FaultType, 
-						ROUND(FaultSummary.DurationCycles,2) as FaultDuration, 
-						FaultSummary.CurrentMagnitude,
-						FaultSummary.ID as FaultID, 
-						DoubleEndedFaultDistance.Distance as DblDist
-					FROM
-						Event inner join 
-						Meter on Event.MeterID = Meter.ID inner join 
-						Location on Meter.LocationID = Location.ID inner join 
-						LineView on Event.AssetID = LineView.ID inner join 
-						FaultSummary on Event.ID = FaultSummary.EventID and [IsSelectedAlgorithm] = 1 AND IsSuppressed = 0 AND IsValid <> 0 left join 
-						DoubleEndedFaultDistance on FaultSummary.ID = DoubleEndedFaultDistance.LocalFaultSummaryID
-					WHERE 
-						Event.ID = {0}
-                    ";
-                    return Ok(connection.RetrieveData(query, eventID));
-                }
-            }
-            catch (Exception ex) {
-                return InternalServerError(ex);
-            }
-        }
-
 		[Route("TreeProbability/{eventID:int}"), HttpGet]
 		public IHttpActionResult GetTreeProbability(int eventID)
 		{
