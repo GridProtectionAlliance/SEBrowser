@@ -449,6 +449,7 @@
     <Compile Include="EventWidgets\Controller\FileInfo.cs" />
     <Compile Include="EventWidgets\Controller\NoteWindow.cs" />
     <Compile Include="EventWidgets\Controller\OpenSEE.cs" />
+    <Compile Include="EventWidgets\Controller\SOE.cs" />
     <Compile Include="Model\StandardMagDurCurve.cs" />
     <Compile Include="Controllers\OpenXDA\NoteController.cs" />
     <Compile Include="Controllers\OpenXDA\FaultInfoController.cs" />
