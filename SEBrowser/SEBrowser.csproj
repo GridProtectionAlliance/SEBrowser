@@ -548,7 +548,6 @@
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\InterruptionReport.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\Lightning.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\LSC.tsx" />
-    <TypeScriptCompile Include="EventWidgets\TSX\Widget\PQWeb.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\SOE.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\StructureInfo.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\SettingsSlice.ts" />
