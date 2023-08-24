@@ -81,7 +81,7 @@ const TrendData = () => {
         setPlotList(newList);
     }), [plotList]);
 
-    const concatNewContainers = React.useCallback(((newContainers: TrendSearch.ITrendPlot[]) => {
+    const concatNewContainers = React.useCallback((newContainers: TrendSearch.ITrendPlot[]) => {
         const defaultAppliedContainers = _.cloneDeep(newContainers);
         defaultsApplied.forEach(field => {
             if (defaultPlotSettings[field] != null)
@@ -90,7 +90,11 @@ const TrendData = () => {
                 });
         });
         setPlotList(plotList.concat(defaultAppliedContainers));
-    }), [plotList, setPlotList]);
+    }, [plotList, setPlotList]);
+
+    const removeAllCharts = React.useCallback(() => {
+        setPlotList([]);
+    }, [setPlotList]);
 
     const closeSettings = React.useCallback((
         (open: boolean) => closureHandler.current(open)
@@ -109,6 +113,7 @@ const TrendData = () => {
                 DisableAllSettings={plotList.length === 0} //TODO: Does this count as a function? Should this be a const with callback?
                 SetShowAllSettings={setShowSettings}
                 AddNewCharts={concatNewContainers}
+                RemoveAllCharts={removeAllCharts}
                 TimeFilter={defaultPlotSettings.TimeFilter}
                 LinePlot={defaultPlotSettings.PlotFilter}
             />

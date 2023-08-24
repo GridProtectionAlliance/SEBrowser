@@ -44,6 +44,7 @@ interface IProps {
     SetShowAllSettings: (show: boolean) => void,
     DisableAllSettings: boolean,
     AddNewCharts: (chartData: TrendSearch.ITrendPlot[]) => void,
+    RemoveAllCharts: () => void,
     // Set for defaults
     TimeFilter: SEBrowser.IReportTimeFilter,
     LinePlot: IMultiCheckboxOption[],
@@ -87,7 +88,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
     // Button Consts
-    const [hover, setHover] = React.useState<'None'|'Show'|'Hide'|'Cog'|'Single-Line'|'Multi-Line'>('None');
+    const [hover, setHover] = React.useState<'None'|'Show'|'Hide'|'Cog'|'Single-Line'|'Multi-Line'|'Trash'>('None');
 
     // Page effects
     React.useLayoutEffect(() => {
@@ -381,6 +382,15 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </button>
                     <ToolTip Show={hover === 'Cog'} Position={'left'} Theme={'dark'} Target={"Cog"}>
                         {<p>Changes Settings for All Plots</p>}
+                        {props.DisableAllSettings ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
+                    </ToolTip>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm  ${props.DisableAllSettings ? ' disabled' : ''}`}
+                        onClick={() => { if (!props.DisableAllSettings) props.RemoveAllCharts(); }}
+                        data-tooltip='Trash' onMouseEnter={() => setHover('Trash')} onMouseLeave={() => setHover('None')}>
+                        <span>{SVGIcons.Alert}</span>
+                    </button>
+                    <ToolTip Show={hover === 'Trash'} Position={'left'} Theme={'dark'} Target={"Trash"}>
+                        {<p>Removes All Plots</p>}
                         {props.DisableAllSettings ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm ${selectedSet.size === 0 ? ' disabled' : ''}`}
