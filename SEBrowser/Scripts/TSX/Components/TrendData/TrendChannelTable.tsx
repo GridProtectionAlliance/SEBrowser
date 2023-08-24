@@ -99,7 +99,7 @@ const TrendChannelTable = (props: IProps) => {
                 setAscending(!ascending);
             else
                 setSortField(data.colField);
-        }, [ascending]);
+        }, [ascending, sortField, setAscending, setSortField]);
 
     let onDragStartFunc = undefined;
     if (props.EnableDragDrop ?? false)
