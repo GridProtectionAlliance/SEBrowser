@@ -34,7 +34,7 @@ interface IProps {
     PlotFilter: IMultiCheckboxOption[],
     Height: number,
     Width: number,
-    OnSelect: (time: number, value: number) => void,
+    OnSelect: (time: number, values: number[]) => void,
     Title?: string,
     Metric?: boolean,
     XAxisLabel?: string,
@@ -197,7 +197,7 @@ const LineGraph = React.memo((props: IProps) => {
                 <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} showBorder={false}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect}
                     legend={'bottom'} useMetricFactors={props.Metric} holdMenuOpen={true}
-                    Tlabel={props.XAxisLabel} Ylabel={props.YLeftLabel} YRightlabel={props.YRightLabel} showMouse={true}>
+                    Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={true}>
                     {allChartData.flatMap((chartData, index) => {
                         const lineArray: JSX.Element[] = [];
                         const channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === chartData.ChannelID);

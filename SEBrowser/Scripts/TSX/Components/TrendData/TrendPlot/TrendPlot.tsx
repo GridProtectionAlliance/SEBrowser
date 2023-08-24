@@ -26,7 +26,7 @@ import queryString from 'querystring';
 import moment from 'moment';
 import { CreateGuid, SpacedColor } from '@gpa-gemstone/helper-functions';
 import { TrashCan, Pencil, Plus, Flag } from '@gpa-gemstone/gpa-symbols';
-import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker } from '@gpa-gemstone/react-graph';
+import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, AxisMap } from '@gpa-gemstone/react-graph';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { LineGraph, ILineSeries } from './LineGraph';
 import { SEBrowser, TrendSearch } from '../../../global';
@@ -48,9 +48,11 @@ interface IContainerProps {
 
 interface IVertHori {
     ID: string,
+    axis: string,
     value: number,
 }
 
+//Todo: add axis
 interface IEventMarker {
     value: number,
     meterKey: string,
@@ -305,7 +307,10 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         </Button>);
     };
 
-    const createMarker = React.useCallback((time: number, value: number) => {
+    const createMarker = React.useCallback((time: number, values: number[]) => {
+        // Todo: Make this a toggle
+        const axis = 'left';
+        const axisNumber = AxisMap.get(axis);
         switch (customSelect.current) {
             case "symbol": {
                 const currentMarkers = [...symbolicMarkers];
@@ -316,12 +321,13 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     symbol: Plus,
                     radius: 10,
                     xPos: time,
-                    yPos: value,
+                    yPos: values[axisNumber],
                     // Note
                     note: "",
                     opacity: 1,
+                    axis: axis,
                     xBox: time,
-                    yBox: value
+                    yBox: values[axisNumber]
                 });
                 setSymbolicMarkers(currentMarkers);
                 return;
@@ -331,7 +337,8 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                 const newId = CreateGuid();
                 currentMarkers.push({
                     ID: newId,
-                    value: time
+                    value: time,
+                    axis
                 });
                 setVerticalMarkers(currentMarkers);
                 return;
@@ -341,7 +348,8 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                 const newId = CreateGuid();
                 currentMarkers.push({
                     ID: newId,
-                    value: value
+                    value: values[axisNumber],
+                    axis
                 });
                 setHorizontalMarkers(currentMarkers);
                 return;

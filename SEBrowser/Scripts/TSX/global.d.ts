@@ -188,6 +188,7 @@ export namespace TrendSearch {
         xPos: number,
         yPos: number,
         radius: number,
+        axis: string,
         // Infobox
         note: string,
         xBox: number,
