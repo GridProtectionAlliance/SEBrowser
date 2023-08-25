@@ -60,7 +60,7 @@ export default class OpenSEEService{
 
         this.waveformTCEDataHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/GetData?eventId=${eventid}` +
+            url: `${homePath}api/OpenSEE/GetData?eventId=${eventid}` +
                 `${startDate != undefined ? `&startDate=${startDate}` : ``}` +
                 `${endDate != undefined ? `&endDate=${endDate}` : ``}` +
                 `&pixels=${pixels}` +
@@ -81,7 +81,7 @@ export default class OpenSEEService{
 
         this.relaystatisticsDataHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/GetData?eventid=${eventid}` +
+            url: `${homePath}api/OpenSEE/GetData?eventid=${eventid}` +
                 `${startDate != undefined ? `&startDate=${startDate}` : ``}` +
                 `${endDate != undefined ? `&endDate=${endDate}` : ``}` +
                 `&pixels=${pixels}` +
@@ -119,7 +119,7 @@ export default class OpenSEEService{
 
         this.frequencyDataHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/OpenXDA/GetData?eventId=${eventid}` +
+            url: `${homePath}api/OpenSEE/GetData?eventId=${eventid}` +
                 `${startDate != undefined ? `&startDate=${startDate}` : ``}` +
                 `${endDate != undefined ? `&endDate=${endDate}` : ``}` +
                 `&pixels=${pixels}` +
