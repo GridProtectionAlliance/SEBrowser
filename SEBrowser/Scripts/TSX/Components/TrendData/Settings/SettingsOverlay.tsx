@@ -24,7 +24,7 @@ import React from 'react';
 import _ from 'lodash';
 import { Portal } from 'react-portal';
 import { BlockPicker } from 'react-color';
-import { ILineSeries } from './LineGraph';
+import { ILineSeries } from '../TrendPlot/LineGraph';
 import { TrendSearch } from '../../../global';
 import { CheckBox, Input, Select, TextArea } from '@gpa-gemstone/react-forms';
 import TrendChannelTable from '../TrendChannelTable';

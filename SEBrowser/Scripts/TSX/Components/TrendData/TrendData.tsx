@@ -28,7 +28,7 @@ import TrendSearchNavbar from './TrendDataNavbar';
 import TrendPlot from './TrendPlot/TrendPlot';
 import { TrendSearch } from '../../Global';
 import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
-import AllSettingsModal from './AllSettingsModal';
+import AllSettingsModal from './Settings/AllSettingsModal';
 
 const momentDateFormat = "MM/DD/YYYY";
 

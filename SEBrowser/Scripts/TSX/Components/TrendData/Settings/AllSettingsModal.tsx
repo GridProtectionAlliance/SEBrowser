@@ -24,8 +24,8 @@
 import React from 'react';
 import _ from 'lodash';
 import { Modal } from '@gpa-gemstone/react-interactive';
-import { PlotSettings } from './TrendPlot/PlotSettings';
-import { TrendSearch } from '../../Global';
+import { PlotSettings } from './PlotSettings';
+import { TrendSearch } from '../../../Global';
 
 interface IProps {
     Show: boolean,

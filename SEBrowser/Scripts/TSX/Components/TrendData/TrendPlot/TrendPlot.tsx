@@ -32,7 +32,7 @@ import { LineGraph, ILineSeries } from './LineGraph';
 import { SEBrowser, TrendSearch } from '../../../global';
 import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
 import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
-import { SettingsOverlay } from './SettingsOverlay';
+import { SettingsOverlay } from '../Settings/SettingsOverlay';
 
 //TODO: move to global
 
