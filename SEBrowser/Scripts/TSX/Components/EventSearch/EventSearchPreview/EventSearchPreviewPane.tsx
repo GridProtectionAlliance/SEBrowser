@@ -33,7 +33,11 @@ import WidgetRouter from '../../../../../EventWidgets/TSX/WidgetWrapper';
 interface IProps {
     EventID: number,
     InitialTab?: string,
-    Height: number
+    Height: number,
+    Date?: string,
+    Time?: string,
+    TimeWindowUnits?: number,
+    WindowSize?: number
 }
 
 export default function EventPreviewPane(props: IProps) {
@@ -73,7 +77,7 @@ export default function EventPreviewPane(props: IProps) {
             <>
                 <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={categories.map(t => {
                     return { Id: t.ID.toString(), Label: t.Name }
-                }) } />
+            })} />
                 <div style={{ height: props.Height - 37.5, maxHeight: props.Height - 37.5, overflowY: 'scroll', overflowX: 'hidden' }}>
                     {widgets.filter(widget => widget.Enabled).map((widget) => {
                             return <WidgetRouter
@@ -86,6 +90,10 @@ export default function EventPreviewPane(props: IProps) {
                                 HomePath={`${homePath}api`}
                                 Roles={[]}
                                 key={widget.ID}
+                        Date={props.Date}
+                        Time={props.Time}
+                        TimeWindowUnits={props.TimeWindowUnits}
+                        WindowSize={props.WindowSize}
                             />
                     })}
                 </div>
