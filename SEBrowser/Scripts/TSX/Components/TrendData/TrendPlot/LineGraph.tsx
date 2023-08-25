@@ -48,10 +48,11 @@ interface ILineSeries{
     Channel: TrendSearch.ITrendChannel,
     AvgLineType?: ':' | '-',
     MinMaxLineType?: ':' | '-',
-    RightAxis?: boolean
+    RightAxis?: boolean,
     Label?: string,
     Color?: string
 }
+
 
 interface IChartData {
     ChannelID: number,
@@ -59,10 +60,6 @@ interface IChartData {
     MaxSeries: [number, number][],
     AvgSeries: [number, number][]
 }
-
-// Formats that will be used for dateBoxes
-const timeFilterFormat = "MM/DD/YYYYHH:mm:ss.SSS";
-const serverFormat = "YYYY-MM-DD[T]HH:mm:ss.SSSZ";
 
 // TODO: These can be in a shared place with eventSearchBar
 function formatWindowUnit(i: number) {
@@ -82,6 +79,10 @@ function formatWindowUnit(i: number) {
         return "seconds";
     return "milliseconds";
 }
+
+// Formats that will be used for dateBoxes
+const timeFilterFormat = "MM/DD/YYYYHH:mm:ss.SSS";
+const serverFormat = "YYYY-MM-DD[T]HH:mm:ss.SSSZ";
 
 const LineGraph = React.memo((props: IProps) => {
     // Graph Consts

@@ -52,13 +52,6 @@ interface IVertHori {
     value: number,
 }
 
-//Todo: add axis
-interface IEventMarker {
-    value: number,
-    meterKey: string,
-    eventID: number
-}
-
 type SeriesSettings = ILineSeries;
 
 const TrendPlot = React.memo((props: IContainerProps) => {
@@ -82,8 +75,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     const customSelect = React.useRef<customSelects>("drag");
 
     // Event Information
-    const [showEvents, setShowEvents] = React.useState<boolean>(false);
-    const [eventMarkers, setEventMarkers] = React.useState<IEventMarker[]>([]);
+    const [eventMarkers, setEventMarkers] = React.useState<TrendSearch.IEventMarker[]>([]);
     const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
 
     // Get Heights and Widths
@@ -193,7 +185,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     }, [showSettings]);
 
     React.useEffect(() => {
-        if (!showEvents || props.Plot.Channels == null || props.Plot.TimeFilter == null) return;
+        if (!props.Plot.ShowEvents || props.Plot.Channels == null || props.Plot.TimeFilter == null) return;
         const meters: number[] = props.Plot.Channels.map(item => item.MeterID); // TODO: Filter to unique ID's only
         const assets: number[] = props.Plot.Channels.map(item => item.AssetID);
 
@@ -201,7 +193,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         return () => {
             if (handle != null && handle.abort != null) handle.abort();
         };
-    }, [showEvents, props.Plot.Channels, props.Plot.TimeFilter]);
+    }, [props.Plot.ShowEvents, props.Plot.Channels, props.Plot.TimeFilter]);
 
     function GetEventData(timeFilter: SEBrowser.IReportTimeFilter, meters: number[], assets: number[]): JQuery.jqXHR<any[]> {
         if (assets.length === 0 || meters.length === 0) {
@@ -223,14 +215,15 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             async: true
         }).done((data: any[]) => {
             setEventMarkers(data.map(datum => {
-                return { value: moment.utc(datum.Time, eventFormat).valueOf(), meterKey: datum["Meter Key"], eventID: datum["EventID"] }
+                const meterID = props.Plot.Channels.find(channel => channel.MeterKey === datum["Meter Key"]).MeterID;
+                return { value: moment.utc(datum.Time, eventFormat).valueOf(), meterID: meterID, eventID: datum["EventID"] }
             }));
         });
     }
 
-    function navigateEvent(marker: IEventMarker): () => void {
+    function navigateEvent(marker: TrendSearch.IEventMarker): () => void {
         const meter: SystemCenter.Types.DetailedMeter = {
-            ID: props.Plot.Channels.find(channel => channel.MeterKey === marker.meterKey).MeterID,
+            ID: marker.meterID,
             AssetKey: '',
             Name: '',
             Location: '',
@@ -291,11 +284,6 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     const overlayButton = (
         <Button onClick={() => setShowSettings(!showSettings)}>
             {Pencil}
-        </Button>);
-
-    const eventButton = (
-        <Button onClick={() => setShowEvents(!showEvents)}>
-            {Flag}
         </Button>);
 
     const customSelectButton = (selectMode: customSelects, symbol: string) => {
@@ -386,11 +374,11 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel}
                     Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric}
                     OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
-                    {eventMarkers.map((marker, i) =>
+                    {props.Plot.ShowEvents ? eventMarkers.map((marker, i) =>
                         <VerticalMarker key={"Event_" + i}
                             Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
                             onClick={() => { if (customSelect.current !== "drag") return; navigateEvent(marker); }} />
-                    )}
+                    ) : null}
                     {verticalMarkers.map((marker, i) =>
                         <VerticalMarker key={"Vert_" + i}
                             Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
@@ -418,7 +406,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                             </div>
                         </Infobox>
                     )}
-                    {customSelectButton("symbol", Plus)} {customSelectButton("horizontal", "-")} {customSelectButton("vertical", "|")} {eventButton}
+                    {customSelectButton("symbol", Plus)} {customSelectButton("horizontal", "-")} {customSelectButton("vertical", "|")}
                 </LineGraph> : null}
             <SettingsOverlay SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings} SetShow={setShowSettings} Show={showSettings} SetPlot={handleSetPlot}
             OverlayPortalID={props.OverlayPortalID} Plot={props.Plot} Markers={symbolicMarkers} SetMarkers={setSymbolicMarkers} />

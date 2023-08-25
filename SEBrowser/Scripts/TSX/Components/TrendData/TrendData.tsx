@@ -44,12 +44,13 @@ const TrendData = () => {
         PlotFilter: [{ Text: "Minimum", Value: "min", Selected: true }, { Text: "Maximum", Value: "max", Selected: true }, { Text: "Average/Values", Value: "avg", Selected: true }],
         ID: "blank",
         Width: 50,
-        Height: 50
+        Height: 50,
+        ShowEvents: false
     });
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
     const overlayPortalID = "TrendDataChartPortal";
     const overlayDrawer = "TrendDataNavbar";
-    const defaultsApplied = ["Title", "XAxisLabel", "YLeftLabel", "YRightLabel", "Metric", "Width", "Height"];
+    const defaultsApplied = ["Title", "XAxisLabel", "YLeftLabel", "YRightLabel", "Metric", "Width", "Height", "ShowEvents"];
 
     function getShowNav(): boolean {
         if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.TrendData.ShowNav'))

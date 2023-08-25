@@ -80,6 +80,9 @@ const PlotSettings = React.memo((props: IProps) => {
                 <div className="row">
                     <CheckBox<TrendSearch.ITrendPlot> Record={props.Plot} Label='Use Metric Abbreviation' Field='Metric' Setter={props.SetPlot} />
                 </div>
+                <div className="row">
+                    <CheckBox<TrendSearch.ITrendPlot> Record={props.Plot} Label='Display Events' Field='ShowEvents' Setter={props.SetPlot} />
+                </div>
             </div>
             <div className="col" style={{ width: '50%' }}>
                 <legend className="w-auto" style={{ fontSize: 'large' }}>Series Plotted:</legend>

@@ -178,7 +178,8 @@ export namespace TrendSearch {
         YRightLabel?: string,
         Metric?: boolean,
         Width?: number,
-        Height?: number
+        Height?: number,
+        ShowEvents?: boolean
     }
 
     interface IMarker {
@@ -194,6 +195,13 @@ export namespace TrendSearch {
         xBox: number,
         yBox: number,
         opacity: number
+    }
+
+    //Todo: add axis
+    interface IEventMarker {
+        value: number,
+        meterID: number,
+        eventID: number
     }
 }
 
