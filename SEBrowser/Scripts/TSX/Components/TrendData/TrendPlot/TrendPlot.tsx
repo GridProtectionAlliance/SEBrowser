@@ -25,7 +25,7 @@ import _ from 'lodash';
 import queryString from 'querystring';
 import moment from 'moment';
 import { CreateGuid, SpacedColor } from '@gpa-gemstone/helper-functions';
-import { TrashCan, Pencil, Plus, Flag } from '@gpa-gemstone/gpa-symbols';
+import { TrashCan, Pencil, Plus } from '@gpa-gemstone/gpa-symbols';
 import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, AxisMap } from '@gpa-gemstone/react-graph';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { LineGraph, ILineSeries } from './LineGraph';
@@ -311,6 +311,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     xPos: time,
                     yPos: values[axisNumber],
                     // Note
+                    format: "mm:ss.SS",
                     note: "",
                     opacity: 1,
                     axis: axis,
@@ -402,7 +403,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                             width={100} height={80} offset={15}
                             setPosition={(x, y) => { if (customSelect.current !== "drag") return; setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
                             <div style={{ background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
-                                {`(X:${moment(marker.xPos).format("mm:ss.SS")}, Y:${marker.yPos.toFixed(2)})\n${marker.note}`}
+                                {`(X:${moment(marker.xPos).format(marker.format)}, Y:${marker.yPos.toFixed(2)})\n${marker.note}`}
                             </div>
                         </Infobox>
                     )}

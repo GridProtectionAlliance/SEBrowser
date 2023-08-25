@@ -185,6 +185,7 @@ export namespace TrendSearch {
     interface IMarker {
         // Symbolic marker
         ID: string,
+        format: string,
         symbol: string,
         xPos: number,
         yPos: number,

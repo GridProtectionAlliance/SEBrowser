@@ -235,6 +235,10 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                                                 <Input<TrendSearch.IMarker> Record={currentMarker} Label={'Infobox Opacity'} Field={'opacity'} Setter={setCurrentMarker} Feedback={"Opacity must be between 0 and 1"} Valid={() => {
                                                     return (currentMarker['opacity'] <= 1 && currentMarker['opacity'] > 0);
                                                 }} />
+                                                <Input<TrendSearch.IMarker> Record={currentMarker} Label={'Timestamp Format'} Field={'format'} Setter={setCurrentMarker} Feedback={"Must be a valid timestamp format"} Valid={() => {
+                                                    // TODO: This must be a valid string, something to check this should be added to helper functions in gemstone soon
+                                                    return true;
+                                                }} />
                                                 <TextArea<TrendSearch.IMarker> Record={currentMarker} Label={'Marker Note'} Field={'note'} Setter={setCurrentMarker} Rows={3} Valid={() => true } />
                                             </>
                                         }
