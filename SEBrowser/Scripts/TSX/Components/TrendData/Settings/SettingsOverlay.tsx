@@ -232,9 +232,8 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                                         {currentMarker === undefined ? null :
                                             <>
                                                 <Select<TrendSearch.IMarker> Record={currentMarker} Label={'Marker Symbol'} Field={'symbol'} Setter={setCurrentMarker} Options={markerSymbolOptions} />
-                                                <Input<TrendSearch.IMarker> Record={currentMarker} Label={'Infobox Opacity'} Field={'opacity'} Setter={setCurrentMarker} Valid={() => {
-                                                    //TODO: this must be between 0-1
-                                                    return true;
+                                                <Input<TrendSearch.IMarker> Record={currentMarker} Label={'Infobox Opacity'} Field={'opacity'} Setter={setCurrentMarker} Feedback={"Opacity must be between 0 and 1"} Valid={() => {
+                                                    return (currentMarker['opacity'] <= 1 && currentMarker['opacity'] > 0);
                                                 }} />
                                                 <TextArea<TrendSearch.IMarker> Record={currentMarker} Label={'Marker Note'} Field={'note'} Setter={setCurrentMarker} Rows={3} Valid={() => true } />
                                             </>
