@@ -44,8 +44,14 @@ export default function EventPreviewPane(props: IProps) {
     const categories = useAppSelector(SelectWidgetCategories);
     const [tab, setTab] = React.useState<string>(props.InitialTab == null || props.InitialTab == undefined ? '' : props.InitialTab);
     const [widgets, setWidgets] = React.useState<SEBrowser.IWidgetView[]>([]);
-    const event: any = useAppSelector((state: Redux.StoreState) => SelectEventSearchByID(state,props.EventID));
-        
+    const event: any = useAppSelector((state: Redux.StoreState) => SelectEventSearchByID(state, props.EventID));
+    const [roles, setRoles] = React.useState<string[]>([]);
+
+    React.useEffect(() => {
+        const h = getRoles();
+        return () => { if (h != null && h.abort != null) h.abort(); }
+    }, [])
+
     React.useEffect(() => {
         const h = loadWidgetCategories();
         return () => { if (h != null && h.abort != null) h.abort(); }
@@ -70,33 +76,43 @@ export default function EventPreviewPane(props: IProps) {
         }).done((d) => { setWidgets(d) });
     }
 
+    function getRoles() {
+        return $.ajax({
+            type: "GET",
+            url: `${homePath}api/SEBrowser/SecurityRoles`,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: true,
+            async: true
+        }).done((d) => { setRoles(d) });
+    }
 
     if (event == undefined || categories.length == 0) return <div></div>;
 
-        return (
-            <>
-                <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={categories.map(t => {
-                    return { Id: t.ID.toString(), Label: t.Name }
+    return (
+        <>
+            <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={categories.map(t => {
+                return { Id: t.ID.toString(), Label: t.Name }
             })} />
-                <div style={{ height: props.Height - 37.5, maxHeight: props.Height - 37.5, overflowY: 'scroll', overflowX: 'hidden' }}>
-                    {widgets.filter(widget => widget.Enabled).map((widget) => {
-                            return <WidgetRouter
-                                Widget={widget}
-                                DisturbanceID={0}
-                                StartTime={event.FileStartTime}
-                                EventID={props.EventID}
-                                FaultID={0}
-                                Height={props.Height}
-                                HomePath={`${homePath}api`}
-                                Roles={[]}
-                                key={widget.ID}
+            <div style={{ height: props.Height - 37.5, maxHeight: props.Height - 37.5, overflowY: 'scroll', overflowX: 'hidden' }}>
+                {widgets.filter(widget => widget.Enabled).map((widget) => {
+                    return <WidgetRouter
+                        Widget={widget}
+                        DisturbanceID={0}
+                        StartTime={event.FileStartTime}
+                        EventID={props.EventID}
+                        FaultID={0}
+                        Height={props.Height}
+                        HomePath={`${homePath}api`}
+                        Roles={roles}
+                        key={widget.ID}
                         Date={props.Date}
                         Time={props.Time}
                         TimeWindowUnits={props.TimeWindowUnits}
                         WindowSize={props.WindowSize}
-                            />
-                    })}
-                </div>
+                    />
+                })}
+            </div>
         </>)
 }
 
