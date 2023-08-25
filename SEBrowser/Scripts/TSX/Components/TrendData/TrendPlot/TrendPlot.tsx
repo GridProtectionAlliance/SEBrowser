@@ -311,7 +311,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     xPos: time,
                     yPos: values[axisNumber],
                     // Note
-                    format: "mm:ss.SS",
+                    format: "HH:mm",
                     note: "",
                     opacity: 1,
                     axis: axis,
@@ -403,7 +403,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                             width={100} height={80} offset={15}
                             setPosition={(x, y) => { if (customSelect.current !== "drag") return; setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
                             <div style={{ background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
-                                {`(X:${moment(marker.xPos).format(marker.format)}, Y:${marker.yPos.toFixed(2)})\n${marker.note}`}
+                                {`${moment(marker.xPos).format(marker.format)}|${marker.yPos.toFixed(2)}\n${marker.note}`}
                             </div>
                         </Infobox>
                     )}
