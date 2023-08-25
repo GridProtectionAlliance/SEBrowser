@@ -41,9 +41,6 @@ export default class SEBrowserdService {
         this.getMostActiveMeterActivityData = this.getMostActiveMeterActivityData.bind(this);
         this.getLeastActiveMeterActivityData = this.getLeastActiveMeterActivityData.bind(this);
 
-        this.getEventSearchData = this.getEventSearchData.bind(this);
-        this.getEventSearchAsssetVoltageDisturbancesData = this.getEventSearchAsssetVoltageDisturbancesData.bind(this);
-        this.getEventSearchAsssetFaultSegmentsData = this.getEventSearchAsssetFaultSegmentsData.bind(this);
 
         this.GetCapBankSubstationData = this.GetCapBankSubstationData.bind(this);
         this.GetCapBankData = this.GetCapBankData.bind(this);
@@ -146,53 +143,4 @@ export default class SEBrowserdService {
         return this.fileGroupEventsHandle;
     }
 
-
-    getEventSearchData(params): JQuery.jqXHR {
-        if (this.eventSearchHandle !== undefined)
-            this.eventSearchHandle.abort();
-
-        this.eventSearchHandle = $.ajax({
-            type: "POST",
-            url: `${homePath}api/OpenXDA/GetEventSearchData`,
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify(params),
-            dataType: 'json',
-            cache: true,
-            async: true
-        });
-
-        return this.eventSearchHandle;
-    }
-
-    getEventSearchAsssetVoltageDisturbancesData(eventID: number): JQuery.jqXHR {
-        if (this.eventSearchAssetVoltageDisturbancesHandle !== undefined)
-            this.eventSearchAssetVoltageDisturbancesHandle.abort();
-
-        this.eventSearchAssetVoltageDisturbancesHandle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/OpenXDA/GetEventSearchAssetVoltageDisturbances?EventID=${eventID}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: true,
-            async: true
-        });
-
-        return this.eventSearchAssetVoltageDisturbancesHandle;
-    }
-
-    getEventSearchAsssetFaultSegmentsData(eventID: number): JQuery.jqXHR {
-        if (this.eventSearchAssetFaultSegmentsHandle !== undefined)
-            this.eventSearchAssetFaultSegmentsHandle.abort();
-
-        this.eventSearchAssetFaultSegmentsHandle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/OpenXDA/GetEventSearchFaultSegments?EventID=${eventID}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: true,
-            async: true
-        });
-
-        return this.eventSearchAssetFaultSegmentsHandle;
-    }
 }
