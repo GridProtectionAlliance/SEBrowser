@@ -113,7 +113,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             switch (props.Plot.Type) {
                 case 'Line': default:
                     return ({
-                        Channel: channel, Color: SpacedColor(0.9, 0.9), MinMaxLineType: ':', AvgLineType: '-',
+                        Channel: channel, Color: SpacedColor(0.9, 0.9), MinMaxLineType: ':', AvgLineType: '-', Width: 3,
                         Label: constructLabel(channel), RightAxis: channel.ChannelGroup !== props.Plot.Channels[0].ChannelGroup
                     })
             }

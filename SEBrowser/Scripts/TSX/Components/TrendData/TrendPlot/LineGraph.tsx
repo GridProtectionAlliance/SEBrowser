@@ -50,7 +50,8 @@ interface ILineSeries{
     MinMaxLineType?: ':' | '-',
     RightAxis?: boolean,
     Label?: string,
-    Color?: string
+    Color?: string,
+    Width?: number
 }
 
 
@@ -207,13 +208,13 @@ const LineGraph = React.memo((props: IProps) => {
                         const axis = (channelSetting?.RightAxis ?? false) ? 'right' : 'left';
                         if (displayAvg && chartData.AvgSeries.length > 0)
                             lineArray.push(<Line highlightHover={false} key={"avg" + index} showPoints={false} lineStyle={channelSetting?.AvgLineType ?? '-'}
-                                color={colorValue} data={chartData.AvgSeries} legend={baseLabel + " avg"} axis={axis} />);
+                                color={colorValue} data={chartData.AvgSeries} legend={baseLabel + " avg"} axis={axis} width={channelSetting?.Width} />);
                         if (displayMin && chartData.MinSeries.length > 0)
                             lineArray.push(<Line highlightHover={false} key={"min" + index} showPoints={false} lineStyle={channelSetting?.MinMaxLineType ?? ':'}
-                                color={colorValue} data={chartData.MinSeries} legend={baseLabel + " min"} axis={axis} />);
+                                color={colorValue} data={chartData.MinSeries} legend={baseLabel + " min"} axis={axis} width={channelSetting?.Width} />);
                         if (displayMax && chartData.MaxSeries.length > 0)
                             lineArray.push(<Line highlightHover={false} key={"max" + index} showPoints={false} lineStyle={channelSetting?.MinMaxLineType ?? ':'}
-                                color={colorValue} data={chartData.MaxSeries} legend={baseLabel + " max"} axis={axis} />);
+                                color={colorValue} data={chartData.MaxSeries} legend={baseLabel + " max"} axis={axis} width={channelSetting?.Width} />);
                         return lineArray;
                     })}
                     {props.children}

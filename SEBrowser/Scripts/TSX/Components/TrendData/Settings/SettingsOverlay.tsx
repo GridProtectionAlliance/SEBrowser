@@ -218,6 +218,10 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                                                 <Input<SeriesSettings> Record={seriesSettingsBuffer} Label={'Legend Label'} Field={'Label'} Setter={setSeriesSettingsBuffer} Valid={() => true} />
                                                 <Select<SeriesSettings> Record={seriesSettingsBuffer} Label={'Average Line Style'} Field={'AvgLineType'} Setter={setSeriesSettingsBuffer} Options={lineTypeOptions} />
                                                 <Select<SeriesSettings> Record={seriesSettingsBuffer} Label={'Min/Max Line Style'} Field={'MinMaxLineType'} Setter={setSeriesSettingsBuffer} Options={lineTypeOptions} />
+                                                <Input<SeriesSettings> Record={seriesSettingsBuffer} Label={'Line Width (pixels)'} Field={'Width'} Setter={setSeriesSettingsBuffer} Type={'number'}
+                                                    Feedback={"Width must be a positive number"} Valid={() => {
+                                                        return seriesSettingsBuffer['Width'] > 0;
+                                                }} />
                                                 <CheckBox<SeriesSettings> Record={seriesSettingsBuffer} Label={'Move to Right Axis'} Field={'RightAxis'} Setter={setSeriesSettingsBuffer} />
                                             </>
                                         }
