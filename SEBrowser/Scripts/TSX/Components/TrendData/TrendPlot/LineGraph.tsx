@@ -103,12 +103,37 @@ const LineGraph = React.memo((props: IProps) => {
         const endTime: string = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
 
         // Need to figure out which channels we need info for
-        let channels: number[] = props.ChannelInfo.map(chan => chan.Channel.ID);
+        let newChannels: number[] = props.ChannelInfo.map(chan => chan.Channel.ID);
         // If the time filter is the same, we only need to ask for information on channels we have not yet seen
-        if (_.isEqual(props.TimeFilter, oldValues.TimeFilter))
-            channels = channels.filter(channel => oldValues.ChannelInfo.findIndex(oldChannel => oldChannel.Channel.ID === channel) === -1);
-        setOldValues({ ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter });
-        const handle = GetTrendData(channels, startTime, endTime);
+        let oldCulledData: IChartData[] = [];
+        if (_.isEqual(props.TimeFilter, oldValues.TimeFilter)) {
+            newChannels = newChannels.filter(channel => oldValues.ChannelInfo.findIndex(oldChannel => oldChannel.Channel.ID === channel) === -1);
+            // This represents data we already have and still need
+            oldCulledData = allChartData.filter(oldSeries =>
+                props.ChannelInfo.findIndex(channel => channel.Channel.ID === oldSeries.ChannelID) !== -1);
+            // If this condition is satified, it must mean we removed channels, and thus, only need to remove irrelevant data
+            if (newChannels.length === 0) {
+                setAllChartData(oldCulledData);
+                setOldValues({ ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter });
+                return;
+            }
+        }
+        const handle = GetTrendData(newChannels, startTime, endTime);
+        handle.done((data: TrendSearch.IPQData[]) => {
+            const newData: IChartData[] =
+                data.map(channelInfo => {
+                    const timeSeries = channelInfo.Points.map(dataPoint => moment.utc(dataPoint.Timestamp, serverFormat).valueOf());
+                    const channelID = Number("0x" + channelInfo.ChannelID);
+                    return ({
+                        ChannelID: channelID,
+                        MinSeries: channelInfo.Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Minimum]),
+                        MaxSeries: channelInfo.Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Maximum]),
+                        AvgSeries: channelInfo.Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Average])
+                    });
+                });
+            setAllChartData(oldCulledData.concat(newData));
+            setOldValues({ ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter });
+        });
         return () => {
             if (handle != null && handle.abort != null) handle.abort();
         };
@@ -126,10 +151,6 @@ const LineGraph = React.memo((props: IProps) => {
     }, [allChartData]);
 
     function GetTrendData(channels: number[], startTime: string, endTime: string): JQuery.jqXHR<TrendSearch.IPQData[]> {
-        if (channels.length === 0) {
-            setAllChartData(CulledTrendData());
-            return null;
-        }
         setGraphStatus('loading');
         return $.ajax({
             type: "POST",
@@ -143,29 +164,11 @@ const LineGraph = React.memo((props: IProps) => {
             dataType: 'json',
             cache: false,
             async: true
-        }).done((data: TrendSearch.IPQData[]) => {
-            const newData: IChartData[] =
-                data.map(channelInfo => {
-                    const timeSeries = channelInfo.Points.map(dataPoint => moment.utc(dataPoint.Timestamp, serverFormat).valueOf());
-                    const channelID = Number("0x" + channelInfo.ChannelID);
-                    return ({
-                        ChannelID: channelID,
-                        MinSeries: channelInfo.Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Minimum]),
-                        MaxSeries: channelInfo.Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Maximum]),
-                        AvgSeries: channelInfo.Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Average])
-                    });
-                });
-            const oldData = CulledTrendData();
-            setAllChartData(oldData.concat(newData));
+        }).done(() => {
             setGraphStatus('idle');
         }).fail(() => {
             setGraphStatus('error');
         });
-    }
-
-    function CulledTrendData(): IChartData[] {
-        return allChartData.filter(oldSeries =>
-            props.ChannelInfo.findIndex(channel => channel.Channel.ID === oldSeries.ChannelID) !== -1);
     }
 
     if (graphStatus === 'error' || (graphStatus === 'idle' && allChartData.findIndex(chartData => chartData.MinSeries.length + chartData.MaxSeries.length + chartData.AvgSeries.length > 0) < 0))
