@@ -26,12 +26,12 @@ import { Portal } from 'react-portal';
 import { BlockPicker } from 'react-color';
 import { ILineSeries } from '../TrendPlot/LineGraph';
 import { TrendSearch } from '../../../global';
-import { CheckBox, Input, Select, TextArea } from '@gpa-gemstone/react-forms';
+import { CheckBox, Input, Select, TextArea, StylableSelect } from '@gpa-gemstone/react-forms';
 import TrendChannelTable from '../TrendChannelTable';
 import { TabSelector, Warning } from '@gpa-gemstone/react-interactive';
 import { PlotSettings } from './PlotSettings';
 import TrendMarkerTable from '../TrendMarkerTable';
-import { CrossMark, Plus } from '@gpa-gemstone/gpa-symbols';
+import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 
 interface IOverlayProps {
     // Manage Plot
@@ -177,7 +177,11 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
 
     const lineTypeOptions = [{ Label: "Dashed", Value: ":" }, { Label: "Solid", Value: "-" }];
 
-    const markerSymbolOptions = [{ Label: "Plus", Value: Plus }, { Label: "Cross", Value: CrossMark }];
+    // Loading all SVGIcons into the options menue
+    const markerSymbolOptions = [];
+    Object.keys(SVGIcons).forEach((iconName) => {
+        markerSymbolOptions.push({ Value: SVGIcons[iconName], Element: SVGIcons[iconName]})
+    });
 
     const Tabs = [
         { Id: "plot", Label: "Plot" },
@@ -231,7 +235,7 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                                     <div className="col" style={{ width: '60%' }} ref={sideMarkerRef}>
                                         {currentMarker === undefined ? null :
                                             <>
-                                                <Select<TrendSearch.IMarker> Record={currentMarker} Label={'Marker Symbol'} Field={'symbol'} Setter={setCurrentMarker} Options={markerSymbolOptions} />
+                                                <StylableSelect<TrendSearch.IMarker> Record={currentMarker} Label={'Marker Symbol'} Field={'symbol'} Setter={setCurrentMarker} Options={markerSymbolOptions} />
                                                 <Input<TrendSearch.IMarker> Record={currentMarker} Label={'Infobox Opacity'} Field={'opacity'} Setter={setCurrentMarker} Feedback={"Opacity must be between 0 and 1"} Valid={() => {
                                                     return (currentMarker['opacity'] <= 1 && currentMarker['opacity'] > 0);
                                                 }} />

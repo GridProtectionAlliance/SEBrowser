@@ -186,7 +186,7 @@ export namespace TrendSearch {
         // Symbolic marker
         ID: string,
         format: string,
-        symbol: string,
+        symbol: JSX.Element,
         xPos: number,
         yPos: number,
         radius: number,

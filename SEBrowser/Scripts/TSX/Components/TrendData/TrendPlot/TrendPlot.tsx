@@ -25,7 +25,7 @@ import _ from 'lodash';
 import queryString from 'querystring';
 import moment from 'moment';
 import { CreateGuid, SpacedColor } from '@gpa-gemstone/helper-functions';
-import { TrashCan, Pencil, Plus } from '@gpa-gemstone/gpa-symbols';
+import { TrashCan, Pencil, Plus, SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, AxisMap } from '@gpa-gemstone/react-graph';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { LineGraph, ILineSeries } from './LineGraph';
@@ -306,8 +306,8 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                 currentMarkers.push({
                     ID: newId,
                     // Symbol
-                    symbol: Plus,
-                    radius: 10,
+                    symbol: SVGIcons.ArrowDropDown,
+                    radius: 12,
                     xPos: time,
                     yPos: values[axisNumber],
                     // Note
@@ -394,7 +394,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                         <SymbolicMarker key={"Marker_" + i}
                             xPos={marker.xPos} yPos={marker.yPos} radius={marker.radius}
                             setPosition={(x, y) => { if (customSelect.current !== "drag") return; setMarker(marker.ID, x, 'xPos'); setMarker(marker.ID, y, 'yPos'); setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
-                            <>{marker.symbol}</>
+                            {marker.symbol}
                         </SymbolicMarker>
                     )}
                     {symbolicMarkers.map((marker, i) =>
@@ -402,7 +402,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                             x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
                             width={100} height={80} offset={15}
                             setPosition={(x, y) => { if (customSelect.current !== "drag") return; setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
-                            <div style={{ background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
+                            <div style={{ width: '100px', height: '80px', background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
                                 {`${moment(marker.xPos).format(marker.format)}|${marker.yPos.toFixed(2)}\n${marker.note}`}
                             </div>
                         </Infobox>
