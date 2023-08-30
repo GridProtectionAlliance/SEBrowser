@@ -201,7 +201,7 @@ const LineGraph = React.memo((props: IProps) => {
                 {props.Title !== undefined ? <h4 style={{ textAlign: "center", width: `${props.Width}px` }}>{props.Title}</h4> : null}
                 <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} showBorder={false}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect}
-                    legend={'bottom'} useMetricFactors={props.Metric} holdMenuOpen={true}
+                    legend={'bottom'} useMetricFactors={props.Metric} holdMenuOpen={true} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={true}>
                     {allChartData.flatMap((chartData, index) => {
                         const lineArray: JSX.Element[] = [];

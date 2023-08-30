@@ -68,6 +68,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     const [symbolicMarkers, setSymbolicMarkers] = React.useState<TrendSearch.IMarker[]>([]);
     const [verticalMarkers, setVerticalMarkers] = React.useState<IVertHori[]>([]);
     const [horizontalMarkers, setHorizontalMarkers] = React.useState<IVertHori[]>([]);
+    const [mousePosition, setMousePosition] = React.useState<{ x: number, y: number }>({x: 0, y: 0});
 
     // Settings Controls
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
@@ -368,6 +369,10 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         setHorizontalMarkers(newList);
     }, [horizontalMarkers, setHorizontalMarkers]);
 
+    const setHoverPosition = React.useCallback((xArg: number, yArg: number) => {
+        setMousePosition({x: xArg, y: yArg})
+    }, [setMousePosition]);
+
     return (
         <div className="col" style={{ width: (props.Plot.Width ?? 100) - 1 + '%', height: (props.Plot.Height ?? 50) - 1 + '%', float: 'left' }} ref={chartRef} onDragOver={handleDragOver} onDrop={handleChannelDrop}>
             {props.Plot.Type === 'Line' ?
@@ -407,6 +412,13 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                             </div>
                         </Infobox>
                     )}
+                    {<Infobox key={"MouseOver"} origin="upper-right"
+                        x={chartWidth - 20} y={50} opacity={0.4} width={120} height={24} usePixelPositioning={true}
+                        onMouseMove={setHoverPosition}>
+                        <div style={{ width: '120px', height: '24px', background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: 0.4 }}>
+                            {`${moment(mousePosition.x).format("HH:mm:SS")}|${mousePosition.y.toFixed(2)}`}
+                        </div>
+                    </Infobox>}
                     {customSelectButton("symbol", Plus)} {customSelectButton("horizontal", "-")} {customSelectButton("vertical", "|")}
                 </LineGraph> : null}
             <SettingsOverlay SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings} SetShow={setShowSettings} Show={showSettings} SetPlot={handleSetPlot}
