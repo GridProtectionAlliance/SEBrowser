@@ -42,7 +42,7 @@ interface IProps {
     ShowNav: boolean,
     SetHeight: (h: number) => void,
     SetShowAllSettings: (show: boolean) => void,
-    DisableAllSettings: boolean,
+    HasPlots: boolean,
     AddNewCharts: (chartData: TrendSearch.ITrendPlot[]) => void,
     RemoveAllCharts: () => void,
     // Set for defaults
@@ -375,23 +375,22 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     <ToolTip Show={hover === 'Hide'} Position={'left'} Theme={'dark'} Target={"Hide"}>
                         Hides Navbar
                     </ToolTip>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm  ${props.DisableAllSettings ? ' disabled' : ''}`}
-                        onClick={() => { if (!props.DisableAllSettings) props.SetShowAllSettings(true); } }
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`}
+                        onClick={() => { props.SetShowAllSettings(true); } }
                         data-tooltip='Cog' onMouseEnter={() => setHover('Cog')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.Settings}</span>
                     </button>
                     <ToolTip Show={hover === 'Cog'} Position={'left'} Theme={'dark'} Target={"Cog"}>
-                        {<p>Changes Settings for All Plots</p>}
-                        {props.DisableAllSettings ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
+                        {<p>Changes Settings for All Plots and Defaults</p>}
                     </ToolTip>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm  ${props.DisableAllSettings ? ' disabled' : ''}`}
-                        onClick={() => { if (!props.DisableAllSettings) props.RemoveAllCharts(); }}
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm  ${props.HasPlots ? ' disabled' : ''}`}
+                        onClick={() => { if (!props.HasPlots) props.RemoveAllCharts(); }}
                         data-tooltip='Trash' onMouseEnter={() => setHover('Trash')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.Alert}</span>
                     </button>
                     <ToolTip Show={hover === 'Trash'} Position={'left'} Theme={'dark'} Target={"Trash"}>
                         {<p>Removes All Plots</p>}
-                        {props.DisableAllSettings ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
+                        {props.HasPlots ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm ${selectedSet.size === 0 ? ' disabled' : ''}`}
                         data-tooltip='Single-Line' onMouseEnter={() => setHover('Single-Line')} onMouseLeave={() => setHover('None')}
@@ -406,7 +405,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         <span>{SVGIcons.Document}</span>
                     </button>
                     <ToolTip Show={hover === 'Single-Line'} Position={'left'} Theme={'dark'} Target={"Single-Line"}>
-                        {<p>Add All Selected Channels to Line Plot</p>}
+                        {<p>Add All Selected Channels to New Line Plot</p>}
                         {selectedSet.size === 0 ? <p>{CrossMark} {'Action Requires Channels to be Selected'}</p> : null}
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm ${selectedSet.size === 0 ? ' disabled' : ''}`}
@@ -439,7 +438,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         <span>{SVGIcons.Folder}</span>
                     </button>
                     <ToolTip Show={hover === 'Multi-Line'} Position={'left'} Theme={'dark'} Target={"Multi-Line"}>
-                        {<p>Add All Selected Channels to Line Plots</p>}
+                        {<p>Add All Selected Channels to New Line Plots</p>}
                         {<p>Channels will be Seperated into Plots Based on Meter</p>}
                         {selectedSet.size === 0 ? <p>{CrossMark} {'Action Requires Channels to be Selected'}</p> : null}
                     </ToolTip>
