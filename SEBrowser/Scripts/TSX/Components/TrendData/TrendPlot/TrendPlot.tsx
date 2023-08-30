@@ -73,7 +73,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     // Settings Controls
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
     type customSelects = "drag" | "symbol" | "horizontal" | "vertical";
-    const customSelect = React.useRef<customSelects>("drag");
+    const [customSelect, setCustomSelect] = React.useState<customSelects>("drag");
 
     // Event Information
     const [eventMarkers, setEventMarkers] = React.useState<TrendSearch.IEventMarker[]>([]);
@@ -289,8 +289,8 @@ const TrendPlot = React.memo((props: IContainerProps) => {
 
     const customSelectButton = (selectMode: customSelects, symbol: string) => {
         return (<Button onClick={() => {
-            customSelect.current = selectMode;
-            return () => { customSelect.current = "drag"; };
+            setCustomSelect(selectMode);
+            return () => { setCustomSelect("drag"); };
         }} isSelect={true}>
             {symbol}
         </Button>);
@@ -300,7 +300,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         // Todo: Make this a toggle
         const axis = 'left';
         const axisNumber = AxisMap.get(axis);
-        switch (customSelect.current) {
+        switch (customSelect) {
             case "symbol": {
                 const currentMarkers = [...symbolicMarkers];
                 const newId = CreateGuid();
@@ -346,7 +346,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             }
             default: return;
         }
-    }, [symbolicMarkers, setSymbolicMarkers, verticalMarkers, setVerticalMarkers, horizontalMarkers, setHorizontalMarkers]);
+    }, [symbolicMarkers, setSymbolicMarkers, verticalMarkers, setVerticalMarkers, horizontalMarkers, setHorizontalMarkers, customSelect]);
 
     const setMarker = React.useCallback((ID: string, value: any, field: keyof (TrendSearch.IMarker)) => {
         const index = symbolicMarkers.findIndex(item => item.ID === ID);
@@ -383,22 +383,22 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     {props.Plot.ShowEvents ? eventMarkers.map((marker, i) =>
                         <VerticalMarker key={"Event_" + i}
                             Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
-                            onClick={() => { if (customSelect.current !== "drag") return; navigateEvent(marker); }} />
+                            onClick={() => { if (customSelect !== "drag") return; navigateEvent(marker); }} />
                     ) : null}
                     {verticalMarkers.map((marker, i) =>
                         <VerticalMarker key={"Vert_" + i}
                             Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
-                            setValue={(value) => { if (customSelect.current !== "drag") return; setVertical(marker.ID, value); }}/>
+                            setValue={(value) => { if (customSelect !== "drag") return; setVertical(marker.ID, value); }}/>
                     )}
                     {horizontalMarkers.map((marker, i) =>
                         <HorizontalMarker key={"Hori_" + i}
                             Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
-                            setValue={(value) => { if (customSelect.current !== "drag") return; setHorizontal(marker.ID, value); }} />
+                            setValue={(value) => { if (customSelect !== "drag") return; setHorizontal(marker.ID, value); }} />
                     )}
                     {symbolicMarkers.map((marker, i) =>
                         <SymbolicMarker key={"Marker_" + i}
                             xPos={marker.xPos} yPos={marker.yPos} radius={marker.radius}
-                            setPosition={(x, y) => { if (customSelect.current !== "drag") return; setMarker(marker.ID, x, 'xPos'); setMarker(marker.ID, y, 'yPos'); setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
+                            setPosition={(x, y) => { if (customSelect !== "drag") return; setMarker(marker.ID, x, 'xPos'); setMarker(marker.ID, y, 'yPos'); setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
                             {marker.symbol}
                         </SymbolicMarker>
                     )}
@@ -406,19 +406,20 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                         <Infobox key={"Info_" + i} origin="upper-center"
                             x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
                             width={100} height={80} offset={15}
-                            setPosition={(x, y) => { if (customSelect.current !== "drag") return; setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
+                            setPosition={(x, y) => { if (customSelect !== "drag") return; setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
                             <div style={{ width: '100px', height: '80px', background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
                                 {`${moment(marker.xPos).format(marker.format)}|${marker.yPos.toFixed(2)}\n${marker.note}`}
                             </div>
                         </Infobox>
                     )}
-                    {<Infobox key={"MouseOver"} origin="upper-right"
-                        x={chartWidth - 20} y={50} opacity={0.4} width={120} height={24} usePixelPositioning={true}
-                        onMouseMove={setHoverPosition}>
-                        <div style={{ width: '120px', height: '24px', background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: 0.4 }}>
-                            {`${moment(mousePosition.x).format("HH:mm:SS")}|${mousePosition.y.toFixed(2)}`}
-                        </div>
-                    </Infobox>}
+                    {customSelect === "drag" ? null :
+                        <Infobox key={"MouseOver"} origin="upper-right"
+                            x={chartWidth - 20} y={50} opacity={0.4} width={120} height={24} usePixelPositioning={true}
+                            onMouseMove={setHoverPosition}>
+                            <div style={{ width: '120px', height: '24px', background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: 0.4 }}>
+                                {`${moment(mousePosition.x).format("HH:mm:SS")}|${mousePosition.y.toFixed(2)}`}
+                            </div>
+                        </Infobox>}
                     {customSelectButton("symbol", Plus)} {customSelectButton("horizontal", "-")} {customSelectButton("vertical", "|")}
                 </LineGraph> : null}
             <SettingsOverlay SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings} SetShow={setShowSettings} Show={showSettings} SetPlot={handleSetPlot}
