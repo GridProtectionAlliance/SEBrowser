@@ -70,7 +70,7 @@ namespace SEBrowser.Controllers.OpenXDA
 
         #region [ Http Methods ]
         [Route("GetTrendSearchData"), HttpPost]
-        public DataTable GetEventSearchData([FromBody] JObject postData)
+        public DataTable GetTrendSearchData([FromBody] JObject postData)
         {
             using (AdoDataConnection connection = new(SettingsCategory))
             {
@@ -81,10 +81,8 @@ namespace SEBrowser.Controllers.OpenXDA
                 // Meters must be selected
                 if (string.IsNullOrEmpty(meterFilter)) return new DataTable();
 
-                //TODO: IMPORTANT: DONT FORGET: Change first line to the following before pushing
-                //Channel.Trend = 1
                 string filters =
-                    $@"1 = 1
+                    $@"Channel.Trend = 1
                     {(string.IsNullOrEmpty(phaseFilter) ? "" : $"AND ({phaseFilter})")}
                     {(string.IsNullOrEmpty(channelGroupFilter) ? "" : $"AND ({channelGroupFilter})")}
                     {(string.IsNullOrEmpty(meterFilter) ? "" : $"AND {meterFilter}")}
