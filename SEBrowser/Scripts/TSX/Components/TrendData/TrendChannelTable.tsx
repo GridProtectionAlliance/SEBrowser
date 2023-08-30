@@ -155,6 +155,8 @@ const TrendChannelTable = (props: IProps) => {
                     // Changing the added values based on held ctrl key
                     if (event.ctrlKey) {
                         props.SelectedSet.forEach(id => newIds.add(id));
+                        // Handle the unselect case
+                        if (!event.shiftKey && props.SelectedSet.has(item.row.ID)) newIds.delete(item.row.ID);
                     }
                     props.SetSelectedSet(newIds);
                 }
