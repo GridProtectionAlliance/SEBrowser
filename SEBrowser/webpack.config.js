@@ -34,7 +34,10 @@ module.exports = env => {
                 // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
                 {
                     test: /\.tsx?$/,
-                    include: path.resolve(__dirname, "Scripts"),
+                    include: [
+                        path.resolve(__dirname, "Scripts"),
+                        path.resolve(__dirname, "EventWidgets") 
+                    ],
                     loader: "ts-loader", options: { transpileOnly: true }
                 },
                 {

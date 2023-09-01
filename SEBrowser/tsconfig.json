@@ -14,7 +14,7 @@
     "moduleResolution": "Node",
     "skipLibCheck": true
   },
-  "include": [ "Scripts/**/*" ],
+  "include": [ "Scripts/**/*", "EventWidgets" ],
   "exclude": [
     "./node_modules/*"
   ]

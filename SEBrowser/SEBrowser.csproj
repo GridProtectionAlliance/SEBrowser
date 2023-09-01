@@ -435,12 +435,28 @@
     <Compile Include="Controllers\BreakerReport\MaximoBreakersController.cs" />
     <Compile Include="Controllers\DERReport\DERReportController.cs" />
     <Compile Include="Controllers\CapBankReport\CapBankReportController.cs" />
-    <Compile Include="Controllers\HECCO\InterruptionReportController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\MeterActivity\MeterActivityController.cs" />
     <Compile Include="Controllers\OpenXDA\ModelControlers.cs" />
-    <Compile Include="Controllers\TVA\PQIController.cs" />
+    <Compile Include="Controllers\RoleController.cs" />
+    <Compile Include="EventWidgets\Controller\AssetFaultSegments.cs" />
+    <Compile Include="EventWidgets\Controller\AssetHistoryTable.cs" />
+    <Compile Include="EventWidgets\Controller\AssetHistoryStats.cs" />
+    <Compile Include="EventWidgets\Controller\AssetVoltageDisturbances.cs" />
+    <Compile Include="EventWidgets\Controller\BreakerPerformance.cs" />
+    <Compile Include="EventWidgets\Controller\CorrelatedSags.cs" />
+    <Compile Include="EventWidgets\Controller\ESRIMap.cs" />
+    <Compile Include="EventWidgets\Controller\FaultInfo.cs" />
+    <Compile Include="EventWidgets\Controller\FileInfo.cs" />
+    <Compile Include="EventWidgets\Controller\InterruptionReport.cs" />
+    <Compile Include="EventWidgets\Controller\Lightning.cs" />
+    <Compile Include="EventWidgets\Controller\MatlabAnalyticResults.cs" />
+    <Compile Include="EventWidgets\Controller\NoteWindow.cs" />
+    <Compile Include="EventWidgets\Controller\OpenSEE.cs" />
+    <Compile Include="EventWidgets\Controller\PQI.cs" />
+    <Compile Include="EventWidgets\Controller\RelayPerformance.cs" />
+    <Compile Include="EventWidgets\Controller\SOE.cs" />
     <Compile Include="Model\StandardMagDurCurve.cs" />
     <Compile Include="Controllers\OpenXDA\NoteController.cs" />
     <Compile Include="Controllers\OpenXDA\FaultInfoController.cs" />
@@ -448,10 +464,7 @@
     <Compile Include="Controllers\SEBrowserController.cs" />
     <Compile Include="Controllers\OpenXDAController.cs" />
     <Compile Include="Controllers\TVA\ESRIMapQueryController.cs" />
-    <Compile Include="Controllers\TVA\LightningQueryController.cs" />
-    <Compile Include="Controllers\TVA\LSCQueryController.cs" />
     <Compile Include="Controllers\TVA\SIDAQueryController.cs" />
-    <Compile Include="Controllers\TVA\SOEQueryController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -472,6 +485,13 @@
     <Content Include="Views\Web.config" />
     <None Include="tsconfig.json" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="EventWidgets\Controller\LineParameters.cs" />
+    <None Include="package.json" />
+    <None Include="EventWidgets\TSX\global.tsx" />
+    <None Include="EventWidgets\TSX\WidgetWrapper.tsx" />
+    <None Include="EventWidgets\TSX\Widget\LineParameters.tsx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Scripts\Dist\" />
@@ -511,33 +531,31 @@
     <None Include="Scripts\TSX\Components\Modal.tsx" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\ESRIMap.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\FaultInfo.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\Lightning.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\LSC.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\PQWeb.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\SIDA.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\SOE.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\TVA\StructureInfo.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchRelayPerformance.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchAssetFaultSegments.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchAssetVoltageDisturbances.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchBreakerPerformance.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchCapBankAnalyticOverview.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchCorrelatedSags.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchFileInfo.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchNoteWindow.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchOpenSEE.tsx" />
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewPane.tsx" />
-    <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\LineParameters.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchTypeFilter.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\TimeWindowUtils.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\AssetHistoryStats.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\AssetHistoryTable.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\AssetHistoryStats.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\AssetHistoryTable.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\ESRIMap.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\AssetVoltageDisturbances.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\AssetFaultSegments.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\BreakerPerformance.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\CapBankAnalyticOverview.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\CorrelatedSags.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\FileInfo.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\MatlabAnalyticResults.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\NoteWindow.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\OpenSEE.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\PQI.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\RelayPerformance.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\FaultInfo.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\InterruptionReport.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\Lightning.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\PQICurves.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\SOE.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\StructureInfo.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\SettingsSlice.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\HECCO\InterruptionReport.tsx" />
-    <Content Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPQI.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
     <None Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
     <None Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisReport.tsx" />

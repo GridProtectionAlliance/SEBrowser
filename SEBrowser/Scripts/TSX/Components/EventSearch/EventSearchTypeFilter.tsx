@@ -154,7 +154,7 @@ const EventSearchTypeCategory = (props: ICategoryProps) => {
 
     return <fieldset className="border" style={{ padding: '10px' }} ref={formRef}>
         <legend className="w-auto" style={{ fontSize: 'large' }}>{(props.Label != null && props.Label.length > 0 ? props.Label : 'Other Types')}:
-            <a style={{ fontSize: 'small', color: '#0056b3', marginLeft: 2 }}
+            <a style={{ fontSize: 'small', color: '#0056b3', marginLeft: 2, cursor: 'pointer' }}
                 onClick={() => {
                     const isSelected = props.Data.filter(item => props.SelectedID.find(i => i == item.ID) == null).length == 0;
                     props.SelectAll(isSelected);

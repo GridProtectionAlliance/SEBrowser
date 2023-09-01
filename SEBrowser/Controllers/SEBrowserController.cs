@@ -43,22 +43,6 @@ namespace SEBrowser.Controllers
             }
         }
 
-        [Route("GetLinks/{category}"), HttpGet]
-        public IHttpActionResult GetLinks(string category)
-        {
-            try
-            {
-                using (AdoDataConnection connection = new(SettingsCategory))
-                {
-                    return Ok(connection.RetrieveData("SELECT * FROM [SEBrowser.Links] WHERE Name LIKE {0} + '%'", category));
-                }
-            }
-            catch (Exception ex)
-            {
-                return InternalServerError(ex);
-            }
-        }
-
         [Route("GetTimeZone"), HttpGet]
         public IHttpActionResult GetTimeZoneOffset()
         {
