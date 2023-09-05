@@ -408,16 +408,16 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                             width={100} height={80} offset={15}
                             setPosition={(x, y) => { if (customSelect !== "drag") return; setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
                             <div style={{ width: '100px', height: '80px', background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
-                                {`${moment(marker.xPos).format(marker.format)}|${marker.yPos.toFixed(2)}\n${marker.note}`}
+                                {`${moment(marker.xPos).format(marker.format)}\n${marker.yPos.toFixed(2)}\n${marker.note}`}
                             </div>
                         </Infobox>
                     )}
                     {customSelect === "drag" ? null :
                         <Infobox key={"MouseOver"} origin="upper-right"
-                            x={chartWidth - 20} y={50} opacity={0.4} width={120} height={24} usePixelPositioning={true}
+                            x={chartWidth - 20} y={50} opacity={0.4} width={120} height={48} usePixelPositioning={true}
                             onMouseMove={setHoverPosition}>
-                            <div style={{ width: '120px', height: '24px', background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: 0.4 }}>
-                                {`${moment(mousePosition.x).format("HH:mm:SS")}|${mousePosition.y.toFixed(2)}`}
+                            <div style={{ width: '120px', height: '48px', background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: 0.4 }}>
+                                {`${moment(mousePosition.x).format("HH:mm:SS")}\n${mousePosition.y.toFixed(2)}`}
                             </div>
                         </Infobox>}
                     {customSelectButton("symbol", Plus)} {customSelectButton("horizontal", "-")} {customSelectButton("vertical", "|")}
