@@ -104,21 +104,9 @@ const TrendChannelTable = (props: IProps) => {
     let onDragStartFunc = undefined;
     if (props.EnableDragDrop ?? false)
         onDragStartFunc = (item: any, event: any) => {
-            let allKeys = "";
-            if (props.Type === 'single')
-                allKeys = item.row.ID;
-            else {
-                if (props.SelectedSet.size === 0) {
-                    allKeys = item.row.ID;
-                } else {
-                    props.SelectedSet.forEach((key) => allKeys += `,${key}`);
-                    if (!props.SelectedSet.has(item.row.ID))
-                        allKeys = item.row.ID + allKeys;
-                    else
-                        allKeys = allKeys.slice(1);
-                }
-            }
-            const channelsTransfered = props.TrendChannels.filter((channel) => props.Type === 'single' ? (channel.ID === props.Selected) : props.SelectedSet.has(channel.ID));
+            let channelsTransfered = [];
+            if (props.Type === 'single' || !props.SelectedSet.has(item.row.ID)) channelsTransfered.push(props.TrendChannels.find(channel => channel.ID === item.row.ID));
+            else channelsTransfered = props.TrendChannels.filter(channel => props.SelectedSet.has(channel.ID));
             event.dataTransfer.setData("text/plain", JSON.stringify(channelsTransfered));
         };
 
