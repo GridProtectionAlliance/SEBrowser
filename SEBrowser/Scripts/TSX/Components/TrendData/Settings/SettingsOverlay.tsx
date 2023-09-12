@@ -23,15 +23,17 @@
 import React from 'react';
 import _ from 'lodash';
 import { Portal } from 'react-portal';
-import { BlockPicker } from 'react-color';
+import { BlockPicker, HuePicker } from 'react-color';
 import { ILineSeries } from '../TrendPlot/LineGraph';
+import { ICyclicSeries } from '../TrendPlot/CyclicHistogram';
 import { TrendSearch } from '../../../global';
 import { CheckBox, Input, Select, TextArea, StylableSelect } from '@gpa-gemstone/react-forms';
-import TrendChannelTable from '../TrendChannelTable';
 import { TabSelector, Warning } from '@gpa-gemstone/react-interactive';
+import { HexToHsv, HsvToHex } from '@gpa-gemstone/helper-functions';
+import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
+import TrendChannelTable from '../TrendChannelTable';
 import { PlotSettings } from './PlotSettings';
 import TrendMarkerTable from '../TrendMarkerTable';
-import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 
 interface IOverlayProps {
     // Manage Plot
@@ -49,7 +51,7 @@ interface IOverlayProps {
     OverlayPortalID: string
 }
 
-type SeriesSettings = ILineSeries;
+export type SeriesSettings = ILineSeries | ICyclicSeries;
 
 const SettingsOverlay = React.memo((props: IOverlayProps) => {
     // Sizing Variables
@@ -177,6 +179,36 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
 
     const lineTypeOptions = [{ Label: "Dashed", Value: ":" }, { Label: "Solid", Value: "-" }];
 
+    const getSettingsList = React.useCallback(() => {
+        switch (props.Plot.Type) {
+            case 'Line':
+                return (
+                    <>
+                        <BlockPicker onChangeComplete={(color) => setSeriesSettingsBuffer({ ...seriesSettingsBuffer, Color: color.hex })} color={seriesSettingsBuffer['Color']} triangle={"hide"} />
+                        <Input<ILineSeries> Record={seriesSettingsBuffer} Label={'Legend Label'} Field={'Label'} Setter={setSeriesSettingsBuffer} Valid={() => true} />
+                        <Select<ILineSeries> Record={seriesSettingsBuffer} Label={'Average Line Style'} Field={'AvgLineType'} Setter={setSeriesSettingsBuffer} Options={lineTypeOptions} />
+                        <Select<ILineSeries> Record={seriesSettingsBuffer} Label={'Min/Max Line Style'} Field={'MinMaxLineType'} Setter={setSeriesSettingsBuffer} Options={lineTypeOptions} />
+                        <Input<ILineSeries> Record={seriesSettingsBuffer} Label={'Line Width (pixels)'} Field={'Width'} Setter={setSeriesSettingsBuffer} Type={'number'}
+                            Feedback={"Width must be a positive number"} Valid={() => {
+                                return seriesSettingsBuffer['Width'] > 0;
+                            }} />
+                        <CheckBox<ILineSeries> Record={seriesSettingsBuffer} Label={'Move to Right Axis'} Field={'RightAxis'} Setter={setSeriesSettingsBuffer} />
+                    </>
+                );
+            case 'Cyclic':
+                return (
+                    <>
+                        <HuePicker onChangeComplete={(color) => {
+                            setSeriesSettingsBuffer({ ...seriesSettingsBuffer, Hue: color.hsl.h });
+                        }} color={HsvToHex(seriesSettingsBuffer['Hue'], 0.5, seriesSettingsBuffer['Value'])} triangle={"hide"} />
+                    </>
+                );
+            default:
+                console.error("Unexpected chart type in SettingsOverlay.tsx")
+        }
+
+    }, [props.Plot.Type, seriesSettingsBuffer, setSeriesSettingsBuffer, lineTypeOptions]);
+
     // Loading all SVGIcons into the options menue
     const markerSymbolOptions = [];
     Object.keys(SVGIcons).forEach((iconName) => {
@@ -213,17 +245,7 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                                     </div>
                                     <div className="col" style={{ width: '60%'}} ref={sideSettingRef}>
                                         {seriesSettingsBuffer === undefined ? null :
-                                            <>
-                                                <BlockPicker onChangeComplete={(color) => setSeriesSettingsBuffer({ ...seriesSettingsBuffer, Color: color.hex })} color={seriesSettingsBuffer.Color} triangle={"hide"} />
-                                                <Input<SeriesSettings> Record={seriesSettingsBuffer} Label={'Legend Label'} Field={'Label'} Setter={setSeriesSettingsBuffer} Valid={() => true} />
-                                                <Select<SeriesSettings> Record={seriesSettingsBuffer} Label={'Average Line Style'} Field={'AvgLineType'} Setter={setSeriesSettingsBuffer} Options={lineTypeOptions} />
-                                                <Select<SeriesSettings> Record={seriesSettingsBuffer} Label={'Min/Max Line Style'} Field={'MinMaxLineType'} Setter={setSeriesSettingsBuffer} Options={lineTypeOptions} />
-                                                <Input<SeriesSettings> Record={seriesSettingsBuffer} Label={'Line Width (pixels)'} Field={'Width'} Setter={setSeriesSettingsBuffer} Type={'number'}
-                                                    Feedback={"Width must be a positive number"} Valid={() => {
-                                                        return seriesSettingsBuffer['Width'] > 0;
-                                                }} />
-                                                <CheckBox<SeriesSettings> Record={seriesSettingsBuffer} Label={'Move to Right Axis'} Field={'RightAxis'} Setter={setSeriesSettingsBuffer} />
-                                            </>
+                                            getSettingsList()
                                         }
                                     </div>
                                 </div>

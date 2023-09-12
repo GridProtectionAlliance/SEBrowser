@@ -167,7 +167,7 @@ export namespace TrendSearch {
     interface ITrendPlot {
         // Represents Data Needed by Outer
         TimeFilter: SEBrowser.IReportTimeFilter,
-        Type: 'Line',
+        Type: 'Line' | 'Cyclic',
         Channels: SEBrowser.ITrendChannel[],
         PlotFilter: IMultiCheckboxOption[],
         ID: string,

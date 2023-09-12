@@ -575,6 +575,7 @@
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\AllSettingsModal.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\PlotSettings.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\SettingsOverlay.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\CyclicHistogram.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\LineGraph.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\TrendPlot.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\hooks.ts" />

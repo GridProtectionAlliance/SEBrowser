@@ -88,7 +88,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
     // Button Consts
-    const [hover, setHover] = React.useState<'None'|'Show'|'Hide'|'Cog'|'Single-Line'|'Multi-Line'|'Trash'>('None');
+    const [hover, setHover] = React.useState < 'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Cyclic' | 'Trash'>('None');
 
     // Page effects
     React.useLayoutEffect(() => {
@@ -407,6 +407,22 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     <ToolTip Show={hover === 'Single-Line'} Position={'left'} Theme={'dark'} Target={"Single-Line"}>
                         {<p>Add All Selected Channels to New Line Plot</p>}
                         {selectedSet.size === 0 ? <p>{CrossMark} {'Action Requires Channels to be Selected'}</p> : null}
+                    </ToolTip>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm ${selectedSet.size !== 1 ? ' disabled' : ''}`}
+                        data-tooltip='Cyclic' onMouseEnter={() => setHover('Cyclic')} onMouseLeave={() => setHover('None')}
+                        onClick={() => {
+                            if (selectedSet.size !== 1) return;
+                            const selectedChannels = trendChannels.filter(chan => selectedSet.has(chan.ID));
+                            props.AddNewCharts([{
+                                TimeFilter: timeFilter, Type: 'Cyclic', Channels: selectedChannels, ID: CreateGuid(),
+                                PlotFilter: linePlotOptions
+                            }]);
+                        }}>
+                        <span>{SVGIcons.Cube}</span>
+                    </button>
+                    <ToolTip Show={hover === 'Cyclic'} Position={'left'} Theme={'dark'} Target={"Cyclic"}>
+                        {<p>Add Selected Channel to New Cyclic Data Plot</p>}
+                        {selectedSet.size !== 1 ? <p>{CrossMark} {'Action Requires One Channel to be Selected'}</p> : null}
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm ${selectedSet.size === 0 ? ' disabled' : ''}`}
                         data-tooltip='Multi-Line' onMouseEnter={() => setHover('Multi-Line')} onMouseLeave={() => setHover('None')}
