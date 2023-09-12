@@ -23,13 +23,12 @@
 import React from 'react';
 import _ from 'lodash';
 import { Portal } from 'react-portal';
-import { BlockPicker, HuePicker } from 'react-color';
+import { BlockPicker } from 'react-color';
 import { ILineSeries } from '../TrendPlot/LineGraph';
 import { ICyclicSeries } from '../TrendPlot/CyclicHistogram';
 import { TrendSearch } from '../../../global';
 import { CheckBox, Input, Select, TextArea, StylableSelect } from '@gpa-gemstone/react-forms';
 import { TabSelector, Warning } from '@gpa-gemstone/react-interactive';
-import { HexToHsv, HsvToHex } from '@gpa-gemstone/helper-functions';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import TrendChannelTable from '../TrendChannelTable';
 import { PlotSettings } from './PlotSettings';
@@ -198,9 +197,7 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
             case 'Cyclic':
                 return (
                     <>
-                        <HuePicker onChangeComplete={(color) => {
-                            setSeriesSettingsBuffer({ ...seriesSettingsBuffer, Hue: color.hsl.h });
-                        }} color={HsvToHex(seriesSettingsBuffer['Hue'], 0.5, seriesSettingsBuffer['Value'])} triangle={"hide"} />
+                        <BlockPicker onChangeComplete={(color) => setSeriesSettingsBuffer({ ...seriesSettingsBuffer, Color: color.hex })} color={seriesSettingsBuffer['Color']} triangle={"hide"} />
                     </>
                 );
             default:

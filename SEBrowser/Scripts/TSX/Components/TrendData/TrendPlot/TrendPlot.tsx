@@ -33,7 +33,7 @@ import { SEBrowser, TrendSearch } from '../../../global';
 import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
 import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
 import { SettingsOverlay, SeriesSettings } from '../Settings/SettingsOverlay';
-import { CyclicHistogram } from './CyclicHistogram';
+import { CyclicHistogram, ICyclicSeries } from './CyclicHistogram';
 
 //TODO: move to global
 
@@ -117,9 +117,8 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                         Label: constructLabel(channel), RightAxis: channel.ChannelGroup !== props.Plot.Channels[0].ChannelGroup
                     });
                 case 'Cyclic': {
-                    const color = HexToHsv(SpacedColor(0.9, 0.9));
                     return ({
-                        Channel: channel, Hue: color.h, Value: color.v,
+                        Channel: channel, Color: SpacedColor(0.9, 0.9)
                     });
                 }
             }
@@ -428,7 +427,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     {customSelectButton("symbol", Plus)} {customSelectButton("horizontal", "-")} {customSelectButton("vertical", "|")}
                 </LineGraph> : null}
             {props.Plot.Type === 'Cyclic' ?
-                <CyclicHistogram ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] : null} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
+                <CyclicHistogram ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] as ICyclicSeries : null} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
                     Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel}
                     Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric}
                     OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>

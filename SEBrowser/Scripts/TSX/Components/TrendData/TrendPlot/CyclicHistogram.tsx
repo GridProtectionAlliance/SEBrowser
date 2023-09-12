@@ -27,6 +27,7 @@ import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../Global';
 import { Application } from '@gpa-gemstone/application-typings';
 import { LoadingIcon, ServerErrorIcon } from '@gpa-gemstone/react-interactive';
 import { Button, ColoredBarChart, Plot } from '@gpa-gemstone/react-graph';
+import { HexToHsv } from '@gpa-gemstone/helper-functions';
 
 interface IProps {
     TimeFilter: SEBrowser.IReportTimeFilter,
@@ -45,8 +46,7 @@ interface IProps {
 
 interface ICyclicSeries{
     Channel: TrendSearch.ITrendChannel,
-    Hue?: number,
-    Value?: number
+    Color: string
 }
 
 
@@ -84,6 +84,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
     const [chartData, setChartData] = React.useState<IChartData>(null);
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
     const [oldValues, setOldValues] = React.useState<{ ChannelInfo: ICyclicSeries, TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: null, TimeFilter: null });
+    const [barColor, setBarColor] = React.useState<{ Hue: number, Value: number }>(null);
 
     React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
@@ -111,8 +112,18 @@ const CyclicHistogram = React.memo((props: IProps) => {
     }, [props.ChannelInfo, props.TimeFilter]);
 
     React.useEffect(() => {
-        setTimeLimits(chartData == null ? [0, 1] : [chartData.Series[0][0], chartData.Series[chartData.Series.length - 1][0]]);
+        if (chartData == null) setTimeLimits([0, 1]);
+        else {
+            const averageTimeDuration = (chartData.Series[chartData.Series.length - 1][0] - chartData.Series[0][0]) / chartData.Series.length;
+            setTimeLimits([chartData.Series[0][0], chartData.Series[chartData.Series.length - 1][0] + averageTimeDuration]);
+        }
     }, [chartData]);
+
+    React.useEffect(() => {
+        if (props.ChannelInfo?.Color == null) return;
+        const color = HexToHsv(props.ChannelInfo.Color);
+        setBarColor({ Hue: color.h, Value: color.v})
+    }, [props.ChannelInfo?.Color]);
 
     function GetCyclicData(channel: number, startTime: string, endTime: string): JQuery.jqXHR<TrendSearch.IPQData[]> {
         setGraphStatus('loading');
@@ -135,7 +146,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
         });
     }
 
-    if (graphStatus === 'error' || chartData?.Series == null)
+    if (graphStatus === 'error')
         return (
             <>
                 <div className="row" style={{ alignItems: "center", justifyContent: "center", width: "100%", height: "50%" }}>
@@ -167,7 +178,9 @@ const CyclicHistogram = React.memo((props: IProps) => {
                     defaultTdomain={timeLimits} onSelect={props.OnSelect}
                     legend={'bottom'} useMetricFactors={props.Metric} holdMenuOpen={true} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={true}>
-                    <ColoredBarChart data={chartData.Series} hue={props.ChannelInfo.Hue} value={props.ChannelInfo.Value} barStyle={'fill'} axis={'left'} />
+                    {(chartData?.Series == null || barColor === null) ? null :
+                        <ColoredBarChart data={chartData.Series} hue={barColor.Hue} value={barColor.Value} barStyle={'fill'} axis={'left'} />
+                    }
                     {props.children}
                     {props.AlwaysRender}
                 </Plot>
