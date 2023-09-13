@@ -74,6 +74,24 @@ const TrendChannelTable = (props: IProps) => {
             </button>
         ), [props.RemoveChannel]);
 
+    const sortCallback = React.useCallback(
+        (data: { colKey: string, colField?: string, ascending: boolean }, event: any) => {
+            if (data.colKey === 'undefined')
+                return
+            if (data.colField === sortField)
+                setAscending(!ascending);
+            else
+                setSortField(data.colField);
+        }, [ascending, sortField, setAscending, setSortField]);
+
+    const dragFuncCallback = React.useCallback(
+        (item: any, event: any) => {
+            let channelsTransfered = [];
+            if (props.Type === 'single' || !props.SelectedSet.has(item.row.ID)) channelsTransfered.push(props.TrendChannels.find(channel => channel.ID === item.row.ID));
+            else channelsTransfered = props.TrendChannels.filter(channel => props.SelectedSet.has(channel.ID));
+            event.dataTransfer.setData("text/plain", JSON.stringify(channelsTransfered));
+        }, [props.Type, props.Type === 'single' ? props.Selected : props.SelectedSet, props.TrendChannels]);
+
     React.useEffect(() => {
         const newCols: Column<TrendSearch.ITrendChannel>[] = [...allCols];
         const index: number = newCols.findIndex((col) => col.key === "RemoveChannel");
@@ -91,25 +109,6 @@ const TrendChannelTable = (props: IProps) => {
         setTrendChannels(_.orderBy(props.TrendChannels, sortField, (ascending ? 'asc' : 'desc')));
     }, [props.TrendChannels, sortField, ascending]);
 
-    const sortCallback = React.useCallback(
-        (data: { colKey: string, colField?: string, ascending: boolean }, event: any) => {
-            if (data.colKey === 'undefined')
-                return
-            if (data.colField === sortField)
-                setAscending(!ascending);
-            else
-                setSortField(data.colField);
-        }, [ascending, sortField, setAscending, setSortField]);
-
-    let onDragStartFunc = undefined;
-    if (props.EnableDragDrop ?? false)
-        onDragStartFunc = (item: any, event: any) => {
-            let channelsTransfered = [];
-            if (props.Type === 'single' || !props.SelectedSet.has(item.row.ID)) channelsTransfered.push(props.TrendChannels.find(channel => channel.ID === item.row.ID));
-            else channelsTransfered = props.TrendChannels.filter(channel => props.SelectedSet.has(channel.ID));
-            event.dataTransfer.setData("text/plain", JSON.stringify(channelsTransfered));
-        };
-
     return (
         <ConfigurableTable<TrendSearch.ITrendChannel>
             defaultColumns={["Name", "MeterName", "Description", "Phase", (props.RemoveChannel !== undefined ? "RemoveChannel" : "ChannelGroup")]}
@@ -119,7 +118,7 @@ const TrendChannelTable = (props: IProps) => {
             sortKey={sortField}
             ascending={ascending}
             onSort={sortCallback}
-            onDragStart={onDragStartFunc}
+            onDragStart={props.EnableDragDrop ? dragFuncCallback : undefined}
             onClick={(item, event) => {
                 event.preventDefault();
                 // Handling on single selected case

@@ -24,7 +24,7 @@ import React from 'react';
 import _ from 'lodash';
 import queryString from 'querystring';
 import moment from 'moment';
-import { CreateGuid, SpacedColor, HexToHsv } from '@gpa-gemstone/helper-functions';
+import { CreateGuid, SpacedColor } from '@gpa-gemstone/helper-functions';
 import { TrashCan, Pencil, Plus, SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, AxisMap } from '@gpa-gemstone/react-graph';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
@@ -42,8 +42,11 @@ interface IContainerProps {
     Plot: TrendSearch.ITrendPlot,
     SetPlot: (id: string, record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)) => void,
     RemovePlot: (id: string) => void,
+    SplicePlot: (idNear: string, idMove: string, isBeforeNear: boolean) => void,
     // Manage Overlay
     HandleOverlay: (open: boolean) => void,
+    // Drag Mode
+    DragMode: boolean,
     OverlayPortalID: string
 }
 
@@ -78,6 +81,9 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     const [eventMarkers, setEventMarkers] = React.useState<TrendSearch.IEventMarker[]>([]);
     const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
 
+    // Plot Shuffling Vars
+    const [plotHovered, setPlotHovered] = React.useState <'none'|'left'|'right'>('none');
+
     // Get Heights and Widths
     React.useLayoutEffect(() => {
         setChartWidth(chartRef?.current?.offsetWidth ?? 500);
@@ -94,6 +100,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
 
     // Set default channel settings
     React.useEffect(() => {
+        if (props?.Plot?.Channels?.some === undefined) return;
         // These two are only used in the label construction
         // If two channels are found with different meternames, we must append the meter name to the channel name
         const useMeterAppend: boolean = props.Plot.Channels.some((channel) =>
@@ -258,22 +265,28 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         changedProperties.current.add(field);
     }, [props.SetPlot, changedProperties]);
 
-    const handleChannelDrop = React.useCallback((event: any) => {
+    const handleDropChannel = React.useCallback((event: any) => {
         event.preventDefault();
-        let allChannels = props.Plot.Channels.concat(JSON.parse(event.dataTransfer.getData('text/plain')));
-        const channelIdSet = new Set<number>();
-        // Get uniques only
-        allChannels = allChannels.filter(channel => {
-            if (channelIdSet.has(channel.ID))
-                return false;
-            channelIdSet.add(channel.ID);
-            return true;
-        });
-        const newPlot: TrendSearch.ITrendPlot = { ...props.Plot, Channels: allChannels };
-        props.SetPlot(props.Plot.ID, newPlot, 'Channels');
+        // Note: if we're in dragmode, it shouldn't be the wrong data coming in but we should check anyway
+        if (!props.DragMode) {
+            const data = JSON.parse(event.dataTransfer.getData('text/plain'));
+            if (data?.length == null) return; 
+            let allChannels = props.Plot.Channels.concat(data);
+            const channelIdSet = new Set<number>();
+            // Get uniques only
+            allChannels = allChannels.filter(channel => {
+                if (channelIdSet.has(channel.ID))
+                    return false;
+                channelIdSet.add(channel.ID);
+                return true;
+            });
+            const newPlot: TrendSearch.ITrendPlot = { ...props.Plot, Channels: allChannels };
+            props.SetPlot(props.Plot.ID, newPlot, 'Channels');
+        }
     }, [props.Plot.Channels, props.SetPlot]);
 
-    const handleDragOver = React.useCallback((event: any) => {
+    // Used in both drag-n-drops
+    const handleDragOverChannel = React.useCallback((event: any) => {
         event.preventDefault();
     }, []);
 
@@ -372,14 +385,23 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         newList[index]["value"] = value;
         setHorizontalMarkers(newList);
     }, [horizontalMarkers, setHorizontalMarkers]);
-
+    
     const setHoverPosition = React.useCallback((xArg: number, yArg: number) => {
         setMousePosition({x: xArg, y: yArg})
     }, [setMousePosition]);
 
-    return (
-        <div className="col" style={{ width: (props.Plot.Width ?? 100) - 1 + '%', height: (props.Plot.Height ?? 50) - 1 + '%', float: 'left' }} ref={chartRef} onDragOver={handleDragOver} onDrop={handleChannelDrop}>
-            {props.Plot.Type === 'Line' ?
+    let body = null;
+    if (props.DragMode)
+        body = (
+            <>
+                <h4 style={{ textAlign: "center", userSelect: 'none' }}>{props.Plot.Title}</h4>
+                <DragHalf isLeft={true}  plotID={props.Plot.ID} splicePlot={props.SplicePlot} />
+                <DragHalf isLeft={false} plotID={props.Plot.ID} splicePlot={props.SplicePlot} />
+            </>
+        );
+    else switch (props.Plot.Type) {
+        case 'Line':
+            body = (
                 <LineGraph ChannelInfo={plotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
                     Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel}
                     Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric}
@@ -392,7 +414,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     {verticalMarkers.map((marker, i) =>
                         <VerticalMarker key={"Vert_" + i}
                             Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
-                            setValue={(value) => { if (customSelect !== "drag") return; setVertical(marker.ID, value); }}/>
+                            setValue={(value) => { if (customSelect !== "drag") return; setVertical(marker.ID, value); }} />
                     )}
                     {horizontalMarkers.map((marker, i) =>
                         <HorizontalMarker key={"Hori_" + i}
@@ -425,8 +447,11 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                             </div>
                         </Infobox>}
                     {customSelectButton("symbol", Plus)} {customSelectButton("horizontal", "-")} {customSelectButton("vertical", "|")}
-                </LineGraph> : null}
-            {props.Plot.Type === 'Cyclic' ?
+                </LineGraph>
+            );
+            break;
+        case ('Cyclic'):
+            body = (
                 <CyclicHistogram ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] as ICyclicSeries : null} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
                     Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel}
                     Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric}
@@ -472,11 +497,65 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                             </div>
                         </Infobox>}
                     {customSelectButton("symbol", Plus)} {customSelectButton("horizontal", "-")} {customSelectButton("vertical", "|")}
-                </CyclicHistogram> : null}
+                </CyclicHistogram>
+            );
+            break;
+        }
+
+    return (
+        <div className="col" style={{ width: (props.Plot.Width ?? 100) - 1 + '%', height: (props.Plot.Height ?? 50) - 1 + '%', float: 'left' }}
+            ref={chartRef} onDragOver={handleDragOverChannel} onDrop={handleDropChannel}>
+            {body}
             <SettingsOverlay SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings} SetShow={setShowSettings} Show={showSettings} SetPlot={handleSetPlot}
             OverlayPortalID={props.OverlayPortalID} Plot={props.Plot} Markers={symbolicMarkers} SetMarkers={setSymbolicMarkers} />
         </div>
     );
 });
+
+interface IDragHalf {
+    isLeft: boolean,
+    plotID: string,
+    splicePlot: (idNear: string, idOf: string, beforeNear: boolean) => void
+}
+const DragHalf: React.FunctionComponent<IDragHalf> = (props) => {
+    const [isHovered, setHovered] = React.useState<boolean>(false);
+
+    const handleDrop = React.useCallback((event: any) => {
+        event.preventDefault();
+        setHovered(false);
+        const data = JSON.parse(event.dataTransfer.getData('text/plain'));
+        if (data?.length != null) return;
+        if (props.plotID === data.ID) return;
+        props.splicePlot(props.plotID, data.ID, props.isLeft);
+    }, [props.plotID, props.splicePlot, props.isLeft]);
+
+    const handleDragOver = React.useCallback((event: any) => {
+        event.preventDefault();
+    }, []);
+
+    const handleDragEnter = React.useCallback(() => {
+        setHovered(true);
+    }, [setHovered]);
+
+    const handleDragLeave = React.useCallback(() => {
+        setHovered(false);
+    }, [setHovered]);
+
+    const handleDragStart = React.useCallback((event: any) => {
+        event.dataTransfer.setData("text/plain", JSON.stringify({ ID: props.plotID }));
+    }, [isHovered, props.plotID]);
+
+    return (
+        <div className="col" style={{ height: 'calc(100% - 43px)', width: '50%', padding: '0px', float: (props.isLeft ? 'left' : 'right') }}
+            onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDragStart={handleDragStart} onDrop={handleDrop} draggable={true}>
+            <div className="col" style={{
+                backgroundColor: "grey", borderRadius: (props.isLeft ? '25px 0px 0px 25px' : '0px 25px 25px 0px'),
+                width: 'calc(100% - 40px)', height: '100%', float: (props.isLeft ? 'right' : 'left'), userSelect: 'none' }} />
+            <div className="col" style={{ width: '40px', height: '100%', justifyContent: 'center', float: (props.isLeft ? 'left' : 'right'), userSelect: 'none' }}>
+                <div style={{ backgroundColor: (isHovered ? "black" : undefined), height: '100%', width: '5px' }} />
+            </div>
+        </div>
+    );
+}
 
 export default TrendPlot;

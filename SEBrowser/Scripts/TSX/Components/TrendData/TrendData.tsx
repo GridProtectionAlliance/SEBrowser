@@ -48,6 +48,7 @@ const TrendData = () => {
         ShowEvents: false
     });
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
+    const [plotsMovable, setPlotsMovable] = React.useState<boolean>(false);
     const overlayPortalID = "TrendDataChartPortal";
     const overlayDrawer = "TrendDataNavbar";
     const defaultsApplied = ["Title", "XAxisLabel", "YLeftLabel", "YRightLabel", "Metric", "Width", "Height", "ShowEvents"];
@@ -64,14 +65,32 @@ const TrendData = () => {
         const newList = [...plotList];
         newList.splice(index, 1);
         setPlotList(newList);
-    }), [plotList]);
+    }), [plotList, setPlotList]);
 
     const setPlot = React.useCallback(((ID: string, record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)) => {
         const index = plotList.findIndex(item => item.ID === ID);
         const newList: any[] = [...plotList];
         newList[index][field] = record[field] as any;
         setPlotList(newList);
-    }), [plotList]);
+    }), [plotList, setPlotList]);
+
+    const movePlot = React.useCallback(((idNear: string, idMove: string, isBeforeNear: boolean) => {
+        if (idNear === idMove) return;
+        const newList: any[] = [...plotList];
+        const oldIndex = newList.findIndex(item => item.ID === idMove);
+        if (oldIndex < 0) {
+            console.error(`Could not find plot with ID ${idMove} when trying to move plot.`);
+            return;
+        }
+        const movedItem = newList.splice(oldIndex, 1);
+        const newIndex = newList.findIndex(item => item.ID === idNear);
+        if (oldIndex < 0) {
+            console.error(`Could not find plot with ID ${idNear} when trying to move plot.`);
+            return;
+        }
+        newList.splice(newIndex + (isBeforeNear ? 0 : 1), 0, movedItem[0]);
+        setPlotList(newList);
+    }), [plotList, setPlotList]);
 
     const setAllPlot = React.useCallback(((record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)) => {
         const newList: any[] = [...plotList];
@@ -117,10 +136,12 @@ const TrendData = () => {
                 RemoveAllCharts={removeAllCharts}
                 TimeFilter={defaultPlotSettings.TimeFilter}
                 LinePlot={defaultPlotSettings.PlotFilter}
+                Movable={plotsMovable}
+                SetMovable={setPlotsMovable}
             />
             <div style={{ width: '100%', height: (showNav ? 'calc(100% - ' + navHeight + 'px)' : 'calc( 100% - 52px)'), overflowY: 'scroll' }}>
-                {plotList.map(element => <TrendPlot key={element.ID}
-                    Plot={element} SetPlot={setPlot} RemovePlot={removePlot}
+                {plotList.map(element => <TrendPlot key={element.ID} DragMode={plotsMovable}
+                    Plot={element} SetPlot={setPlot} RemovePlot={removePlot} SplicePlot={movePlot}
                     OverlayPortalID={overlayPortalID} HandleOverlay={closeSettings}
                 />)}
             </div>
