@@ -40,6 +40,7 @@ interface IProps {
     Metric?: boolean,
     XAxisLabel?: string,
     YAxisLabel?: string,
+    Cursor?: string,
     AlwaysRender: React.ReactNode,
     children: React.ReactNode
 }
@@ -175,7 +176,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
                 <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={29} />
                 {props.Title !== undefined ? <h4 style={{ textAlign: "center", width: `${props.Width}px` }}>{props.Title}</h4> : null}
                 <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} showBorder={false}
-                    defaultTdomain={timeLimits} onSelect={props.OnSelect}
+                    defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor}
                     legend={'bottom'} useMetricFactors={props.Metric} holdMenuOpen={true} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={true}>
                     {(chartData?.Series == null || barColor === null) ? null :
