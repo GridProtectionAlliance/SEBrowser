@@ -29,7 +29,7 @@ import { SelectEventSearchByID } from './../EventSearchSlice';
 import { SelectWidgetCategories } from '../../SettingsSlice';
 import { TabSelector } from '@gpa-gemstone/react-interactive';
 import WidgetRouter from '../../../../../EventWidgets/TSX/WidgetWrapper';
-
+import {EventWidget} from '../../../../../EventWidgets/TSX/global';
 interface IProps {
     EventID: number,
     InitialTab?: string,
@@ -43,7 +43,7 @@ interface IProps {
 export default function EventPreviewPane(props: IProps) {
     const categories = useAppSelector(SelectWidgetCategories);
     const [tab, setTab] = React.useState<string>(props.InitialTab == null || props.InitialTab == undefined ? '' : props.InitialTab);
-    const [widgets, setWidgets] = React.useState<SEBrowser.IWidgetView[]>([]);
+    const [widgets, setWidgets] = React.useState<EventWidget.IWidgetView[]>([]);
     const event: any = useAppSelector((state: Redux.StoreState) => SelectEventSearchByID(state, props.EventID));
     const [roles, setRoles] = React.useState<string[]>([]);
 
