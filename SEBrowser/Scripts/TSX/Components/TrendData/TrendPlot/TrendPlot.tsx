@@ -76,13 +76,11 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
     type customSelects = "drag" | "symbol" | "horizontal" | "vertical";
     const [customSelect, setCustomSelect] = React.useState<customSelects>("drag");
+    const [customCursor, setCustomCursor] = React.useState<string>(undefined);
 
     // Event Information
     const [eventMarkers, setEventMarkers] = React.useState<TrendSearch.IEventMarker[]>([]);
     const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
-
-    // Plot Shuffling Vars
-    const [plotHovered, setPlotHovered] = React.useState <'none'|'left'|'right'>('none');
 
     // Get Heights and Widths
     React.useLayoutEffect(() => {
@@ -304,10 +302,11 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             {Pencil}
         </Button>);
 
-    const customSelectButton = (selectMode: customSelects, symbol: string) => {
+    const customSelectButton = (selectMode: customSelects, symbol: string, cursor?: string) => {
         return (<Button onClick={() => {
             setCustomSelect(selectMode);
-            return () => { setCustomSelect("drag"); };
+            setCustomCursor(cursor); 
+            return () => { setCustomSelect("drag"); setCustomCursor(undefined); };
         }} isSelect={true}>
             {symbol}
         </Button>);
@@ -390,122 +389,123 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         setMousePosition({x: xArg, y: yArg})
     }, [setMousePosition]);
 
-    let body = null;
+    let plotBody = null;
     if (props.DragMode)
-        body = (
+        plotBody = (
             <>
                 <h4 style={{ textAlign: "center", userSelect: 'none' }}>{props.Plot.Title}</h4>
-                <DragHalf isLeft={true}  plotID={props.Plot.ID} splicePlot={props.SplicePlot} />
+                <DragHalf isLeft={true} plotID={props.Plot.ID} splicePlot={props.SplicePlot} />
                 <DragHalf isLeft={false} plotID={props.Plot.ID} splicePlot={props.SplicePlot} />
             </>
         );
-    else switch (props.Plot.Type) {
-        case 'Line':
-            body = (
-                <LineGraph ChannelInfo={plotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
-                    Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel}
-                    Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric}
-                    OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
-                    {props.Plot.ShowEvents ? eventMarkers.map((marker, i) =>
-                        <VerticalMarker key={"Event_" + i}
-                            Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
-                            onClick={() => { if (customSelect !== "drag") return; navigateEvent(marker); }} />
-                    ) : null}
-                    {verticalMarkers.map((marker, i) =>
-                        <VerticalMarker key={"Vert_" + i}
-                            Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
-                            setValue={(value) => { if (customSelect !== "drag") return; setVertical(marker.ID, value); }} />
-                    )}
-                    {horizontalMarkers.map((marker, i) =>
-                        <HorizontalMarker key={"Hori_" + i}
-                            Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
-                            setValue={(value) => { if (customSelect !== "drag") return; setHorizontal(marker.ID, value); }} />
-                    )}
-                    {symbolicMarkers.map((marker, i) =>
-                        <SymbolicMarker key={"Marker_" + i}
-                            xPos={marker.xPos} yPos={marker.yPos} radius={marker.radius}
-                            setPosition={(x, y) => { if (customSelect !== "drag") return; setMarker(marker.ID, x, 'xPos'); setMarker(marker.ID, y, 'yPos'); setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
-                            {marker.symbol}
-                        </SymbolicMarker>
-                    )}
-                    {symbolicMarkers.map((marker, i) =>
-                        <Infobox key={"Info_" + i} origin="upper-center"
-                            x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
-                            width={100} height={80} offset={15}
-                            setPosition={(x, y) => { if (customSelect !== "drag") return; setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
-                            <div style={{ width: '100px', height: '80px', background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
-                                {`${moment(marker.xPos).format(marker.format)}\n${marker.yPos.toFixed(2)}\n${marker.note}`}
-                            </div>
-                        </Infobox>
-                    )}
-                    {customSelect === "drag" ? null :
-                        <Infobox key={"MouseOver"} origin="upper-right"
-                            x={chartWidth - 20} y={50} opacity={0.4} width={120} height={48} usePixelPositioning={true}
-                            onMouseMove={setHoverPosition}>
-                            <div style={{ width: '120px', height: '48px', background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: 0.4 }}>
-                                {`${moment(mousePosition.x).format("HH:mm:SS")}\n${mousePosition.y.toFixed(2)}`}
-                            </div>
-                        </Infobox>}
-                    {customSelectButton("symbol", Plus)} {customSelectButton("horizontal", "-")} {customSelectButton("vertical", "|")}
-                </LineGraph>
-            );
-            break;
-        case ('Cyclic'):
-            body = (
-                <CyclicHistogram ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] as ICyclicSeries : null} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
-                    Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel}
-                    Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric}
-                    OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
-                    {props.Plot.ShowEvents ? eventMarkers.map((marker, i) =>
-                        <VerticalMarker key={"Event_" + i}
-                            Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
-                            onClick={() => { if (customSelect !== "drag") return; navigateEvent(marker); }} />
-                    ) : null}
-                    {verticalMarkers.map((marker, i) =>
-                        <VerticalMarker key={"Vert_" + i}
-                            Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
-                            setValue={(value) => { if (customSelect !== "drag") return; setVertical(marker.ID, value); }} />
-                    )}
-                    {horizontalMarkers.map((marker, i) =>
-                        <HorizontalMarker key={"Hori_" + i}
-                            Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
-                            setValue={(value) => { if (customSelect !== "drag") return; setHorizontal(marker.ID, value); }} />
-                    )}
-                    {symbolicMarkers.map((marker, i) =>
-                        <SymbolicMarker key={"Marker_" + i}
-                            xPos={marker.xPos} yPos={marker.yPos} radius={marker.radius}
-                            setPosition={(x, y) => { if (customSelect !== "drag") return; setMarker(marker.ID, x, 'xPos'); setMarker(marker.ID, y, 'yPos'); setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
-                            {marker.symbol}
-                        </SymbolicMarker>
-                    )}
-                    {symbolicMarkers.map((marker, i) =>
-                        <Infobox key={"Info_" + i} origin="upper-center"
-                            x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
-                            width={100} height={80} offset={15}
-                            setPosition={(x, y) => { if (customSelect !== "drag") return; setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
-                            <div style={{ width: '100px', height: '80px', background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
-                                {`${moment(marker.xPos).format(marker.format)}\n${marker.yPos.toFixed(2)}\n${marker.note}`}
-                            </div>
-                        </Infobox>
-                    )}
-                    {customSelect === "drag" ? null :
-                        <Infobox key={"MouseOver"} origin="upper-right"
-                            x={chartWidth - 20} y={50} opacity={0.4} width={120} height={48} usePixelPositioning={true}
-                            onMouseMove={setHoverPosition}>
-                            <div style={{ width: '120px', height: '48px', background: 'white', overflow: 'auto', whiteSpace: 'pre-wrap', opacity: 0.4 }}>
-                                {`${moment(mousePosition.x).format("HH:mm:SS")}\n${mousePosition.y.toFixed(2)}`}
-                            </div>
-                        </Infobox>}
-                    {customSelectButton("symbol", Plus)} {customSelectButton("horizontal", "-")} {customSelectButton("vertical", "|")}
-                </CyclicHistogram>
-            );
-            break;
+    else {
+        switch (props.Plot.Type) {
+            case 'Line':
+                plotBody = (
+                    <LineGraph ChannelInfo={plotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
+                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel}
+                        Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor}
+                        OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
+                        {props.Plot.ShowEvents ? eventMarkers.map((marker, i) =>
+                            <VerticalMarker key={"Event_" + i}
+                                Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
+                                onClick={() => { if (customSelect !== "drag") return; navigateEvent(marker); }} />
+                        ) : null}
+                        {verticalMarkers.map((marker, i) =>
+                            <VerticalMarker key={"Vert_" + i}
+                                Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
+                                setValue={(value) => { if (customSelect !== "drag") return; setVertical(marker.ID, value); }} />
+                        )}
+                        {horizontalMarkers.map((marker, i) =>
+                            <HorizontalMarker key={"Hori_" + i}
+                                Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
+                                setValue={(value) => { if (customSelect !== "drag") return; setHorizontal(marker.ID, value); }} />
+                        )}
+                        {symbolicMarkers.map((marker, i) =>
+                            <SymbolicMarker key={"Marker_" + i}
+                                xPos={marker.xPos} yPos={marker.yPos} radius={marker.radius}
+                                setPosition={(x, y) => { if (customSelect !== "drag") return; setMarker(marker.ID, x, 'xPos'); setMarker(marker.ID, y, 'yPos'); setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
+                                {marker.symbol}
+                            </SymbolicMarker>
+                        )}
+                        {symbolicMarkers.map((marker, i) =>
+                            <Infobox key={"Info_" + i} origin="upper-center"
+                                x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
+                                childId={"Info_" + i} offset={15}
+                                setPosition={(x, y) => { if (customSelect !== "drag") return; setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
+                                <div id={"Info_" + i} style={{ display: 'inline-block', background: 'white', overflow: 'visible', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
+                                    {`${moment(marker.xPos).format(marker.format)}\n${marker.yPos.toFixed(2)}\n${marker.note}`}
+                                </div>
+                            </Infobox>
+                        )}
+                        {customSelect === "drag" ? null :
+                            <Infobox key={"MouseOver"} origin="upper-right"
+                                x={chartWidth - 20} y={50} opacity={0.4} childId={"mouseInfo"} usePixelPositioning={true}
+                                onMouseMove={setHoverPosition}>
+                                <div id={"mouseInfo"} style={{ display: 'inline-block', background: 'white', overflow: 'visible', whiteSpace: 'pre-wrap', opacity: 0.7 }}>
+                                    {`${moment(mousePosition.x).format("HH:mm:SS")}\n${mousePosition.y.toFixed(2)}`}
+                                </div>
+                            </Infobox>}
+                        {customSelectButton("symbol", Plus, "crosshair")} {customSelectButton("horizontal", "-", "vertical-text")} {customSelectButton("vertical", "|", "text")}
+                    </LineGraph>
+                );
+                break;
+            case ('Cyclic'):
+                plotBody = (
+                    <CyclicHistogram ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] as ICyclicSeries : null} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
+                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel}
+                        Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor}
+                        OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
+                        {props.Plot.ShowEvents ? eventMarkers.map((marker, i) =>
+                            <VerticalMarker key={"Event_" + i}
+                                Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
+                                onClick={() => { if (customSelect !== "drag") return; navigateEvent(marker); }} />
+                        ) : null}
+                        {verticalMarkers.map((marker, i) =>
+                            <VerticalMarker key={"Vert_" + i}
+                                Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
+                                setValue={(value) => { if (customSelect !== "drag") return; setVertical(marker.ID, value); }} />
+                        )}
+                        {horizontalMarkers.map((marker, i) =>
+                            <HorizontalMarker key={"Hori_" + i}
+                                Value={marker.value} color={"#E41000"} lineStyle={':'} width={4}
+                                setValue={(value) => { if (customSelect !== "drag") return; setHorizontal(marker.ID, value); }} />
+                        )}
+                        {symbolicMarkers.map((marker, i) =>
+                            <SymbolicMarker key={"Marker_" + i}
+                                xPos={marker.xPos} yPos={marker.yPos} radius={marker.radius}
+                                setPosition={(x, y) => { if (customSelect !== "drag") return; setMarker(marker.ID, x, 'xPos'); setMarker(marker.ID, y, 'yPos'); setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
+                                {marker.symbol}
+                            </SymbolicMarker>
+                        )}
+                        {symbolicMarkers.map((marker, i) =>
+                            <Infobox key={"Info_" + i} origin="upper-center"
+                                x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
+                                childId={"Info_" + i} offset={15}
+                                setPosition={(x, y) => { if (customSelect !== "drag") return; setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
+                                <div id={"Info_" + i} style={{ display: 'inline-block', background: 'white', overflow: 'visible', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
+                                    {`${moment(marker.xPos).format(marker.format)}\n${marker.yPos.toFixed(2)}\n${marker.note}`}
+                                </div>
+                            </Infobox>
+                        )}
+                        {customSelect === "drag" ? null :
+                            <Infobox key={"MouseOver"} origin="upper-right"
+                                x={chartWidth - 20} y={50} opacity={0.4} childId={"mouseInfo"} usePixelPositioning={true}
+                                onMouseMove={setHoverPosition}>
+                                <div id={"mouseInfo"} style={{ display: 'inline-block', background: 'white', overflow: 'visible', whiteSpace: 'pre-wrap', opacity: 0.7 }}>
+                                    {`${moment(mousePosition.x).format("HH:mm:SS")}\n${mousePosition.y.toFixed(2)}`}
+                                </div>
+                            </Infobox>}
+                        {customSelectButton("symbol", Plus, "crosshair")} {customSelectButton("horizontal", "-", "vertical-text")} {customSelectButton("vertical", "|", "text")}
+                    </CyclicHistogram>
+                );
+                break;
         }
-
+    }
     return (
         <div className="col" style={{ width: (props.Plot.Width ?? 100) - 1 + '%', height: (props.Plot.Height ?? 50) - 1 + '%', float: 'left' }}
             ref={chartRef} onDragOver={handleDragOverChannel} onDrop={handleDropChannel}>
-            {body}
+            {plotBody}
             <SettingsOverlay SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings} SetShow={setShowSettings} Show={showSettings} SetPlot={handleSetPlot}
             OverlayPortalID={props.OverlayPortalID} Plot={props.Plot} Markers={symbolicMarkers} SetMarkers={setSymbolicMarkers} />
         </div>
