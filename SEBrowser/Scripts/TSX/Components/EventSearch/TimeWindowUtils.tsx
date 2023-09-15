@@ -40,19 +40,36 @@ export function momentUnit(unit: number) {
     return 'ms';
 }
 
-export function findAppropriateUnit(startTime: moment.Moment, endTime: moment.Moment, unit?: number) {
+export function findAppropriateUnit(startTime: moment.Moment, endTime: moment.Moment, unit?: number, useHalfWindow?: boolean) {
 
     if (unit === undefined) 
         unit = 7;
 
     let diff = endTime.diff(startTime, momentUnit(unit), true);
+    if (useHalfWindow !== undefined && useHalfWindow)
+        diff = diff / 2;
+
     for (let i = unit; i >= 1; i--) {
+        if (i == 6) // Remove month as appropriate due to innacuracy in definition (31/30/28/29 days)
+            continue;
         if (Number.isInteger(diff)) {
             return [i, diff];
         }
-        diff = endTime.diff(startTime, momentUnit(i - 1), true);
-        if (diff > 65000)
-            return [i, Math.round(endTime.diff(startTime, momentUnit(i), true))];
+        let nextI = i - 1;
+        if (nextI == 6)
+            nextI = 5;
+          
+        diff = endTime.diff(startTime, momentUnit(nextI), true);
+        if (useHalfWindow !== undefined && useHalfWindow)
+            diff = diff / 2;
+
+        if (diff > 65000) {
+            diff = endTime.diff(startTime, momentUnit(i), true);
+            if (useHalfWindow !== undefined && useHalfWindow)
+                diff = diff / 2;
+            return [i, Math.round(diff)];
+        }
+            
     }
 
     return [0, Math.round(diff)];
