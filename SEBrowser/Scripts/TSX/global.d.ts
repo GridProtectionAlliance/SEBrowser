@@ -118,19 +118,7 @@ export namespace SEBrowser {
     // Temporary until next gpa-gemstone update
     interface EventType extends XDA.Types.EventType { ShowInFilter: boolean, Category?: string, Name: string }
 
-    interface IWidget<T> {
-        eventID: number,
-        setting?: T,
-        width?: number,
-        maxHeight?: number,
-        disturbanceID?: number,
-        faultID?: number,
-        startTime?: number
-    }
-
     interface IWidgetCategory { ID: number, Name: string, OrderBy: number }
-
-    interface IWidgetView { ID: number, CategoryID: number, Name: string, setting: object, Enabled: boolean }
 }
 
 export namespace OpenXDA {
