@@ -434,7 +434,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                                 childId={"Info_" + i} offset={15}
                                 setPosition={(x, y) => { if (customSelect !== "drag") return; setMarker(marker.ID, x, 'xBox'); setMarker(marker.ID, y, 'yBox'); }}>
                                 <div id={"Info_" + i} style={{ display: 'inline-block', background: 'white', overflow: 'visible', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
-                                    {`${moment(marker.xPos).format(marker.format)}\n${marker.yPos.toFixed(2)}\n${marker.note}`}
+                                    {`${moment.utc(marker.xPos).format(marker.format)}\n${marker.yPos.toFixed(2)}\n${marker.note}`}
                                 </div>
                             </Infobox>
                         )}
@@ -443,7 +443,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                                 x={chartWidth - 20} y={50} opacity={0.4} childId={"mouseInfo"} usePixelPositioning={true}
                                 onMouseMove={setHoverPosition}>
                                 <div id={"mouseInfo"} style={{ display: 'inline-block', background: 'white', overflow: 'visible', whiteSpace: 'pre-wrap', opacity: 0.7 }}>
-                                    {`${moment(mousePosition.x).format("HH:mm:SS")}\n${mousePosition.y.toFixed(2)}`}
+                                    {`${moment.utc(mousePosition.x).format("HH:mm:SS")}\n${mousePosition.y.toFixed(2)}`}
                                 </div>
                             </Infobox>}
                         {customSelectButton("symbol", Plus, "crosshair")} {customSelectButton("horizontal", "-", "vertical-text")} {customSelectButton("vertical", "|", "text")}
