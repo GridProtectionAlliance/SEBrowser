@@ -23,16 +23,13 @@
 import React from 'react';
 import _ from 'lodash';
 import { Portal } from 'react-portal';
-import { BlockPicker } from 'react-color';
 import { ILineSeries } from '../TrendPlot/LineGraph';
 import { ICyclicSeries } from '../TrendPlot/CyclicHistogram';
 import { TrendSearch } from '../../../global';
-import { CheckBox, Input, Select, TextArea, StylableSelect } from '@gpa-gemstone/react-forms';
 import { TabSelector, Warning } from '@gpa-gemstone/react-interactive';
-import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
-import TrendChannelTable from '../TrendChannelTable';
 import { PlotSettings } from './PlotSettings';
-import TrendMarkerTable from '../TrendMarkerTable';
+import { MarkerTab } from './OverlayTabs/MarkerTab';
+import { ChannelTab } from './OverlayTabs/ChannelTab';
 
 interface IOverlayProps {
     // Manage Plot
@@ -53,164 +50,38 @@ interface IOverlayProps {
 export type SeriesSettings = ILineSeries | ICyclicSeries;
 
 const SettingsOverlay = React.memo((props: IOverlayProps) => {
-    // Sizing Variables
-    const sideSettingRef = React.useRef(null);
-    const [settingsHeight, setSettingsHeight] = React.useState<number>(500);
-
-    const sideMarkerRef = React.useRef(null);
-    const [markersHeight, setMarkersHeight] = React.useState<number>(500);
-
     // Settings Controls
     const [tab, setTab] = React.useState<string>("plot");
-    const [showWarning, setShowWarning] = React.useState<boolean>(false);
     const [confirmDisabled, setConfirmDisabled] = React.useState<boolean>(false);
-    const [removeId, setRemoveId] = React.useState<number>(undefined);
-    const [currentSettingsChannel, setCurrentSettingsChannel] = React.useState<number>(undefined);
 
-    const [currentSettingsMarker, setCurrentSettingsMarker] = React.useState<string>(undefined);
-    const [currentMarker, setCurrentMarker] = React.useState<TrendSearch.IMarker>(undefined);
-    const [markersBuffer, setMarkersBuffer] = React.useState<TrendSearch.IMarker[]>([]);
 
     // Settings Buffers
-    const [plotSettingsBuffer, setPlotSettingsBuffer] = React.useState<TrendSearch.ITrendPlot>(null);
-    const [seriesSettingsBuffer, setSeriesSettingsBuffer] = React.useState<SeriesSettings>(undefined);
-    const [seriesSettingsMultiBuffer, setSeriesSettingsMultiBuffer] = React.useState<SeriesSettings[]>([]);
-
-    // Get Heights and Widths
-    React.useLayoutEffect(() => {
-        const baseHeight = sideSettingRef?.current?.offsetHeight ?? 400;
-        setSettingsHeight(baseHeight < 400 ? 400 : baseHeight);
-        const baseMarkerHeight = sideMarkerRef?.current?.offsetHeight ?? 400;
-        setMarkersHeight(baseMarkerHeight < 400 ? 400 : baseMarkerHeight);
-    });
-
-    // Create Settings Variables
-    React.useEffect(() => {
-        clearBuffers();
-    }, [props.Plot.Type, props.Plot.Channels]);
+    const [plotBuffer, setPlotBuffer] = React.useState<TrendSearch.ITrendPlot>(null);
+    const [seriesBuffer, setSeriesBuffer] = React.useState<SeriesSettings[]>([]);
+    const [channelsBuffer, setChannelsBuffer] = React.useState<TrendSearch.ITrendChannel[]>([]);
+    const [markersBuffer, setMarkersBuffer] = React.useState<TrendSearch.IMarker[]>([]);
 
     // Create Settings Buffers
     React.useEffect(() => {
-        setPlotSettingsBuffer(props.Plot);
+        setPlotBuffer(props.Plot);
     }, [props.Plot]);
+
+    React.useEffect(() => {
+        setSeriesBuffer(props.SeriesSettings);
+    }, [props.SeriesSettings]);
+
+    React.useEffect(() => {
+        setChannelsBuffer(props.Plot.Channels);
+    }, [props.Plot.Channels]);
 
     React.useEffect(() => {
         setMarkersBuffer(props.Markers);
     }, [props.Markers]);
 
-    React.useEffect(() => {
-        if (currentMarker !== undefined) setMarkersBuffer(getNewMarkerList(currentMarker));
-
-        setCurrentMarker(markersBuffer.find(marker => marker.ID === currentSettingsMarker));
-    }, [currentSettingsMarker]);
-
-    React.useEffect(() => {
-        // Means were in the first render/ after cleanup
-        if (currentSettingsChannel === undefined) return;
-
-        // If this is defined, it means we will have to save multiple changes to multiple settings later, so we should hold on to the old stuff
-        if (seriesSettingsBuffer !== undefined) {
-            const oldIndex = seriesSettingsMultiBuffer.findIndex(setting => setting.Channel.ID === currentSettingsChannel);
-            // The setting is new, thus push it onto the array
-            if (oldIndex < 0) {
-                setSeriesSettingsMultiBuffer([...seriesSettingsMultiBuffer, seriesSettingsBuffer]);
-            }
-            // Setting is not new, update old
-            else {
-                const newSettings = [...seriesSettingsMultiBuffer];
-                newSettings.splice(oldIndex, 1);
-                setSeriesSettingsMultiBuffer(newSettings);
-            }
-        }
-
-        // Set our buffer to new channel
-        setSeriesSettingsBuffer(props.SeriesSettings.find(setting => setting.Channel.ID === currentSettingsChannel));
-    }, [currentSettingsChannel]);
-
-    function checkAndSetValue(field: keyof (TrendSearch.ITrendPlot)): void {
-        if (!_.isEqual(props.Plot[field], plotSettingsBuffer[field]))
-            props.SetPlot(props.Plot.ID, plotSettingsBuffer, field);
+    function checkAndSetValue(record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)): void {
+        if (!_.isEqual(props.Plot[field], record[field]))
+            props.SetPlot(props.Plot.ID, record, field);
     }
-
-    function clearBuffers(): void {
-        setCurrentSettingsMarker(undefined);
-        setCurrentMarker(undefined);
-        setMarkersBuffer(props.Markers);
-        setCurrentSettingsChannel(undefined);
-        setSeriesSettingsBuffer(undefined);
-        setSeriesSettingsMultiBuffer([]);
-    }
-
-    // Functions to handle removing/adding channels
-    const removeChannel = React.useCallback((id: number) => {
-        const allChannels = [...props.Plot.Channels];
-        const index = allChannels.findIndex(channel => channel.ID === id);
-        allChannels.splice(index, 1);
-        const newPlot: TrendSearch.ITrendPlot = { ...props.Plot };
-        newPlot.Channels = allChannels;
-        props.SetPlot(props.Plot.ID, newPlot, 'Channels')
-    }, [props.SetPlot, props.Plot.Channels]);
-
-    const warnRemoveChannel = React.useCallback((id: number) => {
-        // implies there could be a change lost
-        if (currentSettingsChannel !== undefined || seriesSettingsBuffer !== undefined || seriesSettingsMultiBuffer.length !== 0 || currentSettingsMarker !== undefined) {
-            setShowWarning(true);
-            setRemoveId(id);
-        }
-        else
-            removeChannel(id);
-    }, [currentSettingsChannel, seriesSettingsBuffer, seriesSettingsMultiBuffer, removeChannel, props.SetPlot]);
-
-    // Functions to handle removing/changing markers
-    const removeMarker = React.useCallback((id: string) => {
-        const allMarkers = [...markersBuffer];
-        const index = allMarkers.findIndex(marker => marker.ID === id);
-        allMarkers.splice(index, 1);
-        setMarkersBuffer(allMarkers);
-    }, [markersBuffer, setMarkersBuffer]);
-
-    const getNewMarkerList = React.useCallback((marker: TrendSearch.IMarker) => {
-        const allMarkers = [...markersBuffer];
-        const index = allMarkers.findIndex(mark => mark.ID === marker.ID);
-        allMarkers.splice(index, 1, marker);
-        return allMarkers;
-    }, [markersBuffer, setMarkersBuffer]);
-
-    const lineTypeOptions = [{ Label: "Dashed", Value: ":" }, { Label: "Solid", Value: "-" }];
-
-    const getSettingsList = React.useCallback(() => {
-        switch (props.Plot.Type) {
-            case 'Line':
-                return (
-                    <>
-                        <BlockPicker onChangeComplete={(color) => setSeriesSettingsBuffer({ ...seriesSettingsBuffer, Color: color.hex })} color={seriesSettingsBuffer['Color']} triangle={"hide"} />
-                        <Input<ILineSeries> Record={seriesSettingsBuffer} Label={'Legend Label'} Field={'Label'} Setter={setSeriesSettingsBuffer} Valid={() => true} />
-                        <Select<ILineSeries> Record={seriesSettingsBuffer} Label={'Average Line Style'} Field={'AvgLineType'} Setter={setSeriesSettingsBuffer} Options={lineTypeOptions} />
-                        <Select<ILineSeries> Record={seriesSettingsBuffer} Label={'Min/Max Line Style'} Field={'MinMaxLineType'} Setter={setSeriesSettingsBuffer} Options={lineTypeOptions} />
-                        <Input<ILineSeries> Record={seriesSettingsBuffer} Label={'Line Width (pixels)'} Field={'Width'} Setter={setSeriesSettingsBuffer} Type={'number'}
-                            Feedback={"Width must be a positive number"} Valid={() => {
-                                return seriesSettingsBuffer['Width'] > 0;
-                            }} />
-                        <CheckBox<ILineSeries> Record={seriesSettingsBuffer} Label={'Move to Right Axis'} Field={'RightAxis'} Setter={setSeriesSettingsBuffer} />
-                    </>
-                );
-            case 'Cyclic':
-                return (
-                    <>
-                        <BlockPicker onChangeComplete={(color) => setSeriesSettingsBuffer({ ...seriesSettingsBuffer, Color: color.hex })} color={seriesSettingsBuffer['Color']} triangle={"hide"} />
-                    </>
-                );
-            default:
-                console.error("Unexpected chart type in SettingsOverlay.tsx")
-        }
-
-    }, [props.Plot.Type, seriesSettingsBuffer, setSeriesSettingsBuffer, lineTypeOptions]);
-
-    // Loading all SVGIcons into the options menue
-    const markerSymbolOptions = [];
-    Object.keys(SVGIcons).forEach((iconName) => {
-        markerSymbolOptions.push({ Value: SVGIcons[iconName], Element: SVGIcons[iconName]})
-    });
 
     const Tabs = [
         { Id: "plot", Label: "Plot" },
@@ -218,104 +89,55 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
         { Id: "series", Label: "Channel" }
     ];
 
+    if (!props.Show) return null;
     return (
-        <>
-            {props.Show ? <Portal node={document && document.getElementById(props.OverlayPortalID)}>
-                <div className="card">
-                    <div className="card-header">
-                        <h4 className="modal-title">{`Change Plot: ${props.Plot.Title ?? `${props.Plot.Channels.length} Channel ${props.Plot.Type} Plot`}`}</h4>
-                    </div>
-                    <div className="card-body" style={{ maxHeight: 'calc(100% - 210px)', overflowY: 'auto' }}>
-                        <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
-                        <hr />
-                        <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
-                            <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
-                                <PlotSettings Plot={plotSettingsBuffer} SetPlot={setPlotSettingsBuffer} SetConfirmDisabled={setConfirmDisabled} />
-                            </div>
-                        </div>
-                        <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
-                            <div className={"tab-pane " + (tab == "series" ? " active" : "fade")} id="series">
-                                <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
-                                    <div className="col" style={{ width: '40%', height: settingsHeight }}>
-                                        <TrendChannelTable Height={settingsHeight} TrendChannels={props.Plot.Channels} RemoveChannel={warnRemoveChannel}
-                                            Type='single' Selected={currentSettingsChannel} SetSelected={setCurrentSettingsChannel} />
-                                    </div>
-                                    <div className="col" style={{ width: '60%'}} ref={sideSettingRef}>
-                                        {seriesSettingsBuffer === undefined ? null :
-                                            getSettingsList()
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
-                            <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
-                                <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
-                                    <div className="col" style={{ width: '40%', height: settingsHeight }}>
-                                        <TrendMarkerTable Height={markersHeight} Markers={markersBuffer} RemoveMarker={removeMarker}
-                                            Selected={currentSettingsMarker} SetSelected={setCurrentSettingsMarker} />
-                                    </div>
-                                    <div className="col" style={{ width: '60%' }} ref={sideMarkerRef}>
-                                        {currentMarker === undefined ? null :
-                                            <>
-                                                <StylableSelect<TrendSearch.IMarker> Record={currentMarker} Label={'Marker Symbol'} Field={'symbol'} Setter={setCurrentMarker} Options={markerSymbolOptions} />
-                                                <Input<TrendSearch.IMarker> Record={currentMarker} Label={'Infobox Opacity'} Field={'opacity'} Setter={setCurrentMarker} Feedback={"Opacity must be between 0 and 1"} Valid={() => {
-                                                    return (currentMarker['opacity'] <= 1 && currentMarker['opacity'] > 0);
-                                                }} />
-                                                <Input<TrendSearch.IMarker> Record={currentMarker} Label={'Timestamp Format'} Field={'format'} Setter={setCurrentMarker} Feedback={"Must be a valid timestamp format"} Valid={() => {
-                                                    // TODO: This must be a valid string, something to check this should be added to helper functions in gemstone soon
-                                                    return true;
-                                                }} />
-                                                <TextArea<TrendSearch.IMarker> Record={currentMarker} Label={'Marker Note'} Field={'note'} Setter={setCurrentMarker} Rows={3} Valid={() => true } />
-                                            </>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
+        <Portal node={document && document.getElementById(props.OverlayPortalID)}>
+            <div className="card">
+                <div className="card-header">
+                    <h4 className="modal-title">{`Change Plot: ${props.Plot.Title ?? `${props.Plot.Channels.length} Channel ${props.Plot.Type} Plot`}`}</h4>
+                </div>
+                <div className="card-body" style={{ maxHeight: 'calc(100% - 210px)', overflowY: 'auto' }}>
+                    <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
+                    <hr />
+                    <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
+                        <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
+                            <PlotSettings Plot={plotBuffer} SetPlot={setPlotBuffer} SetConfirmDisabled={setConfirmDisabled} />
                         </div>
                     </div>
-                    <div className="card-footer">
-                        <button type="button"
-                            className={`btn btn-primary ${confirmDisabled ? 'disabled ' : ''}float-left`}
-                            onClick={() => {
-                                if (confirmDisabled) return;
-                                // Each of the fields that are set global to all channels
-                                Object.keys(plotSettingsBuffer).forEach(field => checkAndSetValue(field as keyof (TrendSearch.ITrendPlot)));
-                                // Remove settings that got changed from base, then add back in
-                                let newSettings = [...props.SeriesSettings]
-                                    .filter(setting =>
-                                        setting.Channel.ID !== seriesSettingsBuffer?.Channel?.ID &&
-                                        seriesSettingsMultiBuffer.findIndex(newSetting => setting.Channel.ID === newSetting.Channel.ID) < 0
-                                    );
-                                newSettings = newSettings.concat(seriesSettingsMultiBuffer);
-                                if (seriesSettingsBuffer !== undefined)
-                                    newSettings.push(seriesSettingsBuffer);
-                                props.SetSeriesSettings(newSettings);
-                                // Handle markers (we can assume if this is undefined we have no changes)
-                                if (currentMarker !== undefined) props.SetMarkers(getNewMarkerList(currentMarker));
-                                else if (props.Markers.length !== markersBuffer.length) props.SetMarkers(markersBuffer);
-                                clearBuffers();
-                                props.SetShow(false);
-                            }}>Save Changes</button>
-                        <button type="button"
-                            className={'btn btn-cancel float-right'}
-                            onClick={() => {
-                                clearBuffers();
-                                setPlotSettingsBuffer(props.Plot);
-                                props.SetShow(false);
-                            }}>Discard Changes</button>
+                    <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
+                        <div className={"tab-pane " + (tab == "series" ? " active" : "fade")} id="series">
+                            <ChannelTab Type={props.Plot.Type} SetChannels={setChannelsBuffer} Channels={channelsBuffer} SeriesSettings={seriesBuffer} SetSeriesSettings={setSeriesBuffer} />
+                        </div>
+                    </div>
+                    <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
+                        <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
+                            <MarkerTab Markers={markersBuffer} SetMarkers={setMarkersBuffer}/>
+                        </div>
                     </div>
                 </div>
-            </Portal> : null}
-            <Warning Title={'Discard Changes?'}
-                CallBack={(confirmed) => {
-                    if (confirmed) removeChannel(removeId);
-                    setShowWarning(false);
-                    setRemoveId(undefined);
-                }
-                }
-                Show={showWarning} Message={'Removing a channel will also discard any changes made.'} />
-        </>
+                <div className="card-footer">
+                    <button type="button"
+                        className={`btn btn-primary ${confirmDisabled ? 'disabled ' : ''}float-left`}
+                        onClick={() => {
+                            if (confirmDisabled) return;
+                            // Each of the fields that are set global to all channels (do this field by field to avoid unneccessary rerenders)
+                            const plotSettings = { ...plotBuffer };
+                            plotSettings.Channels = channelsBuffer;
+                            Object.keys(plotSettings).forEach(field => checkAndSetValue(plotSettings, field as keyof (TrendSearch.ITrendPlot)));
+                            // Do other settings
+                            props.SetSeriesSettings(seriesBuffer);
+                            props.SetMarkers(markersBuffer);
+                            props.SetShow(false);
+                        }}>Save Changes</button>
+                    <button type="button"
+                        className={'btn btn-cancel float-right'}
+                        onClick={() => {
+                            setPlotBuffer(props.Plot);
+                            props.SetShow(false);
+                        }}>Discard Changes</button>
+                </div>
+            </div>
+        </Portal>
     );
 });
 

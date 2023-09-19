@@ -22,7 +22,7 @@
 //******************************************************************************************************
 import React from 'react';
 import _ from 'lodash';
-import { TrendSearch } from '../../Global';
+import { TrendSearch } from '../../../Global';
 import { ConfigurableTable } from '@gpa-gemstone/react-interactive';
 import { TrashCan } from '@gpa-gemstone/gpa-symbols';
 import { Column } from '@gpa-gemstone/react-table';
@@ -95,8 +95,12 @@ const TrendChannelTable = (props: IProps) => {
     React.useEffect(() => {
         const newCols: Column<TrendSearch.ITrendChannel>[] = [...allCols];
         const index: number = newCols.findIndex((col) => col.key === "RemoveChannel");
-        if (props.RemoveChannel !== undefined && index === -1) {
-            newCols.push({ key: "RemoveChannel", field: "ID", label: "", rowStyle: { width: "50px" }, headerStyle: { width: "50px" }, content: removeButton });
+        if (props.RemoveChannel !== undefined) {
+            const newCol: Column<TrendSearch.ITrendChannel> = { key: "RemoveChannel", field: "ID", label: "", rowStyle: { width: "50px" }, headerStyle: { width: "50px" }, content: removeButton };
+            if (index > -1)
+                newCols.splice(index, 1, newCol);
+            else
+                newCols.push(newCol);
             setAllCols(newCols);
         }
         else if (props.RemoveChannel === undefined && index > -1) {

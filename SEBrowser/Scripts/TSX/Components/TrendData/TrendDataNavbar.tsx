@@ -35,7 +35,7 @@ import { CrossMark, SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { CreateGuid } from '@gpa-gemstone/helper-functions';
 import ReportTimeFilter from '../ReportTimeFilter';
 import NavbarFilterButton from '../Common/NavbarFilterButton';
-import TrendChannelTable from './TrendChannelTable';
+import TrendChannelTable from './Components/TrendChannelTable';
 
 interface IProps {
     ToggleVis: () => void,

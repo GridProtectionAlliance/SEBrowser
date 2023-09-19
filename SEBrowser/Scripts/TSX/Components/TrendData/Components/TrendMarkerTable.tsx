@@ -24,14 +24,14 @@ import React from 'react';
 import _ from 'lodash';
 import { CrossMark } from '@gpa-gemstone/gpa-symbols';
 import Table from '@gpa-gemstone/react-table';
-import { TrendSearch } from '../../global';
+import { TrendSearch } from '../../../global';
 import moment from 'moment';
 
 interface IProps {
     Markers: TrendSearch.IMarker[],
     RemoveMarker?: (id: string) => void,
-    Selected: string,
-    SetSelected: (id: string) => void,
+    Selected: TrendSearch.IMarker,
+    SetSelected: (id: TrendSearch.IMarker) => void,
     Height: number
 }
 
@@ -54,7 +54,7 @@ const TrendMarkerTable = (props: IProps) => {
         ), [props.RemoveMarker]);
 
     const sortCallback = React.useCallback(
-        (data: { colKey: string, colField?: string, ascending: boolean }, event: any) => {
+        (data: { colKey: string, colField?: string, ascending: boolean }) => {
             if (data.colKey === 'undefined')
                 return
             if (data.colField === sortField)
@@ -78,9 +78,9 @@ const TrendMarkerTable = (props: IProps) => {
             onSort={sortCallback}
             onClick={(item, event) => {
                 event.preventDefault();
-                props.SetSelected(item.row.ID);
+                props.SetSelected(item.row);
             }}
-            selected={(item) => props.Selected === item.ID}
+            selected={(item) => props.Selected?.ID === item.ID}
             theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
             tbodyStyle={{ display: 'block', overflowY: 'scroll', height: props.Height - 30, userSelect: 'none' }}
             rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
