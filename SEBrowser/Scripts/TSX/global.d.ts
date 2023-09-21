@@ -184,15 +184,20 @@ export namespace TrendSearch {
         ShowEvents?: boolean
     }
 
+    type LineStyles = ":" | "-";
+
     interface IMarker {
-        // Symbolic marker
         ID: string,
+        axis: string
+    }
+
+    interface ISymbolic extends IMarker {
+        // Symbolic marker
         format: string,
         symbol: JSX.Element,
         xPos: number,
         yPos: number,
         radius: number,
-        axis: string,
         // Infobox
         note: string,
         xBox: number,
@@ -200,12 +205,36 @@ export namespace TrendSearch {
         opacity: number
     }
 
-    //Todo: add axis
+    interface IVertHori extends IMarker {
+        isHori: boolean,
+        value: number,
+        color: string,
+        width: number,
+        line: LineStyles
+    }
+
+    // Properties of indivdual events
     interface IEventMarker {
         value: number,
         meterID: number,
         eventID: number
     }
+
+    // Settings that will apply to all event markers
+    interface IEventSymbolicSettings extends IMarker {
+        type: "symbolic",
+        symbol: JSX.Element,
+        alignTop: boolean
+    }
+
+    interface IEventVertSettings extends IMarker {
+        type: "vertical",
+        color: string,
+        width: number,
+        line: LineStyles
+    }
+
+    type EventMarkerSettings = IEventSymbolicSettings | IEventVertSettings;
 }
 
 export namespace OpenXDA {

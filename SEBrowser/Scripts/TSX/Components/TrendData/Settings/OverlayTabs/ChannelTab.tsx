@@ -21,11 +21,12 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import { BlockPicker } from 'react-color';
 import { ILineSeries } from '../../TrendPlot/LineGraph';
 import { ICyclicSeries } from '../../TrendPlot/CyclicHistogram';
 import { TrendSearch } from '../../../../global';
+import { BlockPicker } from 'react-color';
 import { CheckBox, Input, Select } from '@gpa-gemstone/react-forms';
+import { LineTypeOptions } from '..//SettingsOverlay';
 import TrendChannelTable from '../../Components/TrendChannelTable';
 
 interface IChannelTabProps {
@@ -85,8 +86,6 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
         setCurrentSeriesSetting(seriesSetting);
     }, [props.SeriesSettings, props.SetSeriesSettings]);
 
-    const lineTypeOptions = [{ Label: "Dashed", Value: ":" }, { Label: "Solid", Value: "-" }];
-
     const getSettingsList = React.useCallback(() => {
         switch (props.Type) {
             case 'Line':
@@ -94,8 +93,8 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
                     <>
                         <BlockPicker onChangeComplete={(color) => editChannel({ ...currentSeriesSetting, Color: color.hex })} color={currentSeriesSetting['Color']} triangle={"hide"} />
                         <Input<ILineSeries> Record={currentSeriesSetting} Label={'Legend Label'} Field={'Label'} Setter={editChannel} Valid={() => true} />
-                        <Select<ILineSeries> Record={currentSeriesSetting} Label={'Average Line Style'} Field={'AvgLineType'} Setter={editChannel} Options={lineTypeOptions} />
-                        <Select<ILineSeries> Record={currentSeriesSetting} Label={'Min/Max Line Style'} Field={'MinMaxLineType'} Setter={editChannel} Options={lineTypeOptions} />
+                        <Select<ILineSeries> Record={currentSeriesSetting} Label={'Average Line Style'} Field={'AvgLineType'} Setter={editChannel} Options={LineTypeOptions} />
+                        <Select<ILineSeries> Record={currentSeriesSetting} Label={'Min/Max Line Style'} Field={'MinMaxLineType'} Setter={editChannel} Options={LineTypeOptions} />
                         <Input<ILineSeries> Record={currentSeriesSetting} Label={'Line Width (pixels)'} Field={'Width'} Setter={editChannel} Type={'number'}
                             Feedback={"Width must be a positive number"} Valid={() => {
                                 return currentSeriesSetting['Width'] > 0;
@@ -113,8 +112,7 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
                 console.error("Unexpected chart type in ChannelTab.tsx");
                 return null;
         }
-
-    }, [props.Type, currentSeriesSetting, editChannel, lineTypeOptions]);
+    }, [props.Type, currentSeriesSetting, editChannel, LineTypeOptions]);
 
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>

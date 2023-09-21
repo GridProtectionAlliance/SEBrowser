@@ -39,6 +39,7 @@ const TrendMarkerTable = (props: IProps) => {
     const [trendMarkers, setTrendMarkers] = React.useState<TrendSearch.IMarker[]>([]);
     const [sortField, setSortField] = React.useState<string>('MeterName');
     const [ascending, setAscending] = React.useState<boolean>(true);
+    const momentFormat = "DD HH:mm:ss.SSS";
 
     React.useEffect(() => {
         setTrendMarkers(_.orderBy(props.Markers, sortField, (ascending ? 'asc' : 'desc')));
@@ -66,10 +67,25 @@ const TrendMarkerTable = (props: IProps) => {
     return (
         <Table<TrendSearch.IMarker>
             cols={[
-                { key: "symbol", field: "symbol", label: "" },
-                { key: "xPos", field: "xPos", label: "Time", content: (item) => moment(item.xPos).format("MM/DD/YYYY hh:mm:ss.SSS") },
-                { key: "yPos", field: "yPos", label: "Value" },
-                { key: "note", field: "note", label: "Note" },
+                {
+                    key: "symbol", field: "ID", label: "", content: (item) => {
+                        const symb = item["symbol"];
+                        if (symb !== undefined) return symb;
+                        return item["isHori"] ? "-" : "|"
+                    }
+                },
+                {
+                    key: "ID", field: "ID", label: "Value", content: (item) => {
+                        const val = item["value"];
+                        if (val !== undefined)
+                            return (item["isHori"] ?? true) ? val.toFixed(2) : moment.utc(val).format(momentFormat);
+                        const xPos = item["xPos"];
+                        const yPos = item["yPos"];
+                        if (xPos !== undefined && yPos !== undefined)
+                            return `${moment.utc(xPos).format(momentFormat)} | ${yPos.toFixed(2)}`
+                        return "All Events";
+                    }
+                },
                 { key: "RemoveChannel", field: "ID", label: "", rowStyle: { width: "50px" }, headerStyle: { width: "50px" }, content: removeButton }
             ]}
             data={trendMarkers}

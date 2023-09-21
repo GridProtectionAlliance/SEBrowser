@@ -47,8 +47,8 @@ interface IProps {
 
 interface ILineSeries{
     Channel: TrendSearch.ITrendChannel,
-    AvgLineType?: ':' | '-',
-    MinMaxLineType?: ':' | '-',
+    AvgLineType?: TrendSearch.LineStyles,
+    MinMaxLineType?: TrendSearch.LineStyles,
     RightAxis?: boolean,
     Label?: string,
     Color?: string,

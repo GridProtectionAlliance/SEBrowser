@@ -26,7 +26,7 @@ import { Portal } from 'react-portal';
 import { ILineSeries } from '../TrendPlot/LineGraph';
 import { ICyclicSeries } from '../TrendPlot/CyclicHistogram';
 import { TrendSearch } from '../../../global';
-import { TabSelector, Warning } from '@gpa-gemstone/react-interactive';
+import { TabSelector } from '@gpa-gemstone/react-interactive';
 import { PlotSettings } from './PlotSettings';
 import { MarkerTab } from './OverlayTabs/MarkerTab';
 import { ChannelTab } from './OverlayTabs/ChannelTab';
@@ -36,8 +36,12 @@ interface IOverlayProps {
     Plot: TrendSearch.ITrendPlot,
     SetPlot: (id: string, record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)) => void,
     // Manage Markers
-    Markers: TrendSearch.IMarker[],
-    SetMarkers: (markers: TrendSearch.IMarker[]) => void,
+    SymbolicMarkers: TrendSearch.ISymbolic[],
+    SetSymbolicMarkers: (markers: TrendSearch.ISymbolic[]) => void,
+    VertHoriMarkers: TrendSearch.IVertHori[],
+    SetVertHoriMarkers: (markers: TrendSearch.IVertHori[]) => void,
+    EventSettings: TrendSearch.EventMarkerSettings,
+    SetEventSettings: (setting: TrendSearch.EventMarkerSettings) => void,
     // Assumption that this doesnt change outside of this overlay
     SeriesSettings?: SeriesSettings[]
     SetSeriesSettings: (newSettings: SeriesSettings[]) => void
@@ -53,13 +57,15 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
     // Settings Controls
     const [tab, setTab] = React.useState<string>("plot");
     const [confirmDisabled, setConfirmDisabled] = React.useState<boolean>(false);
-
-
-    // Settings Buffers
+    // Plot Tab Buffers
     const [plotBuffer, setPlotBuffer] = React.useState<TrendSearch.ITrendPlot>(null);
+    // Channels Tab Buffers
     const [seriesBuffer, setSeriesBuffer] = React.useState<SeriesSettings[]>([]);
     const [channelsBuffer, setChannelsBuffer] = React.useState<TrendSearch.ITrendChannel[]>([]);
-    const [markersBuffer, setMarkersBuffer] = React.useState<TrendSearch.IMarker[]>([]);
+    // Markers Tab Buffers
+    const [symbolicsBuffer, setSymbolicsBuffer] = React.useState<TrendSearch.ISymbolic[]>([]);
+    const [markersBuffer, setMarkersBuffer] = React.useState<TrendSearch.IVertHori[]>([]);
+    const [eventBuffer, setEventBuffer] = React.useState<TrendSearch.EventMarkerSettings>(null);
 
     // Create Settings Buffers
     React.useEffect(() => {
@@ -75,8 +81,16 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
     }, [props.Plot.Channels]);
 
     React.useEffect(() => {
-        setMarkersBuffer(props.Markers);
-    }, [props.Markers]);
+        setSymbolicsBuffer(props.SymbolicMarkers);
+    }, [props.SymbolicMarkers]);
+
+    React.useEffect(() => {
+        setMarkersBuffer(props.VertHoriMarkers);
+    }, [props.VertHoriMarkers]);
+
+    React.useEffect(() => {
+        setEventBuffer(props.EventSettings);
+    }, [props.EventSettings]);
 
     function checkAndSetValue(record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)): void {
         if (!_.isEqual(props.Plot[field], record[field]))
@@ -111,7 +125,8 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                     </div>
                     <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
                         <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
-                            <MarkerTab Markers={markersBuffer} SetMarkers={setMarkersBuffer}/>
+                            <MarkerTab VeHoMarkers={markersBuffer} SetVeHoMarkers={setMarkersBuffer} SymbMarkers={symbolicsBuffer} SetSymbMarkers={setSymbolicsBuffer}
+                                EventSettings={eventBuffer} SetEventSettings={setEventBuffer} DisplayEventSettings={plotBuffer.ShowEvents} />
                         </div>
                     </div>
                 </div>
@@ -126,13 +141,22 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                             Object.keys(plotSettings).forEach(field => checkAndSetValue(plotSettings, field as keyof (TrendSearch.ITrendPlot)));
                             // Do other settings
                             props.SetSeriesSettings(seriesBuffer);
-                            props.SetMarkers(markersBuffer);
+                            props.SetSymbolicMarkers(symbolicsBuffer);
+                            props.SetVertHoriMarkers(markersBuffer);
+                            props.SetEventSettings(eventBuffer);
                             props.SetShow(false);
                         }}>Save Changes</button>
                     <button type="button"
                         className={'btn btn-cancel float-right'}
                         onClick={() => {
+                            // Reset buffers
                             setPlotBuffer(props.Plot);
+                            setSeriesBuffer(props.SeriesSettings);
+                            setChannelsBuffer(props.Plot.Channels);
+                            setSymbolicsBuffer(props.SymbolicMarkers);
+                            setMarkersBuffer(props.VertHoriMarkers);
+                            setEventBuffer(props.EventSettings);
+                            setTab("Plot");
                             props.SetShow(false);
                         }}>Discard Changes</button>
                 </div>
@@ -141,4 +165,6 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
     );
 });
 
-export { SettingsOverlay };
+const LineTypeOptions = [{ Label: "Dashed", Value: ":" }, { Label: "Solid", Value: "-" }];
+
+export { SettingsOverlay, LineTypeOptions };
