@@ -24,9 +24,10 @@ import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../Global';
+import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
-import { LoadingIcon, ServerErrorIcon } from '@gpa-gemstone/react-interactive';
-import { Button, Line, Plot } from '@gpa-gemstone/react-graph';
+import { LoadingIcon } from '@gpa-gemstone/react-interactive';
+import { Line, Plot } from '@gpa-gemstone/react-graph';
 
 interface IProps {
     TimeFilter: SEBrowser.IReportTimeFilter,
@@ -174,27 +175,10 @@ const LineGraph = React.memo((props: IProps) => {
 
     if (graphStatus === 'error' || (graphStatus === 'idle' && allChartData.findIndex(chartData => chartData.MinSeries.length + chartData.MaxSeries.length + chartData.AvgSeries.length > 0) < 0))
         return (
-            <>
-                <div className="row" style={{ alignItems: "center", justifyContent: "center", width: "100%", height: "50%" }}>
-                    <ServerErrorIcon Show={true} Label={'No Data Available'} Size={props.Height / 7} />
-                </div>
-                <div className="row" style={{ width: "100%", height: "50%" }}>
-                    {React.Children.map(props.AlwaysRender, (element) => {
-                        if (!React.isValidElement(element))
-                            return null;
-                        if ((element as React.ReactElement<unknown>).type === Button)
-                            return (
-                                <div className="col" style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", height: "100%" }}>
-                                    <button type="button"
-                                        className={'btn btn-primary'}
-                                        onClick={() => { element.props.onClick() }}>
-                                        {element}
-                                    </button>
-                                </div>);
-                        return null;
-                    })}
-                </div>
-            </>);
+            <GraphError Height={props.Height} Title={props.Title}>
+                {props.AlwaysRender}
+            </GraphError>
+            );
     else
         return (
             <div className="row">
