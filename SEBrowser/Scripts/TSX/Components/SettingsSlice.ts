@@ -38,6 +38,11 @@ const defaultState = {
         WidgetCategories: [],
         AggregateMagDur: true,
     },
+    trendData: {
+        BorderPlots: false,
+        InsertAtStart: false,
+        LegendDisplay: 'bottom'
+    },
     timeZone: 'UTC',
     DateTimeSetting: 'center'
 } as Redux.SettingsState;
@@ -50,6 +55,10 @@ const settingsSlice = createSlice({
     reducers: {
         SetEventSearch: (state: Redux.SettingsState, action: { type: string, payload: Redux.IEventSearchSettings }) => {
             state.eventSearch = action.payload;
+            saveSettings(state);
+        },
+        SetTrendData: (state: Redux.SettingsState, action: { type: string, payload: Redux.ITrendDataSettings }) => {
+            state.trendData = action.payload;
             saveSettings(state);
         },
         SetGeneral: (state: Redux.SettingsState, action: {
@@ -72,6 +81,9 @@ const settingsSlice = createSlice({
                 if (preserved.eventSearch != undefined) {
                     state.eventSearch = preserved.eventSearch;
                 }
+                if (preserved.trendData != undefined) {
+                    state.trendData = preserved.trendData;
+                }
                 if (preserved.DateTimeSetting === undefined)
                     state.DateTimeSetting = 'center';
             }
@@ -89,6 +101,9 @@ const settingsSlice = createSlice({
             else {
                 if (preserved.eventSearch != undefined) {
                     state.eventSearch = preserved.eventSearch;
+                }
+                if (preserved.trendData != undefined) {
+                    state.trendData = preserved.trendData;
                 }
                 if (preserved.DateTimeSetting === undefined)
                     state.DateTimeSetting = 'center';
@@ -148,8 +163,9 @@ function loadWidgetCategories() {
 
 
 export const SettingsReducer = settingsSlice.reducer
-export const { SetEventSearch, SetGeneral } = settingsSlice.actions
+export const { SetEventSearch, SetTrendData, SetGeneral } = settingsSlice.actions
 export const SelectEventSearchSettings = (state: Redux.StoreState) => state.Settings.eventSearch
+export const SelectTrendDataSettings = (state: Redux.StoreState) => state.Settings.trendData
 export const SelectTimeZone = (state: Redux.StoreState) => state.Settings.timeZone
 export const SelectWidgetCategories = (state: Redux.StoreState) => state.Settings.eventSearch.WidgetCategories
 export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.DateTimeSetting

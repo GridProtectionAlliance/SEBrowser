@@ -24,6 +24,8 @@ import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../Global';
+import { SelectTrendDataSettings } from './../../SettingsSlice';
+import { useAppSelector } from './../../../hooks';
 import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
 import { LoadingIcon } from '@gpa-gemstone/react-interactive';
@@ -96,6 +98,7 @@ const LineGraph = React.memo((props: IProps) => {
     const [allChartData, setAllChartData] = React.useState<IChartData[]>([]);
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
     const [oldValues, setOldValues] = React.useState<{ ChannelInfo: ILineSeries[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
+    const trendDatasettings = useAppSelector(SelectTrendDataSettings);
 
     React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
@@ -181,12 +184,12 @@ const LineGraph = React.memo((props: IProps) => {
             );
     else
         return (
-            <div className="row">
+            <div className="row" style={trendDatasettings.BorderPlots ? {border: "thin black solid"} : undefined}>
                 <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={29} />
                 {props.Title !== undefined ? <h4 style={{ textAlign: "center", width: `${props.Width}px` }}>{props.Title}</h4> : null}
                 <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} showBorder={false}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor}
-                    legend={'bottom'} useMetricFactors={props.Metric} holdMenuOpen={true} showDateOnTimeAxis={true}
+                    legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={true} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={true}>
                     {allChartData.flatMap((chartData, index) => {
                         const lineArray: JSX.Element[] = [];

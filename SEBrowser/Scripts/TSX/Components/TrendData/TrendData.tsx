@@ -29,6 +29,8 @@ import TrendPlot from './TrendPlot/TrendPlot';
 import { TrendSearch } from '../../Global';
 import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
 import AllSettingsModal from './Settings/AllSettingsModal';
+import { SelectTrendDataSettings } from './../SettingsSlice';
+import { useAppSelector } from './../../hooks';
 
 const momentDateFormat = "MM/DD/YYYY";
 
@@ -49,6 +51,7 @@ const TrendData = () => {
     });
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
     const [plotsMovable, setPlotsMovable] = React.useState<boolean>(false);
+    const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const overlayPortalID = "TrendDataChartPortal";
     const overlayDrawer = "TrendDataNavbar";
     const defaultsApplied = ["Title", "XAxisLabel", "YLeftLabel", "YRightLabel", "Metric", "Width", "Height", "ShowEvents"];
@@ -109,8 +112,11 @@ const TrendData = () => {
                     container[field] = defaultPlotSettings[field];
                 });
         });
-        setPlotList(plotList.concat(defaultAppliedContainers));
-    }, [plotList, setPlotList]);
+        if (trendDatasettings.InsertAtStart)
+            setPlotList(defaultAppliedContainers.concat(plotList));
+        else
+            setPlotList(plotList.concat(defaultAppliedContainers));
+    }, [plotList, setPlotList, trendDatasettings.InsertAtStart]);
 
     const removeAllCharts = React.useCallback(() => {
         setPlotList([]);

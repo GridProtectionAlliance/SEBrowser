@@ -88,6 +88,7 @@ export namespace Redux {
 
     interface SettingsState {
         eventSearch: IEventSearchSettings,
+        trendData: ITrendDataSettings,
         timeZone: string,
         DateTimeSetting: SEBrowser.TimeWindowMode
     }
@@ -96,7 +97,12 @@ export namespace Redux {
         NumberResults: number,
         WidgetCategories: SEBrowser.IWidgetCategory[],
         AggregateMagDur: boolean
-        
+    }
+
+    interface ITrendDataSettings {
+        BorderPlots: boolean,
+        InsertAtStart: boolean,
+        LegendDisplay: 'bottom' | 'right' | 'hidden'
     }
 }
 export namespace SEBrowser {
