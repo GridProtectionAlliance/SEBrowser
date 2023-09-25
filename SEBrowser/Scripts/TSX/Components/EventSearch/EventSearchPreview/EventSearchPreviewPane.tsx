@@ -29,7 +29,8 @@ import { SelectEventSearchByID } from './../EventSearchSlice';
 import { SelectWidgetCategories } from '../../SettingsSlice';
 import { TabSelector } from '@gpa-gemstone/react-interactive';
 import WidgetRouter from '../../../../../EventWidgets/TSX/WidgetWrapper';
-import {EventWidget} from '../../../../../EventWidgets/TSX/global';
+import { EventWidget } from '../../../../../EventWidgets/TSX/global';
+import { EventNoteSlice, MeterNoteSlice, AssetNoteSlice, LocationNoteSlice } from '../../../Store';
 interface IProps {
     EventID: number,
     InitialTab?: string,
@@ -38,6 +39,13 @@ interface IProps {
     Time?: string,
     TimeWindowUnits?: number,
     WindowSize?: number
+}
+
+const widgetStore = {
+    EventNoteSlice,
+    MeterNoteSlice,
+    AssetNoteSlice,
+    LocationNoteSlice
 }
 
 export default function EventPreviewPane(props: IProps) {
@@ -106,10 +114,7 @@ export default function EventPreviewPane(props: IProps) {
                         HomePath={`${homePath}api`}
                         Roles={roles}
                         key={widget.ID}
-                        Date={props.Date}
-                        Time={props.Time}
-                        TimeWindowUnits={props.TimeWindowUnits}
-                        WindowSize={props.WindowSize}
+                        Store={widgetStore}
                     />
                 })}
             </div>
