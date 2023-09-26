@@ -90,7 +90,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
     // Button Consts
-    const [hover, setHover] = React.useState < 'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Cyclic' | 'Move' | 'Trash'>('None');
+    const [hover, setHover] = React.useState < 'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Cyclic' | 'Move' | 'Trash' | 'Select' >('None');
 
     // Page effects
     React.useLayoutEffect(() => {
@@ -369,7 +369,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         <TrendChannelTable Height={tableHeight} TrendChannels={trendChannels} Type='multi' SelectedSet={selectedSet} SetSelectedSet={setSelectedSet} EnableDragDrop={!props.Movable} />
                     </li>
                 </ul>
-                <div className="btn-group-vertical float-right">
+                <div className="btn-group-vertical float-right" style={{paddingRight: '6px'}}>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}
                         data-tooltip='Hide' onMouseEnter={() => setHover('Hide')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.ArrowDropUp}</span>
@@ -385,7 +385,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     <ToolTip Show={hover === 'Cog'} Position={'left'} Theme={'dark'} Target={"Cog"}>
                         {<p>Changes Settings for All Plots and Defaults</p>}
                     </ToolTip>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${props.Movable ? 'Warning' : 'primary'} btn-sm  ${props.HasPlots ? ' disabled' : ''}`}
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${props.Movable ? 'Warning' : 'primary'} btn-sm${props.HasPlots ? ' disabled' : ''}`}
                         onClick={() => { if (!props.HasPlots) props.SetMovable(!props.Movable); }}
                         data-tooltip='Move' onMouseEnter={() => setHover('Move')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.DataContainer}</span>
@@ -394,16 +394,33 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         {<p>Change Plot Order by Dragging Plots</p>}
                         {props.HasPlots ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
                     </ToolTip>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm  ${props.HasPlots ? ' disabled' : ''}`}
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${trendChannels.length === 0 ? ' disabled' : ''}`}
+                        onClick={() => {
+                            if (trendChannels.length !== 0) {
+                                const newSet = new Set<number>();
+                                trendChannels.forEach(chan => newSet.add(chan.ID));
+                                setSelectedSet(newSet);
+                            }
+                        }}
+                        data-tooltip='Select' onMouseEnter={() => setHover('Select')} onMouseLeave={() => setHover('None')}>
+                        <span>{SVGIcons.Alert}</span>
+                    </button>
+                    <ToolTip Show={hover === 'Select'} Position={'left'} Theme={'dark'} Target={"Select"}>
+                        {<p>Select All Channels in Table</p>}
+                        {(trendChannels.length === 0) ? <p>{CrossMark} {'Action Requires Table to Have Channels'}</p> : null}
+                    </ToolTip>
+                </div>
+                <div className="btn-group-vertical float-right">
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${props.HasPlots ? ' disabled' : ''}`}
                         onClick={() => { if (!props.HasPlots) props.RemoveAllCharts(); }}
                         data-tooltip='Trash' onMouseEnter={() => setHover('Trash')} onMouseLeave={() => setHover('None')}>
-                        <span>{SVGIcons.Alert}</span>
+                        <span>{SVGIcons.Filter}</span>
                     </button>
                     <ToolTip Show={hover === 'Trash'} Position={'left'} Theme={'dark'} Target={"Trash"}>
                         {<p>Removes All Plots</p>}
                         {props.HasPlots ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
                     </ToolTip>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm ${selectedSet.size === 0 ? ' disabled' : ''}`}
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${selectedSet.size === 0 ? ' disabled' : ''}`}
                         data-tooltip='Single-Line' onMouseEnter={() => setHover('Single-Line')} onMouseLeave={() => setHover('None')}
                         onClick={() => {
                             if (selectedSet.size === 0) return;
@@ -419,7 +436,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         {<p>Add All Selected Channels to New Line Plot</p>}
                         {selectedSet.size === 0 ? <p>{CrossMark} {'Action Requires Channels to be Selected'}</p> : null}
                     </ToolTip>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm ${selectedSet.size === 0 ? ' disabled' : ''}`}
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${selectedSet.size === 0 ? ' disabled' : ''}`}
                         data-tooltip='Multi-Line' onMouseEnter={() => setHover('Multi-Line')} onMouseLeave={() => setHover('None')}
                         onClick={() => {
                             if (selectedSet.size === 0) return;
