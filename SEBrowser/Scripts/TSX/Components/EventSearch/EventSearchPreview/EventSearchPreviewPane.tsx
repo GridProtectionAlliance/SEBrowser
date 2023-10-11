@@ -111,7 +111,7 @@ export default function EventPreviewPane(props: IProps) {
                         EventID={props.EventID}
                         FaultID={0}
                         Height={props.Height}
-                        HomePath={`${homePath}api`}
+                        HomePath={`${homePath}`}
                         Roles={roles}
                         key={widget.ID}
                         Store={widgetStore}
