@@ -144,6 +144,7 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                             props.SetSymbolicMarkers(symbolicsBuffer);
                             props.SetVertHoriMarkers(markersBuffer);
                             props.SetEventSettings(eventBuffer);
+                            setTab("plot");
                             props.SetShow(false);
                         }}>Save Changes</button>
                     <button type="button"
@@ -156,7 +157,7 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
                             setSymbolicsBuffer(props.SymbolicMarkers);
                             setMarkersBuffer(props.VertHoriMarkers);
                             setEventBuffer(props.EventSettings);
-                            setTab("Plot");
+                            setTab("plot");
                             props.SetShow(false);
                         }}>Discard Changes</button>
                 </div>
