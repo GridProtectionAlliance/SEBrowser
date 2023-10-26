@@ -36,7 +36,7 @@ const GraphError = React.memo((props: IProps) => {
         <>
             {props.Title !== undefined ? <h4 style={{ textAlign: "center", width: `100%` }}>{props.Title}</h4> : null}
             <div className="row" style={{ alignItems: "center", justifyContent: "center", width: "100%", height: `calc(50% - ${props.Title !== undefined ? 34 : 0}px` }}>
-                <ServerErrorIcon Show={true} Label={'No Data Available'} Size={props.Height / 7} />
+                <ServerErrorIcon Show={true} Label={'Error Obtaining Data from XDA Instance'} Size={props.Height / 7} />
             </div>
             <div className="row" style={{ width: "100%", height: "50%" }}>
                 {React.Children.map(props.children, (element) => {

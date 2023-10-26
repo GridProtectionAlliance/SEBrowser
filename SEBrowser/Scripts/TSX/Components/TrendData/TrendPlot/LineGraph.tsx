@@ -176,7 +176,7 @@ const LineGraph = React.memo((props: IProps) => {
         });
     }
 
-    if (graphStatus === 'error' || (graphStatus === 'idle' && allChartData.findIndex(chartData => chartData.MinSeries.length + chartData.MaxSeries.length + chartData.AvgSeries.length > 0) < 0))
+    if (graphStatus === 'error')
         return (
             <GraphError Height={props.Height} Title={props.Title}>
                 {props.AlwaysRender}
