@@ -34,6 +34,7 @@ import { Line, Plot } from '@gpa-gemstone/react-graph';
 interface IProps {
     TimeFilter: SEBrowser.IReportTimeFilter,
     ChannelInfo: ILineSeries[],
+    SetChannelInfo: (newSettings: ILineSeries[]) => void,
     PlotFilter: IMultiCheckboxOption[],
     Height: number,
     Width: number,
@@ -48,16 +49,15 @@ interface IProps {
     children: React.ReactNode
 }
 
+interface ILineSettings { Color: string, Width: number, Type: TrendSearch.LineStyles, Axis: 'right'|'left', Label: string, HasData: boolean }
+
+// Exported Type
 interface ILineSeries{
     Channel: TrendSearch.ITrendChannel,
-    AvgLineType?: TrendSearch.LineStyles,
-    MinMaxLineType?: TrendSearch.LineStyles,
-    RightAxis?: boolean,
-    Label?: string,
-    Color?: string,
-    Width?: number
+    Min: ILineSettings,
+    Max: ILineSettings,
+    Avg: ILineSettings
 }
-
 
 interface IChartData {
     ChannelID: number,
@@ -107,16 +107,14 @@ const LineGraph = React.memo((props: IProps) => {
         // Need to move back in the other direction, so entire window
         const endTime: string = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
 
-        // Need to figure out which channels we need info for
         let newChannels: number[] = props.ChannelInfo.map(chan => chan.Channel.ID);
         // If the time filter is the same, we only need to ask for information on channels we have not yet seen
-        let oldCulledData: IChartData[] = [];
         if (_.isEqual(props.TimeFilter, oldValues.TimeFilter)) {
             newChannels = newChannels.filter(channel => oldValues.ChannelInfo.findIndex(oldChannel => oldChannel.Channel.ID === channel) === -1);
             // This represents data we already have and still need
-            oldCulledData = allChartData.filter(oldSeries =>
+            const oldCulledData: IChartData[] = allChartData.filter(oldSeries =>
                 props.ChannelInfo.findIndex(channel => channel.Channel.ID === oldSeries.ChannelID) !== -1);
-            // If this condition is satified, it must mean we removed channels, and thus, only need to remove irrelevant data
+            // If this condition is satified, it must mean we removed channels, and thus, only need to remove irrelevant data (settings handled in Trendplot)
             if (newChannels.length === 0) {
                 setAllChartData(oldCulledData);
                 setOldValues({ ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter });
@@ -136,8 +134,26 @@ const LineGraph = React.memo((props: IProps) => {
                         AvgSeries: channelInfo.Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Average])
                     });
                 });
-            setAllChartData(oldCulledData.concat(newData));
+            setAllChartData(newData);
             setOldValues({ ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter });
+            // Set settings on which don't have data
+            const newChannelInfo = [...props.ChannelInfo];
+            newChannelInfo.forEach((setting, index) => {
+                const channelData = newData.find(data => data.ChannelID === setting.Channel.ID);
+                const newSetting = _.cloneDeep(setting);
+                if (channelData === undefined) {
+                    newSetting.Min.HasData = false;
+                    newSetting.Avg.HasData = false;
+                    newSetting.Max.HasData = false;
+                    newChannelInfo[index] = newSetting;
+                } else {
+                    newSetting.Min.HasData = channelData.MinSeries.length !== 0;
+                    newSetting.Avg.HasData = channelData.AvgSeries.length !== 0;
+                    newSetting.Max.HasData = channelData.MaxSeries.length !== 0;
+                    newChannelInfo[index] = newSetting;
+                }
+            });
+            props.SetChannelInfo(newChannelInfo);
         });
         return () => {
             if (handle != null && handle.abort != null) handle.abort();
@@ -194,18 +210,16 @@ const LineGraph = React.memo((props: IProps) => {
                     {allChartData.flatMap((chartData, index) => {
                         const lineArray: JSX.Element[] = [];
                         const channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === chartData.ChannelID);
-                        const baseLabel: string = channelSetting?.Label ?? channelSetting?.Channel?.Name ?? "Unknown Channel";
-                        const colorValue: string = channelSetting?.Color ?? "#E41000";
-                        const axis = (channelSetting?.RightAxis ?? false) ? 'right' : 'left';
-                        if (displayAvg && chartData.AvgSeries.length > 0)
-                            lineArray.push(<Line highlightHover={false} key={"avg" + index} showPoints={false} lineStyle={channelSetting?.AvgLineType ?? '-'}
-                                color={colorValue} data={chartData.AvgSeries} legend={baseLabel + " avg"} axis={axis} width={channelSetting?.Width} />);
-                        if (displayMin && chartData.MinSeries.length > 0)
-                            lineArray.push(<Line highlightHover={false} key={"min" + index} showPoints={false} lineStyle={channelSetting?.MinMaxLineType ?? ':'}
-                                color={colorValue} data={chartData.MinSeries} legend={baseLabel + " min"} axis={axis} width={channelSetting?.Width} />);
-                        if (displayMax && chartData.MaxSeries.length > 0)
-                            lineArray.push(<Line highlightHover={false} key={"max" + index} showPoints={false} lineStyle={channelSetting?.MinMaxLineType ?? ':'}
-                                color={colorValue} data={chartData.MaxSeries} legend={baseLabel + " max"} axis={axis} width={channelSetting?.Width} />);
+                        if (channelSetting === undefined) return null;
+                        if (displayAvg && channelSetting.Avg.HasData)
+                            lineArray.push(<Line highlightHover={false} key={"avg_" + index} showPoints={false} lineStyle={channelSetting.Avg.Type}
+                                color={channelSetting.Avg.Color} data={chartData.AvgSeries} legend={channelSetting.Avg.Label} axis={channelSetting.Avg.Axis} width={channelSetting.Avg.Width} />);
+                        if (displayMin && channelSetting.Min.HasData)
+                            lineArray.push(<Line highlightHover={false} key={"min_" + index} showPoints={false} lineStyle={channelSetting.Min.Type}
+                                color={channelSetting.Min.Color} data={chartData.MinSeries} legend={channelSetting.Min.Label} axis={channelSetting.Min.Axis} width={channelSetting.Min.Width} />);
+                        if (displayMax && channelSetting.Max.HasData)
+                            lineArray.push(<Line highlightHover={false} key={"max_" + index} showPoints={false} lineStyle={channelSetting.Max.Type}
+                                color={channelSetting.Max.Color} data={chartData.MaxSeries} legend={channelSetting.Max.Label} axis={channelSetting.Max.Axis} width={channelSetting.Max.Width} />);
                         return lineArray;
                     })}
                     {props.children}
@@ -214,4 +228,4 @@ const LineGraph = React.memo((props: IProps) => {
             </div>);
 });
 
-export { LineGraph, ILineSeries };
+export { LineGraph, ILineSeries, ILineSettings };

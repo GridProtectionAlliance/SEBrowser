@@ -28,7 +28,7 @@ import { CreateGuid, SpacedColor } from '@gpa-gemstone/helper-functions';
 import { TrashCan, Pencil, Plus, SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, AxisMap } from '@gpa-gemstone/react-graph';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
-import { LineGraph } from './LineGraph';
+import { LineGraph, ILineSeries } from './LineGraph';
 import { SEBrowser, TrendSearch } from '../../../global';
 import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
 import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
@@ -117,11 +117,16 @@ const TrendPlot = React.memo((props: IContainerProps) => {
 
         const getDefaultValue: (channel: TrendSearch.ITrendChannel) => SeriesSettings = (channel) => {
             switch (props.Plot.Type) {
-                case 'Line': default:
+                case 'Line': default: {
+                    const baseLabel = constructLabel(channel);
+                    const color = SpacedColor(0.9, 0.9);
                     return ({
-                        Channel: channel, Color: SpacedColor(0.9, 0.9), MinMaxLineType: ':', AvgLineType: '-', Width: 3,
-                        Label: constructLabel(channel), RightAxis: channel.ChannelGroup !== props.Plot.Channels[0].ChannelGroup
+                        Channel: channel,
+                        Min: { Color: color, Width: 3, Type: ':', Axis: 'left', Label: baseLabel + ' min', HasData: false },
+                        Avg: { Color: color, Width: 3, Type: '-', Axis: 'left', Label: baseLabel + ' avg', HasData: false },
+                        Max: { Color: color, Width: 3, Type: ':', Axis: 'left', Label: baseLabel + ' max', HasData: false }
                     });
+                }
                 case 'Cyclic': {
                     return ({
                         Channel: channel, Color: SpacedColor(0.9, 0.9)
@@ -393,7 +398,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         switch (props.Plot.Type) {
             case 'Line':
                 plotBody = (
-                    <LineGraph ChannelInfo={plotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
+                    <LineGraph ChannelInfo={plotAllSeriesSettings as ILineSeries[]} SetChannelInfo={setPlotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
                         Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel}
                         Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor}
                         OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>

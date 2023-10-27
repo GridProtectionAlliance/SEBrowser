@@ -167,5 +167,6 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
 });
 
 const LineTypeOptions = [{ Label: "Dashed", Value: ":" }, { Label: "Solid", Value: "-" }];
+const AxisOptions = [{ Label: "Right", Value: "right" }, { Label: "Left", Value: "left" }];
 
-export { SettingsOverlay, LineTypeOptions };
+export { SettingsOverlay, LineTypeOptions, AxisOptions };
