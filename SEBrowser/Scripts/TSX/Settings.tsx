@@ -149,14 +149,43 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={trendData}
                                         Field='BorderPlots'
                                         Setter={setTrendData}
-                                        Label='Display Border Around Trend Data Plots' />
+                                        Label='Display Border Around Trend Data Plots'/>
                                 </div>
+                            </div>
+                            <div className={"row"}>
                                 <div className={'col'}>
                                     <CheckBox<Redux.ITrendDataSettings>
                                         Record={trendData}
                                         Field='InsertAtStart'
                                         Setter={setTrendData}
-                                        Label='Insert New Plots at Beginning of Page' />
+                                        Label='Insert New Plots at Beginning of Page'/>
+                                </div>
+                            </div>
+                            <div className={"row"}>
+                                <div className={'col'}>
+                                    <CheckBox<Redux.ITrendDataSettings>
+                                        Record={trendData}
+                                        Field='StartWithOptionsClosed'
+                                        Setter={setTrendData}
+                                        Label='Plot Toolbar Closed on Plot Creation'/>
+                                </div>
+                            </div>
+                            <div className={"row"}>
+                                <div className={'col'}>
+                                    <CheckBox<Redux.ITrendDataSettings>
+                                        Record={trendData}
+                                        Field='MoveOptionsLeft'
+                                        Setter={setTrendData}
+                                        Label='Display Plot Toolbar on Left Side of Plot'/>
+                                </div>
+                            </div>
+                            <div className={"row"}>
+                                <div className={'col'}>
+                                    <CheckBox<Redux.ITrendDataSettings>
+                                        Record={trendData}
+                                        Field='MarkerSnapping'
+                                        Setter={setTrendData}
+                                        Label='Enforce New Markers to Snap to Nearest Datapoint'/>
                                 </div>
                             </div>
                         </fieldset>

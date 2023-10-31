@@ -431,7 +431,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                         {symbolicMarkers.map((marker, i) =>
                             <Infobox key={"Info_" + i} origin="upper-center"
                                 x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
-                                childId={"Info_" + i} offset={15}
+                                childId={"Info_" + i} offset={15} disallowSnapping={true}
                                 setPosition={(x, y) => { if (customSelect !== "drag") return; setSymbolic(marker.ID, x, 'xBox'); setSymbolic(marker.ID, y, 'yBox'); }}>
                                 <div id={"Info_" + i} style={{ display: 'inline-block', background: 'white', overflow: 'visible', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
                                     {`${moment.utc(marker.xPos).format(marker.format)}\n${marker.yPos.toFixed(2)}\n${marker.note}`}

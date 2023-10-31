@@ -102,6 +102,9 @@ export namespace Redux {
     interface ITrendDataSettings {
         BorderPlots: boolean,
         InsertAtStart: boolean,
+        MarkerSnapping: boolean,
+        StartWithOptionsClosed: boolean,
+        MoveOptionsLeft: boolean,
         LegendDisplay: 'bottom' | 'right' | 'hidden'
     }
 }

@@ -41,6 +41,9 @@ const defaultState = {
     trendData: {
         BorderPlots: false,
         InsertAtStart: false,
+        MarkerSnapping: false,
+        StartWithOptionsClosed: false,
+        MoveOptionsLeft: false,
         LegendDisplay: 'bottom'
     },
     timeZone: 'UTC',

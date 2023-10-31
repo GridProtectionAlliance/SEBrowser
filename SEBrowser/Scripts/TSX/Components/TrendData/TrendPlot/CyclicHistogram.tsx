@@ -24,10 +24,12 @@ import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../Global';
+import { SelectTrendDataSettings } from './../../SettingsSlice';
+import { useAppSelector } from './../../../hooks';
 import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
 import { LoadingIcon } from '@gpa-gemstone/react-interactive';
-import { ColoredBarChart, Plot } from '@gpa-gemstone/react-graph';
+import { HeatMapChart, Plot } from '@gpa-gemstone/react-graph';
 import { HexToHsv } from '@gpa-gemstone/helper-functions';
 
 interface IProps {
@@ -87,6 +89,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
     const [oldValues, setOldValues] = React.useState<{ ChannelInfo: ICyclicSeries, TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: null, TimeFilter: null });
     const [barColor, setBarColor] = React.useState<{ Hue: number, Value: number }>(null);
+    const trendDatasettings = useAppSelector(SelectTrendDataSettings);
 
     React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
@@ -159,12 +162,12 @@ const CyclicHistogram = React.memo((props: IProps) => {
             <div className="row">
                 <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={29} />
                 {props.Title !== undefined ? <h4 style={{ textAlign: "center", width: `${props.Width}px` }}>{props.Title}</h4> : null}
-                <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} showBorder={false}
-                    defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor}
-                    legend={'bottom'} useMetricFactors={props.Metric} holdMenuOpen={true} showDateOnTimeAxis={true}
+                <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} showBorder={trendDatasettings.BorderPlots} moveMenuLeft={trendDatasettings.MoveOptionsLeft}
+                    defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
+                    legend={'bottom'} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={true}>
                     {(chartData?.Series == null || barColor === null) ? null :
-                        <ColoredBarChart data={chartData.Series} hue={barColor.Hue} value={barColor.Value} barStyle={'fill'} axis={'left'} />
+                        <HeatMapChart data={chartData.Series} hue={barColor.Hue} value={barColor.Value} fillStyle={'fill'} axis={'left'} />
                     }
                     {props.children}
                     {props.AlwaysRender}
