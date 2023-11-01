@@ -54,7 +54,7 @@ const TrendChannelTable = (props: IProps) => {
     const [ascending, setAscending] = React.useState<boolean>(true);
 
     const [allCols, setAllCols] = React.useState<Column<TrendSearch.ITrendChannel>[]>([
-        { key: "Name", field: "Name", label: "Name" },
+        { key: "Name", field: "Name", label: "Channel Name" },
         { key: "Description", field: "Description", label: "Description" },
         { key: "AssetKey", field: "AssetKey", label: "Asset Key" },
         { key: "AssetName", field: "AssetName", label: "Asset Name" },
