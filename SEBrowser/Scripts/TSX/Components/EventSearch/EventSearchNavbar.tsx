@@ -268,12 +268,12 @@ const EventSearchNavbar = (props: IProps) => {
                     newEventCharacteristicFilter.sagMax >= newEventCharacteristicFilter.sagMax))
         if (field == 'swellMin')
             return NullOrNaN(newEventCharacteristicFilter.swellMin) || (
-                newEventCharacteristicFilter.swellMin >= 0 && newEventCharacteristicFilter.swellMin < 9999 &&
+                newEventCharacteristicFilter.swellMin >= 1 && newEventCharacteristicFilter.swellMin < 9999 &&
                 (NullOrNaN(newEventCharacteristicFilter.swellMax) ||
                     newEventCharacteristicFilter.swellMax >= newEventCharacteristicFilter.swellMin))
         if (field == 'swellMax')
             return NullOrNaN(newEventCharacteristicFilter.swellMax) || (
-                newEventCharacteristicFilter.swellMax >= 0 && newEventCharacteristicFilter.swellMax < 9999 &&
+                newEventCharacteristicFilter.swellMax >= 1 && newEventCharacteristicFilter.swellMax < 9999 &&
                 (NullOrNaN(newEventCharacteristicFilter.swellMin) ||
                     newEventCharacteristicFilter.swellMax >= newEventCharacteristicFilter.swellMin))
         if (field == 'transientMin')
