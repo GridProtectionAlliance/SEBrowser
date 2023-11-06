@@ -190,7 +190,9 @@ export namespace TrendSearch {
         Metric?: boolean,
         Width?: number,
         Height?: number,
-        ShowEvents?: boolean
+        ShowEvents?: boolean,
+        AxisZoom?: 'Rect' | 'AutoValue' | 'HalfAutoValue',
+        DefaultZoom?: [number, number][]
     }
 
     type LineStyles = ":" | "-";

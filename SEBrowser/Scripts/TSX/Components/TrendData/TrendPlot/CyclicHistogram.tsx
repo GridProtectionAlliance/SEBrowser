@@ -44,6 +44,8 @@ interface IProps {
     XAxisLabel?: string,
     YAxisLabel?: string,
     Cursor?: string,
+    AxisZoom?: 'Rect' | 'AutoValue' | 'HalfAutoValue',
+    DefaultZoom?: [number, number][]
     AlwaysRender: React.ReactNode,
     children: React.ReactNode
 }
@@ -165,7 +167,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
                 <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} showBorder={trendDatasettings.BorderPlots} moveMenuLeft={trendDatasettings.MoveOptionsLeft}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
                     legend={'bottom'} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
-                    Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={true}>
+                    Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={true} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {(chartData?.Series == null || barColor === null) ? null :
                         <HeatMapChart data={chartData.Series} hue={barColor.Hue} value={barColor.Value} fillStyle={'fill'} axis={'left'} />
                     }

@@ -403,7 +403,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                 plotBody = (
                     <LineGraph ChannelInfo={plotAllSeriesSettings as ILineSeries[]} SetChannelInfo={setPlotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
                         Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel}
-                        Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor}
+                        Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
                         OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
                         {props.Plot.ShowEvents ? eventMarkers.map((marker, i) => {
                             if (eventSettings.type === "vertical")
@@ -454,11 +454,10 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                 );
                 break;
             case ('Cyclic'):
-                // Todo: should these have the same kind of markers?
                 plotBody = (
                     <CyclicHistogram ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] as ICyclicSeries : null} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
                         Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel}
-                        Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor}
+                        Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
                         OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
 
                     </CyclicHistogram>
