@@ -337,10 +337,13 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     radius: 12,
                     xPos: time,
                     yPos: values[axisNumber],
+                    symbolColor: "#000000",
                     // Note
                     format: "HH:mm",
                     note: "",
                     opacity: 1,
+                    fontColor: "#000000",
+                    fontSize: 1,
                     axis: axis,
                     xBox: time,
                     yBox: values[axisNumber]
@@ -425,7 +428,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                                     setValue={(value) => { if (customSelect !== "drag") return; setVertHori(marker.ID, value); }} />);
                         })}
                         {symbolicMarkers.map((marker, i) =>
-                            <SymbolicMarker key={"Marker_" + i}
+                            <SymbolicMarker key={"Marker_" + i} style={{ color: marker.symbolColor }}
                                 xPos={marker.xPos} yPos={marker.yPos} radius={marker.radius}
                                 setPosition={(x, y) => { if (customSelect !== "drag") return; setSymbolic(marker.ID, x, 'xPos'); setSymbolic(marker.ID, y, 'yPos'); setSymbolic(marker.ID, x, 'xBox'); setSymbolic(marker.ID, y, 'yBox'); }}>
                                 {marker.symbol}
@@ -436,7 +439,10 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                                 x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
                                 childId={"Info_" + i} offset={15} disallowSnapping={true}
                                 setPosition={(x, y) => { if (customSelect !== "drag") return; setSymbolic(marker.ID, x, 'xBox'); setSymbolic(marker.ID, y, 'yBox'); }}>
-                                <div id={"Info_" + i} style={{ display: 'inline-block', background: `rgba(255, 255, 255, ${marker.opacity})`, overflow: 'visible', whiteSpace: 'pre-wrap'}}>
+                                <div id={"Info_" + i} style={{
+                                    display: 'inline-block', background: `rgba(255, 255, 255, ${marker.opacity})`, color: marker.fontColor,
+                                    overflow: 'visible', whiteSpace: 'pre-wrap', fontSize: `${marker.fontSize}em`
+                                }}>
                                     {`${moment.utc(marker.xPos).format(marker.format)}\n${marker.yPos.toFixed(2)}\n${marker.note}`}
                                 </div>
                             </Infobox>

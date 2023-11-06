@@ -209,11 +209,14 @@ export namespace TrendSearch {
         xPos: number,
         yPos: number,
         radius: number,
+        symbolColor: string,
         // Infobox
         note: string,
         xBox: number,
         yBox: number,
-        opacity: number
+        opacity: number,
+        fontColor: string,
+        fontSize: number
     }
 
     interface IVertHori extends IMarker {
