@@ -436,7 +436,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                                 x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
                                 childId={"Info_" + i} offset={15} disallowSnapping={true}
                                 setPosition={(x, y) => { if (customSelect !== "drag") return; setSymbolic(marker.ID, x, 'xBox'); setSymbolic(marker.ID, y, 'yBox'); }}>
-                                <div id={"Info_" + i} style={{ display: 'inline-block', background: 'white', overflow: 'visible', whiteSpace: 'pre-wrap', opacity: marker.opacity ?? 1 }}>
+                                <div id={"Info_" + i} style={{ display: 'inline-block', background: `rgba(255, 255, 255, ${marker.opacity})`, overflow: 'visible', whiteSpace: 'pre-wrap'}}>
                                     {`${moment.utc(marker.xPos).format(marker.format)}\n${marker.yPos.toFixed(2)}\n${marker.note}`}
                                 </div>
                             </Infobox>
@@ -458,9 +458,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     <CyclicHistogram ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] as ICyclicSeries : null} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
                         Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel}
                         Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
-                        OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
-
-                    </CyclicHistogram>
+                        OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}/>
                 );
                 break;
         }

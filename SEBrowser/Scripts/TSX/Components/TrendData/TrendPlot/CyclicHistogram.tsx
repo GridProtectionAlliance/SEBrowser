@@ -47,7 +47,7 @@ interface IProps {
     AxisZoom?: 'Rect' | 'AutoValue' | 'HalfAutoValue',
     DefaultZoom?: [number, number][]
     AlwaysRender: React.ReactNode,
-    children: React.ReactNode
+    children?: React.ReactNode
 }
 
 interface ICyclicSeries{
