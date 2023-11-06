@@ -26,7 +26,7 @@ import { BlockPicker } from 'react-color';
 import { Input, TextArea, StylableSelect, CheckBox, Select } from '@gpa-gemstone/react-forms';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import TrendMarkerTable from '../../Components/TrendMarkerTable';
-import { LineTypeOptions } from '..//SettingsOverlay';
+import { LineTypeOptions, AxisOptions } from '..//SettingsOverlay';
 
 interface IMarkerTabProps {
     // Manage Markers
@@ -38,6 +38,13 @@ interface IMarkerTabProps {
     SetEventSettings: (setting: TrendSearch.EventMarkerSettings) => void,
     DisplayEventSettings: boolean
 }
+
+const EventOptions = [{ Label: "Vertical Lines", Value: "vertical" }, { Label: "Custom Symbols", Value: "symbolic" }];
+// Loading all SVGIcons into the options menue
+const markerSymbolOptions = [];
+Object.keys(SVGIcons).forEach((iconName) => {
+    markerSymbolOptions.push({ Value: SVGIcons[iconName], Element: SVGIcons[iconName] })
+});
 
 const MarkerTab = React.memo((props: IMarkerTabProps) => {
     // Sizing Variables
@@ -87,11 +94,6 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
         setCurrentMarker(marker);
     }, []);
 
-    const setSettings = React.useCallback((marker: TrendSearch.EventMarkerSettings) => {
-        props.SetEventSettings(marker);
-        setCurrentMarker(marker);
-    }, [props.SetEventSettings, setCurrentMarker]);
-
     const applyToMarker = React.useCallback((marker: TrendSearch.IMarker, markerFunc: (marker: TrendSearch.IMarker, markerArray: TrendSearch.IMarker[], setMarkerArray: (markerArray: TrendSearch.IMarker[]) => void) => void) => {
         switch (currentType) {
             case "Symb":
@@ -113,9 +115,10 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
                     <div className="row" style={{ height: '100%', width: '100%' }}>
                         <div className="col" style={{ width: 'auto' }}>
                             <h4>Symbol Settings</h4>
-                            <BlockPicker onChangeComplete={(color) => applyToMarker({ ...currentMarker, symbolColor: color.hex } as TrendSearch.ISymbolic, editFromArray)}
-                                color={currentMarker['symbolColor']} triangle={"hide"} />
+                            <BlockPicker onChangeComplete={(color) => applyToMarker({ ...currentMarker, color: color.hex } as TrendSearch.ISymbolic, editFromArray)}
+                                color={currentMarker['color']} triangle={"hide"} />
                             <StylableSelect<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Marker Symbol'} Field={'symbol'} Setter={state => applyToMarker(state, editFromArray)} Options={markerSymbolOptions} />
+                            <Select<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Axis'} Field={'axis'} Setter={state => applyToMarker(state, editFromArray)} Options={AxisOptions} />
                         </div>
                         <div className="col" style={{ width: 'auto' }}>
                             <h4>Text Settings</h4>
@@ -145,26 +148,31 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
                             Feedback={"Width must be a positive number"} Valid={() => {
                                 return (currentMarker['width'] ?? 0) > 0;
                             }} />
-                        <CheckBox<TrendSearch.IVertHori> Record={currentMarker as TrendSearch.IVertHori} Label={'Move to Right Axis'} Field={'axis'} Setter={marker => applyToMarker(marker, editFromArray)} />
+                        <Select<TrendSearch.IVertHori> Record={currentMarker as TrendSearch.IVertHori} Label={'Axis'} Field={'axis'} Setter={marker => applyToMarker(marker, editFromArray)} Options={AxisOptions} />
                     </>
                 );
             case 'Event':
                 return (
                     <>
+                        <BlockPicker onChangeComplete={(color) => props.SetEventSettings({ ...props.EventSettings, color: color.hex })}
+                            color={props.EventSettings.color} triangle={"hide"} />
                         {props.EventSettings.type === "vertical" ?
                             <>
-                                <BlockPicker onChangeComplete={(color) => setSettings({ ...currentMarker, color: color.hex } as TrendSearch.IEventVertSettings)}
-                                    color={currentMarker['color']} triangle={"hide"} />
-                                <Select<TrendSearch.IEventVertSettings> Record={currentMarker as TrendSearch.IEventVertSettings} Label={'Line Style'} Field={'line'} Setter={setSettings} Options={LineTypeOptions} />
-                                <Input<TrendSearch.IEventVertSettings> Record={currentMarker as TrendSearch.IEventVertSettings} Label={'Line Width (pixels)'} Field={'width'} Setter={setSettings} Type={'number'}
+                                <Select<TrendSearch.IEventVertSettings> Record={props.EventSettings} Label={'Line Style'} Field={'line'} Setter={props.SetEventSettings} Options={LineTypeOptions} />
+                                <Input<TrendSearch.IEventVertSettings> Record={props.EventSettings} Label={'Line Width (pixels)'} Field={'width'} Setter={props.SetEventSettings} Type={'number'}
                                     Feedback={"Width must be a positive number"} Valid={() => {
-                                        return (currentMarker['width'] ?? 0) > 0;
+                                        return (props.EventSettings['width'] ?? 0) > 0;
                                     }} />
                             </> 
                             :
-                            null //Todo: symbolic case
+                            <>
+                                <StylableSelect<TrendSearch.IEventSymbolicSettings> Record={props.EventSettings}
+                                    Label={'Event Symbol'} Field={'symbol'} Setter={props.SetEventSettings} Options={markerSymbolOptions} />
+                                <CheckBox<TrendSearch.IEventSymbolicSettings> Record={props.EventSettings} Label={'Move to Top'} Field={'alignTop'} Setter={props.SetEventSettings} />
+                            </>
                         }
-                        <CheckBox<TrendSearch.EventMarkerSettings> Record={props.EventSettings} Label={'Move to Right Axis'} Field={'axis'} Setter={setSettings} />
+                        <Select<TrendSearch.EventMarkerSettings> Record={props.EventSettings} Label={'Axis'} Field={'axis'} Setter={props.SetEventSettings} Options={AxisOptions} />
+                        <Select<TrendSearch.EventMarkerSettings> Record={props.EventSettings} Label={'Event Marker Type'} Field={'type'} Setter={props.SetEventSettings} Options={EventOptions} />
                     </>);
             case undefined:
                 return null
@@ -174,17 +182,11 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
         }
     }, [currentType, currentMarker, applyToMarker, editFromArray, LineTypeOptions, props.EventSettings, props.SetEventSettings]);
 
-    // Loading all SVGIcons into the options menue
-    const markerSymbolOptions = [];
-    Object.keys(SVGIcons).forEach((iconName) => {
-        markerSymbolOptions.push({ Value: SVGIcons[iconName], Element: SVGIcons[iconName]})
-    });
-
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
             <div className="col" style={{ width: '40%', height: markersHeight }}>
                 <TrendMarkerTable Height={markersHeight} Markers={allMarkers}
-                    RemoveMarker={id => applyToMarker({ ID: id, axis: 'left' }, removeFromArray)}
+                    RemoveMarker={id => applyToMarker({ ID: id, axis: 'left', color: "" }, removeFromArray)}
                     Selected={currentMarker} SetSelected={setCurrentMarker} />
             </div>
             <div className="col" style={{ width: '60%' }} ref={sideMarkerRef}>

@@ -337,7 +337,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     radius: 12,
                     xPos: time,
                     yPos: values[axisNumber],
-                    symbolColor: "#000000",
+                    color: "#000000",
                     // Note
                     format: "HH:mm",
                     note: "",
@@ -411,31 +411,36 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                         {props.Plot.ShowEvents ? eventMarkers.map((marker, i) => {
                             if (eventSettings.type === "vertical")
                                 return (
-                                    <VerticalMarker key={"Event_" + i}
+                                    <VerticalMarker key={"Event_" + i} axis={eventSettings.axis}
                                         Value={marker.value} color={eventSettings.color} lineStyle={eventSettings.line} width={eventSettings.width}
                                         onClick={() => { if (customSelect !== "drag") return; navigateEvent(marker); }} />)
-                            else return null; // ToDo: add symbolic version
+                            else
+                                return (
+                                    <SymbolicMarker key={"Marker_" + i} style={{ color: eventSettings.color }} axis={eventSettings.axis}
+                                        usePixelPositioning={{x: false, y: true}} xPos={marker.value} yPos={eventSettings.alignTop ? 11 : -11} radius={12}>
+                                        {eventSettings.symbol}
+                                    </SymbolicMarker>);
                         }) : null}
                         {horiVertMarkers.map((marker, i) => {
                             if (marker.isHori)
                                 return (
-                                    <HorizontalMarker key={"Hori_" + i}
+                                    <HorizontalMarker key={"Hori_" + i} axis={marker.axis}
                                         Value={marker.value} color={marker.color} lineStyle={marker.line} width={marker.width}
                                         setValue={(value) => { if (customSelect !== "drag") return; setVertHori(marker.ID, value); }} />);
                             return (
-                                <VerticalMarker key={"Vert_" + i}
+                                <VerticalMarker key={"Vert_" + i} axis={marker.axis}
                                     Value={marker.value} color={marker.color} lineStyle={marker.line} width={marker.width}
                                     setValue={(value) => { if (customSelect !== "drag") return; setVertHori(marker.ID, value); }} />);
                         })}
                         {symbolicMarkers.map((marker, i) =>
-                            <SymbolicMarker key={"Marker_" + i} style={{ color: marker.symbolColor }}
+                            <SymbolicMarker key={"Marker_" + i} style={{ color: marker.color }} axis={marker.axis}
                                 xPos={marker.xPos} yPos={marker.yPos} radius={marker.radius}
                                 setPosition={(x, y) => { if (customSelect !== "drag") return; setSymbolic(marker.ID, x, 'xPos'); setSymbolic(marker.ID, y, 'yPos'); setSymbolic(marker.ID, x, 'xBox'); setSymbolic(marker.ID, y, 'yBox'); }}>
                                 {marker.symbol}
                             </SymbolicMarker>
                         )}
                         {symbolicMarkers.map((marker, i) =>
-                            <Infobox key={"Info_" + i} origin="upper-center"
+                            <Infobox key={"Info_" + i} origin="upper-center" axis={marker.axis}
                                 x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
                                 childId={"Info_" + i} offset={15} disallowSnapping={true}
                                 setPosition={(x, y) => { if (customSelect !== "drag") return; setSymbolic(marker.ID, x, 'xBox'); setSymbolic(marker.ID, y, 'yBox'); }}>

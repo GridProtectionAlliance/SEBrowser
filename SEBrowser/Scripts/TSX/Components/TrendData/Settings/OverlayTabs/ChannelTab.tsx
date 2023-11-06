@@ -25,7 +25,7 @@ import { ILineSeries, ILineSettings } from '../../TrendPlot/LineGraph';
 import { ICyclicSeries } from '../../TrendPlot/CyclicHistogram';
 import { TrendSearch } from '../../../../global';
 import { BlockPicker } from 'react-color';
-import { CheckBox, Input, Select } from '@gpa-gemstone/react-forms';
+import { Input, Select } from '@gpa-gemstone/react-forms';
 import { LineTypeOptions, AxisOptions } from '../SettingsOverlay';
 import TrendChannelTable from '../../Components/TrendChannelTable';
 

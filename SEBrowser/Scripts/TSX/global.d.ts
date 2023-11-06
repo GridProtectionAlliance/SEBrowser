@@ -199,7 +199,8 @@ export namespace TrendSearch {
 
     interface IMarker {
         ID: string,
-        axis: string
+        axis: 'right' | 'left',
+        color: string
     }
 
     interface ISymbolic extends IMarker {
@@ -209,7 +210,6 @@ export namespace TrendSearch {
         xPos: number,
         yPos: number,
         radius: number,
-        symbolColor: string,
         // Infobox
         note: string,
         xBox: number,
@@ -222,7 +222,6 @@ export namespace TrendSearch {
     interface IVertHori extends IMarker {
         isHori: boolean,
         value: number,
-        color: string,
         width: number,
         line: LineStyles
     }
@@ -238,12 +237,11 @@ export namespace TrendSearch {
     interface IEventSymbolicSettings extends IMarker {
         type: "symbolic",
         symbol: JSX.Element,
-        alignTop: boolean
+        alignTop: boolean,
     }
 
     interface IEventVertSettings extends IMarker {
         type: "vertical",
-        color: string,
         width: number,
         line: LineStyles
     }
