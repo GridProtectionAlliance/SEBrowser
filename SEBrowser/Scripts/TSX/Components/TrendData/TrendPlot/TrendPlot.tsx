@@ -30,6 +30,8 @@ import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, Axis
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { LineGraph, ILineSeries } from './LineGraph';
 import { SEBrowser, TrendSearch } from '../../../global';
+import { SelectTrendDataSettings } from './../../SettingsSlice';
+import { useAppSelector } from './../../../hooks';
 import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
 import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
 import { SettingsOverlay, SeriesSettings } from '../Settings/SettingsOverlay';
@@ -57,6 +59,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     const [chartHeight, setChartHeight] = React.useState<number>(500);
 
     // Plot Saved Settings
+    const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const [plotAllSeriesSettings, setPlotAllSeriesSettings] = React.useState<SeriesSettings[]>(null);
     const changedProperties = React.useRef<Set<string>>(new Set<string>());
 
@@ -439,8 +442,8 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                             </Infobox>
                         )}
                         {customSelect === "drag" ? null :
-                            <Infobox key={"MouseOver"} origin="upper-right"
-                                x={chartWidth - 20} y={50} opacity={0.4} childId={"mouseInfo"} usePixelPositioning={true}
+                            <Infobox key={"MouseOver"} origin={trendDatasettings.MoveOptionsLeft ? "upper-left" : "upper-right"}
+                                x={trendDatasettings.MoveOptionsLeft ? 5 : -5} y={25} opacity={0.4} childId={"mouseInfo"} usePixelPositioning={true}
                                 onMouseMove={setHoverPosition}>
                                 <div id={"mouseInfo"} style={{ display: 'inline-block', background: 'white', overflow: 'visible', whiteSpace: 'pre-wrap', opacity: 0.7 }}>
                                     {`${moment.utc(mousePosition.x).format("HH:mm:SS")}\n${mousePosition.y.toFixed(2)}`}
