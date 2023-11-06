@@ -33,6 +33,9 @@ import { SelectTrendDataSettings } from './../SettingsSlice';
 import { useAppSelector } from './../../hooks';
 
 const momentDateFormat = "MM/DD/YYYY";
+const overlayPortalID = "TrendDataChartPortal";
+const overlayDrawer = "TrendDataNavbar";
+const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFilter"]);
 
 const TrendData = () => {
     const closureHandler = React.useRef<((o: boolean) => void)>(() => { return; });
@@ -47,14 +50,12 @@ const TrendData = () => {
         ID: "blank",
         Width: 50,
         Height: 50,
+        AxisZoom: 'AutoValue',
         ShowEvents: false
     });
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
     const [plotsMovable, setPlotsMovable] = React.useState<boolean>(false);
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
-    const overlayPortalID = "TrendDataChartPortal";
-    const overlayDrawer = "TrendDataNavbar";
-    const defaultsApplied = ["Title", "XAxisLabel", "YLeftLabel", "YRightLabel", "Metric", "Width", "Height", "ShowEvents"];
 
     function getShowNav(): boolean {
         if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.TrendData.ShowNav'))
@@ -106,8 +107,8 @@ const TrendData = () => {
 
     const concatNewContainers = React.useCallback((newContainers: TrendSearch.ITrendPlot[]) => {
         const defaultAppliedContainers = _.cloneDeep(newContainers);
-        defaultsApplied.forEach(field => {
-            if (defaultPlotSettings[field] != null)
+        Object.keys(defaultPlotSettings).forEach(field => {
+            if (defaultPlotSettings[field] != null && !defaultsIgnored.has(field))
                 defaultAppliedContainers.forEach(container => {
                     container[field] = defaultPlotSettings[field];
                 });
