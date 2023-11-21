@@ -140,10 +140,17 @@ const TrendPlot = React.memo((props: IContainerProps) => {
 
         // Get old setting if it exists, otherwise just make a new one
         setPlotAllSeriesSettings(
-            props.Plot.Channels.map(channel => (
-                plotAllSeriesSettings?.find(oldSetting => oldSetting.Channel.ID === channel.ID) ??
-                getDefaultValue(channel)
-            ))
+            props.Plot.Channels.map(channel => {
+                const oldSettings = plotAllSeriesSettings?.find(oldSetting => oldSetting.Channel.ID === channel.ID)
+                if (oldSettings === undefined) return getDefaultValue(channel);
+                if (props.Plot.Type === 'Line') {
+                    const baseLabel = constructLabel(channel);
+                    oldSettings['Min']['Label'] = baseLabel + ' min';
+                    oldSettings['Avg']['Label'] = baseLabel + ' avg';
+                    oldSettings['Max']['Label'] = baseLabel + ' max';
+                }
+                return oldSettings;
+            })
         );
     }, [props.Plot.Type, props.Plot.Channels]);
 
