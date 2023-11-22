@@ -58,6 +58,7 @@ interface ICyclicSeries{
 
 interface IChartData {
     ChannelID: number,
+    BinSize: number,
     Series: [number, number, number][]
 }
 
@@ -103,13 +104,13 @@ const CyclicHistogram = React.memo((props: IProps) => {
         const endTime: string = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
 
         const handle = GetCyclicData(props.ChannelInfo.Channel.ID, startTime, endTime);
-        handle.done((data: TrendSearch.IPQData[]) => {
+        handle.done((data: TrendSearch.ICyclicData[]) => {
             if (data.length === 0) return;
-            const timeSeries = data[0].Points.map(dataPoint => moment.utc(dataPoint.Timestamp, serverFormat).valueOf());
             const channelID = Number("0x" + data[0].ChannelID);
             setChartData({
                 ChannelID: channelID,
-                Series: data[0].Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Average, dataPoint.Maximum]),
+                BinSize: data[0].BinSize,
+                Series: data[0].Points.map((dataPoint) => [moment.utc(dataPoint[0], serverFormat).valueOf(), dataPoint[1], dataPoint[2]]),
             });
             setOldValues({ ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter });
         });
@@ -119,7 +120,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
     }, [props.ChannelInfo, props.TimeFilter]);
 
     React.useEffect(() => {
-        if (chartData == null) setTimeLimits([0, 1]);
+        if (chartData == null || chartData.Series.length === 0) setTimeLimits([0, 1]);
         else {
             const averageTimeDuration = (chartData.Series[chartData.Series.length - 1][0] - chartData.Series[0][0]) / chartData.Series.length;
             setTimeLimits([chartData.Series[0][0], chartData.Series[chartData.Series.length - 1][0] + averageTimeDuration]);
@@ -132,11 +133,11 @@ const CyclicHistogram = React.memo((props: IProps) => {
         setBarColor({ Hue: color.h, Value: color.v})
     }, [props.ChannelInfo?.Color]);
 
-    function GetCyclicData(channel: number, startTime: string, endTime: string): JQuery.jqXHR<TrendSearch.IPQData[]> {
+    function GetCyclicData(channel: number, startTime: string, endTime: string): JQuery.jqXHR<TrendSearch.ICyclicData[]> {
         setGraphStatus('loading');
         return $.ajax({
             type: "POST",
-            url: `${homePath}api/OpenXDA/GetLineChartData`,
+            url: `${homePath}api/OpenXDA/GetCyclicChartData`,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify({
                 Channels: [channel],
@@ -168,8 +169,8 @@ const CyclicHistogram = React.memo((props: IProps) => {
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
                     legend={'bottom'} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={true} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
-                    {(chartData?.Series == null || barColor === null) ? null :
-                        <HeatMapChart data={chartData.Series} hue={barColor.Hue} value={barColor.Value} fillStyle={'fill'} axis={'left'} />
+                    {(chartData?.Series?.length == null || chartData.Series.length === 0 || barColor === null) ? null :
+                        <HeatMapChart data={chartData.Series} binSize={chartData.BinSize} hue={barColor.Hue} value={barColor.Value} fillStyle={'fill'} axis={'left'} legendUnit={props.ChannelInfo.Channel.Unit} />
                     }
                     {props.children}
                     {props.AlwaysRender}

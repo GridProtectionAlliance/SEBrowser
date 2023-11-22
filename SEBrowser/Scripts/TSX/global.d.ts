@@ -173,6 +173,12 @@ export namespace TrendSearch {
         }[]
     }
 
+    interface ICyclicData {
+        ChannelID: string,
+        BinSize: number,
+        Points: [int, int, int][]
+    }
+
     type IPlotTypes = 'Line'|'Cyclic';
 
     interface ITrendPlot {

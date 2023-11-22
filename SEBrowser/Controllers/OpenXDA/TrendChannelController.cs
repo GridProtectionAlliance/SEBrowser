@@ -47,7 +47,38 @@ namespace SEBrowser.Controllers.OpenXDA
     public class TrendChannelController : ApiController
     {
         #region [ Nested Types ]
-        private class HIDSPoint
+
+        // ToDo: These next two are defined in the HIDS controller for xda, do we want to make that an import?
+        private class HistogramMetadata
+        {
+            public int ChannelID { get; set; }
+            public int FundamentalFrequency { get; set; }
+            public int SamplingRate { get; set; }
+            public DateTime StartTime { get; set; }
+            public DateTime EndTime { get; set; }
+            public int TotalCapturedCycles { get; set; }
+            public double CyclesMax { get; set; }
+            public double CyclesMin { get; set; }
+            public double ResidualMax { get; set; }
+            public double ResidualMin { get; set; }
+            public double FrequencyMax { get; set; }
+            public double FrequencyMin { get; set; }
+            public double RMSMax { get; set; }
+            public double RMSMin { get; set; }
+            public int CyclicHistogramBins { get; set; }
+            public int ResidualHistogramBins { get; set; }
+            public int FrequencyHistogramBins { get; set; }
+            public int RMSHistogramBins { get; set; }
+        }
+        private class HistogramPoint
+        {
+            public int Bin { get; set; }
+
+            public int Sample { get; set; }
+
+            public float Value { get; set; }
+        }
+        private class LinearPoint
         {
             public string Tag { get; set; }
             public double Minimum { get; set; }
@@ -58,8 +89,9 @@ namespace SEBrowser.Controllers.OpenXDA
         }
         private class ChannelDataSet
         {
-            public List<HIDSPoint> Points { get; set; }
+            public List<object> Points { get; set; }
             public string ChannelID { get; set; }
+            public double? BinSize { get; set; }
         }
 
         #endregion
@@ -123,41 +155,108 @@ namespace SEBrowser.Controllers.OpenXDA
         [Route("GetLineChartData"), HttpPost]
         public IHttpActionResult GetLineChartData([FromBody] JObject postData)
         {
-            using (AdoDataConnection connection = new(SettingsCategory))
+            Task<Stream> streamTask = XDAAPIHelper.Post("api/HIDS/QueryPoints", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
+            IEnumerable<int> channelIds = postData["Channels"].ToObject<IEnumerable<int>>();
+            List<ChannelDataSet> channelList = channelIds.Select(id => new ChannelDataSet()
             {
-                // TODO: specifing a time filter within a day seems to pull the entire day
-                Task<Stream> streamTask = XDAAPIHelper.Post("api/HIDS/QueryPoints", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
-                IEnumerable<int> channelIds = postData["Channels"].ToObject<IEnumerable<int>>();
-                List<ChannelDataSet> channelList = channelIds.Select(id => new ChannelDataSet()
+                Points = new List<object>(),
+                ChannelID = id.ToString("x8")
+            }).ToList();
+            using (Stream stream = streamTask.Result)
+            using (TextReader reader = new StreamReader(stream))
+            {
+                while (true)
                 {
-                    Points = new List<HIDSPoint>(),
-                    ChannelID = id.ToString("x8")
-                }).ToList();
-                using (Stream stream = streamTask.Result)
-                using (TextReader reader = new StreamReader(stream))
-                {
-                    while (true)
-                    {
-                        string line = reader.ReadLine();
+                    string line = reader.ReadLine();
 
-                        if (line == null)
-                            break;
+                    if (line == null)
+                        break;
 
-                        if (line == string.Empty)
-                            continue;
+                    if (line == string.Empty)
+                        continue;
 
-                        HIDSPoint point = JObject
-                            .Parse(line)
-                            .ToObject<HIDSPoint>();
+                    LinearPoint point = JObject
+                        .Parse(line)
+                        .ToObject<LinearPoint>();
 
-                        //TODO: Perform downsampling to get to something reasonable for a webpage here (maybe 100 or so points per channel?). This would ignore a point before insertion
-                        int index = channelList.FindIndex(chan => chan.ChannelID == point.Tag);
-                        if (index < 0) continue; // should be impossible, but never discount unexpected weirdness
-                        channelList[index].Points.Add(point);
-                    }
+                    //TODO: Perform downsampling to get to something reasonable for a webpage here (maybe 100 or so points per channel?). This would ignore a point before insertion
+                    int index = channelList.FindIndex(chan => chan.ChannelID == point.Tag);
+                    if (index < 0) continue; // should be impossible, but never discount unexpected weirdness
+                    channelList[index].Points.Add(point);
                 }
-                return Ok(channelList);
             }
+            return Ok(channelList);
+        }
+
+        [Route("GetCyclicChartData"), HttpPost]
+        public IHttpActionResult GetCyclicChartData([FromBody] JObject postData)
+        {
+            // Read metadata into list`
+            Task<Stream> metaTask = XDAAPIHelper.Post("api/HIDS/QueryHistogramMetadata", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
+            List<HistogramMetadata> metaList = new List<HistogramMetadata>();
+            using (Stream stream = metaTask.Result)
+            using (TextReader reader = new StreamReader(stream))
+            {
+                while (true)
+                {
+                    string line = reader.ReadLine();
+
+                    if (line == null)
+                        break;
+
+                    foreach(JObject metaData in JArray.Parse(line)) 
+                        metaList.Add(metaData.ToObject<HistogramMetadata>());
+                }
+            }
+
+            // Read Cyclic Data into chart graphable format
+            IEnumerable<int> channelIds = postData["Channels"].ToObject<IEnumerable<int>>();
+            return Ok(channelIds.Select(id => 
+            {
+                JObject channelPostData = new JObject
+                {
+                    { "Channel", id }
+                };
+                ChannelDataSet dataSet = new ChannelDataSet()
+                {
+                    Points = new List<object>(),
+                    ChannelID = id.ToString("x8")
+                };
+                IEnumerable<HistogramMetadata> channelMeta = metaList.Where(metadata => metadata.ChannelID == id);
+                foreach(HistogramMetadata partialMeta in channelMeta)
+                {
+                    channelPostData.Add("Timestamp", partialMeta.StartTime);
+                    long ticksPerIndex = partialMeta.EndTime.Subtract(partialMeta.StartTime).Ticks / 60;//((partialMeta.SamplingRate / partialMeta.FundamentalFrequency) + 1);
+                    double binSize = (partialMeta.CyclesMax - partialMeta.CyclesMin) / partialMeta.CyclicHistogramBins;
+                    Task<Stream> cyclicTask = XDAAPIHelper.Post("api/HIDS/QueryCyclicHistogramData", new StringContent(channelPostData.ToString(), Encoding.UTF8, "application/json"));
+                    using (Stream stream = cyclicTask.Result)
+                    using (TextReader reader = new StreamReader(stream))
+                    {
+                        while (true)
+                        {
+                            string line = reader.ReadLine();
+
+                            if (line == null)
+                                break;
+
+                            if (line == string.Empty)
+                                continue;
+
+                            //Todo: add sample rate culling
+                            foreach (JObject jPoint in JArray.Parse(line))
+                            {
+                                HistogramPoint histPoint = jPoint.ToObject<HistogramPoint>();
+                                object[] point = new object[] { partialMeta.StartTime.AddTicks(histPoint.Sample * ticksPerIndex), partialMeta.CyclesMin + binSize * histPoint.Bin, histPoint.Value };
+                                dataSet.Points.Add(point);
+                            }
+                        }
+                    }
+                    // This will only capture the last, but we have an assumption here that its always gonna be the same bin size
+                    dataSet.BinSize = binSize;
+                }
+                return dataSet;
+            }));
+
         }
         #endregion
 
