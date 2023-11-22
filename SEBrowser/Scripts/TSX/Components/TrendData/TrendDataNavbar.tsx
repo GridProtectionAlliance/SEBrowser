@@ -90,7 +90,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
     // Button Consts
-    const [hover, setHover] = React.useState < 'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Cyclic' | 'Move' | 'Trash' | 'Select' >('None');
+    const [hover, setHover] = React.useState < 'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Group-Line' | 'Cyclic' | 'Move' | 'Trash' | 'Select' >('None');
 
     // Page effects
     React.useLayoutEffect(() => {
@@ -414,7 +414,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${props.HasPlots ? ' disabled' : ''}`}
                         onClick={() => { if (!props.HasPlots) props.RemoveAllCharts(); }}
                         data-tooltip='Trash' onMouseEnter={() => setHover('Trash')} onMouseLeave={() => setHover('None')}>
-                        <span>{SVGIcons.Filter}</span>
+                        <span>{SVGIcons.TrashCan}</span>
                     </button>
                     <ToolTip Show={hover === 'Trash'} Position={'left'} Theme={'dark'} Target={"Trash"}>
                         {<p>Removes All Plots</p>}
@@ -444,15 +444,10 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             const meterPlotChannels: TrendSearch.ITrendChannel[][] = [];
                             selectedChannels.forEach(channel => {
                                 const listIndex = meterPlotChannels.findIndex(channelList => channelList[0].MeterKey === channel.MeterKey);
-                                let newList: TrendSearch.ITrendChannel[];
-                                if (listIndex > -1) {
-                                    newList = meterPlotChannels[listIndex];
-                                    newList.push(channel);
-                                    meterPlotChannels[listIndex] = newList;
-                                } else {
-                                    newList = [channel];
-                                    meterPlotChannels.push(newList);
-                                }
+                                if (listIndex > -1)
+                                    meterPlotChannels[listIndex].push(channel);
+                                else
+                                    meterPlotChannels.push([channel]);
                             });
                             props.AddNewCharts(
                                 meterPlotChannels.map(channelList => {
@@ -468,6 +463,35 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     <ToolTip Show={hover === 'Multi-Line'} Position={'left'} Theme={'dark'} Target={"Multi-Line"}>
                         {<p>Add All Selected Channels to New Line Plots</p>}
                         {<p>Channels will be Seperated into Plots Based on Meter</p>}
+                        {selectedSet.size === 0 ? <p>{CrossMark} {'Action Requires Channels to be Selected'}</p> : null}
+                    </ToolTip>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${selectedSet.size === 0 ? ' disabled' : ''}`}
+                        data-tooltip='Group-Line' onMouseEnter={() => setHover('Group-Line')} onMouseLeave={() => setHover('None')}
+                        onClick={() => {
+                            if (selectedSet.size === 0) return;
+                            const selectedChannels: TrendSearch.ITrendChannel[] = trendChannels.filter(chan => selectedSet.has(chan.ID));
+                            const groupPlotChannels: TrendSearch.ITrendChannel[][] = [];
+                            selectedChannels.forEach(channel => {
+                                const listIndex = groupPlotChannels.findIndex(channelList => channelList[0].ChannelGroup === channel.ChannelGroup);
+                                if (listIndex > -1)
+                                    groupPlotChannels[listIndex].push(channel);
+                                else
+                                    groupPlotChannels.push([channel]);
+                            });
+                            props.AddNewCharts(
+                                groupPlotChannels.map(channelList => {
+                                    return ({
+                                        TimeFilter: timeFilter, Type: 'Line', Channels: channelList, ID: CreateGuid(),
+                                        PlotFilter: linePlotOptions
+                                    });
+                                })
+                            );
+                        }}>
+                        <span>{SVGIcons.Filter}</span>
+                    </button>
+                    <ToolTip Show={hover === 'Group-Line'} Position={'left'} Theme={'dark'} Target={"Group-Line"}>
+                        {<p>Add All Selected Channels to New Line Plots</p>}
+                        {<p>Channels will be Seperated into Plots Based on Channel Group</p>}
                         {selectedSet.size === 0 ? <p>{CrossMark} {'Action Requires Channels to be Selected'}</p> : null}
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm ${selectedSet.size !== 1 ? ' disabled' : ''}`}
