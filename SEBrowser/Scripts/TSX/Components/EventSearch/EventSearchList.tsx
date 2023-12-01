@@ -23,7 +23,9 @@
 
 import * as React from 'react';
 import ReactDOM from 'react-dom';
-import { ConfigurableTable, LoadingIcon, OverlayDrawer } from '@gpa-gemstone/react-interactive';
+import { LoadingIcon, OverlayDrawer } from '@gpa-gemstone/react-interactive';
+import { ConfigTable } from '@gpa-gemstone/react-interactive';
+import { ReactTable } from '@gpa-gemstone/react-table'
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import {  Redux } from '../../global';
 import { SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
@@ -39,7 +41,6 @@ interface IColumn {
     key: string,
     label: string,
     field: keyof any,
-    content: (item: any, key: string, field: keyof any, style: React.CSSProperties, index: number) => React.ReactNode
 }
 
 export default function EventSearchList(props: IProps) {
@@ -78,7 +79,7 @@ export default function EventSearchList(props: IProps) {
 
         if (flds.length != cols.length)
             setCols(flds.map(item => ({
-                field: item, key: item, label: item, content: (item, key, fld) => ProcessWhitespace(item[fld]) })))
+                field: item, key: item, label: item })))
 
     }, [data])
 
@@ -156,34 +157,51 @@ export default function EventSearchList(props: IProps) {
         }}>
             {status == 'loading' ? <div style={{ height: '40px', width: '40px', margin: 'auto' }}>
                 <LoadingIcon Show={true} Size={40} />
-            </div> : null}
-            <ConfigurableTable<any>
-                    cols={[{
-                        field: "Time", key: "Time", label: "Time", content: (item, key, fld) => ProcessWhitespace(item[fld])
-                    }, ...cols]}
-                    tableClass="table table-hover"
-                    data={data}
-                    sortKey={sortField as string}
-                    ascending={ascending}
-                    onSort={(d) => {
-                        if (d.colKey == sortField) dispatch(Sort({ Ascending: ascending, SortField: sortField }));
-                        else dispatch(Sort({ Ascending: true, SortField: d.colKey }));
-                    }}
-                    onClick={(item) => props.selectEvent(item.row.EventID)}
-                    theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 60 }}
-                    tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - hCounter - 60 }}
-                    rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
-                    tableStyle={{ marginBottom: 0 }}
-                    selected={(item) => {
+                </div> : null}
+                {cols.length > 0 ? < ConfigTable.Table<any>
+                    LocalStorageKey="SEbrowser.EventSearch.TableCols"
+                    TableClass="table table-hover"
+                    Data={data}
+                    SortKey={sortField}
+                    Ascending={ascending}
+                    TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 60 }}
+                    TbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - hCounter - 60 }}
+                    RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
+                    TableStyle={{ marginBottom: 0 }}
+                    Selected={(item) => {
                         if (item.EventID == props.eventid) return true;
                         else return false;
                     }}
-                    requiredColumns={["Time"]}
-                    defaultColumns={["Event Type"]}
-                    settingsPortal={'TableSettings'}
-                    onSettingsChange={closeSettings}
-                    localStorageKey={'SEbrowser.EventSearch.TableCols'}
-            />
+                    KeySelector={(item) => item.EventID}
+                    OnSort={(d) => {
+                        if (d.colKey == sortField) dispatch(Sort({ Ascending: ascending, SortField: sortField }));
+                        else dispatch(Sort({ Ascending: true, SortField: d.colKey }));
+                    }}
+                    OnClick={(item) => props.selectEvent(item.row.EventID)}
+                    SettingsPortal={'TableSettings'}
+                    OnSettingsChange={closeSettings}
+                >
+                    <ReactTable.Column<any>
+                        Key={'Time'}
+                        AllowSort={true}
+                        Content={({ item, field }) => ProcessWhitespace(item[field])}
+                        Field={'Time'}
+                    >
+                        Time
+                    </ReactTable.Column>
+                    {...cols.map(c => (
+                        <ConfigTable.Configurable Key={c.label} Label={c.label} Default={c.key === 'Event Type'}>
+                            <ReactTable.Column<any>
+                                Key={c.key}
+                                AllowSort={true}
+                                Field={c.label}
+                                Content={({ item, field }) => ProcessWhitespace(item[field])}
+                            >
+                                {c.label}
+                            </ReactTable.Column>
+                        </ConfigTable.Configurable>
+                    ))}
+                </ConfigTable.Table> : null}
             {status == 'loading' ? null :
                 data.length == numberResults ?
                         <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>

@@ -443,7 +443,7 @@ const ReportTimeFilter = (props: IProps) => {
                                     setActiveQP(-1);
                                 }}
                                 Label='End of Time Window :'
-                                Type='datetime-local'
+                            Type='datetime-local'
                                 Valid={() =>  true } Format={momentDateFormat + ' ' + momentTimeFormat}
                             />
                     </div>

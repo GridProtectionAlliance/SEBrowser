@@ -23,7 +23,6 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import moment from 'moment';
 import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../hooks';
@@ -37,7 +36,7 @@ import { Input, Select, MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { SEBrowser } from '../../Global';
 import EventSearchTypeFilters from './EventSearchTypeFilter';
-import { SelectDateTimeSetting, SelectEventSearchSettings, SelectTimeZone } from '../SettingsSlice';
+import { SelectDateTimeSetting, SelectTimeZone } from '../SettingsSlice';
 import { getMoment, getStartEndTime, readableUnit } from './TimeWindowUtils';
 
 interface IProps {
@@ -47,8 +46,6 @@ interface IProps {
 }
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
-const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS";
 
 const EventSearchNavbar = (props: IProps) => {
     const navRef = React.useRef(null);
@@ -183,7 +180,7 @@ const EventSearchNavbar = (props: IProps) => {
 
         handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
             const ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
-                { label: `[AF${item.ExternalDB != undefined ? " " + item.ExternalDB : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedMeter>
+                { label: `[AF${item.ExternalDBTableID != undefined ? " " + item.ExternalDBTableID : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedMeter>
             )), ['label'], ["asc"]);
             setFields(ordered)
         });
@@ -213,7 +210,7 @@ const EventSearchNavbar = (props: IProps) => {
         handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
 
             const ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
-                { label: `[AF${item.ExternalDB != undefined ? " " + item.ExternalDB : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedAsset>
+                { label: `[AF${item.ExternalDBTableID != undefined ? " " + item.ExternalDBTableID : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedAsset>
             )), ['label'], ["asc"]);
             setFields(ordered);
         });
