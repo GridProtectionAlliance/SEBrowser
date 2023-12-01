@@ -123,7 +123,9 @@ const EventSearchNavbar = (props: IProps) => {
         const center = getMoment(timeFilter.date, timeFilter.time);
         const [start, end] = getStartEndTime(center, timeFilter.windowSize, timeFilter.timeWindowUnits);
         
-        if (dateTimeSetting == 'startWindow' || dateTimeSetting == 'startEnd')
+        if (dateTimeSetting == 'startEnd')
+            r = `${start.format(momentDateTimeFormat)}`;
+        if (dateTimeSetting == 'startWindow')
             r = `${start.format(momentDateTimeFormat)} (${timeZone})`;
         else if (dateTimeSetting == 'endWindow')
             r = `${end.format(momentDateTimeFormat)} (${timeZone})`;
