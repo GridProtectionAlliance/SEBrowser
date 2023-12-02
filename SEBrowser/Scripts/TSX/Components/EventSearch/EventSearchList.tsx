@@ -152,7 +152,7 @@ export default function EventSearchList(props: IProps) {
     return (
         <>
         <div ref={ref} style={{
-            width: '100%', maxHeight: props.height, overflowY: "hidden", opacity: (status == 'loading' ? 0.5 : undefined),
+            width: '100%', maxHeight: props.height, overflowY: "hidden", overflowX: "hidden", opacity: (status == 'loading' ? 0.5 : undefined),
             backgroundColor: (status == 'loading' ? '#00000' : undefined)
         }}>
             {status == 'loading' ? <div style={{ height: '40px', width: '40px', margin: 'auto' }}>
