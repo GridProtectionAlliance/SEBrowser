@@ -172,7 +172,7 @@ export default function EventSearchList(props: IProps) {
                         if (item.EventID == props.eventid) return true;
                         else return false;
                     }}
-                    KeySelector={(item) => item.EventID}
+                    KeySelector={(item) => (item.EventID.toString() + '-' + item.DisturbanceID)}
                     OnSort={(d) => {
                         if (d.colKey == sortField) dispatch(Sort({ Ascending: ascending, SortField: sortField }));
                         else dispatch(Sort({ Ascending: true, SortField: d.colKey }));
