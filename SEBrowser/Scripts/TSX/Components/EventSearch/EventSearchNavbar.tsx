@@ -23,7 +23,6 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import moment from 'moment';
 import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../hooks';
@@ -37,7 +36,7 @@ import { Input, Select, MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { SEBrowser } from '../../Global';
 import EventSearchTypeFilters from './EventSearchTypeFilter';
-import { SelectDateTimeSetting, SelectEventSearchSettings, SelectTimeZone } from '../SettingsSlice';
+import { SelectDateTimeSetting, SelectTimeZone } from '../SettingsSlice';
 import { getMoment, getStartEndTime, readableUnit } from './TimeWindowUtils';
 
 interface IProps {
@@ -47,8 +46,6 @@ interface IProps {
 }
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
-const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS";
 
 const EventSearchNavbar = (props: IProps) => {
     const navRef = React.useRef(null);
@@ -123,7 +120,9 @@ const EventSearchNavbar = (props: IProps) => {
         const center = getMoment(timeFilter.date, timeFilter.time);
         const [start, end] = getStartEndTime(center, timeFilter.windowSize, timeFilter.timeWindowUnits);
         
-        if (dateTimeSetting == 'startWindow' || dateTimeSetting == 'startEnd')
+        if (dateTimeSetting == 'startEnd')
+            r = `${start.format(momentDateTimeFormat)}`;
+        if (dateTimeSetting == 'startWindow')
             r = `${start.format(momentDateTimeFormat)} (${timeZone})`;
         else if (dateTimeSetting == 'endWindow')
             r = `${end.format(momentDateTimeFormat)} (${timeZone})`;
@@ -181,7 +180,7 @@ const EventSearchNavbar = (props: IProps) => {
 
         handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
             const ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
-                { label: `[AF${item.ExternalDB != undefined ? " " + item.ExternalDB : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedMeter>
+                { label: `[AF${item.ExternalDBTableID != undefined ? " " + item.ExternalDBTableID : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedMeter>
             )), ['label'], ["asc"]);
             setFields(ordered)
         });
@@ -211,7 +210,7 @@ const EventSearchNavbar = (props: IProps) => {
         handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
 
             const ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
-                { label: `[AF${item.ExternalDB != undefined ? " " + item.ExternalDB : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedAsset>
+                { label: `[AF${item.ExternalDBTableID != undefined ? " " + item.ExternalDBTableID : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedAsset>
             )), ['label'], ["asc"]);
             setFields(ordered);
         });
@@ -396,6 +395,7 @@ const EventSearchNavbar = (props: IProps) => {
                                         <form>
                                             <label style={{ margin: 0 }}>Sags (p.u.):</label>
                                             <div className="form-group">
+                                                <div className="row" style={{ width: '100%' }}>
                                                 <div className='input-group input-group-sm'>
                                                     <div className='col' style={{ width: '45%', paddingLeft: 0, paddingRight: 0 }}>
                                                         <Input<SEBrowser.IEventCharacteristicFilters>
@@ -427,9 +427,28 @@ const EventSearchNavbar = (props: IProps) => {
                                                             AllowNull={true}
                                                         />
                                                     </div>
+                                                    </div>
                                                 </div>
-                                                <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!sagsSelected} Field='sagType' Setter={setNewEventCharacteristicFilter}
-                                                    Options={lineNeutralOptions} />
+                                                <div className="row justify-content-md-center">
+                                                <div className='form-check form-check-inline'>
+                                                    <input className="form-check-input" type="radio" onChange={() => {
+                                                        setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, sagType: 'LL' });
+                                                    }} checked={newEventCharacteristicFilter.sagType == 'LL'} />
+                                                    <label className="form-check-label">LL</label>
+                                                </div>
+                                                <div className='form-check form-check-inline'>
+                                                    <input className="form-check-input" type="radio" onChange={() => {
+                                                        setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, sagType: 'LN' });
+                                                    }} checked={newEventCharacteristicFilter.sagType  == 'LN'} />
+                                                    <label className="form-check-label">LN</label>
+                                                </div>
+                                                <div className='form-check form-check-inline'>
+                                                    <input className="form-check-input" type="radio" onChange={() => {
+                                                        setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, sagType: 'both' });
+                                                    }} checked={newEventCharacteristicFilter.sagType == 'both'} />
+                                                    <label className="form-check-label">Both</label>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </form>
                                     </div>
@@ -457,7 +476,8 @@ const EventSearchNavbar = (props: IProps) => {
                                    <form>
                                         <label style={{ margin: 0 }}>Transients (p.u.):</label>
                                         <div className="form-group">
-                                            <div className='input-group input-group-sm'>
+                                                <div className='input-group input-group-sm'>
+                                                    <div className="row" style={{ width: '100%' }}>
                                                     <div className='col' style={{ width: '45%', paddingLeft: 0, paddingRight: 0 }}>
                                                         <Input<SEBrowser.IEventCharacteristicFilters>
                                                             Record={newEventCharacteristicFilter} Label=''
@@ -485,17 +505,38 @@ const EventSearchNavbar = (props: IProps) => {
                                                             Size={'small'}
                                                             AllowNull={true}
                                                             Type='number' />
+                                                        </div>
                                                 </div>
                                             </div>
-                                            <Select<SEBrowser.IEventCharacteristicFilters> Record={newEventCharacteristicFilter} Label='' Disabled={!transientsSelected} Field='transientType' Setter={setNewEventCharacteristicFilter}
-                                                Options={lineNeutralOptions}/>
-                                        </div>
+                                                <div className="row justify-content-md-center">
+                                                    <div className='form-check form-check-inline'>
+                                                        <input className="form-check-input" type="radio" onChange={() => {
+                                                            setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, transientType: 'LL' });
+                                                        }} checked={newEventCharacteristicFilter.transientType == 'LL'} />
+                                                        <label className="form-check-label">LL</label>
+                                                    </div>
+                                                    <div className='form-check form-check-inline'>
+                                                        <input className="form-check-input" type="radio" onChange={() => {
+                                                            setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, transientType: 'LN' });
+                                                        }} checked={newEventCharacteristicFilter.transientType == 'LN'} />
+                                                        <label className="form-check-label">LN</label>
+                                                    </div>
+                                                    <div className='form-check form-check-inline'>
+                                                        <input className="form-check-input" type="radio" onChange={() => {
+                                                            setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, transientType: 'both' });
+                                                        }} checked={newEventCharacteristicFilter.transientType == 'both'} />
+                                                        <label className="form-check-label">Both</label>
+                                                    </div>
+                                                </div>
+                                            </div>
                                     </form>
                                 </div>
                                 <div className="col-4">
-                                    <form>
+                                        <form>
+
                                         <label style={{ margin: 0 }}>Swells (p.u.):</label>
-                                        <div className="form-group">
+                                            <div className="form-group">
+                                                <div className="row" style={{ width: '100%' }}>
                                             <div className='input-group input-group-sm'>
                                                     <div className='col' style={{ width: '45%', paddingLeft: 0, paddingRight: 0 }}>
                                                         <Input<SEBrowser.IEventCharacteristicFilters>
@@ -526,13 +567,29 @@ const EventSearchNavbar = (props: IProps) => {
                                                             AllowNull={true}
                                                         />
                                                 </div>
+                                                    </div>
                                             </div>
-                                                <Select<SEBrowser.IEventCharacteristicFilters>
-                                                    Record={newEventCharacteristicFilter}
-                                                    Label='' Disabled={!swellsSelected}
-                                                    Field='swellType' Setter={setNewEventCharacteristicFilter}
-                                                Options={lineNeutralOptions}/>
-                                        </div>
+                                                <div className="row justify-content-md-center">
+                                                    <div className='form-check form-check-inline'>
+                                                        <input className="form-check-input" type="radio" onChange={() => {
+                                                            setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, swellType: 'LL' });
+                                                        }} checked={newEventCharacteristicFilter.swellType == 'LL'} />
+                                                        <label className="form-check-label">LL</label>
+                                                    </div>
+                                                    <div className='form-check form-check-inline'>
+                                                        <input className="form-check-input" type="radio" onChange={() => {
+                                                            setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, swellType: 'LN' });
+                                                        }} checked={newEventCharacteristicFilter.swellType == 'LN'} />
+                                                        <label className="form-check-label">LN</label>
+                                                    </div>
+                                                    <div className='form-check form-check-inline'>
+                                                        <input className="form-check-input" type="radio" onChange={() => {
+                                                            setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, swellType: 'both' });
+                                                        }} checked={newEventCharacteristicFilter.swellType == 'both'} />
+                                                        <label className="form-check-label">Both</label>
+                                                    </div>
+                                                </div>
+                                            </div>
                                     </form>
                                 </div>
                         </div>

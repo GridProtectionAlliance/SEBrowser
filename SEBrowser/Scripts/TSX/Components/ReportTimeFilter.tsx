@@ -54,7 +54,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     {
         label: 'This Hour', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('hour').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'hour').startOf('hour');
+            const t = moment.utc().add(offset, 'minutes').startOf('hour');
             t.add(30, 'minutes');
             return {
                 date: t.format(momentDateFormat),
@@ -67,7 +67,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     {
         label: 'Last Hour', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('hour').subtract(1, 'hour').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'hour').startOf('hour').subtract(1, 'hour');
+            const t = moment.utc().add(offset, 'minutes').startOf('hour').subtract(1, 'hour');
             t.add(30, 'minutes')
             return {
                 date: t.format(momentDateFormat),
@@ -80,7 +80,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     {
         label: 'Last 60 Minutes', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('minute').subtract(1, 'hour').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'hour').startOf('minute').subtract(1, 'hour');
+            const t = moment.utc().add(offset, 'minutes').startOf('minute').subtract(1, 'hour');
             t.add(30, 'minutes');
             return {
                 date: t.format(momentDateFormat),
@@ -93,7 +93,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     {
         label: 'Today', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'hour').startOf('day');
+            const t = moment.utc().add(offset, 'minutes').startOf('day');
             t.add(12, 'hours');
             return {
                 date: t.format(momentDateFormat),
@@ -106,7 +106,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     {
         label: 'Yesterday', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('day').subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'hour').startOf('day').subtract(1, 'days');
+            const t = moment.utc().add(offset, 'minutes').startOf('day').subtract(1, 'days');
             t.add(12, 'hours');
             return {
                 date: t.format(momentDateFormat),
@@ -119,7 +119,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     {
         label: 'Last 24 Hours', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('hour').subtract(24, 'hours').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'hour').subtract(24, 'hours');
+            const t = moment.utc().add(offset, 'minutes').subtract(24, 'hours');
             t.add(12, 'hours');
             return {
                 date: t.format(momentDateFormat),
@@ -132,7 +132,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     {
         label: 'This Week', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('week').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'hour').startOf('week');
+            const t = moment.utc().add(offset, 'minutes').startOf('week');
             t.add(3.5 * 24, 'hours');
             return {
                 date: t.format(momentDateFormat),
@@ -145,7 +145,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     {
         label: 'Last Week', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('week').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'hour').startOf('week');
+            const t = moment.utc().add(offset, 'minutes').startOf('week');
             t.subtract(3.5 * 24, 'hours');
             return {
                 date: t.format(momentDateFormat),
@@ -158,7 +158,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     {
         label: 'Last 7 Days', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'hour').startOf('day');
+            const t = moment.utc().add(offset, 'minutes').startOf('day');
             t.subtract(3.5 * 24, 'hours');
             return {
                 date: t.format(momentDateFormat),
@@ -171,7 +171,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     {
         label: 'This Month', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('month').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'hour').startOf('month');
+            const t = moment.utc().add(offset, 'minutes').startOf('month');
             t.add(12 * t.daysInMonth(), 'hours');
             return {
                 date: t.format(momentDateFormat),
@@ -184,7 +184,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     {
         label: 'Last Month', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('month').subtract(1, 'month').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'hour').startOf('month').subtract(1, 'month');
+            const t = moment.utc().add(offset, 'minutes').startOf('month').subtract(1, 'month');
             t.add(12 * t.daysInMonth(), 'hours');
             return {
                 date: t.format(momentDateFormat),
@@ -197,7 +197,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     {
         label: 'Last 30 Days', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'hour').startOf('day');
+            const t = moment.utc().add(offset, 'minutes').startOf('day');
             t.subtract(15, 'days');
             return {
                 date: t.format(momentDateFormat),
@@ -211,8 +211,8 @@ const AvailableQuickSelects: IQuickSelect[] = [
         label: 'This Quarter', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('quarter').add(1, 'quarter').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
             const offset_tend = momentTZ.tz(moment.utc().startOf('quarter').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'hour').startOf('quarter');
-            const tend = moment.utc().add(offset_tend, 'hour').startOf('quarter');
+            const t = moment.utc().add(offset, 'minutes').startOf('quarter');
+            const tend = moment.utc().add(offset_tend, 'minutes').startOf('quarter');
             tend.add(1, 'quarter')
             const h = moment.duration(tend.diff(t)).asDays();
             t.add(h * 0.5, 'day');
@@ -228,8 +228,8 @@ const AvailableQuickSelects: IQuickSelect[] = [
         label: 'Last Quarter', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('quarter').subtract(1, 'quarter').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
             const offset_tend = momentTZ.tz(moment.utc().startOf('quarter').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'hour').startOf('quarter');
-            const tend = moment.utc().add(offset_tend, 'hour').startOf('quarter');
+            const t = moment.utc().add(offset, 'minutes').startOf('quarter');
+            const tend = moment.utc().add(offset_tend, 'minutes').startOf('quarter');
             t.subtract(1, 'quarter');
             const h = moment.duration(tend.diff(t)).asDays();
             t.add(h * 0.5, 'day');
@@ -244,7 +244,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     {
         label: 'Last 90 Days', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('day').subtract(45, 'days').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'minute').startOf('day');
+            const t = moment.utc().add(offset, 'minutes').startOf('day');
             t.subtract(45, 'days');
             return {
                 date: t.format(momentDateFormat),
@@ -257,7 +257,7 @@ const AvailableQuickSelects: IQuickSelect[] = [
     {
         label: 'This Year', createFilter: (tz) => {
             const offset = momentTZ.tz(moment.utc().startOf('year').add(6, 'month').format('YYYY-MM-DDTHH:mm:ss.SSSSS'), tz).utcOffset();
-            const t = moment.utc().add(offset, 'minute').startOf('year');
+            const t = moment.utc().add(offset, 'minutes').startOf('year');
             t.add(6, 'month');
             return {
                 date: t.format(momentDateFormat),
@@ -363,7 +363,7 @@ const ReportTimeFilter = (props: IProps) => {
                 {dateTimeSetting === 'center' ?
                 <div className="row">
                     <div className='col-12'>
-                        <DatePicker< ITimeFilter > Record={filter} Field="centerTime"
+                        <DatePicker< ITimeFilter > Record={filter} Field="centerTime" Help={`All times are in system time. System time is currently set to ${timeZone}. `}
                             Setter={(r) => {
                                 const centerTime = getMoment(r.centerTime);
                                 const [startTime, endTime] = getStartEndTime(centerTime, filter.halfWindowSize, filter.timeWindowUnits);
@@ -386,7 +386,7 @@ const ReportTimeFilter = (props: IProps) => {
             {dateTimeSetting === 'startWindow' || dateTimeSetting === 'startEnd' ?
                 <div className="row"> 
                     <div className='col-12'>
-                            <DatePicker< ITimeFilter > Record={filter} Field="startTime"
+                        <DatePicker< ITimeFilter > Record={filter} Field="startTime" Help={`All times are in system time. System time is currently set to ${timeZone}. `}
                                 Setter={(r) => {
                                     const startTime = getMoment(r.startTime);
                                     let window = filter.windowSize;
@@ -420,7 +420,7 @@ const ReportTimeFilter = (props: IProps) => {
             {dateTimeSetting === 'endWindow' || dateTimeSetting === 'startEnd' ?
                     <div className="row"> 
                         <div className='col-12'>
-                            <DatePicker<ITimeFilter> Record={filter} Field="endTime"
+                        <DatePicker<ITimeFilter> Record={filter} Field="endTime" Help={`All times are in system time. System time is currently set to ${timeZone}. `}
                                 Setter={(r) => {
                                     const endTime = getMoment(r.endTime);
                                     let window = filter.windowSize;
@@ -443,7 +443,7 @@ const ReportTimeFilter = (props: IProps) => {
                                     setActiveQP(-1);
                                 }}
                                 Label='End of Time Window :'
-                                Type='datetime-local'
+                            Type='datetime-local'
                                 Valid={() =>  true } Format={momentDateFormat + ' ' + momentTimeFormat}
                             />
                     </div>
@@ -575,7 +575,7 @@ const ReportTimeFilter = (props: IProps) => {
                         </div>
                         <div className='col-6'>
                             <Select<ITimeFilter> Record={filter} Label=''
-                                Field='timeWindowUnits'
+                                Field='timeWindowUnits' 
                             Setter={(r) => {
                                 const endTime = getMoment(filter.endTime);
                                 const d = moment.duration(filter.halfWindowSize, momentUnit(r.timeWindowUnits));
