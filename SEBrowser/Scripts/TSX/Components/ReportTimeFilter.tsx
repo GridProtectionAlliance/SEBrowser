@@ -363,7 +363,7 @@ const ReportTimeFilter = (props: IProps) => {
                 {dateTimeSetting === 'center' ?
                 <div className="row">
                     <div className='col-12'>
-                        <DatePicker< ITimeFilter > Record={filter} Field="centerTime"
+                        <DatePicker< ITimeFilter > Record={filter} Field="centerTime" Help={`All times are in system time. System time is currently set to ${timeZone}. `}
                             Setter={(r) => {
                                 const centerTime = getMoment(r.centerTime);
                                 const [startTime, endTime] = getStartEndTime(centerTime, filter.halfWindowSize, filter.timeWindowUnits);
@@ -386,7 +386,7 @@ const ReportTimeFilter = (props: IProps) => {
             {dateTimeSetting === 'startWindow' || dateTimeSetting === 'startEnd' ?
                 <div className="row"> 
                     <div className='col-12'>
-                            <DatePicker< ITimeFilter > Record={filter} Field="startTime"
+                        <DatePicker< ITimeFilter > Record={filter} Field="startTime" Help={`All times are in system time. System time is currently set to ${timeZone}. `}
                                 Setter={(r) => {
                                     const startTime = getMoment(r.startTime);
                                     let window = filter.windowSize;
@@ -420,7 +420,7 @@ const ReportTimeFilter = (props: IProps) => {
             {dateTimeSetting === 'endWindow' || dateTimeSetting === 'startEnd' ?
                     <div className="row"> 
                         <div className='col-12'>
-                            <DatePicker<ITimeFilter> Record={filter} Field="endTime"
+                        <DatePicker<ITimeFilter> Record={filter} Field="endTime" Help={`All times are in system time. System time is currently set to ${timeZone}. `}
                                 Setter={(r) => {
                                     const endTime = getMoment(r.endTime);
                                     let window = filter.windowSize;
@@ -575,7 +575,7 @@ const ReportTimeFilter = (props: IProps) => {
                         </div>
                         <div className='col-6'>
                             <Select<ITimeFilter> Record={filter} Label=''
-                                Field='timeWindowUnits'
+                                Field='timeWindowUnits' 
                             Setter={(r) => {
                                 const endTime = getMoment(filter.endTime);
                                 const d = moment.duration(filter.halfWindowSize, momentUnit(r.timeWindowUnits));
