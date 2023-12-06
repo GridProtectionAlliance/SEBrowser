@@ -23,9 +23,9 @@
 import React from 'react';
 import _ from 'lodash';
 import { TrendSearch } from '../../../Global';
-import { ConfigurableTable } from '@gpa-gemstone/react-interactive';
+import { ConfigTable } from '@gpa-gemstone/react-interactive';
 import { TrashCan } from '@gpa-gemstone/gpa-symbols';
-import { Column } from '@gpa-gemstone/react-table';
+import { ReactTable } from '@gpa-gemstone/react-table';
 
 type IProps = ICommon & (IMultiProps | ISingleProps);
 
@@ -48,28 +48,20 @@ interface ISingleProps {
     SetSelected: (id: number) => void
 }
 
+
+const colList = ["Description", "Asset Key", "Asset Name", "Meter Key", "Meter Name", "Channel Group", "Channel Group Type"];
+const defaultCols = new Set(["Meter Name", "Description"]);
+
 const TrendChannelTable = (props: IProps) => {
     const [trendChannels, setTrendChannels] = React.useState<TrendSearch.ITrendChannel[]>([]);
     const [sortField, setSortField] = React.useState<string>('MeterName');
     const [ascending, setAscending] = React.useState<boolean>(true);
 
-    const [allCols, setAllCols] = React.useState<Column<TrendSearch.ITrendChannel>[]>([
-        { key: "Name", field: "Name", label: "Channel Name" },
-        { key: "Description", field: "Description", label: "Description" },
-        { key: "AssetKey", field: "AssetKey", label: "Asset Key" },
-        { key: "AssetName", field: "AssetName", label: "Asset Name" },
-        { key: "MeterKey", field: "MeterKey", label: "Meter Key" },
-        { key: "MeterName", field: "MeterName", label: "Meter Name" },
-        { key: "Phase", field: "Phase", label: "Phase" },
-        { key: "ChannelGroup", field: "ChannelGroup", label: "Channel Group" },
-        { key: "ChannelGroupType", field: "ChannelGroupType", label: "Channel Group Type" },
-    ]);
-
     const removeButton = React.useCallback(
-        (channel: TrendSearch.ITrendChannel) => (
+        (data: { item: TrendSearch.ITrendChannel }) => (
             <button type="button"
                 className={'btn float-left'}
-                onClick={(event) => { event.preventDefault(); event.stopPropagation(); props.RemoveChannel(channel.ID) }}>
+                onClick={(event) => { event.preventDefault(); event.stopPropagation(); props.RemoveChannel(data.item.ID) }}>
                 {TrashCan}
             </button>
         ), [props.RemoveChannel]);
@@ -93,37 +85,18 @@ const TrendChannelTable = (props: IProps) => {
         }, [props.Type, props.Type === 'single' ? props.Selected : props.SelectedSet, props.TrendChannels]);
 
     React.useEffect(() => {
-        const newCols: Column<TrendSearch.ITrendChannel>[] = [...allCols];
-        const index: number = newCols.findIndex((col) => col.key === "RemoveChannel");
-        if (props.RemoveChannel !== undefined) {
-            const newCol: Column<TrendSearch.ITrendChannel> = { key: "RemoveChannel", field: "ID", label: "", rowStyle: { width: "50px" }, headerStyle: { width: "50px" }, content: removeButton };
-            if (index > -1)
-                newCols.splice(index, 1, newCol);
-            else
-                newCols.push(newCol);
-            setAllCols(newCols);
-        }
-        else if (props.RemoveChannel === undefined && index > -1) {
-            newCols.splice(index, 1);
-            setAllCols(newCols);
-        }
-    }, [props.RemoveChannel]);
-
-    React.useEffect(() => {
         setTrendChannels(_.orderBy(props.TrendChannels, sortField, (ascending ? 'asc' : 'desc')));
     }, [props.TrendChannels, sortField, ascending]);
 
     return (
-        <ConfigurableTable<TrendSearch.ITrendChannel>
-            defaultColumns={["Name", "MeterName", "Description", "Phase", (props.RemoveChannel !== undefined ? "RemoveChannel" : "ChannelGroup")]}
-            requiredColumns={["Name", "Phase", (props.RemoveChannel !== undefined ? "RemoveChannel" : "ChannelGroup")]}
-            cols={allCols}
-            data={trendChannels}
-            sortKey={sortField}
-            ascending={ascending}
-            onSort={sortCallback}
-            onDragStart={props.EnableDragDrop ? dragFuncCallback : undefined}
-            onClick={(item, event) => {
+        <ConfigTable.Table<TrendSearch.ITrendChannel>
+            Data={trendChannels}
+            SortKey={sortField}
+            Ascending={ascending}
+            OnSort={sortCallback}
+            OnDragStart={dragFuncCallback}/*{props.EnableDragDrop ? dragFuncCallback : undefined}*/
+            KeySelector={(item) => item.ID}
+            OnClick={(item, event) => {
                 event.preventDefault();
                 // Handling on single selected case
                 if (props.Type === "single") props.SetSelected(item.row.ID);
@@ -152,11 +125,41 @@ const TrendChannelTable = (props: IProps) => {
                     props.SetSelectedSet(newIds);
                 }
             }}
-            selected={(item) => props.Type === 'multi' ? props.SelectedSet.has(item.ID) : props.Selected === item.ID}
-            theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-            tbodyStyle={{ display: 'block', overflowY: 'scroll', height: props.Height - 30, userSelect: 'none'}}
-            rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
-        />);
+            Selected={(item) => props.Type === 'multi' ? props.SelectedSet.has(item.ID) : props.Selected === item.ID}
+            TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+            TbodyStyle={{ display: 'block', overflowY: 'scroll', height: props.Height - 30, userSelect: 'none'}}
+            RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
+            TableClass="table table-hover"
+            TableStyle={{ marginBottom: 0 }}>
+            <ReactTable.AdjustableCol<TrendSearch.ITrendChannel>
+                Key={'Name'}
+                AllowSort={true}
+                Field={'Name'}
+            >Channel Name</ReactTable.AdjustableCol>
+            <ReactTable.AdjustableCol<TrendSearch.ITrendChannel>
+                Key={'Phase'}
+                AllowSort={true}
+                Field={'Phase'}
+            />
+            {colList.map(name =>
+                <ConfigTable.Configurable Key={name} Label={name} Default={defaultCols.has(name)}>
+                    <ReactTable.AdjustableCol<TrendSearch.ITrendChannel>
+                        Key={name}
+                        AllowSort={true}
+                        Field={name.replace(/\s/, "") as keyof TrendSearch.ITrendChannel}
+                    >{name}</ReactTable.AdjustableCol>
+                </ConfigTable.Configurable>)
+            }
+            {props.RemoveChannel !== undefined ?
+                <ReactTable.Column<TrendSearch.ITrendChannel>
+                    Key={'RemoveChannel'}
+                    AllowSort={false}
+                    Field={'ID'}
+                    RowStyle={{ width: "50px" }}
+                    HeaderStyle={{ width: "50px" }}
+                    Content={removeButton}
+                ></ReactTable.Column>: null}
+        </ConfigTable.Table>);
 }
 
 export default TrendChannelTable;
