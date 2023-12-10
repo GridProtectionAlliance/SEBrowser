@@ -176,7 +176,8 @@ export namespace TrendSearch {
     interface ICyclicData {
         ChannelID: string,
         BinSize: number,
-        Points: [int, int, int][]
+        TimeSpanMs: number,
+        Points: [string, number, number][]
     }
 
     type IPlotTypes = 'Line'|'Cyclic';

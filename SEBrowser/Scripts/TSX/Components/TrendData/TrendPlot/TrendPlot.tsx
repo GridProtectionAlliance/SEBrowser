@@ -132,7 +132,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                 }
                 case 'Cyclic': {
                     return ({
-                        Channel: channel, Color: SpacedColor(0.9, 0.9)
+                        Channel: channel, Color: SpacedColor(1, 0.9)
                     });
                 }
             }

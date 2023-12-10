@@ -59,6 +59,7 @@ interface ICyclicSeries{
 interface IChartData {
     ChannelID: number,
     BinSize: number,
+    TimeSpan: number,
     Series: [number, number, number][]
 }
 
@@ -91,7 +92,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
     const [chartData, setChartData] = React.useState<IChartData>(null);
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
     const [oldValues, setOldValues] = React.useState<{ ChannelInfo: ICyclicSeries, TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: null, TimeFilter: null });
-    const [barColor, setBarColor] = React.useState<{ Hue: number, Value: number }>(null);
+    const [barColor, setBarColor] = React.useState<{ Hue: number, Saturation: number }>(null);
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
 
     React.useEffect(() => {
@@ -105,12 +106,14 @@ const CyclicHistogram = React.memo((props: IProps) => {
 
         const handle = GetCyclicData(props.ChannelInfo.Channel.ID, startTime, endTime);
         handle.done((data: TrendSearch.ICyclicData[]) => {
-            if (data.length === 0) return;
+            if (data.length === 0 || data[0].Points. length === 0) return;
             const channelID = Number("0x" + data[0].ChannelID);
             setChartData({
                 ChannelID: channelID,
                 BinSize: data[0].BinSize,
-                Series: data[0].Points.map((dataPoint) => [moment.utc(dataPoint[0], serverFormat).valueOf(), dataPoint[1], dataPoint[2]]),
+                // 10k ticks per ms
+                TimeSpan: data[0].TimeSpanMs,
+                Series: data[0].Points.map((dataPoint) => [moment.utc(dataPoint[0], serverFormat).valueOf(), dataPoint[1], 100*dataPoint[2]]),
             });
             setOldValues({ ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter });
         });
@@ -130,7 +133,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
     React.useEffect(() => {
         if (props.ChannelInfo?.Color == null) return;
         const color = HexToHsv(props.ChannelInfo.Color);
-        setBarColor({ Hue: color.h, Value: color.v})
+        setBarColor({ Hue: color.h, Saturation: color.s})
     }, [props.ChannelInfo?.Color]);
 
     function GetCyclicData(channel: number, startTime: string, endTime: string): JQuery.jqXHR<TrendSearch.ICyclicData[]> {
@@ -167,10 +170,10 @@ const CyclicHistogram = React.memo((props: IProps) => {
                 {props.Title !== undefined ? <h4 style={{ textAlign: "center", width: `${props.Width}px` }}>{props.Title}</h4> : null}
                 <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} showBorder={trendDatasettings.BorderPlots} moveMenuLeft={trendDatasettings.MoveOptionsLeft}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
-                    legend={'bottom'} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
+                    legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={true} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {(chartData?.Series?.length == null || chartData.Series.length === 0 || barColor === null) ? null :
-                        <HeatMapChart data={chartData.Series} binSize={chartData.BinSize} hue={barColor.Hue} value={barColor.Value} fillStyle={'fill'} axis={'left'} legendUnit={props.ChannelInfo.Channel.Unit} />
+                        <HeatMapChart data={chartData.Series} sampleMs={chartData.TimeSpan} binSize={chartData.BinSize} hue={barColor.Hue} saturation={barColor.Saturation} fillStyle={'fill'} axis={'left'} legendUnit={'%'} />
                     }
                     {props.children}
                     {props.AlwaysRender}

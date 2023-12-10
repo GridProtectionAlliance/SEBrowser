@@ -92,6 +92,7 @@ namespace SEBrowser.Controllers.OpenXDA
             public List<object> Points { get; set; }
             public string ChannelID { get; set; }
             public double? BinSize { get; set; }
+            public double? TimeSpanMs { get; set; }
         }
 
         #endregion
@@ -191,7 +192,7 @@ namespace SEBrowser.Controllers.OpenXDA
         [Route("GetCyclicChartData"), HttpPost]
         public IHttpActionResult GetCyclicChartData([FromBody] JObject postData)
         {
-            // Read metadata into list`
+            // Read metadata into list
             Task<Stream> metaTask = XDAAPIHelper.Post("api/HIDS/QueryHistogramMetadata", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
             List<HistogramMetadata> metaList = new List<HistogramMetadata>();
             using (Stream stream = metaTask.Result)
@@ -226,7 +227,7 @@ namespace SEBrowser.Controllers.OpenXDA
                 foreach(HistogramMetadata partialMeta in channelMeta)
                 {
                     channelPostData.Add("Timestamp", partialMeta.StartTime);
-                    long ticksPerIndex = partialMeta.EndTime.Subtract(partialMeta.StartTime).Ticks / 60;//((partialMeta.SamplingRate / partialMeta.FundamentalFrequency) + 1);
+                    long ticksPerIndex = partialMeta.EndTime.Subtract(partialMeta.StartTime).Ticks / ((partialMeta.SamplingRate / partialMeta.FundamentalFrequency) + 1);
                     double binSize = (partialMeta.CyclesMax - partialMeta.CyclesMin) / partialMeta.CyclicHistogramBins;
                     Task<Stream> cyclicTask = XDAAPIHelper.Post("api/HIDS/QueryCyclicHistogramData", new StringContent(channelPostData.ToString(), Encoding.UTF8, "application/json"));
                     using (Stream stream = cyclicTask.Result)
@@ -251,8 +252,9 @@ namespace SEBrowser.Controllers.OpenXDA
                             }
                         }
                     }
-                    // This will only capture the last, but we have an assumption here that its always gonna be the same bin size
+                    // This will only capture the last, but we have an assumption here that its always the same
                     dataSet.BinSize = binSize;
+                    dataSet.TimeSpanMs = new TimeSpan(ticksPerIndex).TotalMilliseconds;
                 }
                 return dataSet;
             }));
