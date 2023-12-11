@@ -174,15 +174,6 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                 <div className={'col'}>
                                     <CheckBox<Redux.ITrendDataSettings>
                                         Record={trendData}
-                                        Field='MoveOptionsLeft'
-                                        Setter={setTrendData}
-                                        Label='Display Plot Toolbar on Left Side of Plot'/>
-                                </div>
-                            </div>
-                            <div className={"row"}>
-                                <div className={'col'}>
-                                    <CheckBox<Redux.ITrendDataSettings>
-                                        Record={trendData}
                                         Field='MarkerSnapping'
                                         Setter={setTrendData}
                                         Label='Enforce New Markers to Snap to Nearest Datapoint'/>
@@ -204,6 +195,15 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Setter={(g) => setGeneral(g)}
                                         Label='Date/Time Filter Mode'
                                     />
+                                </div>
+                            </div>
+                            <div className={"row"}>
+                                <div className={'col'}>
+                                    <CheckBox<any>
+                                        Record={general}
+                                        Field='MoveOptionsLeft'
+                                        Setter={(g) => setGeneral(g)}
+                                        Label='Display Plot Toolbar on Left Side of Plot' />
                                 </div>
                             </div>
                         </fieldset>

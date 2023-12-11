@@ -24,7 +24,7 @@ import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../Global';
-import { SelectTrendDataSettings } from './../../SettingsSlice';
+import { SelectTrendDataSettings, SelectMoveOptionsLeftSetting } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
@@ -94,6 +94,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
     const [oldValues, setOldValues] = React.useState<{ ChannelInfo: ICyclicSeries, TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: null, TimeFilter: null });
     const [barColor, setBarColor] = React.useState<{ Hue: number, Saturation: number }>(null);
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
+    const moveLeft = useAppSelector(SelectMoveOptionsLeftSetting);
 
     React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
@@ -168,7 +169,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
             <div className="row">
                 <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={29} />
                 {props.Title !== undefined ? <h4 style={{ textAlign: "center", width: `${props.Width}px` }}>{props.Title}</h4> : null}
-                <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} showBorder={trendDatasettings.BorderPlots} moveMenuLeft={trendDatasettings.MoveOptionsLeft}
+                <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} showBorder={trendDatasettings.BorderPlots} moveMenuLeft={moveLeft}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
                     legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={true} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>

@@ -27,7 +27,7 @@ import { useAppDispatch, useAppSelector } from '../../hooks';
 import { Redux, SEBrowser } from '../../global';
 import { MagDurCurveSlice } from '../../Store';
 import { Line, Plot, Circle, AggregatingCircles } from '@gpa-gemstone/react-graph';
-import { SelectEventSearchSettings } from '../SettingsSlice';
+import { SelectEventSearchSettings, SelectMoveOptionsLeftSetting } from '../SettingsSlice';
 import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
 import Table, { Column } from '@gpa-gemstone/react-table';
 
@@ -46,6 +46,7 @@ const MagDurChart = (props: IProps) => {
     const magDurCurves = useAppSelector(MagDurCurveSlice.Data) as SEBrowser.MagDurCurve[];
     const [currentCurve, setCurrentCurve] = React.useState<SEBrowser.MagDurCurve>(null)
     const numberResults = useAppSelector((state: Redux.StoreState) => SelectEventSearchSettings(state).NumberResults)
+    const moveLeft = useAppSelector(SelectMoveOptionsLeftSetting);
     const [width, setWidth] = React.useState<number>(0);
     const [x, setX] = React.useState<boolean>(false);
     const [hCounter, setHCounter] = React.useState<number>(0);
@@ -188,7 +189,7 @@ const MagDurChart = (props: IProps) => {
     return (
         <>
             <div ref={chart} style={{ height: props.Height, width: '100%', display: 'inline-block' }}>
-            <Plot height={props.Height - hCounter} width={width} showBorder={false}
+            <Plot height={props.Height - hCounter} width={width} showBorder={false} moveMenuLeft={moveLeft}
                 defaultTdomain={[0.00001, 1000]}
                 defaultYdomain={[0, 5]}
                 Tmax={1000}

@@ -89,6 +89,7 @@ export namespace Redux {
     interface SettingsState {
         eventSearch: IEventSearchSettings,
         trendData: ITrendDataSettings,
+        MoveOptionsLeft: boolean,
         timeZone: string,
         DateTimeSetting: SEBrowser.TimeWindowMode
     }
@@ -104,7 +105,6 @@ export namespace Redux {
         InsertAtStart: boolean,
         MarkerSnapping: boolean,
         StartWithOptionsClosed: boolean,
-        MoveOptionsLeft: boolean,
         LegendDisplay: 'bottom' | 'right' | 'hidden'
     }
 }

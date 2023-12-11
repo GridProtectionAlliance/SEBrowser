@@ -43,9 +43,9 @@ const defaultState = {
         InsertAtStart: false,
         MarkerSnapping: false,
         StartWithOptionsClosed: false,
-        MoveOptionsLeft: false,
         LegendDisplay: 'bottom'
     },
+    MoveOptionsLeft: false,
     timeZone: 'UTC',
     DateTimeSetting: 'center'
 } as Redux.SettingsState;
@@ -66,10 +66,12 @@ const settingsSlice = createSlice({
         },
         SetGeneral: (state: Redux.SettingsState, action: {
             type: string,
-            payload: { DateTime?: SEBrowser.TimeWindowMode }
+            payload: { DateTime?: SEBrowser.TimeWindowMode, MoveOptionsLeft: boolean }
         }) => {
             if (action.payload.DateTime !== undefined)
                 state.DateTimeSetting = action.payload.DateTime;
+            if (action.payload.MoveOptionsLeft !== undefined)
+                state.MoveOptionsLeft = action.payload.MoveOptionsLeft;
             saveSettings(state);
         },
     },
@@ -89,6 +91,8 @@ const settingsSlice = createSlice({
                 }
                 if (preserved.DateTimeSetting === undefined)
                     state.DateTimeSetting = 'center';
+                if (preserved.MoveOptionsLeft !== undefined)
+                    state.MoveOptionsLeft = preserved.MoveOptionsLeft;
             }
 
             state.timeZone = cloneDeep(action.payload[0]);
@@ -110,6 +114,8 @@ const settingsSlice = createSlice({
                 }
                 if (preserved.DateTimeSetting === undefined)
                     state.DateTimeSetting = 'center';
+                if (preserved.MoveOptionsLeft !== undefined)
+                    state.MoveOptionsLeft = preserved.MoveOptionsLeft;
             }
 
             state.timeZone = 'UTC';
@@ -172,5 +178,6 @@ export const SelectTrendDataSettings = (state: Redux.StoreState) => state.Settin
 export const SelectTimeZone = (state: Redux.StoreState) => state.Settings.timeZone
 export const SelectWidgetCategories = (state: Redux.StoreState) => state.Settings.eventSearch.WidgetCategories
 export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.DateTimeSetting
+export const SelectMoveOptionsLeftSetting = (state: Redux.StoreState) => state.Settings.MoveOptionsLeft
 export const SelectGeneralSettings = createSelector(
-    SelectDateTimeSetting, (dateTime) => ({ DateTime: dateTime }));
+    SelectDateTimeSetting, SelectMoveOptionsLeftSetting, (dateTime, moveOptionsLeft) => ({ DateTime: dateTime, MoveOptionsLeft: moveOptionsLeft }));
