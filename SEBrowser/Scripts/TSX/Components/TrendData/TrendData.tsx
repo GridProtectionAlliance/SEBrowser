@@ -40,7 +40,6 @@ const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFi
 const TrendData = () => {
     const closureHandler = React.useRef<((o: boolean) => void)>(() => { return; });
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
-    const [navHeight, setNavHeight] = React.useState<number>(0);
     const [plotList, setPlotList] = React.useState<TrendSearch.ITrendPlot[]>([]);
     const [defaultPlotSettings, setDefaultPlotSettings] = React.useState<TrendSearch.ITrendPlot>({
         TimeFilter: { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 12, timeWindowUnits: 3 },
@@ -132,11 +131,10 @@ const TrendData = () => {
     ), [showNav]);
 
     return (
-        <div style={{ width: '100%', height: '100%' }} data-drawer={overlayDrawer}>
+        <div className="container-fluid d-flex h-100 flex-column" style={{ height: 'inherit' }} data-drawer={overlayDrawer}>
             <TrendSearchNavbar
                 ToggleVis={toggleNavbar}
                 ShowNav={showNav}
-                SetHeight={setNavHeight}
                 HasPlots={plotList.length === 0} //TODO: Does this count as a function? Should this be a const with callback?
                 SetShowAllSettings={setShowSettings}
                 AddNewCharts={concatNewContainers}
@@ -146,11 +144,13 @@ const TrendData = () => {
                 Movable={plotsMovable}
                 SetMovable={setPlotsMovable}
             />
-            <div style={{ width: '100%', height: (showNav ? 'calc(100% - ' + navHeight + 'px)' : 'calc( 100% - 52px)'), overflowY: 'scroll' }}>
-                {plotList.map(element => <TrendPlot key={element.ID} DragMode={plotsMovable}
-                    Plot={element} SetPlot={setPlot} RemovePlot={removePlot} SplicePlot={movePlot}
-                    OverlayPortalID={overlayPortalID} HandleOverlay={closeSettings}
-                />)}
+            <div className={'row'} style={{ flex: 1, overflow: 'hidden' }}>
+                <div className={'col-12'} style={{ height: '100%', overflow: 'scroll' }}>
+                    {plotList.map(element => <TrendPlot key={element.ID} DragMode={plotsMovable}
+                        Plot={element} SetPlot={setPlot} RemovePlot={removePlot} SplicePlot={movePlot}
+                        OverlayPortalID={overlayPortalID} HandleOverlay={closeSettings}
+                    />)}
+                </div>
             </div>
             <OverlayDrawer Title={''} Open={false} Location={'top'} Target={overlayDrawer} GetOverride={(s) => { closureHandler.current = s; }} HideHandle={true}>
                 <div id={overlayPortalID} style={{opacity: 1, background: undefined, color: 'black' }} />

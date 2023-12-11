@@ -40,7 +40,6 @@ import TrendChannelTable from './Components/TrendChannelTable';
 interface IProps {
     ToggleVis: () => void,
     ShowNav: boolean,
-    SetHeight: (h: number) => void,
     SetShowAllSettings: (show: boolean) => void,
     HasPlots: boolean,
     AddNewCharts: (chartData: TrendSearch.ITrendPlot[]) => void,
@@ -94,7 +93,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
 
     // Page effects
     React.useLayoutEffect(() => {
-        props.SetHeight(navRef?.current?.offsetHeight ?? 0);
         const timeHeight = timeRef?.current?.offsetHeight ?? 0;
         const filtHeight = filtRef?.current?.offsetHeight ?? 0;
         setTableHeight(timeHeight > filtRef ? timeHeight : filtHeight);
