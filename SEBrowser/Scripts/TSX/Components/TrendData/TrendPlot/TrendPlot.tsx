@@ -30,14 +30,14 @@ import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, Axis
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { LineGraph, ILineSeries } from './LineGraph';
 import { SEBrowser, TrendSearch } from '../../../global';
-import { SelectMoveOptionsLeftSetting } from './../../SettingsSlice';
+import { SelectTrendDataSettings, SelectMoveOptionsLeftSetting } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
 import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
 import { SettingsOverlay, SeriesSettings } from '../Settings/SettingsOverlay';
 import { CyclicHistogram, ICyclicSeries } from './CyclicHistogram';
 
-//TODO: move to global
+const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
 
 interface IContainerProps {
     // Manage Plot
@@ -60,6 +60,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
 
     // Plot Saved Settings
     const moveLeft = useAppSelector(SelectMoveOptionsLeftSetting);
+    const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const [plotAllSeriesSettings, setPlotAllSeriesSettings] = React.useState<SeriesSettings[]>(null);
     const changedProperties = React.useRef<Set<string>>(new Set<string>());
 
@@ -78,7 +79,6 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         line: ":",
         width: 4
     });
-    const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
 
     // Settings Controls
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
@@ -482,7 +482,11 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         }
     }
     return (
-        <div className="col" style={{ width: (props.Plot.Width ?? 100) - 1 + '%', height: (props.Plot.Height ?? 50) - 1 + '%', float: 'left' }}
+        <div className="col"
+            style={{
+                width: (props.Plot.Width ?? 100) - 1 + '%', height: (props.Plot.Height ?? 50) - 1 + '%', float: 'left',
+                border: (trendDatasettings.BorderPlots ? "thin black solid" : undefined)
+            }}
             ref={chartRef} onDragOver={handleDragOverChannel} onDrop={handleDropChannel}>
             {plotBody}
             <SettingsOverlay OverlayPortalID={props.OverlayPortalID} SetShow={setShowSettings} Show={showSettings}
