@@ -28,8 +28,10 @@ import { SelectTrendDataSettings, SelectMoveOptionsLeftSetting } from './../../S
 import { useAppSelector } from './../../../hooks';
 import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
-import { LoadingIcon } from '@gpa-gemstone/react-interactive';
+import { LoadingIcon, ToolTip } from '@gpa-gemstone/react-interactive';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
+import { Warning } from '@gpa-gemstone/gpa-symbols';
+import { CreateGuid } from '@gpa-gemstone/helper-functions';
 
 interface IProps {
     TimeFilter: SEBrowser.IReportTimeFilter,
@@ -97,6 +99,8 @@ const LineGraph = React.memo((props: IProps) => {
     const [displayMin, setDisplayMin] = React.useState<boolean>(true);
     const [displayMax, setDisplayMax] = React.useState<boolean>(true);
     const [displayAvg, setDisplayAvg] = React.useState<boolean>(true);
+    const [hover, setHover] = React.useState<boolean>(false);
+    const [guid] = React.useState<string>(CreateGuid());
     const [allChartData, setAllChartData] = React.useState<IChartData[]>([]);
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
     const [oldValues, setOldValues] = React.useState<{ ChannelInfo: ILineSeries[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
@@ -207,7 +211,14 @@ const LineGraph = React.memo((props: IProps) => {
         return (
             <div className="row">
                 <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={29} />
-                {props.Title !== undefined ? <h4 style={{ textAlign: "center", width: `${props.Width}px` }}>{props.Title}</h4> : null}
+                {props.Title !== undefined ?
+                    <h4 style={{ textAlign: "center", width: `${props.Width}px` }}>
+                        {props.Title}
+                        {props.ChannelInfo.findIndex(info => !(info.Min.HasData || info.Max.HasData || info.Avg.HasData)) != -1 ?
+                            <span data-tooltip={guid} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>{Warning}</span>
+                            : null
+                        }
+                    </h4> : null}
                 <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} moveMenuLeft={moveLeft}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping} legendHeight={props.Height / 2 - 34} legendWidth={props.Width / 2}
                     legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
@@ -230,6 +241,9 @@ const LineGraph = React.memo((props: IProps) => {
                     {props.children}
                     {props.AlwaysRender}
                 </Plot>
+                <ToolTip Show={hover} Position={'bottom'} Theme={'dark'} Target={guid}>
+                    Some Channel(s) Have no Data for the Selected Time Window...
+                </ToolTip>
             </div>);
 });
 
