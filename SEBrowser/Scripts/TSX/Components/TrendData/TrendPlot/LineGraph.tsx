@@ -31,9 +31,9 @@ import { Application } from '@gpa-gemstone/application-typings';
 import { LoadingIcon, ToolTip } from '@gpa-gemstone/react-interactive';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
 import { Warning } from '@gpa-gemstone/gpa-symbols';
-import { CreateGuid } from '@gpa-gemstone/helper-functions';
 
 interface IProps {
+    ID: string,
     TimeFilter: SEBrowser.IReportTimeFilter,
     ChannelInfo: ILineSeries[],
     SetChannelInfo: (newSettings: ILineSeries[]) => void,
@@ -100,7 +100,6 @@ const LineGraph = React.memo((props: IProps) => {
     const [displayMax, setDisplayMax] = React.useState<boolean>(true);
     const [displayAvg, setDisplayAvg] = React.useState<boolean>(true);
     const [hover, setHover] = React.useState<boolean>(false);
-    const [guid] = React.useState<string>(CreateGuid());
     const [allChartData, setAllChartData] = React.useState<IChartData[]>([]);
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
     const [oldValues, setOldValues] = React.useState<{ ChannelInfo: ILineSeries[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
@@ -215,7 +214,7 @@ const LineGraph = React.memo((props: IProps) => {
                     <h4 style={{ textAlign: "center", width: `${props.Width}px` }}>
                         {props.Title}
                         {props.ChannelInfo.findIndex(info => !(info.Min.HasData || info.Max.HasData || info.Avg.HasData)) != -1 ?
-                            <span data-tooltip={guid} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>{Warning}</span>
+                            <span data-tooltip={props.ID} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>{Warning}</span>
                             : null
                         }
                     </h4> : null}
@@ -241,7 +240,7 @@ const LineGraph = React.memo((props: IProps) => {
                     {props.children}
                     {props.AlwaysRender}
                 </Plot>
-                <ToolTip Show={hover} Position={'bottom'} Theme={'dark'} Target={guid}>
+                <ToolTip Show={hover} Position={'bottom'} Theme={'dark'} Target={props.ID}>
                     Some Channel(s) Have no Data for the Selected Time Window...
                 </ToolTip>
             </div>);
