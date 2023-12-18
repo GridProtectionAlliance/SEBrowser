@@ -41,6 +41,7 @@ interface IProps {
     Height: number,
     Width: number,
     OnSelect: (time: number, values: number[]) => void,
+    OnDataInspect: () => void,
     Title?: string,
     Metric?: boolean,
     XAxisLabel?: string,
@@ -179,7 +180,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
                             : null
                         }
                     </h4> : null}
-                <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} moveMenuLeft={moveLeft}
+                <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} moveMenuLeft={moveLeft} hideUiDuringInspect={true} onDataInspect={props.OnDataInspect}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
                     legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={true} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
