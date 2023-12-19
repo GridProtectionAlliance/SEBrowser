@@ -242,7 +242,7 @@ const LineGraph = React.memo((props: IProps) => {
                     {props.AlwaysRender}
                 </Plot>
                 <ToolTip Show={hover} Position={'bottom'} Theme={'dark'} Target={props.ID}>
-                    Some Channel(s) Have no Data for the Selected Time Window...
+                    Some of the selected Channels have no Data for the selected Time Window.
                 </ToolTip>
             </div>);
 });
