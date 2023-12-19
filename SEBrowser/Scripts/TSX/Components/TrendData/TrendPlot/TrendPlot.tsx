@@ -36,7 +36,6 @@ import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
 import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
 import { SettingsOverlay, SeriesSettings } from '../Settings/SettingsOverlay';
 import { CyclicHistogram, ICyclicSeries } from './CyclicHistogram';
-import html2canvas from 'html2canvas';
 
 const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
 
@@ -399,24 +398,6 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         setMousePosition({x: xArg, y: yArg})
     }, [setMousePosition]);
 
-    const saveImage = React.useCallback(() => {
-        const element = document.getElementById(props.Plot.ID);
-        html2canvas(element).then(canvas => {
-            document.body.appendChild(canvas);
-            const imageData = canvas.toDataURL("image/png").replace(/^data:image\/png/, "data:application/octet-stream");
-            const anchorElement = document.createElement(`a`);
-            anchorElement.href = imageData;
-            anchorElement.download = `${props.Plot.ID}.png`;
-            document.body.appendChild(anchorElement);
-            anchorElement.click();
-            // Removing children created/cleanup
-            window.URL.revokeObjectURL(imageData);
-            document.body.removeChild(anchorElement);
-            document.body.removeChild(canvas);
-        });
-    }, [props.Plot.ID]);
-
-
     let plotBody = null;
     if (props.DragMode)
         plotBody = (
@@ -433,7 +414,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     <LineGraph ID={props.Plot.ID} ChannelInfo={plotAllSeriesSettings as ILineSeries[]} SetChannelInfo={setPlotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
                         Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel}
                         Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
-                        OnSelect={createMarker} OnDataInspect={saveImage} AlwaysRender={[overlayButton, closeButton]}>
+                        OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
                         {props.Plot.ShowEvents ? eventMarkers.map((marker, i) => {
                             if (eventSettings.type === "vertical")
                                 return (
@@ -495,7 +476,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     <CyclicHistogram ID={props.Plot.ID} ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] as ICyclicSeries : null} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
                         Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel}
                         Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
-                        OnSelect={createMarker} OnDataInspect={saveImage} AlwaysRender={[overlayButton, closeButton]}/>
+                        OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}/>
                 );
                 break;
         }
