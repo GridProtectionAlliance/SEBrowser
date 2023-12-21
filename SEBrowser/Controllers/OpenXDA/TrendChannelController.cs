@@ -23,21 +23,15 @@
 
 using GSF.Data;
 using GSF.Data.Model;
-using GSF.Identity;
-using GSF.Web.Model;
-using openXDA.Model;
-using SystemCenter.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Net;
 using System.Web.Http;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using System.Net.Http;
 using openXDA.APIAuthentication;
-using Newtonsoft.Json;
 using System.Text;
 using System.IO;
 
@@ -77,15 +71,6 @@ namespace SEBrowser.Controllers.OpenXDA
             public int Sample { get; set; }
 
             public float Value { get; set; }
-        }
-        private class LinearPoint
-        {
-            public string Tag { get; set; }
-            public double Minimum { get; set; }
-            public double Maximum { get; set; }
-            public double Average { get; set; }
-            public uint QualityFlags { get; set; }
-            public DateTime Timestamp { get; set; }
         }
         private class ChannelDataSet
         {
@@ -158,11 +143,7 @@ namespace SEBrowser.Controllers.OpenXDA
         {
             Task<Stream> streamTask = XDAAPIHelper.Post("api/HIDS/QueryPoints", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
             IEnumerable<int> channelIds = postData["Channels"].ToObject<IEnumerable<int>>();
-            List<ChannelDataSet> channelList = channelIds.Select(id => new ChannelDataSet()
-            {
-                Points = new List<object>(),
-                ChannelID = id.ToString("x8")
-            }).ToList();
+            Dictionary<string, List<object>> channelData = Enumerable.ToDictionary(channelIds, id => id.ToString("x8"), id => new List<object>());
             using (Stream stream = streamTask.Result)
             using (TextReader reader = new StreamReader(stream))
             {
@@ -176,17 +157,17 @@ namespace SEBrowser.Controllers.OpenXDA
                     if (line == string.Empty)
                         continue;
 
-                    LinearPoint point = JObject
-                        .Parse(line)
-                        .ToObject<LinearPoint>();
+                    JObject point = JObject.Parse(line);
 
                     //TODO: Perform downsampling to get to something reasonable for a webpage here (maybe 100 or so points per channel?). This would ignore a point before insertion
-                    int index = channelList.FindIndex(chan => chan.ChannelID == point.Tag);
-                    if (index < 0) continue; // should be impossible, but never discount unexpected weirdness
-                    channelList[index].Points.Add(point);
+                    if (channelData.TryGetValue(point["Tag"].Value<string>(), out List<object> channelList))
+                    {
+                        channelList.Add(point);
+                    }
+
                 }
             }
-            return Ok(channelList);
+            return Ok(channelData);
         }
 
         [Route("GetCyclicChartData"), HttpPost]
@@ -194,7 +175,7 @@ namespace SEBrowser.Controllers.OpenXDA
         {
             // Read metadata into list
             Task<Stream> metaTask = XDAAPIHelper.Post("api/HIDS/QueryHistogramMetadata", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
-            List<HistogramMetadata> metaList = new List<HistogramMetadata>();
+            HashSet<HistogramMetadata> metaList = new HashSet<HistogramMetadata>();
             using (Stream stream = metaTask.Result)
             using (TextReader reader = new StreamReader(stream))
             {

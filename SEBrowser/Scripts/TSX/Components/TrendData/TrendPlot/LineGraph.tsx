@@ -129,17 +129,17 @@ const LineGraph = React.memo((props: IProps) => {
             }
         }
         const handle = GetTrendData(newChannels, startTime, endTime);
-        handle.done((data: TrendSearch.IPQData[]) => {
-            let newData: IChartData[] =
-                data.map(channelInfo => {
-                    const timeSeries = channelInfo.Points.map(dataPoint => moment.utc(dataPoint.Timestamp, serverFormat).valueOf());
-                    const channelID = Number("0x" + channelInfo.ChannelID);
-                    return ({
-                        ChannelID: channelID,
-                        MinSeries: channelInfo.Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Minimum]),
-                        MaxSeries: channelInfo.Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Maximum]),
-                        AvgSeries: channelInfo.Points.map((dataPoint, index) => [timeSeries[index], dataPoint.Average])
-                    });
+        handle.done((data: TrendSearch.IPQData) => {
+            let newData: IChartData[] = Object.keys(data).map((chanKey) => {
+                const points = data[chanKey];
+                const timeSeries = points.map(dataPoint => moment.utc(dataPoint.Timestamp, serverFormat).valueOf());
+                const channelID = Number("0x" + chanKey);
+                return ({
+                    ChannelID: channelID,
+                    MinSeries: points.map((dataPoint, index) => [timeSeries[index], dataPoint.Minimum]),
+                    MaxSeries: points.map((dataPoint, index) => [timeSeries[index], dataPoint.Maximum]),
+                    AvgSeries: points.map((dataPoint, index) => [timeSeries[index], dataPoint.Average])
+                });
                 });
             newData = newData.concat(keptOldData);
             setAllChartData(newData);
@@ -179,7 +179,7 @@ const LineGraph = React.memo((props: IProps) => {
         setTimeLimits(chartData === undefined ? [0, 1] : [chartData.AvgSeries[0][0], chartData.AvgSeries[chartData.AvgSeries.length - 1][0]]);
     }, [allChartData]);
 
-    function GetTrendData(channels: number[], startTime: string, endTime: string): JQuery.jqXHR<TrendSearch.IPQData[]> {
+    function GetTrendData(channels: number[], startTime: string, endTime: string): JQuery.jqXHR<TrendSearch.IPQData> {
         setGraphStatus('loading');
         return $.ajax({
             type: "POST",

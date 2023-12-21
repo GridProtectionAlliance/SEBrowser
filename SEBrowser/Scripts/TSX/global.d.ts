@@ -161,9 +161,9 @@ export namespace TrendSearch {
         Unit: string
     }
 
+    // Note: There may be multiple keys for each result
     interface IPQData {
-        ChannelID: string,
-        Points: {
+        [key: string]: {
             Tag: string,
             Minimum: number,
             Maximum: number,
