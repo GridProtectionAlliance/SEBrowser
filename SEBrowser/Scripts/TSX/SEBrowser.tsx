@@ -102,7 +102,7 @@ const SEBrowserMainPage = () => {
                 <MeterActivity />
             </Page>
             <Section Label={"Custom Reports"}>
-                {links.map((item, i) => <Page key={i} Name={item.AltValue} Label={item.Value}>{createWidget(item.AltValue)}</Page>)}
+                {links.map((item, i) => <Page key={i} Name={item.AltValue ?? item.Value} Label={item.Value}>{createWidget(item.AltValue ?? item.Value)}</Page>)}
             </Section>
             </Application>
             <Settings Show={showSettings} Close={() => setShowSettings(false)} />
