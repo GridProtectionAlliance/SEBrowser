@@ -41,48 +41,6 @@ namespace SEBrowser.Controllers.OpenXDA
     [RoutePrefix("api/OpenXDA")]
     public class TrendChannelController : ApiController
     {
-        #region [ Nested Types ]
-
-        // ToDo: These next two are defined in the HIDS controller for xda, do we want to make that an import?
-        private class HistogramMetadata
-        {
-            public int ChannelID { get; set; }
-            public int FundamentalFrequency { get; set; }
-            public int SamplingRate { get; set; }
-            public DateTime StartTime { get; set; }
-            public DateTime EndTime { get; set; }
-            public int TotalCapturedCycles { get; set; }
-            public double CyclesMax { get; set; }
-            public double CyclesMin { get; set; }
-            public double ResidualMax { get; set; }
-            public double ResidualMin { get; set; }
-            public double FrequencyMax { get; set; }
-            public double FrequencyMin { get; set; }
-            public double RMSMax { get; set; }
-            public double RMSMin { get; set; }
-            public int CyclicHistogramBins { get; set; }
-            public int ResidualHistogramBins { get; set; }
-            public int FrequencyHistogramBins { get; set; }
-            public int RMSHistogramBins { get; set; }
-        }
-        private class HistogramPoint
-        {
-            public int Bin { get; set; }
-
-            public int Sample { get; set; }
-
-            public float Value { get; set; }
-        }
-        private class ChannelDataSet
-        {
-            public List<object> Points { get; set; }
-            public string ChannelID { get; set; }
-            public double? BinSize { get; set; }
-            public double? TimeSpanMs { get; set; }
-        }
-
-        #endregion
-
         #region [ Members ]
         const string SettingsCategory = "systemSettings";
         #endregion
