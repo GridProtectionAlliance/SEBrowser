@@ -142,8 +142,8 @@ const CyclicHistogram = React.memo((props: IProps) => {
     React.useEffect(() => {
         if (chartData == null || chartData.Series.length === 0) setTimeLimits([0, 1]);
         else {
-            const averageTimeDuration = (chartData.Series[chartData.Series.length - 1][0] - chartData.Series[0][0]) / chartData.Series.length;
-            setTimeLimits([chartData.Series[0][0], chartData.Series[chartData.Series.length - 1][0] + averageTimeDuration]);
+            const timeSeries = chartData.Series.map(point => point[0]);
+            setTimeLimits([Math.min(...timeSeries), Math.max(...timeSeries) + chartData.TimeSpan]);
         }
     }, [chartData]);
 
