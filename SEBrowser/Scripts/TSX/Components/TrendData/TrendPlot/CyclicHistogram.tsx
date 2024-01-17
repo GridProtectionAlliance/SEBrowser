@@ -57,11 +57,9 @@ interface ICyclicSeries{
     Color: string
 }
 
-
 interface IChartData {
-    ChannelID: number,
-    BinSize: number,
     TimeSpan: number,
+    BinSize: number,
     Series: [number, number, number][]
 }
 
@@ -94,37 +92,52 @@ const CyclicHistogram = React.memo((props: IProps) => {
     const [chartData, setChartData] = React.useState<IChartData>(null);
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
     const [hover, setHover] = React.useState<boolean>(false);
-    const [oldValues, setOldValues] = React.useState<{ ChannelInfo: ICyclicSeries, TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: null, TimeFilter: null });
     const [barColor, setBarColor] = React.useState<{ Hue: number, Saturation: number }>(null);
+    const [metaData, setMetaData] = React.useState<TrendSearch.IMetaData[]>(null);
+    const oldValues = React.useRef<{ ChannelInfo: ICyclicSeries, TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: null, TimeFilter: null });
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const moveLeft = useAppSelector(SelectMoveOptionsLeftSetting);
 
     React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
-        if (_.isEqual(props.TimeFilter, oldValues.TimeFilter) && props.ChannelInfo.Channel.ID === oldValues.ChannelInfo.Channel.ID) return;
+        if (_.isEqual(props.TimeFilter, oldValues.current.TimeFilter) && props.ChannelInfo.Channel.ID === oldValues.current.ChannelInfo.Channel.ID) return;
 
         const centerTime: moment.Moment = moment(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
         const startTime: string = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
         // Need to move back in the other direction, so entire window
         const endTime: string = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
 
-        const handle = GetCyclicData(props.ChannelInfo.Channel.ID, startTime, endTime);
-        handle.done((data: TrendSearch.ICyclicData[]) => {
-            if (data.length === 0 || data[0].Points. length === 0) return;
-            const channelID = Number("0x" + data[0].ChannelID);
-            setChartData({
-                ChannelID: channelID,
-                BinSize: data[0].BinSize,
-                // 10k ticks per ms
-                TimeSpan: data[0].TimeSpanMs,
-                Series: data[0].Points.map((dataPoint) => [moment.utc(dataPoint[0], serverFormat).valueOf(), dataPoint[1], 100*dataPoint[2]]),
-            });
-            setOldValues({ ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter });
-        });
+        const handle = GetMetaData(props.ChannelInfo.Channel.ID, startTime, endTime);
         return () => {
             if (handle != null && handle.abort != null) handle.abort();
         };
     }, [props.ChannelInfo, props.TimeFilter]);
+
+    React.useEffect(() => {
+        if (metaData == null) return;
+        if (metaData.length === 0) {
+            setChartData(null);
+            setGraphStatus('idle');
+            return;
+        }
+        const newSeriesData: IChartData[] = Array<IChartData>(metaData.length);
+        // Get all handles for all meta data
+        const allHandles = metaData.map((metaData, index) => GetData(metaData, "Cyclic", newSeriesData, index));
+        Promise.all(allHandles).then(() => {
+            const concatSeries = newSeriesData[0];
+            newSeriesData.forEach((data, index) => {
+                if (index !== 0) {
+                    concatSeries.Series = concatSeries.Series.concat(data.Series);
+                    if (concatSeries.BinSize !== data.BinSize)
+                        console.warn(`Different bin sizes detected for meta datas ${metaData[0]}, ${metaData[index]}`);
+                    if (concatSeries.TimeSpan !== data.TimeSpan)
+                        console.warn(`Different bin sizes detected for meta datas ${metaData[0]}, ${metaData[index]}`);
+                }
+            });
+            setChartData(concatSeries);
+            setGraphStatus('idle');
+        });
+    }, [metaData]);
 
     React.useEffect(() => {
         if (chartData == null || chartData.Series.length === 0) setTimeLimits([0, 1]);
@@ -140,25 +153,63 @@ const CyclicHistogram = React.memo((props: IProps) => {
         setBarColor({ Hue: color.h, Saturation: color.s})
     }, [props.ChannelInfo?.Color]);
 
-    function GetCyclicData(channel: number, startTime: string, endTime: string): JQuery.jqXHR<TrendSearch.ICyclicData[]> {
+    function GetMetaData(channel: number, startTime: string, endTime: string): JQuery.jqXHR {
         setGraphStatus('loading');
         return $.ajax({
             type: "POST",
-            url: `${homePath}api/OpenXDA/GetCyclicChartData`,
+            url: `${homePath}api/OpenXDA/GetMetaData`,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify({
-                Channels: [channel],
+                Channels: [425], // TODO: Change to channel
                 StartTime: startTime,
                 StopTime: endTime
+            }),
+            dataType: 'text',
+            cache: false,
+            async: true
+        }).done((data: string) => {
+            const newMetaData: TrendSearch.IMetaData[] = [];
+            const metaList: TrendSearch.IMetaData[] = JSON.parse(data);
+            metaList.forEach(metaData => {
+                // eslint-disable-next-line no-constant-condition
+                if (metaData.ChannelID !== channel && false) // TODO remove false
+                    console.error("Server returned meta data that does not match channel requested: " + metaData);
+                else newMetaData.push(metaData);
+            });
+            oldValues.current = { ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter };
+            setMetaData(_.orderBy(newMetaData, ['StartTime'], ['asc']));
+        }).fail(() => setGraphStatus('error'));
+    }
+
+    function GetData(metaData: TrendSearch.IMetaData, type: "Cyclic", populateArray: IChartData[], arrayIndex: number): JQuery.jqXHR<IChartData> {
+        return $.ajax({
+            type: "POST",
+            url: `${homePath}api/OpenXDA/GetChartData/${type}`,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                Channel: metaData.ChannelID,
+                Timestamp: metaData.StartTime
             }),
             dataType: 'json',
             cache: false,
             async: true
-        }).done(() => {
-            setGraphStatus('idle');
-        }).fail(() => {
-            setGraphStatus('error');
-        });
+        }).done((data: TrendSearch.ICyclicData[]) => {
+            const startTicks = moment.utc(metaData.StartTime, serverFormat).valueOf();
+            const ticksPerIndex = (moment.utc(metaData.EndTime, serverFormat).valueOf() - startTicks) /
+                ((metaData.SamplingRate / metaData.FundamentalFrequency) + 1);
+            const binSize = (metaData.CyclesMax - metaData.CyclesMin) / metaData.CyclicHistogramBins;
+            const newChartData: IChartData = {
+                Series: [],
+                TimeSpan: ticksPerIndex,
+                BinSize: binSize
+            }
+            newChartData.Series = data.map(dataPoint => [
+                startTicks + dataPoint.Sample * ticksPerIndex,
+                metaData.CyclesMin + binSize * dataPoint.Bin,
+                dataPoint.Value * 100
+            ]);
+            populateArray[arrayIndex] = (newChartData);
+        }).fail(() => setGraphStatus('error'));
     }
 
     if (graphStatus === 'error')

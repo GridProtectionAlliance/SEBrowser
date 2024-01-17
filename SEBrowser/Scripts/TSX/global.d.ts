@@ -161,23 +161,32 @@ export namespace TrendSearch {
         Unit: string
     }
 
-    // Note: There may be multiple keys for each result
     interface IPQData {
-        [key: string]: {
-            Tag: string,
-            Minimum: number,
-            Maximum: number,
-            Average: number,
-            QualityFlags: number,
-            Timestamp: string
-        }[]
+        Tag: string,
+        Minimum: number,
+        Maximum: number,
+        Average: number,
+        QualityFlags: number,
+        Timestamp: string
+    }
+
+    interface IMetaData {
+        ChannelID: number,
+        FundamentalFrequency: number,
+        SamplingRate: number,
+        StartTime: string,
+        EndTime: string,
+        TotalCapturedCycles: number,
+        // Note: the following data exists for Residuals, Frequencies, and RMS, but they are unused at the moment
+        CyclesMax: number,
+        CyclesMin: number,
+        CyclicHistogramBins: number
     }
 
     interface ICyclicData {
-        ChannelID: string,
-        BinSize: number,
-        TimeSpanMs: number,
-        Points: [string, number, number][]
+        Bin: number,
+        Sample: number,
+        Value: number
     }
 
     type IPlotTypes = 'Line'|'Cyclic';

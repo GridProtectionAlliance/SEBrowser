@@ -34,6 +34,7 @@ using System.Net.Http;
 using openXDA.APIAuthentication;
 using System.Text;
 using System.IO;
+using System.Net.Http.Headers;
 
 namespace SEBrowser.Controllers.OpenXDA
 {
@@ -139,107 +140,41 @@ namespace SEBrowser.Controllers.OpenXDA
         }
 
         [Route("GetLineChartData"), HttpPost]
-        public IHttpActionResult GetLineChartData([FromBody] JObject postData)
+        public Task<HttpResponseMessage> GetLineChartData([FromBody] JObject postData)
         {
-            Task<Stream> streamTask = XDAAPIHelper.Post("api/HIDS/QueryPoints", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
-            IEnumerable<int> channelIds = postData["Channels"].ToObject<IEnumerable<int>>();
-            Dictionary<string, List<object>> channelData = Enumerable.ToDictionary(channelIds, id => id.ToString("x8"), id => new List<object>());
-            using (Stream stream = streamTask.Result)
-            using (TextReader reader = new StreamReader(stream))
-            {
-                while (true)
-                {
-                    string line = reader.ReadLine();
-
-                    if (line == null)
-                        break;
-
-                    if (line == string.Empty)
-                        continue;
-
-                    JObject point = JObject.Parse(line);
-
-                    //TODO: Perform downsampling to get to something reasonable for a webpage here (maybe 100 or so points per channel?). This would ignore a point before insertion
-                    if (channelData.TryGetValue(point["Tag"].Value<string>(), out List<object> channelList))
-                    {
-                        channelList.Add(point);
-                    }
-
-                }
-            }
-            return Ok(channelData);
+            return XDAAPIHelper.GetResponseTask("api/HIDS/QueryPoints", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
         }
 
-        [Route("GetCyclicChartData"), HttpPost]
-        public IHttpActionResult GetCyclicChartData([FromBody] JObject postData)
+        [Route("GetMetaData"), HttpPost]
+        public Task<HttpResponseMessage> GetCyclicMetaData([FromBody] JObject postData)
         {
-            // Read metadata into list
-            Task<Stream> metaTask = XDAAPIHelper.Post("api/HIDS/QueryHistogramMetadata", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
-            HashSet<HistogramMetadata> metaList = new HashSet<HistogramMetadata>();
-            using (Stream stream = metaTask.Result)
-            using (TextReader reader = new StreamReader(stream))
+            return XDAAPIHelper.GetResponseTask("api/HIDS/QueryHistogramMetadata", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
+        }
+
+        [Route("GetChartData/{type}"), HttpPost]
+        public Task<HttpResponseMessage> GetCyclicChartData([FromBody] JObject postData, string type)
+        {
+            string typeUncased = type.ToLower();
+            string route;
+            switch (typeUncased)
             {
-                while (true)
-                {
-                    string line = reader.ReadLine();
-
-                    if (line == null)
-                        break;
-
-                    foreach(JObject metaData in JArray.Parse(line)) 
-                        metaList.Add(metaData.ToObject<HistogramMetadata>());
-                }
+                case "cyclic":
+                    route = "QueryCyclicHistogramData";
+                    break;
+                case "residual":
+                    route = "QueryResidualHistogramData";
+                    break;
+                case "frequency":
+                    route = "QueryFrequencyHistogramData";
+                    break;
+                case "rms":
+                    route = "QueryRMSHistogramData";
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown type parameter: {type}");
             }
-
-            // Read Cyclic Data into chart graphable format
-            IEnumerable<int> channelIds = postData["Channels"].ToObject<IEnumerable<int>>();
-            return Ok(channelIds.Select(id => 
-            {
-                JObject channelPostData = new JObject
-                {
-                    { "Channel", id }
-                };
-                ChannelDataSet dataSet = new ChannelDataSet()
-                {
-                    Points = new List<object>(),
-                    ChannelID = id.ToString("x8")
-                };
-                IEnumerable<HistogramMetadata> channelMeta = metaList.Where(metadata => metadata.ChannelID == id);
-                foreach(HistogramMetadata partialMeta in channelMeta)
-                {
-                    channelPostData.Add("Timestamp", partialMeta.StartTime);
-                    long ticksPerIndex = partialMeta.EndTime.Subtract(partialMeta.StartTime).Ticks / ((partialMeta.SamplingRate / partialMeta.FundamentalFrequency) + 1);
-                    double binSize = (partialMeta.CyclesMax - partialMeta.CyclesMin) / partialMeta.CyclicHistogramBins;
-                    Task<Stream> cyclicTask = XDAAPIHelper.Post("api/HIDS/QueryCyclicHistogramData", new StringContent(channelPostData.ToString(), Encoding.UTF8, "application/json"));
-                    using (Stream stream = cyclicTask.Result)
-                    using (TextReader reader = new StreamReader(stream))
-                    {
-                        while (true)
-                        {
-                            string line = reader.ReadLine();
-
-                            if (line == null)
-                                break;
-
-                            if (line == string.Empty)
-                                continue;
-
-                            //Todo: add sample rate culling
-                            foreach (JObject jPoint in JArray.Parse(line))
-                            {
-                                HistogramPoint histPoint = jPoint.ToObject<HistogramPoint>();
-                                object[] point = new object[] { partialMeta.StartTime.AddTicks(histPoint.Sample * ticksPerIndex), partialMeta.CyclesMin + binSize * histPoint.Bin, histPoint.Value };
-                                dataSet.Points.Add(point);
-                            }
-                        }
-                    }
-                    // This will only capture the last, but we have an assumption here that its always the same
-                    dataSet.BinSize = binSize;
-                    dataSet.TimeSpanMs = new TimeSpan(ticksPerIndex).TotalMilliseconds;
-                }
-                return dataSet;
-            }));
-
+            // Read metadata into list
+            return XDAAPIHelper.GetResponseTask($"api/HIDS/{route}", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
         }
         #endregion
 
@@ -307,12 +242,12 @@ namespace SEBrowser.Controllers.OpenXDA
             }
 
             /// <summary>
-            /// Makes Post request on OpenXDA
+            /// Gets Response Task from XDA 
             /// </summary>
             /// <param name="requestURI">Path to specific API request</param>
             /// <param name="content"> The <see cref="HttpContent"/> of the request </param>
             /// <returns> response as a <see cref="Stream"/></returns>
-            public static async Task<Stream> Post(string requestURI, HttpContent content)
+            public static Task<HttpResponseMessage> GetResponseTask(string requestURI, HttpContent content)
             {
                 APIQuery query = new APIQuery(Key, Token, Host.Split(';'));
 
@@ -322,7 +257,18 @@ namespace SEBrowser.Controllers.OpenXDA
                     request.Content = content;
                 }
 
-                HttpResponseMessage responseMessage = await query.SendWebRequestAsync(ConfigureRequest, requestURI).ConfigureAwait(false);
+                return query.SendWebRequestAsync(ConfigureRequest, requestURI);
+            }
+
+            /// <summary>
+            /// Makes Post request on OpenXDA
+            /// </summary>
+            /// <param name="requestURI">Path to specific API request</param>
+            /// <param name="content"> The <see cref="HttpContent"/> of the request </param>
+            /// <returns> response as a <see cref="Stream"/></returns>
+            public static async Task<Stream> Post(string requestURI, HttpContent content)
+            {
+                HttpResponseMessage responseMessage = await GetResponseTask(requestURI, content).ConfigureAwait(false);
                 return await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false);
             }
             #endregion

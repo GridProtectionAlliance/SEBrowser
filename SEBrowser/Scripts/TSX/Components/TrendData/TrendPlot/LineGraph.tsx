@@ -64,7 +64,6 @@ interface ILineSeries{
 }
 
 interface IChartData {
-    ChannelID: number,
     MinSeries: [number, number][],
     MaxSeries: [number, number][],
     AvgSeries: [number, number][]
@@ -100,9 +99,9 @@ const LineGraph = React.memo((props: IProps) => {
     const [displayMax, setDisplayMax] = React.useState<boolean>(true);
     const [displayAvg, setDisplayAvg] = React.useState<boolean>(true);
     const [hover, setHover] = React.useState<boolean>(false);
-    const [allChartData, setAllChartData] = React.useState<IChartData[]>([]);
+    const [allChartData, setAllChartData] = React.useState<Map<string,IChartData>>(new Map<string,IChartData>());
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
-    const [oldValues, setOldValues] = React.useState<{ ChannelInfo: ILineSeries[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
+    const oldValues = React.useRef<{ ChannelInfo: ILineSeries[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const moveLeft = useAppSelector(SelectMoveOptionsLeftSetting);
 
@@ -114,55 +113,25 @@ const LineGraph = React.memo((props: IProps) => {
         const endTime: string = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
 
         let newChannels: number[] = props.ChannelInfo.map(chan => chan.Channel.ID);
-        let keptOldData: IChartData[] = [];
+        let keptOldData: Map<string,IChartData> = new Map<string,IChartData>();
         // If the time filter is the same, we only need to ask for information on channels we have not yet seen
-        if (_.isEqual(props.TimeFilter, oldValues.TimeFilter)) {
-            newChannels = newChannels.filter(channel => oldValues.ChannelInfo.findIndex(oldChannel => oldChannel.Channel.ID === channel) === -1);
+        if (_.isEqual(props.TimeFilter, oldValues.current.TimeFilter)) {
+            newChannels = newChannels.filter(channel => oldValues.current.ChannelInfo.findIndex(oldChannel => oldChannel.Channel.ID === channel) === -1);
             // This represents data we already have and still need (only makes sense if we aren't changing our time window)
-            keptOldData = allChartData.filter(oldSeries =>
-                props.ChannelInfo.findIndex(channel => channel.Channel.ID === oldSeries.ChannelID) !== -1);
+            keptOldData = allChartData;
+            keptOldData.forEach((data, channelID) => {
+                if (props.ChannelInfo.findIndex(channel => channel.Channel.ID === Number("0x"+channelID)) < 0)
+                    keptOldData.delete(channelID);
+            }
+            );
             // If this condition is satified, it must mean we removed channels, and thus, only need to remove irrelevant data (settings handled in Trendplot)
             if (newChannels.length === 0) {
                 setAllChartData(keptOldData);
-                setOldValues({ ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter });
+                oldValues.current = { ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter };
                 return;
             }
         }
-        const handle = GetTrendData(newChannels, startTime, endTime);
-        handle.done((data: TrendSearch.IPQData) => {
-            let newData: IChartData[] = Object.keys(data).map((chanKey) => {
-                const points = data[chanKey];
-                const timeSeries = points.map(dataPoint => moment.utc(dataPoint.Timestamp, serverFormat).valueOf());
-                const channelID = Number("0x" + chanKey);
-                return ({
-                    ChannelID: channelID,
-                    MinSeries: points.map((dataPoint, index) => [timeSeries[index], dataPoint.Minimum]),
-                    MaxSeries: points.map((dataPoint, index) => [timeSeries[index], dataPoint.Maximum]),
-                    AvgSeries: points.map((dataPoint, index) => [timeSeries[index], dataPoint.Average])
-                });
-                });
-            newData = newData.concat(keptOldData);
-            setAllChartData(newData);
-            setOldValues({ ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter });
-            // Set settings on which don't have data
-            const newChannelInfo = [...props.ChannelInfo];
-            newChannelInfo.forEach((setting, index) => {
-                const channelData = newData.find(data => data.ChannelID === setting.Channel.ID);
-                const newSetting = _.cloneDeep(setting);
-                if (channelData === undefined) {
-                    newSetting.Min.HasData = false;
-                    newSetting.Avg.HasData = false;
-                    newSetting.Max.HasData = false;
-                    newChannelInfo[index] = newSetting;
-                } else {
-                    newSetting.Min.HasData = channelData.MinSeries.length !== 0;
-                    newSetting.Avg.HasData = channelData.AvgSeries.length !== 0;
-                    newSetting.Max.HasData = channelData.MaxSeries.length !== 0;
-                    newChannelInfo[index] = newSetting;
-                }
-            });
-            props.SetChannelInfo(newChannelInfo);
-        });
+        const handle = GetTrendData(newChannels, keptOldData, startTime, endTime);
         return () => {
             if (handle != null && handle.abort != null) handle.abort();
         };
@@ -175,11 +144,16 @@ const LineGraph = React.memo((props: IProps) => {
     }, [props.PlotFilter]);
 
     React.useEffect(() => {
-        const chartData: IChartData = allChartData.find(chartData => chartData.AvgSeries.length > 0);
+        let chartData: IChartData = undefined;
+        allChartData.forEach(data => {
+            if ((chartData === undefined && data.AvgSeries.length > 0) ||
+                (chartData !== undefined && chartData.AvgSeries.length < data.AvgSeries.length))
+                chartData = data;
+        });
         setTimeLimits(chartData === undefined ? [0, 1] : [chartData.AvgSeries[0][0], chartData.AvgSeries[chartData.AvgSeries.length - 1][0]]);
     }, [allChartData]);
 
-    function GetTrendData(channels: number[], startTime: string, endTime: string): JQuery.jqXHR<TrendSearch.IPQData> {
+    function GetTrendData(channels: number[], cachedData: Map<string, IChartData>, startTime: string, endTime: string): JQuery.jqXHR<TrendSearch.IPQData> {
         setGraphStatus('loading');
         return $.ajax({
             type: "POST",
@@ -190,10 +164,59 @@ const LineGraph = React.memo((props: IProps) => {
                 StartTime: startTime,
                 StopTime: endTime
             }),
-            dataType: 'json',
+            dataType: 'text',
             cache: false,
             async: true
-        }).done(() => {
+        }).done((data: string) => {
+            const newPoints: string[] = data.split("\n");
+            newPoints.forEach(jsonPoint => {
+                let point: TrendSearch.IPQData = undefined;
+                try {
+                    point = JSON.parse(jsonPoint);
+                }
+                catch {
+                    console.error("Failed to parse point: " + jsonPoint);
+                }
+                if (point !== undefined) {
+                    const timeStamp = moment.utc(point.Timestamp, serverFormat).valueOf();
+                    if (cachedData.has(point.Tag)) {
+                        const chartData = cachedData.get(point.Tag);
+                        chartData.MinSeries.push([timeStamp, point.Minimum]);
+                        chartData.AvgSeries.push([timeStamp, point.Average]);
+                        chartData.MaxSeries.push([timeStamp, point.Maximum]);
+                    } else {
+                        const chartData: IChartData = {
+                            MinSeries: [[timeStamp, point.Minimum]],
+                            AvgSeries: [[timeStamp, point.Minimum]],
+                            MaxSeries: [[timeStamp, point.Minimum]]
+                        }
+                        cachedData.set(point.Tag, chartData);
+                    }
+                }
+            });
+            setAllChartData(cachedData);
+            oldValues.current = { ChannelInfo: props.ChannelInfo, TimeFilter: props.TimeFilter };
+            //// Set settings on which don't have data
+            const newchannelinfo = [...props.ChannelInfo];
+            newchannelinfo.forEach((setting, index) => {
+                // All tags from hids is exactly 8 characters long, need to reconstruct tag for matching
+                let channelID = setting.Channel.ID.toString(16);
+                channelID = "0".repeat(8 - channelID.length) + channelID;
+                const channeldata = cachedData.get(channelID);
+                const newsetting = _.cloneDeep(setting);
+                if (channeldata === undefined) {
+                    newsetting.Min.HasData = false;
+                    newsetting.Avg.HasData = false;
+                    newsetting.Max.HasData = false;
+                    newchannelinfo[index] = newsetting;
+                } else {
+                    newsetting.Min.HasData = channeldata.MinSeries.length !== 0;
+                    newsetting.Avg.HasData = channeldata.AvgSeries.length !== 0;
+                    newsetting.Max.HasData = channeldata.MaxSeries.length !== 0;
+                    newchannelinfo[index] = newsetting;
+                }
+            });
+            props.SetChannelInfo(newchannelinfo);
             setGraphStatus('idle');
         }).fail(() => {
             setGraphStatus('error');
@@ -222,9 +245,10 @@ const LineGraph = React.memo((props: IProps) => {
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping} legendHeight={props.Height / 2 - 34} legendWidth={props.Width / 2}
                     legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={true} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
-                    {allChartData.flatMap((chartData, index) => {
+                    {[...allChartData.keys()].map((channelID, index) => {
                         const lineArray: JSX.Element[] = [];
-                        const channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === chartData.ChannelID);
+                        const channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === Number("0x"+channelID));
+                        const chartData = allChartData.get(channelID);
                         if (channelSetting === undefined) return null;
                         if (displayAvg && channelSetting.Avg.HasData)
                             lineArray.push(<Line highlightHover={false} key={"avg_" + index} showPoints={false} lineStyle={channelSetting.Avg.Type}

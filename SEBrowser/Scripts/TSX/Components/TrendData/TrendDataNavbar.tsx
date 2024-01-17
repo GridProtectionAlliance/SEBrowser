@@ -328,6 +328,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             <div className="row">
                                 <div className={"col"}>
                                     <MultiCheckBoxSelect
+                                        ItemTooltip={'dark'}
                                         Options={phaseOptions}
                                         Label={''}
                                         OnChange={(evt, Options: IMultiCheckboxOption[]) => multiCheckboxUpdate("Phases", Options, phaseOptions, setPhaseOptions)}
@@ -338,6 +339,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             <div className="row">
                                 <div className={"col"}>
                                     <MultiCheckBoxSelect
+                                        ItemTooltip={'dark'}
                                         Options={channelGroupOptions}
                                         Label={''}
                                         OnChange={(evt, Options: IMultiCheckboxOption[]) => multiCheckboxUpdate("ChannelGroups", Options, channelGroupOptions, setChannelGroupOptions)}
@@ -348,6 +350,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             <div className="row">
                                 <div className={"col"}>
                                     <MultiCheckBoxSelect
+                                        ItemTooltip={'dark'}
                                         Options={linePlotOptions}
                                         Label={''}
                                         OnChange={(evt, newOptions: IMultiCheckboxOption[]) => {
