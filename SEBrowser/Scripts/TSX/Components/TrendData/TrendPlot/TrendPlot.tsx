@@ -37,7 +37,11 @@ import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
 import { SettingsOverlay, SeriesSettings } from '../Settings/SettingsOverlay';
 import { CyclicHistogram, ICyclicSeries } from './CyclicHistogram';
 
+type customSelects = "drag" | "symbol" | "horizontal" | "vertical";
 const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
+const defaultSelect = "drag";
+const defaultHighlight = "vertical";
+const defaultCursor = undefined;
 
 interface IContainerProps {
     // Manage Plot
@@ -82,9 +86,9 @@ const TrendPlot = React.memo((props: IContainerProps) => {
 
     // Settings Controls
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
-    type customSelects = "drag" | "symbol" | "horizontal" | "vertical";
-    const [customSelect, setCustomSelect] = React.useState<customSelects>("drag");
-    const [customCursor, setCustomCursor] = React.useState<string>(undefined);
+    const [customSelect, setCustomSelect] = React.useState<customSelects>(defaultSelect);
+    const [customCursor, setCustomCursor] = React.useState<string>(defaultCursor);
+    const [lineHighlight, setLineHighlight] = React.useState<'none' | 'horizontal' | 'vertical'>(defaultHighlight);
 
     // Get Heights and Widths
     React.useLayoutEffect(() => {
@@ -174,7 +178,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         }
 
         // Need this function for vertical labels
-        const vertLabelFunc = (field: 'YRightLabel'|'YLeftLabel') => {
+        const vertLabelFunc = (field: 'YRightLabel' | 'YLeftLabel') => {
             const isOnAxis = (isRightAxis: boolean): boolean => (isRightAxis === ('YRightLabel' === field));
             const constructLabel = (field: keyof TrendSearch.ITrendChannel, maxUniques: number): string => {
                 const foundArray = Array<string | number>(maxUniques + 1);
@@ -185,7 +189,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     foundArray[index] = firstOnAxis.Channel[field];
                     if (index !== 0)
                         label += '/';
-                    if (index !== foundArray.length -1)
+                    if (index !== foundArray.length - 1)
                         label += `${firstOnAxis.Channel[field]}`;
                     else
                         label += '...';
@@ -284,7 +288,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         // Note: if we're in dragmode, it shouldn't be the wrong data coming in but we should check anyway
         if (!props.DragMode) {
             const data = JSON.parse(event.dataTransfer.getData('text/plain'));
-            if (data?.length == null) return; 
+            if (data?.length == null) return;
             let allChannels = props.Plot.Channels.concat(data);
             const channelIdSet = new Set<number>();
             // Get uniques only
@@ -318,15 +322,16 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             {Pencil}
         </Button>);
 
-    const customSelectButton = (selectMode: customSelects, symbol: string, cursor?: string) => {
-        return (<Button onClick={() => {
-            setCustomSelect(selectMode);
-            setCustomCursor(cursor); 
-            return () => { setCustomSelect("drag"); setCustomCursor(undefined); };
+    const createCustomButton = React.useCallback((cSymbol: string, cSelect: customSelects, cCursor: string, cHighlight: 'none' | 'horizontal' | 'vertical') =>
+        <Button onClick={() => {
+            setCustomSelect(cSelect);
+            setCustomCursor(cCursor);
+            setLineHighlight(cHighlight);
+            return () => { setCustomSelect(defaultSelect); setLineHighlight(defaultHighlight); setCustomCursor(defaultCursor); };
         }} isSelect={true}>
-            {symbol}
-        </Button>);
-    };
+            {cSymbol}
+        </Button>
+        , [setCustomSelect, setCustomCursor, setLineHighlight]);
 
     const createMarker = React.useCallback((time: number, values: number[]) => {
         // Todo: Make this a toggle
@@ -412,7 +417,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             case 'Line':
                 plotBody = (
                     <LineGraph ID={props.Plot.ID} ChannelInfo={plotAllSeriesSettings as ILineSeries[]} SetChannelInfo={setPlotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
-                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel}
+                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel} MouseHighlight={lineHighlight}
                         Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
                         OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
                         {props.Plot.ShowEvents ? eventMarkers.map((marker, i) => {
@@ -467,14 +472,16 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                                     {`${moment.utc(mousePosition.x).format("HH:mm:SS")}\n${mousePosition.y.toFixed(2)}`}
                                 </div>
                             </Infobox>}
-                        {customSelectButton("symbol", Plus, "crosshair")} {customSelectButton("horizontal", "-", "vertical-text")} {customSelectButton("vertical", "|", "text")}
+                        {createCustomButton(Plus, "symbol", "crosshair", "vertical")}
+                        {createCustomButton("-", "horizontal", "crosshair", "horizontal")}
+                        {createCustomButton("|", "vertical", "crosshair", "vertical")}
                     </LineGraph>
                 );
                 break;
             case ('Cyclic'):
                 plotBody = (
                     <CyclicHistogram ID={props.Plot.ID} ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] as ICyclicSeries : null} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
-                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel}
+                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel} MouseHighlight={lineHighlight}
                         Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
                         OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}/>
                 );

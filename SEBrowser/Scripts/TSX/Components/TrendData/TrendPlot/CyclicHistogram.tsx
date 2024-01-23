@@ -46,6 +46,7 @@ interface IProps {
     XAxisLabel?: string,
     YAxisLabel?: string,
     Cursor?: string,
+    MouseHighlight: 'none' | 'horizontal' | 'vertical',
     AxisZoom?: 'Rect' | 'AutoValue' | 'HalfAutoValue',
     DefaultZoom?: [number, number][]
     AlwaysRender: React.ReactNode,
@@ -233,7 +234,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
                 <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} moveMenuLeft={moveLeft} showDivCapture={true} divCaptureId={props.ID}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
                     legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
-                    Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={true} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
+                    Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={props.MouseHighlight} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {(chartData?.Series?.length == null || chartData.Series.length === 0 || barColor === null) ? null :
                         <HeatMapChart data={chartData.Series} sampleMs={chartData.TimeSpan} binSize={chartData.BinSize} hue={barColor.Hue} saturation={barColor.Saturation} fillStyle={'fill'} axis={'left'} legendUnit={'%'} />
                     }

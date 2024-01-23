@@ -47,6 +47,7 @@ interface IProps {
     YLeftLabel?: string,
     YRightLabel?: string,
     Cursor?: string,
+    MouseHighlight: 'none' | 'horizontal' | 'vertical',
     AxisZoom?: 'Rect' | 'AutoValue' | 'HalfAutoValue',
     DefaultZoom?: [number, number][]
     AlwaysRender: React.ReactNode,
@@ -244,7 +245,7 @@ const LineGraph = React.memo((props: IProps) => {
                 <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} moveMenuLeft={moveLeft} showDivCapture={true} divCaptureId={props.ID}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping} legendHeight={props.Height / 2 - 34} legendWidth={props.Width / 2}
                     legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
-                    Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={true} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
+                    Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={props.MouseHighlight} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {[...allChartData.keys()].map((channelID, index) => {
                         const lineArray: JSX.Element[] = [];
                         const channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === Number("0x"+channelID));
