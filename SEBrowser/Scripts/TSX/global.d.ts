@@ -216,7 +216,8 @@ export namespace TrendSearch {
     interface IMarker {
         ID: string,
         axis: 'right' | 'left',
-        color: string
+        color: string,
+        type: string
     }
 
     interface ISymbolic extends IMarker {
@@ -232,21 +233,24 @@ export namespace TrendSearch {
         yBox: number,
         opacity: number,
         fontColor: string,
-        fontSize: number
+        fontSize: number,
+        type: "Symb"
     }
 
     interface IVertHori extends IMarker {
         isHori: boolean,
         value: number,
         width: number,
-        line: LineStyles
+        line: LineStyles,
+        type: "VeHo"
     }
 
     // Properties of indivdual events
     interface IEventMarker {
         value: number,
         meterID: number,
-        eventID: number
+        eventID: number,
+        type: "Event"
     }
 
     // Settings that will apply to all event markers

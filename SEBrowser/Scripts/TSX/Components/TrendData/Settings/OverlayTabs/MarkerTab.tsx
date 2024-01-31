@@ -38,7 +38,6 @@ interface IMarkerTabProps {
     SetEventSettings: (setting: TrendSearch.EventMarkerSettings) => void,
     DisplayEventSettings: boolean
 }
-
 const EventOptions = [{ Label: "Vertical Lines", Value: "vertical" }, { Label: "Custom Symbols", Value: "symbolic" }];
 // Loading all SVGIcons into the options menue
 const markerSymbolOptions = [];
@@ -53,7 +52,6 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
 
     // Settings Controls
     const [currentMarker, setCurrentMarker] = React.useState<TrendSearch.IMarker>(undefined);
-    const [currentType, setCurrentType] = React.useState<"Symb" | "VeHo" | "Event" | undefined>(undefined);
     const [allMarkers, setAllMarkers] = React.useState<TrendSearch.IMarker[]>([]);
 
     // Get Heights and Widths
@@ -61,13 +59,6 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
         const baseMarkerHeight = sideMarkerRef?.current?.offsetHeight ?? 400;
         setMarkersHeight(baseMarkerHeight < 400 ? 400 : baseMarkerHeight);
     });
-
-    React.useEffect(() => {
-        if (currentMarker === undefined) return;
-        if (props.SymbMarkers.some(mark => mark.ID === currentMarker.ID)) { setCurrentType("Symb"); return; }
-        if (props.VeHoMarkers.some(mark => mark.ID === currentMarker.ID)) { setCurrentType("VeHo"); return; }
-        setCurrentType("Event");
-    }, [currentMarker]);
 
     React.useEffect(() => {
         const markerArray: TrendSearch.IMarker[] = [...props.SymbMarkers, ...props.VeHoMarkers];
@@ -82,7 +73,7 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
         const allMarkers = [...markerArray];
         allMarkers.splice(index, 1);
         setMarkerArray(allMarkers);
-        setCurrentMarker(marker);
+        setCurrentMarker(undefined);
     }, []);
 
     const editFromArray = React.useCallback((marker: TrendSearch.IMarker, markerArray: TrendSearch.IMarker[], setMarkerArray: (markerArray: TrendSearch.IMarker[]) => void) => {
@@ -95,7 +86,7 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
     }, []);
 
     const applyToMarker = React.useCallback((marker: TrendSearch.IMarker, markerFunc: (marker: TrendSearch.IMarker, markerArray: TrendSearch.IMarker[], setMarkerArray: (markerArray: TrendSearch.IMarker[]) => void) => void) => {
-        switch (currentType) {
+        switch (marker.type) {
             case "Symb":
                 markerFunc(marker, props.SymbMarkers, props.SetSymbMarkers);
                 break;
@@ -103,13 +94,13 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
                 markerFunc(marker, props.VeHoMarkers, props.SetVeHoMarkers);
                 break;
             default:
-                console.warn(`Unexpected marker type ${currentType}`);
+                console.warn(`Unexpected marker type ${marker.type}`);
                 break;
         }
-    }, [props.SymbMarkers, props.SetSymbMarkers, props.VeHoMarkers, props.SetVeHoMarkers, currentType]);
+    }, [props.SymbMarkers, props.SetSymbMarkers, props.VeHoMarkers, props.SetVeHoMarkers]);
 
     const getSettingsList = React.useCallback(() => {
-        switch (currentType) {
+        switch (currentMarker?.type) {
             case 'Symb':
                 return (
                     <div className="row" style={{ height: '100%', width: '100%' }}>
@@ -177,16 +168,16 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
             case undefined:
                 return null
             default:
-                console.warn(`Unexpected marker type ${currentType}`);
+                console.warn(`Unexpected marker type ${currentMarker.type}`);
                 return null;
         }
-    }, [currentType, currentMarker, applyToMarker, editFromArray, LineTypeOptions, props.EventSettings, props.SetEventSettings]);
+    }, [currentMarker, applyToMarker, editFromArray, LineTypeOptions, props.EventSettings, props.SetEventSettings]);
 
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
             <div className="col" style={{ width: '40%', height: markersHeight }}>
                 <TrendMarkerTable Height={markersHeight} Markers={allMarkers}
-                    RemoveMarker={id => applyToMarker({ ID: id, axis: 'left', color: "" }, removeFromArray)}
+                    RemoveMarker={(marker) => applyToMarker(marker, removeFromArray)}
                     Selected={currentMarker} SetSelected={setCurrentMarker} />
             </div>
             <div className="col" style={{ width: '60%' }} ref={sideMarkerRef}>

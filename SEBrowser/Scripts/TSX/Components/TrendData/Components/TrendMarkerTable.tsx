@@ -29,9 +29,9 @@ import moment from 'moment';
 
 interface IProps {
     Markers: TrendSearch.IMarker[],
-    RemoveMarker?: (id: string) => void,
+    RemoveMarker?: (marker: TrendSearch.IMarker) => void,
     Selected: TrendSearch.IMarker,
-    SetSelected: (id: TrendSearch.IMarker) => void,
+    SetSelected: (marker: TrendSearch.IMarker) => void,
     Height: number
 }
 
@@ -49,7 +49,7 @@ const TrendMarkerTable = (props: IProps) => {
         (marker: TrendSearch.IMarker) => (
             <button type="button"
                 className={'btn float-left'}
-                onClick={(event) => { event.preventDefault(); event.stopPropagation(); props.RemoveMarker(marker.ID) }}>
+                onClick={(event) => { event.preventDefault(); event.stopPropagation(); props.RemoveMarker(marker) }}>
                 {CrossMark}
             </button>
         ), [props.RemoveMarker]);

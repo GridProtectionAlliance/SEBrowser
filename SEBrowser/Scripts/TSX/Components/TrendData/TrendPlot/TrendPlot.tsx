@@ -246,7 +246,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         }).done((data: any[]) => {
             setEventMarkers(data.map(datum => {
                 const meterID = props.Plot.Channels.find(channel => channel.MeterKey === datum["Meter Key"]).MeterID;
-                return { value: moment.utc(datum.Time, eventFormat).valueOf(), meterID: meterID, eventID: datum["EventID"] }
+                return { value: moment.utc(datum.Time, eventFormat).valueOf(), meterID: meterID, eventID: datum["EventID"], type: "Event"}
             }));
         });
     }
@@ -358,7 +358,8 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     fontSize: 1,
                     axis: axis,
                     xBox: time,
-                    yBox: values[axisNumber]
+                    yBox: values[axisNumber],
+                    type: "Symb"
                 });
                 setSymbolicMarkers(currentMarkers);
                 return;
@@ -376,7 +377,8 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                     color: SpacedColor(0.9, 0.9),
                     line: ":",
                     width: 4,
-                    isHori
+                    isHori,
+                    type: "VeHo"
                 });
                 setHoriVertMarkers(currentMarkers);
                 return;
