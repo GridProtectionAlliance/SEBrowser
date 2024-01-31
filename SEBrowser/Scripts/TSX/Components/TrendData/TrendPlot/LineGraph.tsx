@@ -173,7 +173,7 @@ const LineGraph = React.memo((props: IProps) => {
             newPoints.forEach(jsonPoint => {
                 let point: TrendSearch.IPQData = undefined;
                 try {
-                    point = JSON.parse(jsonPoint);
+                    if (jsonPoint !== "") point = JSON.parse(jsonPoint);
                 }
                 catch {
                     console.error("Failed to parse point: " + jsonPoint);
