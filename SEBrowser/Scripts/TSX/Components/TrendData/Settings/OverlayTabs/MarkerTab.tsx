@@ -116,14 +116,14 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
                             <BlockPicker onChangeComplete={(color) => applyToMarker({ ...currentMarker, fontColor: color.hex } as TrendSearch.ISymbolic, editFromArray)}
                                 color={currentMarker['fontColor']} triangle={"hide"} />
                             <Input<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Infobox Opacity'} Field={'opacity'} Setter={state => applyToMarker(state, editFromArray)} Feedback={"Opacity must be between 0 and 1"} Valid={() => {
-                                return (currentMarker['opacity'] <= 1 && currentMarker['opacity'] > 0);
+                                return (currentMarker['opacity'] <= 1 && currentMarker['opacity'] >= 0);
                             }} />
                             <Input<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Timestamp Format'} Field={'format'} Setter={state => applyToMarker(state, editFromArray)} Feedback={"Must be a valid timestamp format"} Valid={() => {
                                 // TODO: This must be a valid string, something to check this should be added to helper functions in gemstone soon
                                 return true;
                             }} />
                             <Input<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Note Text Size (em)'} Field={'fontSize'} Setter={state => applyToMarker(state, editFromArray)} Feedback={"Font size must be a positive number"} Valid={() => {
-                                return currentMarker['opacity'] > 0;
+                                return currentMarker['fontSize'] > 0;
                             }} />
                             <TextArea<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Marker Note'} Field={'note'} Setter={state => applyToMarker(state, editFromArray)} Rows={3} Valid={() => true} />
                         </div>
