@@ -161,7 +161,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
             url: `${homePath}api/OpenXDA/GetMetaData`,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify({
-                Channels: [425], // TODO: Change to channel
+                Channels: [channel],
                 StartTime: startTime,
                 StopTime: endTime
             }),
@@ -172,8 +172,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
             const newMetaData: TrendSearch.IMetaData[] = [];
             const metaList: TrendSearch.IMetaData[] = JSON.parse(data);
             metaList.forEach(metaData => {
-                // eslint-disable-next-line no-constant-condition
-                if (metaData.ChannelID !== channel && false) // TODO remove false
+                if (metaData.ChannelID !== channel)
                     console.error("Server returned meta data that does not match channel requested: " + metaData);
                 else newMetaData.push(metaData);
             });
