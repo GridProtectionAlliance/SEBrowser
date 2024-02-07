@@ -24,7 +24,7 @@ import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../Global';
-import { SelectTrendDataSettings, SelectMoveOptionsLeftSetting } from './../../SettingsSlice';
+import { SelectTrendDataSettings, SelectGeneralSettings } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
@@ -104,7 +104,7 @@ const LineGraph = React.memo((props: IProps) => {
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
     const oldValues = React.useRef<{ ChannelInfo: ILineSeries[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
-    const moveLeft = useAppSelector(SelectMoveOptionsLeftSetting);
+    const generalSettings = useAppSelector(SelectGeneralSettings);
 
     React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
@@ -242,7 +242,7 @@ const LineGraph = React.memo((props: IProps) => {
                             : null
                         }
                     </h4> : null}
-                <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} moveMenuLeft={moveLeft} showDivCapture={true} divCaptureId={props.ID}
+                <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} moveMenuLeft={generalSettings.MoveOptionsLeft} showDivCapture={true} divCaptureId={props.ID}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping} legendHeight={props.Height / 2 - 34} legendWidth={props.Width / 2}
                     legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={props.MouseHighlight} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
@@ -252,13 +252,13 @@ const LineGraph = React.memo((props: IProps) => {
                         const chartData = allChartData.get(channelID);
                         if (channelSetting === undefined) return null;
                         if (displayAvg && channelSetting.Avg.HasData)
-                            lineArray.push(<Line highlightHover={false} key={"avg_" + index} showPoints={false} lineStyle={channelSetting.Avg.Type}
+                            lineArray.push(<Line highlightHover={false} key={"avg_" + index} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting.Avg.Type}
                                 color={channelSetting.Avg.Color} data={chartData.AvgSeries} legend={channelSetting.Avg.Label} axis={channelSetting.Avg.Axis} width={channelSetting.Avg.Width} />);
                         if (displayMin && channelSetting.Min.HasData)
-                            lineArray.push(<Line highlightHover={false} key={"min_" + index} showPoints={false} lineStyle={channelSetting.Min.Type}
+                            lineArray.push(<Line highlightHover={false} key={"min_" + index} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting.Min.Type}
                                 color={channelSetting.Min.Color} data={chartData.MinSeries} legend={channelSetting.Min.Label} axis={channelSetting.Min.Axis} width={channelSetting.Min.Width} />);
                         if (displayMax && channelSetting.Max.HasData)
-                            lineArray.push(<Line highlightHover={false} key={"max_" + index} showPoints={false} lineStyle={channelSetting.Max.Type}
+                            lineArray.push(<Line highlightHover={false} key={"max_" + index} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting.Max.Type}
                                 color={channelSetting.Max.Color} data={chartData.MaxSeries} legend={channelSetting.Max.Label} axis={channelSetting.Max.Axis} width={channelSetting.Max.Width} />);
                         return lineArray;
                     })}

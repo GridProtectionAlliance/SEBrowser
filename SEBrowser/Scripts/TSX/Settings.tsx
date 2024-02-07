@@ -28,6 +28,40 @@ import { SelectEventSearchSettings, SelectTrendDataSettings, SelectGeneralSettin
 import { Redux } from './global';
 import { FetchEventSearches } from './Components/EventSearch/EventSearchSlice';
 
+const searchSettingsOptions = [
+    {
+        Value: 'center',
+        Label: 'Center Date/Time and Window',
+    },
+    {
+        Value: 'startWindow',
+        Label: 'Start Date/Time and Window',
+    },
+    {
+        Value: 'endWindow',
+        Label: 'End Date/Time and Window',
+    },
+    {
+        Value: 'startEnd',
+        Label: 'Start and End Date/Time',
+    },
+];
+
+const legendDisplayOptions = [
+    {
+        Value: 'bottom',
+        Label: 'Show Legend at Bottom of Plot',
+    },
+    {
+        Value: 'right',
+        Label: 'Show Legend at Right of Plot',
+    },
+    {
+        Value: 'hidden',
+        Label: 'Hide all Plot Legends',
+    }
+];
+
 const Settings = (props: { Show: boolean, Close: () => void }) => {
     const dispatch = useAppDispatch();
     const evtSearchsettings = useAppSelector(SelectEventSearchSettings);
@@ -36,41 +70,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
 
     const [evtSearch, setEvtSearch] = React.useState<Redux.IEventSearchSettings>();
     const [trendData, setTrendData] = React.useState<Redux.ITrendDataSettings>();
-    const [general, setGeneral] = React.useState<any>();
-
-    const searchSettingsOptions = [
-        {
-            Value: 'center',
-            Label: 'Center Date/Time and Window',
-        },
-        {
-            Value: 'startWindow',
-            Label: 'Start Date/Time and Window',
-        },
-        {
-            Value: 'endWindow',
-            Label: 'End Date/Time and Window',
-        },
-        {
-            Value: 'startEnd',
-            Label: 'Start and End Date/Time',
-        },
-    ];
-
-    const legendDisplayOptions = [
-        {
-            Value: 'bottom',
-            Label: 'Show Legend at Bottom of Plot',
-        },
-        {
-            Value: 'right',
-            Label: 'Show Legend at Right of Plot',
-        },
-        {
-            Value: 'hidden',
-            Label: 'Hide all Plot Legends',
-        }
-    ];
+    const [general, setGeneral] = React.useState<Redux.IGeneralSettings>();
 
     React.useEffect(() => {
         setEvtSearch(evtSearchsettings);
@@ -188,7 +188,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                             <legend className="w-auto" style={{ fontSize: 'large' }}>General Settings:</legend>
                             <div className="row">
                                 <div className="col">
-                                    <Select
+                                    <Select<Redux.IGeneralSettings>
                                         Options={searchSettingsOptions}
                                         Record={general}
                                         Field='DateTime'
@@ -199,11 +199,20 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                             </div>
                             <div className={"row"}>
                                 <div className={'col'}>
-                                    <CheckBox<any>
+                                    <CheckBox<Redux.IGeneralSettings>
                                         Record={general}
                                         Field='MoveOptionsLeft'
                                         Setter={(g) => setGeneral(g)}
                                         Label='Display Plot Toolbar on Left Side of Plot' />
+                                </div>
+                            </div>
+                            <div className={"row"}>
+                                <div className={'col'}>
+                                    <CheckBox<Redux.IGeneralSettings>
+                                        Record={general}
+                                        Field='ShowDataPoints'
+                                        Setter={(g) => setGeneral(g)}
+                                        Label='Display Plot Datapoints on Zoom-In' />
                                 </div>
                             </div>
                         </fieldset>

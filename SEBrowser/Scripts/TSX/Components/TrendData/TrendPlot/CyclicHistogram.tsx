@@ -24,7 +24,7 @@ import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../Global';
-import { SelectTrendDataSettings, SelectMoveOptionsLeftSetting } from './../../SettingsSlice';
+import { SelectTrendDataSettings, SelectGeneralSettings } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
@@ -97,7 +97,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
     const [metaData, setMetaData] = React.useState<TrendSearch.IMetaData[]>(null);
     const oldValues = React.useRef<{ ChannelInfo: ICyclicSeries, TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: null, TimeFilter: null });
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
-    const moveLeft = useAppSelector(SelectMoveOptionsLeftSetting);
+    const generalSettings = useAppSelector(SelectGeneralSettings);
 
     React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
@@ -230,7 +230,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
                             : null
                         }
                     </h4> : null}
-                <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} moveMenuLeft={moveLeft} showDivCapture={true} divCaptureId={props.ID}
+                <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} moveMenuLeft={generalSettings.MoveOptionsLeft} showDivCapture={true} divCaptureId={props.ID}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
                     legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={props.MouseHighlight} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>

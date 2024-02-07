@@ -30,7 +30,7 @@ import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, Axis
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { LineGraph, ILineSeries } from './LineGraph';
 import { SEBrowser, TrendSearch } from '../../../global';
-import { SelectTrendDataSettings, SelectMoveOptionsLeftSetting } from './../../SettingsSlice';
+import { SelectTrendDataSettings, SelectGeneralSettings } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
 import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
@@ -63,7 +63,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     const [chartHeight, setChartHeight] = React.useState<number>(500);
 
     // Plot Saved Settings
-    const moveLeft = useAppSelector(SelectMoveOptionsLeftSetting);
+    const generalSettings = useAppSelector(SelectGeneralSettings);
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const [plotAllSeriesSettings, setPlotAllSeriesSettings] = React.useState<SeriesSettings[]>(null);
     const changedProperties = React.useRef<Set<string>>(new Set<string>());
@@ -467,8 +467,8 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                             </Infobox>
                         )}
                         {customSelect === "drag" ? null :
-                            <Infobox key={"MouseOver"} origin={moveLeft ? "upper-left" : "upper-right"}
-                                x={moveLeft ? 5 : -5} y={25} opacity={0.4} childId={"mouseInfo"} usePixelPositioning={true}
+                            <Infobox key={"MouseOver"} origin={generalSettings.MoveOptionsLeft ? "upper-left" : "upper-right"}
+                                x={generalSettings.MoveOptionsLeft ? 5 : -5} y={25} opacity={0.4} childId={"mouseInfo"} usePixelPositioning={true}
                                 onMouseMove={setHoverPosition}>
                                 <div id={"mouseInfo"} style={{ display: 'inline-block', background: 'white', overflow: 'visible', whiteSpace: 'pre-wrap', opacity: 0.7 }}>
                                     {`${moment.utc(mousePosition.x).format("HH:mm:SS")}\n${mousePosition.y.toFixed(2)}`}

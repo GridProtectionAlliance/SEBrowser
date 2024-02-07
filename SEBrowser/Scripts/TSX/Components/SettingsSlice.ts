@@ -22,9 +22,9 @@
 //       Cleaned up Settings code.
 //
 //******************************************************************************************************
-import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { cloneDeep } from 'lodash';
-import { Redux, SEBrowser } from '../global';
+import { Redux } from '../global';
 
 declare let homePath: string;
 
@@ -33,6 +33,7 @@ export const LoadSettings = createAsyncThunk('Settings/LoadSettingsThunk', async
 });
 
 const defaultState = {
+    timeZone: 'UTC',
     eventSearch: {
         NumberResults: 100,
         WidgetCategories: [],
@@ -45,9 +46,11 @@ const defaultState = {
         StartWithOptionsClosed: false,
         LegendDisplay: 'bottom'
     },
-    MoveOptionsLeft: false,
-    timeZone: 'UTC',
-    DateTimeSetting: 'center'
+    general: {
+        MoveOptionsLeft: false,
+        ShowDataPoints: true,
+        DateTime: 'center'
+    }
 } as Redux.SettingsState;
 
 const settingsSlice = createSlice({
@@ -64,14 +67,8 @@ const settingsSlice = createSlice({
             state.trendData = action.payload;
             saveSettings(state);
         },
-        SetGeneral: (state: Redux.SettingsState, action: {
-            type: string,
-            payload: { DateTime?: SEBrowser.TimeWindowMode, MoveOptionsLeft: boolean }
-        }) => {
-            if (action.payload.DateTime !== undefined)
-                state.DateTimeSetting = action.payload.DateTime;
-            if (action.payload.MoveOptionsLeft !== undefined)
-                state.MoveOptionsLeft = action.payload.MoveOptionsLeft;
+        SetGeneral: (state: Redux.SettingsState, action: { type: string, payload: Redux.IGeneralSettings }) => {
+            state.general = action.payload
             saveSettings(state);
         },
     },
@@ -80,61 +77,40 @@ const settingsSlice = createSlice({
         builder.addCase(LoadSettings.fulfilled, (state, action) => {
             const preserved = readSettings();
 
-            if (preserved == undefined)
-                state = cloneDeep(defaultState);
-            else {
-                if (preserved.eventSearch != undefined) {
-                    state.eventSearch = preserved.eventSearch;
-                }
-                if (preserved.trendData != undefined) {
-                    state.trendData = preserved.trendData;
-                }
-                if (preserved.DateTimeSetting === undefined)
-                    state.DateTimeSetting = 'center';
-                if (preserved.MoveOptionsLeft !== undefined)
-                    state.MoveOptionsLeft = preserved.MoveOptionsLeft;
-            }
+            Object.keys(preserved).forEach(key => {
+                if (preserved[key] !== undefined) state[key] = preserved[key];
+                else state[key] = cloneDeep(defaultState[key]);
+            });
 
             state.timeZone = cloneDeep(action.payload[0]);
             state.eventSearch.WidgetCategories = cloneDeep(action.payload[1]);
             return state;
-        });    
-        
+        });
+
         builder.addCase(LoadSettings.rejected, (state) => {
             const preserved = readSettings();
 
-            if (preserved == undefined)
-                state = defaultState;
-            else {
-                if (preserved.eventSearch != undefined) {
-                    state.eventSearch = preserved.eventSearch;
-                }
-                if (preserved.trendData != undefined) {
-                    state.trendData = preserved.trendData;
-                }
-                if (preserved.DateTimeSetting === undefined)
-                    state.DateTimeSetting = 'center';
-                if (preserved.MoveOptionsLeft !== undefined)
-                    state.MoveOptionsLeft = preserved.MoveOptionsLeft;
-            }
+            Object.keys(preserved).forEach(key => {
+                if (preserved[key] !== undefined) state[key] = preserved[key];
+                else state[key] = cloneDeep(defaultState[key]);
+            });
 
             state.timeZone = 'UTC';
             return state;
         });
     }
-    
+
 })
 
 function readSettings() {
+    let preserved: Redux.SettingsState;
     try {
         const serializedState = localStorage.getItem('SEBrowser.Settings');
-        if (serializedState === null) {
-            return undefined;
-        }
-        const state: Redux.SettingsState = JSON.parse(serializedState);
-        return state;
+        if (serializedState === null) throw new Error("No setting state found")
+        preserved = JSON.parse(serializedState);
+        return preserved;
     } catch (err) {
-        return undefined;
+        return cloneDeep(defaultState);
     }
 }
 
@@ -175,9 +151,7 @@ export const SettingsReducer = settingsSlice.reducer
 export const { SetEventSearch, SetTrendData, SetGeneral } = settingsSlice.actions
 export const SelectEventSearchSettings = (state: Redux.StoreState) => state.Settings.eventSearch
 export const SelectTrendDataSettings = (state: Redux.StoreState) => state.Settings.trendData
+export const SelectGeneralSettings = (state: Redux.StoreState) => state.Settings.general
 export const SelectTimeZone = (state: Redux.StoreState) => state.Settings.timeZone
 export const SelectWidgetCategories = (state: Redux.StoreState) => state.Settings.eventSearch.WidgetCategories
-export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.DateTimeSetting
-export const SelectMoveOptionsLeftSetting = (state: Redux.StoreState) => state.Settings.MoveOptionsLeft
-export const SelectGeneralSettings = createSelector(
-    SelectDateTimeSetting, SelectMoveOptionsLeftSetting, (dateTime, moveOptionsLeft) => ({ DateTime: dateTime, MoveOptionsLeft: moveOptionsLeft }));
+export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.general.DateTime

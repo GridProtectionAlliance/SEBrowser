@@ -89,9 +89,14 @@ export namespace Redux {
     interface SettingsState {
         eventSearch: IEventSearchSettings,
         trendData: ITrendDataSettings,
+        general: IGeneralSettings,
+        timeZone: string
+    }
+
+    interface IGeneralSettings {
         MoveOptionsLeft: boolean,
-        timeZone: string,
-        DateTimeSetting: SEBrowser.TimeWindowMode
+        ShowDataPoints: boolean,
+        DateTime: SEBrowser.TimeWindowMode
     }
 
     interface IEventSearchSettings {
