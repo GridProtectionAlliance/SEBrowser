@@ -94,7 +94,7 @@ const TrendChannelTable = (props: IProps) => {
             SortKey={sortField}
             Ascending={ascending}
             OnSort={sortCallback}
-            OnDragStart={dragFuncCallback}/*{props.EnableDragDrop ? dragFuncCallback : undefined}*/
+            OnDragStart={props.EnableDragDrop ? dragFuncCallback : undefined}
             KeySelector={(item) => item.ID}
             OnClick={(item, event) => {
                 event.preventDefault();
@@ -127,7 +127,7 @@ const TrendChannelTable = (props: IProps) => {
             }}
             Selected={(item) => props.Type === 'multi' ? props.SelectedSet.has(item.ID) : props.Selected === item.ID}
             TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-            TbodyStyle={{ display: 'block', overflowY: 'scroll', height: props.Height - 30, userSelect: 'none'}}
+            TbodyStyle={{ display: 'block', overflowY: 'scroll', height: props.Height - 45, userSelect: 'none'}}
             RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
             TableClass="table table-hover"
             TableStyle={{ marginBottom: 0 }}>
@@ -158,7 +158,7 @@ const TrendChannelTable = (props: IProps) => {
                     RowStyle={{ width: "50px" }}
                     HeaderStyle={{ width: "50px" }}
                     Content={removeButton}
-                ></ReactTable.Column>: null}
+                > </ReactTable.Column>: null}
         </ConfigTable.Table>);
 }
 
