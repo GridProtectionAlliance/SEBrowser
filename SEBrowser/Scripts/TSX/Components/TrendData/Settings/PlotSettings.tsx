@@ -38,7 +38,7 @@ const limitFeedback = "Lower limits must be lower than upper.";
 
 const axisOptions: { Value: string, Label: string }[] = [
     { Value: 'AutoValue', Label: 'Automatic' },
-    { Value: 'HalfAutoValue', Label: 'Semi-Automatic' },
+    { Value: 'HalfAutoValue', Label: 'Zero to Auto' },
     { Value: 'Rect', Label: 'Manual' }
 ]
 
@@ -140,7 +140,7 @@ const PlotSettings = React.memo((props: IProps) => {
                     <div className="row">
                         <div className="col">
                             <Select<TrendSearch.ITrendPlot> Record={props.Plot} Setter={props.SetPlot} Field='AxisZoom' Options={axisOptions} Label=''
-                                EmptyOption={false} Help={"Semi-automatic sets one limit to zero and the other is automatic, based on the range of the plot."}
+                                EmptyOption={false} Help={"Selects range of plot."}
                             />
                         </div>
                     </div>
