@@ -34,7 +34,7 @@ import { SelectTrendDataSettings, SelectMoveOptionsLeftSetting } from './../../S
 import { useAppSelector } from './../../../hooks';
 import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
 import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
-import { SettingsOverlay, SeriesSettings } from '../Settings/SettingsOverlay';
+import { SettingsModal, SeriesSettings } from '../Settings/SettingsModal';
 import { CyclicHistogram, ICyclicSeries } from './CyclicHistogram';
 
 type customSelects = "drag" | "symbol" | "horizontal" | "vertical";
@@ -498,7 +498,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             }}
             ref={chartRef} onDragOver={handleDragOverChannel} onDrop={handleDropChannel}>
             {plotBody}
-            <SettingsOverlay OverlayPortalID={props.OverlayPortalID} SetShow={setShowSettings} Show={showSettings}
+            <SettingsModal OverlayPortalID={props.OverlayPortalID} SetShow={setShowSettings} Show={showSettings}
                 Plot={props.Plot} SetPlot={handleSetPlot} SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings} 
                 SymbolicMarkers={symbolicMarkers} SetSymbolicMarkers={setSymbolicMarkers} VertHoriMarkers={horiVertMarkers} SetVertHoriMarkers={setHoriVertMarkers}
                 EventSettings={eventSettings} SetEventSettings={setEventSettings} />

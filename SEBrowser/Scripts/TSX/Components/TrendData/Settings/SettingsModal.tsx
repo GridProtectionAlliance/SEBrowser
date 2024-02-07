@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  SettingsOverlay.tsx - Gbtc
+//  SettingsModal.tsx - Gbtc
 //
 //  Copyright © 2023, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -18,15 +18,16 @@
 //  ----------------------------------------------------------------------------------------------------
 //  06/12/23 - Gabriel Santos
 //       Generated original version of source code.
+//  02/06/24 - Gabriel Santos
+//       Overhauled to use modals
 //
 //******************************************************************************************************
 import React from 'react';
 import _ from 'lodash';
-import { Portal } from 'react-portal';
 import { ILineSeries } from '../TrendPlot/LineGraph';
 import { ICyclicSeries } from '../TrendPlot/CyclicHistogram';
 import { TrendSearch } from '../../../global';
-import { TabSelector } from '@gpa-gemstone/react-interactive';
+import { TabSelector, Modal } from '@gpa-gemstone/react-interactive';
 import { PlotSettings } from './PlotSettings';
 import { MarkerTab } from './OverlayTabs/MarkerTab';
 import { ChannelTab } from './OverlayTabs/ChannelTab';
@@ -53,7 +54,7 @@ interface IOverlayProps {
 
 export type SeriesSettings = ILineSeries | ICyclicSeries;
 
-const SettingsOverlay = React.memo((props: IOverlayProps) => {
+const SettingsModal = React.memo((props: IOverlayProps) => {
     // Settings Controls
     const [tab, setTab] = React.useState<string>("plot");
     const [confirmDisabled, setConfirmDisabled] = React.useState<boolean>(false);
@@ -103,70 +104,57 @@ const SettingsOverlay = React.memo((props: IOverlayProps) => {
         { Id: "series", Label: "Channel" }
     ];
 
-    if (!props.Show) return null;
     return (
-        <Portal node={document && document.getElementById(props.OverlayPortalID)}>
-            <div className="card">
-                <div className="card-header">
-                    <h4 className="modal-title">{`Change Plot: ${props.Plot.Title ?? `${props.Plot.Channels.length} Channel ${props.Plot.Type} Plot`}`}</h4>
-                </div>
-                <div className="card-body" style={{ maxHeight: 'calc(100% - 210px)', overflowY: 'auto' }}>
-                    <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
-                    <hr />
-                    <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
-                        <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
-                            <PlotSettings Plot={plotBuffer} SetPlot={setPlotBuffer} SetConfirmDisabled={setConfirmDisabled} />
-                        </div>
-                    </div>
-                    <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
-                        <div className={"tab-pane " + (tab == "series" ? " active" : "fade")} id="series">
-                            <ChannelTab Type={props.Plot.Type} SetChannels={setChannelsBuffer} Channels={channelsBuffer} SeriesSettings={seriesBuffer} SetSeriesSettings={setSeriesBuffer} />
-                        </div>
-                    </div>
-                    <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
-                        <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
-                            <MarkerTab VeHoMarkers={markersBuffer} SetVeHoMarkers={setMarkersBuffer} SymbMarkers={symbolicsBuffer} SetSymbMarkers={setSymbolicsBuffer}
-                                EventSettings={eventBuffer} SetEventSettings={setEventBuffer} DisplayEventSettings={plotBuffer.ShowEvents} />
-                        </div>
-                    </div>
-                </div>
-                <div className="card-footer">
-                    <button type="button"
-                        className={`btn btn-primary ${confirmDisabled ? 'disabled ' : ''}float-left`}
-                        onClick={() => {
-                            if (confirmDisabled) return;
-                            // Each of the fields that are set global to all channels (do this field by field to avoid unneccessary rerenders)
-                            const plotSettings = { ...plotBuffer };
-                            plotSettings.Channels = channelsBuffer;
-                            Object.keys(plotSettings).forEach(field => checkAndSetValue(plotSettings, field as keyof (TrendSearch.ITrendPlot)));
-                            // Do other settings
-                            props.SetSeriesSettings(seriesBuffer);
-                            props.SetSymbolicMarkers(symbolicsBuffer);
-                            props.SetVertHoriMarkers(markersBuffer);
-                            props.SetEventSettings(eventBuffer);
-                            setTab("plot");
-                            props.SetShow(false);
-                        }}>Save Changes</button>
-                    <button type="button"
-                        className={'btn btn-cancel float-right'}
-                        onClick={() => {
-                            // Reset buffers
-                            setPlotBuffer(props.Plot);
-                            setSeriesBuffer(props.SeriesSettings);
-                            setChannelsBuffer(props.Plot.Channels);
-                            setSymbolicsBuffer(props.SymbolicMarkers);
-                            setMarkersBuffer(props.VertHoriMarkers);
-                            setEventBuffer(props.EventSettings);
-                            setTab("plot");
-                            props.SetShow(false);
-                        }}>Discard Changes</button>
+        <Modal Title={`Change Plot: ${props.Plot.Title ?? `${props.Plot.Channels.length} Channel ${props.Plot.Type} Plot`}`} ShowX={false} Size='xlg'
+            ShowConfirm={true} ConfirmText='Save Changes' DisableConfirm={confirmDisabled} ShowCancel={true} CancelText='Discard Changes'
+            Show={props.Show} CallBack={(conf) => {
+                if (conf) {
+                    // Each of the fields that are set global to all channels (do this field by field to avoid unneccessary rerenders)
+                    const plotSettings = { ...plotBuffer };
+                    plotSettings.Channels = channelsBuffer;
+                    Object.keys(plotSettings).forEach(field => checkAndSetValue(plotSettings, field as keyof (TrendSearch.ITrendPlot)));
+                    // Do other settings
+                    props.SetSeriesSettings(seriesBuffer);
+                    props.SetSymbolicMarkers(symbolicsBuffer);
+                    props.SetVertHoriMarkers(markersBuffer);
+                    props.SetEventSettings(eventBuffer);
+
+                } else {
+                    // Reset buffers
+                    setPlotBuffer(props.Plot);
+                    setSeriesBuffer(props.SeriesSettings);
+                    setChannelsBuffer(props.Plot.Channels);
+                    setSymbolicsBuffer(props.SymbolicMarkers);
+                    setMarkersBuffer(props.VertHoriMarkers);
+                    setEventBuffer(props.EventSettings);
+                }
+                setTab("plot");
+                props.SetShow(false);
+
+        }}>
+            <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
+            <hr />
+            <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
+                <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
+                    <PlotSettings Plot={plotBuffer} SetPlot={setPlotBuffer} SetConfirmDisabled={setConfirmDisabled} />
                 </div>
             </div>
-        </Portal>
+            <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
+                <div className={"tab-pane " + (tab == "series" ? " active" : "fade")} id="series">
+                    <ChannelTab Type={props.Plot.Type} SetChannels={setChannelsBuffer} Channels={channelsBuffer} SeriesSettings={seriesBuffer} SetSeriesSettings={setSeriesBuffer} />
+                </div>
+            </div>
+            <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
+                <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
+                    <MarkerTab VeHoMarkers={markersBuffer} SetVeHoMarkers={setMarkersBuffer} SymbMarkers={symbolicsBuffer} SetSymbMarkers={setSymbolicsBuffer}
+                        EventSettings={eventBuffer} SetEventSettings={setEventBuffer} DisplayEventSettings={plotBuffer?.ShowEvents ?? false} />
+                </div>
+            </div>
+        </Modal>
     );
 });
 
 const LineTypeOptions = [{ Label: "Dashed", Value: ":" }, { Label: "Solid", Value: "-" }];
 const AxisOptions = [{ Label: "Right", Value: "right" }, { Label: "Left", Value: "left" }];
 
-export { SettingsOverlay, LineTypeOptions, AxisOptions };
+export { SettingsModal, LineTypeOptions, AxisOptions };

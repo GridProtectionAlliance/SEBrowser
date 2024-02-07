@@ -576,7 +576,7 @@
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\OverlayTabs\MarkerTab.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\OverlayTabs\ChannelTab.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\PlotSettings.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\SettingsOverlay.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\SettingsModal.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\CyclicHistogram.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\GraphError.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\LineGraph.tsx" />

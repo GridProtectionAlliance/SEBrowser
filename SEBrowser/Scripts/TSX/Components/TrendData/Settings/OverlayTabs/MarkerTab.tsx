@@ -26,7 +26,7 @@ import { BlockPicker } from 'react-color';
 import { Input, TextArea, StylableSelect, CheckBox, Select } from '@gpa-gemstone/react-forms';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import TrendMarkerTable from '../../Components/TrendMarkerTable';
-import { LineTypeOptions, AxisOptions } from '..//SettingsOverlay';
+import { LineTypeOptions, AxisOptions } from '../SettingsModal';
 
 interface IMarkerTabProps {
     // Manage Markers
