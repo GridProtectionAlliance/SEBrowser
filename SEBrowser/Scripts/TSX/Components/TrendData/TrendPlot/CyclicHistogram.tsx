@@ -95,9 +95,13 @@ const CyclicHistogram = React.memo((props: IProps) => {
     const [hover, setHover] = React.useState<boolean>(false);
     const [barColor, setBarColor] = React.useState<{ Hue: number, Saturation: number }>(null);
     const [metaData, setMetaData] = React.useState<TrendSearch.IMetaData[]>(null);
+    const [titleHeight, setTitleHeight] = React.useState<number>(0);
+    const titleRef = React.useRef(null);
     const oldValues = React.useRef<{ ChannelInfo: ICyclicSeries, TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: null, TimeFilter: null });
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const generalSettings = useAppSelector(SelectGeneralSettings);
+
+    React.useLayoutEffect(() => setTitleHeight(titleRef?.current?.offsetHeight ?? 0));
 
     React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
@@ -222,15 +226,14 @@ const CyclicHistogram = React.memo((props: IProps) => {
         return (
             <div className="row">
                 <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={29} />
-                {props.Title !== undefined ?
-                    <h4 style={{ textAlign: "center", width: `${props.Width}px` }}>
-                        {props.Title}
+                <h4 ref={titleRef} style={{ textAlign: "center", width: `${props.Width}px`, marginBottom: '0px' }}>
+                    {props?.Title ?? ''}
                         {(chartData?.Series?.length == null || chartData.Series.length === 0) ?
                             <span data-tooltip={props.ID} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>{Warning}</span>
                             : null
                         }
-                    </h4> : null}
-                <Plot height={props.Height - (props.Title !== undefined ? 34 : 5)} width={props.Width} moveMenuLeft={generalSettings.MoveOptionsLeft} showDivCapture={true} divCaptureId={props.ID}
+                </h4>
+                <Plot height={props.Height - titleHeight - 5} width={props.Width} moveMenuLeft={generalSettings.MoveOptionsLeft} showDivCapture={true} divCaptureId={props.ID}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
                     legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={props.MouseHighlight} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
