@@ -100,7 +100,6 @@ const TrendData = () => {
         newList.forEach((item: TrendSearch.ITrendPlot, index: number) => {
             newList[index][field] = record[field];
         });
-        setDefaultPlotSettings({ ...defaultPlotSettings, [field]: record[field] });
         setPlotList(newList);
     }), [plotList]);
 
@@ -116,7 +115,7 @@ const TrendData = () => {
             setPlotList(defaultAppliedContainers.concat(plotList));
         else
             setPlotList(plotList.concat(defaultAppliedContainers));
-    }, [plotList, setPlotList, trendDatasettings.InsertAtStart]);
+    }, [plotList, setPlotList, trendDatasettings.InsertAtStart, defaultPlotSettings]);
 
     const removeAllCharts = React.useCallback(() => {
         setPlotList([]);

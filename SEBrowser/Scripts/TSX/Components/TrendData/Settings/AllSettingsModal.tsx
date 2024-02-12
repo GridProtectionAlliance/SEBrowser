@@ -40,20 +40,24 @@ const AllSettingsModal = React.memo((props: IProps) => {
     const [allPlot, setAllPlot] = React.useState<TrendSearch.ITrendPlot>(props.Defaults);
 
     const settingsModalCallback = React.useCallback((
-        (confirmed: boolean) => {
+        (confirmed: boolean, btn: boolean, futureOnly: boolean) => {
+            // Setting existing plots
             if (confirmed) {
                 Object.keys(allPlot).forEach((field: string) => {
                     if (!_.isEqual(allPlot[field], props.Defaults[field]))
                         props.ApplyFieldToAll(allPlot, field as keyof (TrendSearch.ITrendPlot));
                 });
-                props.SetDefaults(allPlot);
-            } else setAllPlot(props.Defaults);
+            } 
+            // Settings defaults
+            if (confirmed || futureOnly) props.SetDefaults(allPlot);
+            else setAllPlot(props.Defaults);
+            // Close modal
             props.SetShow(false);
         }), [props.SetShow, props.ApplyFieldToAll, allPlot, setAllPlot, props.SetDefaults, props.Defaults])
 
     return (
         <Modal Title='Change Settings for All Plots' CallBack={settingsModalCallback} Show={props.Show} Size='xlg'
-            ConfirmText="Apply Changes to All" CancelText="Discard Changes" ShowCancel={true} DisableConfirm={confirmDisabled}>
+            ConfirmText="Apply to Existing & Future" CancelText="Discard Changes" TertiaryText="Apply to Future" ShowCancel={true} ShowTertiary={true} DisableConfirm={confirmDisabled} DisableTertiary={confirmDisabled}>
             <PlotSettings Plot={allPlot} SetPlot={setAllPlot} SetConfirmDisabled={setConfirmDisabled} />
         </Modal>
     );
