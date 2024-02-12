@@ -41,6 +41,7 @@ interface IProps {
     Height: number,
     Width: number,
     OnSelect: (time: number, values: number[]) => void,
+    SetExtraSpace: (extra: number) => void,
     Title?: string,
     Metric?: boolean,
     XAxisLabel?: string,
@@ -102,7 +103,10 @@ const LineGraph = React.memo((props: IProps) => {
     const [hover, setHover] = React.useState<boolean>(false);
     const [allChartData, setAllChartData] = React.useState<Map<string,IChartData>>(new Map<string,IChartData>());
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
+    // Height mangement
     const [titleHeight, setTitleHeight] = React.useState<number>(0);
+    const [plotHeight, setPlotHeight] = React.useState<number>(props.Height);
+    const [extraLegendHeight, setExtraLegendHeight] = React.useState<number>(0);
     const titleRef = React.useRef(null);
     const oldValues = React.useRef<{ ChannelInfo: ILineSeries[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
@@ -157,6 +161,16 @@ const LineGraph = React.memo((props: IProps) => {
         });
         setTimeLimits(chartData === undefined ? [0, 1] : [chartData.AvgSeries[0][0], chartData.AvgSeries[chartData.AvgSeries.length - 1][0]]);
     }, [allChartData]);
+
+    React.useEffect(() => {
+        setPlotHeight(props.Height - titleHeight - 5);
+    }, [props.Height, titleHeight]);
+
+    const captureCallback = React.useCallback((extraLegendHeight: number) => {
+        props.SetExtraSpace(extraLegendHeight);
+        setExtraLegendHeight(extraLegendHeight)
+        return props.ID;
+    }, [props.ID, setExtraLegendHeight, props.SetExtraSpace]);
 
     function GetTrendData(channels: number[], cachedData: Map<string, IChartData>, startTime: string, endTime: string): JQuery.jqXHR<TrendSearch.IPQData> {
         setGraphStatus('loading');
@@ -245,8 +259,8 @@ const LineGraph = React.memo((props: IProps) => {
                         : null
                     }
                 </h4>
-                <Plot height={props.Height - titleHeight - 5} width={props.Width} moveMenuLeft={generalSettings.MoveOptionsLeft} showDivCapture={true} divCaptureId={props.ID}
-                    defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping} legendHeight={props.Height / 2 - 34} legendWidth={props.Width / 2}
+                <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2} moveMenuLeft={generalSettings.MoveOptionsLeft}
+                    defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
                     legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={props.MouseHighlight} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {[...allChartData.keys()].map((channelID, index) => {

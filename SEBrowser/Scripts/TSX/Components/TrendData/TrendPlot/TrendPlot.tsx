@@ -61,6 +61,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     const chartRef = React.useRef(null);
     const [chartWidth, setChartWidth] = React.useState<number>(500);
     const [chartHeight, setChartHeight] = React.useState<number>(500);
+    const [extraHeight, setExtraHeight] = React.useState<number>(0);
 
     // Plot Saved Settings
     const generalSettings = useAppSelector(SelectGeneralSettings);
@@ -419,7 +420,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             case 'Line':
                 plotBody = (
                     <LineGraph ID={props.Plot.ID} ChannelInfo={plotAllSeriesSettings as ILineSeries[]} SetChannelInfo={setPlotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
-                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel} MouseHighlight={lineHighlight}
+                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel} MouseHighlight={lineHighlight} SetExtraSpace={setExtraHeight}
                         Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
                         OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
                         {props.Plot.ShowEvents ? eventMarkers.map((marker, i) => {
@@ -483,7 +484,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             case ('Cyclic'):
                 plotBody = (
                     <CyclicHistogram ID={props.Plot.ID} ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] as ICyclicSeries : null} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
-                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel} MouseHighlight={lineHighlight}
+                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel} MouseHighlight={lineHighlight} SetExtraSpace={setExtraHeight}
                         Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
                         OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}/>
                 );
@@ -493,7 +494,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
     return (
         <div id={props.Plot.ID} className="col"
             style={{
-                width: (props.Plot.Width ?? 100) - 1 + '%', height: (props.Plot.Height ?? 50) - 1 + '%', float: 'left',
+                width: (props.Plot.Width ?? 100) - 1 + '%', height: `calc(${(props.Plot.Height ?? 50) - 1}% + ${extraHeight}px)`, float: 'left',
                 border: (trendDatasettings.BorderPlots ? "thin black solid" : undefined)
             }}
             ref={chartRef} onDragOver={handleDragOverChannel} onDrop={handleDropChannel}>

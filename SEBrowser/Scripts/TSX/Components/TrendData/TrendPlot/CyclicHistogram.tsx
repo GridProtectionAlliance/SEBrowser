@@ -41,6 +41,7 @@ interface IProps {
     Height: number,
     Width: number,
     OnSelect: (time: number, values: number[]) => void,
+    SetExtraSpace: (extra: number) => void,
     Title?: string,
     Metric?: boolean,
     XAxisLabel?: string,
@@ -95,7 +96,10 @@ const CyclicHistogram = React.memo((props: IProps) => {
     const [hover, setHover] = React.useState<boolean>(false);
     const [barColor, setBarColor] = React.useState<{ Hue: number, Saturation: number }>(null);
     const [metaData, setMetaData] = React.useState<TrendSearch.IMetaData[]>(null);
+    // Height mangement
     const [titleHeight, setTitleHeight] = React.useState<number>(0);
+    const [plotHeight, setPlotHeight] = React.useState<number>(props.Height);
+    const [extraLegendHeight, setExtraLegendHeight] = React.useState<number>(0);
     const titleRef = React.useRef(null);
     const oldValues = React.useRef<{ ChannelInfo: ICyclicSeries, TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: null, TimeFilter: null });
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
@@ -157,6 +161,16 @@ const CyclicHistogram = React.memo((props: IProps) => {
         const color = HexToHsv(props.ChannelInfo.Color);
         setBarColor({ Hue: color.h, Saturation: color.s})
     }, [props.ChannelInfo?.Color]);
+
+    React.useEffect(() => {
+        setPlotHeight(props.Height - titleHeight - 5);
+    }, [props.Height, titleHeight]);
+
+    const captureCallback = React.useCallback((extraLegendHeight: number) => {
+        props.SetExtraSpace(extraLegendHeight);
+        setExtraLegendHeight(extraLegendHeight)
+        return props.ID;
+    }, [props.ID, setExtraLegendHeight, props.SetExtraSpace]);
 
     function GetMetaData(channel: number, startTime: string, endTime: string): JQuery.jqXHR {
         setGraphStatus('loading');
@@ -233,8 +247,8 @@ const CyclicHistogram = React.memo((props: IProps) => {
                             : null
                         }
                 </h4>
-                <Plot height={props.Height - titleHeight - 5} width={props.Width} moveMenuLeft={generalSettings.MoveOptionsLeft} showDivCapture={true} divCaptureId={props.ID}
-                    defaultTdomain={timeLimits} onSelect={props.OnSelect} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
+                <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2} moveMenuLeft={generalSettings.MoveOptionsLeft}
+                    defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
                     legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={props.MouseHighlight} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {(chartData?.Series?.length == null || chartData.Series.length === 0 || barColor === null) ? null :
