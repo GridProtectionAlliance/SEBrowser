@@ -63,17 +63,12 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
     }, [currentChannelId]);
 
     // Functions to handle removing/editing channels
-    const removeChannel = React.useCallback((id: number) => {
+    const removeChannel = React.useCallback((channel: TrendSearch.ITrendChannel) => {
         // Remove Setting
         const allSettings = [...props.SeriesSettings];
-        const indexSetting = allSettings.findIndex(setting => setting.Channel.ID === id);
+        const indexSetting = allSettings.findIndex(setting => setting.Channel.ID === channel.ID);
         allSettings.splice(indexSetting, 1);
         props.SetSeriesSettings(allSettings);
-        // Remove Channel
-        const allChannels = [...props.Channels];
-        const indexChannel = allChannels.findIndex(chan => chan.ID === id);
-        allChannels.splice(indexChannel, 1);
-        props.SetChannels(allChannels);
     }, [props.SeriesSettings, props.SetSeriesSettings, props.Channels, props.SetChannels]);
 
     const editChannel = React.useCallback((seriesSetting: SeriesSettings) => {
@@ -118,7 +113,7 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
             <div className="col" style={{ width: '40%', height: settingsHeight }}>
-                <TrendChannelTable Height={settingsHeight} TrendChannels={props.Channels} RemoveChannel={removeChannel}
+                <TrendChannelTable Height={settingsHeight} TrendChannels={props.Channels} SetTrendChannels={props.SetChannels} OnChannelRemoval={removeChannel}
                     Type='single' Selected={currentChannelId} SetSelected={setCurrentChannelId} />
             </div>
             <div className="col" style={{ width: '60%'}} ref={sideSettingRef}>

@@ -367,7 +367,8 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         </fieldset>
                     </li>
                     <li className="nav-item" style={{ width: '55%', paddingRight: 10, height: tableHeight }}>
-                        <TrendChannelTable Height={tableHeight} TrendChannels={trendChannels} Type='multi' SelectedSet={selectedSet} SetSelectedSet={setSelectedSet} EnableDragDrop={!props.Movable} />
+                        <TrendChannelTable Height={tableHeight} SetTrendChannels={setTrendChannels} TrendChannels={trendChannels}
+                            Type='multi' SelectedSet={selectedSet} SetSelectedSet={setSelectedSet} EnableDragDrop={!props.Movable} />
                     </li>
                 </ul>
                 <div className="btn-group-vertical float-right" style={{paddingRight: '6px'}}>

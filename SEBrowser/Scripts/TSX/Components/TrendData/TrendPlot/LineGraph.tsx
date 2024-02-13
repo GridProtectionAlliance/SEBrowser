@@ -263,10 +263,11 @@ const LineGraph = React.memo((props: IProps) => {
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
                     legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={props.MouseHighlight} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
-                    {[...allChartData.keys()].map((channelID, index) => {
+                    {props?.ChannelInfo == null ? null : props.ChannelInfo.map((series, index) => {
                         const lineArray: JSX.Element[] = [];
-                        const channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === Number("0x"+channelID));
-                        const chartData = allChartData.get(channelID);
+                        const channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === series.Channel.ID);
+                        const dataKey = [...allChartData.keys()].find(key => series.Channel.ID === Number("0x" + key))
+                        const chartData = allChartData.get(dataKey);
                         if (channelSetting === undefined) return null;
                         if (displayAvg && channelSetting.Avg.HasData)
                             lineArray.push(<Line highlightHover={false} key={"avg_" + index} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting.Avg.Type}

@@ -31,7 +31,9 @@ type IProps = ICommon & (IMultiProps | ISingleProps);
 
 interface ICommon {
     TrendChannels: TrendSearch.ITrendChannel[],
-    RemoveChannel?: (id: number) => void,
+    SetTrendChannels: (channelList: TrendSearch.ITrendChannel[]) => void,
+    // If this is not set, the delete buttons should not appear
+    OnChannelRemoval?: (chan: TrendSearch.ITrendChannel) => void,
     EnableDragDrop?: boolean,
     Height: number
 }
@@ -48,12 +50,10 @@ interface ISingleProps {
     SetSelected: (id: number) => void
 }
 
-
 const colList = ["Description", "Asset Key", "Asset Name", "Meter Key", "Meter Name", "Channel Group", "Channel Group Type"];
 const defaultCols = new Set(["Meter Name", "Description"]);
 
 const TrendChannelTable = (props: IProps) => {
-    const [trendChannels, setTrendChannels] = React.useState<TrendSearch.ITrendChannel[]>([]);
     const [sortField, setSortField] = React.useState<string>('MeterName');
     const [ascending, setAscending] = React.useState<boolean>(true);
 
@@ -61,10 +61,19 @@ const TrendChannelTable = (props: IProps) => {
         (data: { item: TrendSearch.ITrendChannel }) => (
             <button type="button"
                 className={'btn float-left'}
-                onClick={(event) => { event.preventDefault(); event.stopPropagation(); props.RemoveChannel(data.item.ID) }}>
+                onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    // Remove Channel
+                    const allChannels = [...props.TrendChannels];
+                    const indexChannel = allChannels.findIndex(chan => chan.ID === data.item.ID);
+                    allChannels.splice(indexChannel, 1);
+                    props.SetTrendChannels(allChannels);
+                    props.OnChannelRemoval(data.item);
+                }}>
                 {TrashCan}
             </button>
-        ), [props.RemoveChannel]);
+        ), [props.OnChannelRemoval, props.TrendChannels, props.SetTrendChannels]);
 
     const sortCallback = React.useCallback(
         (data: { colKey: string, colField?: string, ascending: boolean }, event: any) => {
@@ -80,17 +89,18 @@ const TrendChannelTable = (props: IProps) => {
         (item: any, event: any) => {
             let channelsTransfered = [];
             if (props.Type === 'single' || !props.SelectedSet.has(item.row.ID)) channelsTransfered.push(props.TrendChannels.find(channel => channel.ID === item.row.ID));
+            // These should be sorted same as props.TrendChannels as per filter specs
             else channelsTransfered = props.TrendChannels.filter(channel => props.SelectedSet.has(channel.ID));
             event.dataTransfer.setData("text/plain", JSON.stringify(channelsTransfered));
         }, [props.Type, props.Type === 'single' ? props.Selected : props.SelectedSet, props.TrendChannels]);
 
     React.useEffect(() => {
-        setTrendChannels(_.orderBy(props.TrendChannels, sortField, (ascending ? 'asc' : 'desc')));
-    }, [props.TrendChannels, sortField, ascending]);
+        props.SetTrendChannels(_.orderBy(props.TrendChannels, sortField, (ascending ? 'asc' : 'desc')));
+    }, [sortField, ascending]);
 
     return (
         <ConfigTable.Table<TrendSearch.ITrendChannel>
-            Data={trendChannels}
+            Data={props.TrendChannels}
             SortKey={sortField}
             Ascending={ascending}
             OnSort={sortCallback}
@@ -104,13 +114,13 @@ const TrendChannelTable = (props: IProps) => {
                 else {
                     const newIds: Set<number> = new Set();
                     if (event.shiftKey) {
-                        const clickIndex: number = trendChannels.findIndex(chan => chan.ID === item.row.ID);
-                        const firstSelectedIndex: number = trendChannels.findIndex(chan => props.SelectedSet.has(chan.ID));
+                        const clickIndex: number = props.TrendChannels.findIndex(chan => chan.ID === item.row.ID);
+                        const firstSelectedIndex: number = props.TrendChannels.findIndex(chan => props.SelectedSet.has(chan.ID));
                         if (firstSelectedIndex >= 0) {
                             const lowerIndex: number = clickIndex < firstSelectedIndex ? clickIndex : firstSelectedIndex;
                             const upperIndex: number = clickIndex > firstSelectedIndex ? clickIndex : firstSelectedIndex;
                             for (let index: number = lowerIndex; index <= upperIndex; index++) {
-                                newIds.add(trendChannels[index].ID);
+                                newIds.add(props.TrendChannels[index].ID);
                             }
                         }
                     } else
@@ -150,7 +160,7 @@ const TrendChannelTable = (props: IProps) => {
                     >{name}</ReactTable.AdjustableCol>
                 </ConfigTable.Configurable>)
             }
-            {props.RemoveChannel !== undefined ?
+            {props.OnChannelRemoval !== undefined ?
                 <ReactTable.Column<TrendSearch.ITrendChannel>
                     Key={'RemoveChannel'}
                     AllowSort={false}
