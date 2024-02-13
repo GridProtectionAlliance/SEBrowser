@@ -174,7 +174,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
             props.SetPlot(newPlot.ID, newPlot, 'Title');
         }
         if (!changedProperties.current.has('XAxisLabel')) {
-            newPlot.XAxisLabel = "Time";
+            newPlot.XAxisLabel = "";
             props.SetPlot(newPlot.ID, newPlot, 'XAxisLabel');
         }
 
