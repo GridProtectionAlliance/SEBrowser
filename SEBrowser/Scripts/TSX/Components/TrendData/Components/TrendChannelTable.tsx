@@ -142,7 +142,7 @@ const TrendChannelTable = (props: IProps) => {
                 Field={'Phase'}
             />
             {colList.map(name =>
-                <ConfigTable.Configurable Key={name} Label={name} Default={defaultCols.has(name)}>
+                <ConfigTable.Configurable key={name} Key={name} Label={name} Default={defaultCols.has(name)}>
                     <ReactTable.AdjustableCol<TrendSearch.ITrendChannel>
                         Key={name}
                         AllowSort={true}
