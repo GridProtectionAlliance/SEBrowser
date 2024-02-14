@@ -134,7 +134,7 @@ const TrendData = () => {
             <TrendSearchNavbar
                 ToggleVis={toggleNavbar}
                 ShowNav={showNav}
-                HasPlots={plotList.length === 0} //TODO: Does this count as a function? Should this be a const with callback?
+                HasNoPlots={plotList.length === 0} //TODO: Does this count as a function? Should this be a const with callback?
                 SetShowAllSettings={setShowSettings}
                 AddNewCharts={concatNewContainers}
                 RemoveAllCharts={removeAllCharts}

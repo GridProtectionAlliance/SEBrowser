@@ -23,7 +23,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import React from 'react';
 import _ from 'lodash';
-import moment from 'moment';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { AssetSlice, MeterSlice, PhaseSlice, ChannelGroupSlice } from '../../Store';
 import { SEBrowser, TrendSearch, IMultiCheckboxOption } from '../../Global';
@@ -41,7 +40,7 @@ interface IProps {
     ToggleVis: () => void,
     ShowNav: boolean,
     SetShowAllSettings: (show: boolean) => void,
-    HasPlots: boolean,
+    HasNoPlots: boolean,
     AddNewCharts: (chartData: TrendSearch.ITrendPlot[]) => void,
     RemoveAllCharts: () => void,
     SetMovable: (toggle: boolean) => void,
@@ -387,14 +386,14 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     <ToolTip Show={hover === 'Cog'} Position={'left'} Theme={'dark'} Target={"Cog"}>
                         {<p>Changes Settings for All Plots and Defaults</p>}
                     </ToolTip>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${props.Movable ? 'Warning' : 'primary'} btn-sm${props.HasPlots ? ' disabled' : ''}`}
-                        onClick={() => { if (!props.HasPlots) props.SetMovable(!props.Movable); }}
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${props.Movable ? 'Warning' : 'primary'} btn-sm${props.HasNoPlots ? ' disabled' : ''}`}
+                        onClick={() => { if (!props.HasNoPlots) props.SetMovable(!props.Movable); }}
                         data-tooltip='Move' onMouseEnter={() => setHover('Move')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.DataContainer}</span>
                     </button>
                     <ToolTip Show={hover === 'Move'} Position={'left'} Theme={'dark'} Target={"Move"}>
                         {<p>Change Plot Order by Dragging Plots</p>}
-                        {props.HasPlots ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
+                        {props.HasNoPlots ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${trendChannels.length === 0 ? ' disabled' : ''}`}
                         onClick={() => {
@@ -413,14 +412,14 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </ToolTip>
                 </div>
                 <div className="btn-group-vertical float-right">
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${props.HasPlots ? ' disabled' : ''}`}
-                        onClick={() => { if (!props.HasPlots) props.RemoveAllCharts(); }}
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${props.HasNoPlots ? ' disabled' : ''}`}
+                        onClick={() => { if (!props.HasNoPlots) props.RemoveAllCharts(); }}
                         data-tooltip='Trash' onMouseEnter={() => setHover('Trash')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.TrashCan}</span>
                     </button>
                     <ToolTip Show={hover === 'Trash'} Position={'left'} Theme={'dark'} Target={"Trash"}>
                         {<p>Removes All Plots</p>}
-                        {props.HasPlots ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
+                        {props.HasNoPlots ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${selectedSet.size === 0 ? ' disabled' : ''}`}
                         data-tooltip='Single-Line' onMouseEnter={() => setHover('Single-Line')} onMouseLeave={() => setHover('None')}

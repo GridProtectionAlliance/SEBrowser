@@ -225,12 +225,12 @@ const LineGraph = React.memo((props: IProps) => {
                 const newsetting = _.cloneDeep(setting);
                 if (channeldata === undefined) {
                     newsetting.Min.HasData = false;
-                    newsetting.Avg.HasData = false;
+                    newsetting.Avg.HasData = true; // ToDo: Needed to display warning, perhaps we should change the name of this var to show?
                     newsetting.Max.HasData = false;
                     newchannelinfo[index] = newsetting;
                 } else {
                     newsetting.Min.HasData = channeldata.MinSeries.length !== 0;
-                    newsetting.Avg.HasData = channeldata.AvgSeries.length !== 0;
+                    newsetting.Avg.HasData = true;
                     newsetting.Max.HasData = channeldata.MaxSeries.length !== 0;
                     newchannelinfo[index] = newsetting;
                 }
@@ -269,12 +269,12 @@ const LineGraph = React.memo((props: IProps) => {
                         const dataKey = [...allChartData.keys()].find(key => series.Channel.ID === Number("0x" + key))
                         const chartData = allChartData.get(dataKey);
                         if (channelSetting === undefined) return null;
-                        if (displayAvg)
-                            lineArray.push(<Line highlightHover={false} key={"avg_" + index} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting.Avg.Type}
-                                color={channelSetting.Avg.Color} data={chartData?.AvgSeries} legend={channelSetting.Avg.Label} axis={channelSetting.Avg.Axis} width={channelSetting.Avg.Width} />);
                         if (displayMin && channelSetting.Min.HasData)
                             lineArray.push(<Line highlightHover={false} key={"min_" + index} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting.Min.Type}
                                 color={channelSetting.Min.Color} data={chartData.MinSeries} legend={channelSetting.Min.Label} axis={channelSetting.Min.Axis} width={channelSetting.Min.Width} />);
+                        if (displayAvg && channelSetting.Avg.HasData)
+                            lineArray.push(<Line highlightHover={false} key={"avg_" + index} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting.Avg.Type}
+                                color={channelSetting.Avg.Color} data={chartData?.AvgSeries} legend={channelSetting.Avg.Label} axis={channelSetting.Avg.Axis} width={channelSetting.Avg.Width} />);
                         if (displayMax && channelSetting.Max.HasData)
                             lineArray.push(<Line highlightHover={false} key={"max_" + index} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting.Max.Type}
                                 color={channelSetting.Max.Color} data={chartData.MaxSeries} legend={channelSetting.Max.Label} axis={channelSetting.Max.Axis} width={channelSetting.Max.Width} />);
