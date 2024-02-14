@@ -269,9 +269,9 @@ const LineGraph = React.memo((props: IProps) => {
                         const dataKey = [...allChartData.keys()].find(key => series.Channel.ID === Number("0x" + key))
                         const chartData = allChartData.get(dataKey);
                         if (channelSetting === undefined) return null;
-                        if (displayAvg && channelSetting.Avg.HasData)
+                        if (displayAvg)
                             lineArray.push(<Line highlightHover={false} key={"avg_" + index} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting.Avg.Type}
-                                color={channelSetting.Avg.Color} data={chartData.AvgSeries} legend={channelSetting.Avg.Label} axis={channelSetting.Avg.Axis} width={channelSetting.Avg.Width} />);
+                                color={channelSetting.Avg.Color} data={chartData?.AvgSeries} legend={channelSetting.Avg.Label} axis={channelSetting.Avg.Axis} width={channelSetting.Avg.Width} />);
                         if (displayMin && channelSetting.Min.HasData)
                             lineArray.push(<Line highlightHover={false} key={"min_" + index} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting.Min.Type}
                                 color={channelSetting.Min.Color} data={chartData.MinSeries} legend={channelSetting.Min.Label} axis={channelSetting.Min.Axis} width={channelSetting.Min.Width} />);
