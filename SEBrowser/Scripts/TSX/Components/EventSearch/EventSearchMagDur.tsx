@@ -189,7 +189,7 @@ const MagDurChart = (props: IProps) => {
     return (
         <>
             <div ref={chart} style={{ height: props.Height, width: '100%', display: 'inline-block' }}>
-            <Plot height={props.Height - hCounter} width={width} showBorder={false} moveMenuLeft={generalSettings.MoveOptionsLeft}
+            <Plot height={props.Height - hCounter} width={width} showBorder={false} menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
                 defaultTdomain={[0.00001, 1000]}
                 defaultYdomain={[0, 5]}
                 Tmax={1000}

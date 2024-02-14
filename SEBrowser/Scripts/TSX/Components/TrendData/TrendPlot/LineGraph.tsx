@@ -259,7 +259,7 @@ const LineGraph = React.memo((props: IProps) => {
                         : null
                     }
                 </h4>
-                <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2} moveMenuLeft={generalSettings.MoveOptionsLeft}
+                <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2} menuLocation={generalSettings.MoveOptionsLeft ? 'outer-left' : 'outer-right'}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
                     legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={props.MouseHighlight} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
