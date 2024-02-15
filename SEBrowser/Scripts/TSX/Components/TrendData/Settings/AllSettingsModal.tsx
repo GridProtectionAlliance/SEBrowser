@@ -23,8 +23,9 @@
 
 import React from 'react';
 import _ from 'lodash';
-import { Modal } from '@gpa-gemstone/react-interactive';
+import { Modal, TabSelector } from '@gpa-gemstone/react-interactive';
 import { PlotSettings } from './PlotSettings';
+import { MarkerTab } from './OverlayTabs/MarkerTab';
 import { TrendSearch } from '../../../Global';
 
 interface IProps {
@@ -32,33 +33,77 @@ interface IProps {
     Defaults: TrendSearch.ITrendPlot,
     SetDefaults: (newDefaults: TrendSearch.ITrendPlot) => void,
     SetShow: (value: boolean) => void,
-    ApplyFieldToAll: (record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)) => void
+    ApplyFieldToAll: (record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)) => void,
+    MarkerDefaults: TrendSearch.IMarkerSettingsBundle,
+    SetMarkerDefaults: (newDefaults: TrendSearch.IMarkerSettingsBundle) => void
 }
 
-const AllSettingsModal = React.memo((props: IProps) => {
-    const [confirmDisabled, setConfirmDisabled] = React.useState<boolean>(false);
-    const [allPlot, setAllPlot] = React.useState<TrendSearch.ITrendPlot>(props.Defaults);
+const Tabs = [
+    { Id: "plot", Label: "Plot" },
+    { Id: "marks", Label: "Marker" },
+    { Id: "series", Label: "Channel" }
+];
 
-    const settingsModalCallback = React.useCallback((
-        (confirmed: boolean, btn: boolean, futureOnly: boolean) => {
-            // Setting existing plots
-            if (confirmed) {
-                Object.keys(allPlot).forEach((field: string) => {
-                    if (!_.isEqual(allPlot[field], props.Defaults[field]))
-                        props.ApplyFieldToAll(allPlot, field as keyof (TrendSearch.ITrendPlot));
-                });
-            } 
-            // Settings defaults
-            if (confirmed || futureOnly) props.SetDefaults(allPlot);
-            else setAllPlot(props.Defaults);
-            // Close modal
-            props.SetShow(false);
-        }), [props.SetShow, props.ApplyFieldToAll, allPlot, setAllPlot, props.SetDefaults, props.Defaults])
+const AllSettingsModal = React.memo((props: IProps) => {
+    // Settings Controls
+    const [tab, setTab] = React.useState<string>("plot");
+    const [confirmDisabled, setConfirmDisabled] = React.useState<boolean>(false);
+
+    // Buffers
+    const [allPlot, setAllPlot] = React.useState<TrendSearch.ITrendPlot>(props.Defaults);
+    const [markers, setMarkers] = React.useState<TrendSearch.IMarkerSettingsBundle>(props.MarkerDefaults);
+
+    // Sufficiently complicated that gains by checking on rerender are small and potential for bugs is high
+    function settingsModalCallback(confirmed: boolean, btn: boolean, futureOnly: boolean) {
+        // Setting existing plots
+        if (confirmed) {
+            Object.keys(allPlot).forEach((field: string) => {
+                if (!_.isEqual(allPlot[field], props.Defaults[field]))
+                    props.ApplyFieldToAll(allPlot, field as keyof (TrendSearch.ITrendPlot));
+            });
+        } 
+        // Settings defaults
+        if (confirmed || futureOnly) {
+            const newMarkerDefaults = _.cloneDeep(markers);
+            Object.keys(markers).forEach(field => {
+                newMarkerDefaults[field].ShouldApply = !(futureOnly || _.isEqual(newMarkerDefaults[field].Default, props.MarkerDefaults[field].Default))
+            })
+            setMarkers(newMarkerDefaults);
+            props.SetMarkerDefaults(newMarkerDefaults);
+            props.SetDefaults(allPlot);
+        }
+        // Clear buffers
+        else {
+            setMarkers(props.MarkerDefaults);
+            setAllPlot(props.Defaults);
+        }
+        // Close modal
+        props.SetShow(false);
+    }
+
+    const markerBufferSetter = React.useCallback((record: any, field: 'VeHo' | 'Symb' | 'Event') => {
+        const newBuffer = _.cloneDeep(markers);
+        const isArray = Object.prototype.hasOwnProperty.call(record, 'length');
+        newBuffer[field].Default = isArray ? record[0] : record;
+        setMarkers(newBuffer);
+    }, [markers]);
 
     return (
         <Modal Title='Change Settings for All Plots' CallBack={settingsModalCallback} Show={props.Show} Size='xlg'
             ConfirmText="Apply to Existing & Future" CancelText="Discard Changes" TertiaryText="Apply to Future" ShowCancel={true} ShowTertiary={true} DisableConfirm={confirmDisabled} DisableTertiary={confirmDisabled}>
-            <PlotSettings Plot={allPlot} SetPlot={setAllPlot} SetConfirmDisabled={setConfirmDisabled} />
+            <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
+            <hr />
+            <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
+                <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
+                    <PlotSettings Plot={allPlot} SetPlot={setAllPlot} SetConfirmDisabled={setConfirmDisabled} />
+                </div>
+            </div>
+            <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
+                <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
+                    <MarkerTab VeHoMarkers={[markers.VeHo.Default]} SetVeHoMarkers={r => markerBufferSetter(r, 'VeHo')} SymbMarkers={[markers.Symb.Default]} SetSymbMarkers={r => markerBufferSetter(r, 'Symb')}
+                        EventSettings={markers.Event.Default} SetEventSettings={r => markerBufferSetter(r, 'Event')} DisplayEventSettings={true} DisplayDescription={true} />
+                </div>
+            </div>
         </Modal>
     );
 });

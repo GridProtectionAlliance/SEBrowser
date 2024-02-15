@@ -42,6 +42,7 @@ const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
 const defaultSelect = "drag";
 const defaultHighlight = "vertical";
 const defaultCursor = undefined;
+const defaultsIgnored = new Set(["ID", "xPos", "yPos", "xBox", "yBox", "axis", "value", "isHori"]);
 
 interface IContainerProps {
     // Manage Plot
@@ -53,7 +54,8 @@ interface IContainerProps {
     HandleOverlay: (open: boolean) => void,
     // Drag Mode
     DragMode: boolean,
-    OverlayPortalID: string
+    OverlayPortalID: string,
+    MarkerDefaults: TrendSearch.IMarkerSettingsBundle
 }
 
 const TrendPlot = React.memo((props: IContainerProps) => {
@@ -76,14 +78,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
 
     // Event Information
     const [eventMarkers, setEventMarkers] = React.useState<TrendSearch.IEventMarker[]>([]);
-    const [eventSettings, setEventSettings] = React.useState<TrendSearch.EventMarkerSettings>({
-        ID: CreateGuid(),
-        axis: "left",
-        type: "vertical",
-        color: "#E41000",
-        line: ":",
-        width: 4
-    });
+    const [eventSettings, setEventSettings] = React.useState<TrendSearch.EventMarkerSettings>(props.MarkerDefaults.Event.Default);
 
     // Settings Controls
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
@@ -104,6 +99,22 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                 changedProperties.current.add(field);
         });
     }, []);
+
+    // Update markers if they should be updated
+    React.useEffect(() => {
+        const applyFunc: <T>(markers: T[], defaultMarker: T) => T[] = (markers, defaultMarker) => {
+            const newMarkers = [...markers];
+            newMarkers.forEach((marker, ind) => {
+                Object.keys(marker).forEach(field => {
+                    if (!defaultsIgnored.has(field)) newMarkers[ind][field] = defaultMarker[field];
+                });
+            });
+            return newMarkers;
+        }
+        if (props.MarkerDefaults.Symb.ShouldApply) setSymbolicMarkers(applyFunc(symbolicMarkers, props.MarkerDefaults.Symb.Default));
+        if (props.MarkerDefaults.VeHo.ShouldApply) setHoriVertMarkers(applyFunc(horiVertMarkers, props.MarkerDefaults.VeHo.Default));
+        if (props.MarkerDefaults.Event.ShouldApply) setEventSettings(props.MarkerDefaults.Event.Default);
+    }, [props.MarkerDefaults]);
 
     // Set default channel settings
     React.useEffect(() => {
@@ -247,7 +258,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         }).done((data: any[]) => {
             setEventMarkers(data.map(datum => {
                 const meterID = props.Plot.Channels.find(channel => channel.MeterKey === datum["Meter Key"]).MeterID;
-                return { value: moment.utc(datum.Time, eventFormat).valueOf(), meterID: meterID, eventID: datum["EventID"], type: "Event"}
+                return { value: moment.utc(datum.Time, eventFormat).valueOf(), meterID: meterID, eventID: datum["EventID"]}
             }));
         });
     }
@@ -342,26 +353,14 @@ const TrendPlot = React.memo((props: IContainerProps) => {
         switch (customSelect) {
             case "symbol": {
                 const currentMarkers = [...symbolicMarkers];
-                const newId = CreateGuid();
-                currentMarkers.push({
-                    ID: newId,
-                    // Symbol
-                    symbol: SVGIcons.ArrowDropDown,
-                    radius: 12,
-                    xPos: time,
-                    yPos: values[axisNumber],
-                    color: "#000000",
-                    // Note
-                    format: "HH:mm",
-                    note: "",
-                    opacity: 1,
-                    fontColor: "#000000",
-                    fontSize: 1,
-                    axis: axis,
-                    xBox: time,
-                    yBox: values[axisNumber],
-                    type: "Symb"
-                });
+                const newMarker = _.cloneDeep(props.MarkerDefaults.Symb.Default);
+                newMarker.ID = CreateGuid();
+                newMarker.xPos = time;
+                newMarker.yPos = values[axisNumber];
+                newMarker.axis = axis;
+                newMarker.xBox = time;
+                newMarker.yBox = values[axisNumber];
+                currentMarkers.push(newMarker);
                 setSymbolicMarkers(currentMarkers);
                 return;
             }
@@ -370,17 +369,12 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                 // falls through
             case "vertical": {
                 const currentMarkers = [...horiVertMarkers];
-                const newId = CreateGuid();
-                currentMarkers.push({
-                    ID: newId,
-                    value: isHori ? values[axisNumber] : time,
-                    axis,
-                    color: SpacedColor(0.9, 0.9),
-                    line: ":",
-                    width: 4,
-                    isHori,
-                    type: "VeHo"
-                });
+                const newMarker = _.cloneDeep(props.MarkerDefaults.VeHo.Default);
+                newMarker.ID = CreateGuid();
+                newMarker.value = isHori ? values[axisNumber] : time;
+                newMarker.axis = axis;
+                newMarker.isHori = isHori;
+                currentMarkers.push(newMarker);
                 setHoriVertMarkers(currentMarkers);
                 return;
             }
@@ -424,7 +418,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                         Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
                         OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
                         {props.Plot.ShowEvents ? eventMarkers.map((marker, i) => {
-                            if (eventSettings.type === "vertical")
+                            if (eventSettings.type === "Event-Vert")
                                 return (
                                     <VerticalMarker key={"Event_" + i} axis={eventSettings.axis}
                                         Value={marker.value} color={eventSettings.color} lineStyle={eventSettings.line} width={eventSettings.width}

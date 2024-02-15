@@ -36,7 +36,8 @@ interface IMarkerTabProps {
     SetVeHoMarkers: (markers: TrendSearch.IVertHori[]) => void,
     EventSettings: TrendSearch.EventMarkerSettings,
     SetEventSettings: (setting: TrendSearch.EventMarkerSettings) => void,
-    DisplayEventSettings: boolean
+    DisplayEventSettings: boolean,
+    DisplayDescription?: boolean
 }
 const EventOptions = [{ Label: "Vertical Lines", Value: "vertical" }, { Label: "Custom Symbols", Value: "symbolic" }];
 // Loading all SVGIcons into the options menue
@@ -142,12 +143,12 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
                         <Select<TrendSearch.IVertHori> Record={currentMarker as TrendSearch.IVertHori} Label={'Axis'} Field={'axis'} Setter={marker => applyToMarker(marker, editFromArray)} Options={AxisOptions} />
                     </>
                 );
-            case 'Event':
+            case 'Event-Vert': case 'Event-Symb':
                 return (
                     <>
                         <BlockPicker onChangeComplete={(color) => props.SetEventSettings({ ...props.EventSettings, color: color.hex })}
                             color={props.EventSettings.color} triangle={"hide"} />
-                        {props.EventSettings.type === "vertical" ?
+                        {props.EventSettings.type === "Event-Vert" ?
                             <>
                                 <Select<TrendSearch.IEventVertSettings> Record={props.EventSettings} Label={'Line Style'} Field={'line'} Setter={props.SetEventSettings} Options={LineTypeOptions} />
                                 <Input<TrendSearch.IEventVertSettings> Record={props.EventSettings} Label={'Line Width (pixels)'} Field={'width'} Setter={props.SetEventSettings} Type={'number'}
@@ -176,7 +177,7 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
             <div className="col" style={{ width: '40%', height: markersHeight }}>
-                <TrendMarkerTable Height={markersHeight} Markers={allMarkers}
+                <TrendMarkerTable Height={markersHeight} Markers={allMarkers} DisplayDescription={props.DisplayDescription}
                     RemoveMarker={(marker) => applyToMarker(marker, removeFromArray)}
                     Selected={currentMarker} SetSelected={setCurrentMarker} />
             </div>

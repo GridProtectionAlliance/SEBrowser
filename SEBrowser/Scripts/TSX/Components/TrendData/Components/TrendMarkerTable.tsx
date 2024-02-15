@@ -32,7 +32,8 @@ interface IProps {
     RemoveMarker?: (marker: TrendSearch.IMarker) => void,
     Selected: TrendSearch.IMarker,
     SetSelected: (marker: TrendSearch.IMarker) => void,
-    Height: number
+    Height: number,
+    DisplayDescription: boolean
 }
 
 const TrendMarkerTable = (props: IProps) => {
@@ -69,21 +70,37 @@ const TrendMarkerTable = (props: IProps) => {
             cols={[
                 {
                     key: "symbol", field: "ID", label: "", content: (item) => {
-                        const symb = item["symbol"];
-                        if (symb !== undefined) return symb;
-                        return item["isHori"] ? "-" : "|"
+                        switch (item.type) {
+                            case "VeHo":
+                                if (props.DisplayDescription ?? false) return "+"
+                                return item["isHori"] ? "-" : "|"
+                            case "Symb": return item["symbol"];
+                            default:
+                                return "Event";
+                        }
                     }
                 },
                 {
-                    key: "ID", field: "ID", label: "Value", content: (item) => {
-                        const val = item["value"];
-                        if (val !== undefined)
-                            return (item["isHori"] ?? true) ? val.toFixed(2) : moment.utc(val).format(momentFormat);
-                        const xPos = item["xPos"];
-                        const yPos = item["yPos"];
-                        if (xPos !== undefined && yPos !== undefined)
-                            return `${moment.utc(xPos).format(momentFormat)} | ${yPos.toFixed(2)}`
-                        return "All Events";
+                    key: "type", field: "type", label: (props.DisplayDescription ?? false) ? "" : "Value", content: (item) => {
+                        if (props.DisplayDescription ?? false) {
+                            switch (item.type) {
+                                case "VeHo":
+                                    return "Vertical and Horizontal Line Marker(s)";
+                                case "Symb":
+                                    return "Icon Marker(s) and Infobox(es)";
+                                default:
+                                    return "Event Marker(s)";
+                            }
+                        } else {
+                            switch (item.type) {
+                                case "VeHo":
+                                    return (item["isHori"] ?? true) ? item["value"].toFixed(2) : moment.utc(item["value"]).format(momentFormat);
+                                case "Symb":
+                                    return `${moment.utc(item["xPos"]).format(momentFormat)} | ${item["yPos"].toFixed(2)}`;
+                                default:
+                                    return "All Events";
+                            }
+                        }
                     }
                 },
                 { key: "RemoveChannel", field: "ID", label: "", rowStyle: { width: "50px" }, headerStyle: { width: "50px" }, content: removeButton }

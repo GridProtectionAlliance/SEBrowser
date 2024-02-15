@@ -254,24 +254,38 @@ export namespace TrendSearch {
     interface IEventMarker {
         value: number,
         meterID: number,
-        eventID: number,
-        type: "Event"
+        eventID: number
     }
 
     // Settings that will apply to all event markers
     interface IEventSymbolicSettings extends IMarker {
-        type: "symbolic",
+        type: "Event-Symb",
         symbol: JSX.Element,
         alignTop: boolean,
     }
 
     interface IEventVertSettings extends IMarker {
-        type: "vertical",
+        type: "Event-Vert",
         width: number,
         line: LineStyles
     }
 
     type EventMarkerSettings = IEventSymbolicSettings | IEventVertSettings;
+
+    interface IMarkerSettingsBundle {
+        Symb: {
+            Default: ISymbolic,
+            ShouldApply: boolean
+        }
+        Event: {
+            Default: EventMarkerSettings,
+            ShouldApply: boolean
+        }
+        VeHo: {
+            Default: IVertHori,
+            ShouldApply: boolean
+        }
+    }
 }
 
 export namespace OpenXDA {

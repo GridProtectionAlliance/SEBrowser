@@ -27,14 +27,13 @@ import _ from 'lodash';
 import TrendSearchNavbar from './TrendDataNavbar';
 import TrendPlot from './TrendPlot/TrendPlot';
 import { TrendSearch } from '../../Global';
-import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
 import AllSettingsModal from './Settings/AllSettingsModal';
 import { SelectTrendDataSettings } from './../SettingsSlice';
 import { useAppSelector } from './../../hooks';
+import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 
 const momentDateFormat = "MM/DD/YYYY";
 const overlayPortalID = "TrendDataChartPortal";
-const overlayDrawer = "TrendDataNavbar";
 const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFilter"]);
 
 const TrendData = () => {
@@ -51,6 +50,58 @@ const TrendData = () => {
         Height: 50,
         AxisZoom: 'AutoValue',
         ShowEvents: false
+    });
+    const [markerDefaults, setMarkerDefaults] = React.useState<TrendSearch.IMarkerSettingsBundle>({
+        Symb: {
+            Default: {
+                // Need to overwrite these
+                ID: "Symb",
+                xPos: undefined,
+                yPos: undefined,
+                axis: undefined,
+                xBox: undefined,
+                yBox: undefined,
+                // Symbol
+                symbol: SVGIcons.ArrowDropDown,
+                radius: 12,
+                color: "#000000",
+                // Note
+                format: "HH:mm",
+                note: "",
+                opacity: 1,
+                fontColor: "#000000",
+                fontSize: 1,
+                type: "Symb"
+            },
+            ShouldApply: false
+        },
+        VeHo: {
+            Default: {
+                // Need to overwrite these
+                ID: "Veho",
+                value: undefined,
+                axis: undefined,
+                isHori: undefined,
+                // Defaults
+                color: "#E41000",
+                line: ":",
+                width: 4,
+                type: "VeHo"
+            },
+            ShouldApply: false
+        },
+        Event: {
+            Default: {
+                // Need to overwrite ID
+                ID: "Event",
+                axis: "left",
+                type: "Event-Vert",
+                color: "#E41000",
+                line: ":",
+                width: 4
+            },
+            ShouldApply: false
+        }
     });
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
     const [plotsMovable, setPlotsMovable] = React.useState<boolean>(false);
@@ -130,7 +181,7 @@ const TrendData = () => {
     ), [showNav]);
 
     return (
-        <div className="container-fluid d-flex h-100 flex-column" style={{ height: 'inherit' }} data-drawer={overlayDrawer}>
+        <div className="container-fluid d-flex h-100 flex-column" style={{ height: 'inherit' }}>
             <TrendSearchNavbar
                 ToggleVis={toggleNavbar}
                 ShowNav={showNav}
@@ -147,14 +198,11 @@ const TrendData = () => {
                 <div className={'col-12'} style={{ height: '100%', overflow: 'scroll' }}>
                     {plotList.map(element => <TrendPlot key={element.ID} DragMode={plotsMovable}
                         Plot={element} SetPlot={setPlot} RemovePlot={removePlot} SplicePlot={movePlot}
-                        OverlayPortalID={overlayPortalID} HandleOverlay={closeSettings}
+                        OverlayPortalID={overlayPortalID} HandleOverlay={closeSettings} MarkerDefaults={markerDefaults}
                     />)}
                 </div>
             </div>
-            <OverlayDrawer Title={''} Open={false} Location={'top'} Target={overlayDrawer} GetOverride={(s) => { closureHandler.current = s; }} HideHandle={true}>
-                <div id={overlayPortalID} style={{opacity: 1, background: undefined, color: 'black' }} />
-            </OverlayDrawer>
-            <AllSettingsModal Show={showSettings} SetShow={setShowSettings} ApplyFieldToAll={setAllPlot} Defaults={defaultPlotSettings} SetDefaults={setDefaultPlotSettings} />
+            <AllSettingsModal Show={showSettings} SetShow={setShowSettings} ApplyFieldToAll={setAllPlot} Defaults={defaultPlotSettings} SetDefaults={setDefaultPlotSettings} MarkerDefaults={markerDefaults} SetMarkerDefaults={setMarkerDefaults} />
         </div>
     );
 }
