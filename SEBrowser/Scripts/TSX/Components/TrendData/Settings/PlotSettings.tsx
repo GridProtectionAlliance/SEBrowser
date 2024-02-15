@@ -39,7 +39,7 @@ const limitFeedback = "Lower limits must be lower than upper.";
 const axisOptions: { Value: string, Label: string }[] = [
     { Value: 'AutoValue', Label: 'Automatic' },
     { Value: 'HalfAutoValue', Label: 'Zero to Auto' },
-    { Value: 'Rect', Label: 'Manual' }
+    { Value: 'Manual', Label: 'Manual' }
 ]
 
 const PlotSettings = React.memo((props: IProps) => {
@@ -147,21 +147,21 @@ const PlotSettings = React.memo((props: IProps) => {
                     <div className="row">
                         <div className="col" style={{ width: '50%' }}>
                             <Input<AxisLimits> Record={limits} Setter={setPlotLimits} Valid={validateLimit} Feedback={limitFeedback}
-                                Label='Left Axis Lower' Field='LeftLower' Type='integer' Disabled={props.Plot.AxisZoom !== 'Rect'} />
+                                Label='Left Axis Lower' Field='LeftLower' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'} />
                         </div>
                         <div className="col" style={{ width: '50%' }}>
                             <Input<AxisLimits> Record={limits} Setter={setPlotLimits} Valid={validateLimit} Feedback={limitFeedback}
-                                Label='Left Axis Upper' Field='LeftUpper' Type='integer' Disabled={props.Plot.AxisZoom !== 'Rect'}/>
+                                Label='Left Axis Upper' Field='LeftUpper' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'}/>
                         </div>
                     </div>
                     <div className="row">
                         <div className="col" style={{ width: '50%' }}>
                             <Input<AxisLimits> Record={limits} Setter={setPlotLimits} Valid={validateLimit} Feedback={limitFeedback}
-                                Label='Right Axis Lower' Field='RightLower' Type='integer' Disabled={props.Plot.AxisZoom !== 'Rect'}/>
+                                Label='Right Axis Lower' Field='RightLower' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'}/>
                         </div>
                         <div className="col" style={{ width: '50%' }}>
                             <Input<AxisLimits> Record={limits} Setter={setPlotLimits} Valid={validateLimit} Feedback={limitFeedback}
-                                Label='Right Axis Upper' Field='RightUpper' Type='integer' Disabled={props.Plot.AxisZoom !== 'Rect'}/>
+                                Label='Right Axis Upper' Field='RightUpper' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'}/>
                         </div>
                     </div>
                 </fieldset>

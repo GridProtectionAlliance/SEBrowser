@@ -212,7 +212,7 @@ export namespace TrendSearch {
         Width?: number,
         Height?: number,
         ShowEvents?: boolean,
-        AxisZoom?: 'Rect' | 'AutoValue' | 'HalfAutoValue',
+        AxisZoom?: 'Manual' | 'AutoValue' | 'HalfAutoValue',
         DefaultZoom?: [number, number][]
     }
 

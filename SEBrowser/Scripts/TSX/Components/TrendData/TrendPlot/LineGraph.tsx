@@ -49,7 +49,7 @@ interface IProps {
     YRightLabel?: string,
     Cursor?: string,
     MouseHighlight: 'none' | 'horizontal' | 'vertical',
-    AxisZoom?: 'Rect' | 'AutoValue' | 'HalfAutoValue',
+    AxisZoom?: 'Manual' | 'AutoValue' | 'HalfAutoValue',
     DefaultZoom?: [number, number][]
     AlwaysRender: React.ReactNode,
     children: React.ReactNode
@@ -262,7 +262,7 @@ const LineGraph = React.memo((props: IProps) => {
                 <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2} menuLocation={generalSettings.MoveOptionsLeft ? 'outer-left' : 'outer-right'}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
                     legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={true}
-                    Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={props.MouseHighlight} zoomMode={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
+                    Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={props.MouseHighlight} yDomain={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {props?.ChannelInfo == null ? null : props.ChannelInfo.map((series, index) => {
                         const lineArray: JSX.Element[] = [];
                         const channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === series.Channel.ID);
