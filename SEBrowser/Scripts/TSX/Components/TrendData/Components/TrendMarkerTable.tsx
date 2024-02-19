@@ -22,7 +22,7 @@
 //******************************************************************************************************
 import React from 'react';
 import _ from 'lodash';
-import { CrossMark } from '@gpa-gemstone/gpa-symbols';
+import { TrashCan } from '@gpa-gemstone/gpa-symbols';
 import Table from '@gpa-gemstone/react-table';
 import { TrendSearch } from '../../../global';
 import moment from 'moment';
@@ -51,7 +51,7 @@ const TrendMarkerTable = (props: IProps) => {
             <button type="button"
                 className={'btn float-left'}
                 onClick={(event) => { event.preventDefault(); event.stopPropagation(); props.RemoveMarker(marker) }}>
-                {CrossMark}
+                {TrashCan}
             </button>
         ), [props.RemoveMarker]);
 
