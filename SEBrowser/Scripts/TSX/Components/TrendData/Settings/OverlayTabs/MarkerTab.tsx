@@ -39,7 +39,7 @@ interface IMarkerTabProps {
     DisplayEventSettings: boolean,
     DisplayDescription?: boolean
 }
-const EventOptions = [{ Label: "Vertical Lines", Value: "vertical" }, { Label: "Custom Symbols", Value: "symbolic" }];
+const EventOptions = [{ Label: "Vertical Lines", Value: "Event-Vert" }, { Label: "Custom Symbols", Value: "Event-Symb" }];
 // Loading all SVGIcons into the options menue
 const markerSymbolOptions = [];
 Object.keys(SVGIcons).forEach((iconName) => {
