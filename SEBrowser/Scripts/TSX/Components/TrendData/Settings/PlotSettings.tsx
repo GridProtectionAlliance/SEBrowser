@@ -85,7 +85,7 @@ const PlotSettings = React.memo((props: IProps) => {
     }
 
     return (
-        <div className="row" style={{ paddingLeft: 20, paddingRight: 20, height: "100%"}}>
+        <div className="row" style={{ paddingLeft: 20, paddingRight: 20, paddingTop: 20, overflowY: 'scroll', maxHeight: 'calc(100vh - 284px)' }}>
             <div className="col" style={{ width: '50%', height: "100%" }}>
                 <legend className="w-auto" style={{ fontSize: 'large' }}>Plot Settings:</legend>
                 <div className="row">

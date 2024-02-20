@@ -116,7 +116,7 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
                 <TrendChannelTable Height={settingsHeight} TrendChannels={props.Channels} SetTrendChannels={props.SetChannels} OnChannelRemoval={removeChannel}
                     Type='single' Selected={currentChannelId} SetSelected={setCurrentChannelId} />
             </div>
-            <div className="col" style={{ width: '60%'}} ref={sideSettingRef}>
+            <div className="col" style={{ width: '60%', overflowY: 'scroll', maxHeight: 'calc(100vh - 264px)' }} ref={sideSettingRef}>
                 {currentSeriesSetting === undefined ? null :
                     getSettingsList()
                 }

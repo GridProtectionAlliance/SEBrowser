@@ -89,16 +89,15 @@ const AllSettingsModal = React.memo((props: IProps) => {
     }, [markers]);
 
     return (
-        <Modal Title='Change Settings for All Plots' CallBack={settingsModalCallback} Show={props.Show} Size='xlg'
+        <Modal Title='Change Settings for All Plots' CallBack={settingsModalCallback} Show={props.Show} Size='xlg' BodyStyle={{ maxHeight: 'calc(100vh - 210px)', overflowY: 'hidden' }}
             ConfirmText="Apply to Existing & Future" CancelText="Discard Changes" TertiaryText="Apply to Future" ShowCancel={true} ShowTertiary={true} DisableConfirm={confirmDisabled} DisableTertiary={confirmDisabled}>
             <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
-            <hr />
-            <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
+            <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
                     <PlotSettings Plot={allPlot} SetPlot={setAllPlot} SetConfirmDisabled={setConfirmDisabled} />
                 </div>
             </div>
-            <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
+            <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
                     <MarkerTab VeHoMarkers={[markers.VeHo.Default]} SetVeHoMarkers={r => markerBufferSetter(r, 'VeHo')} SymbMarkers={[markers.Symb.Default]} SetSymbMarkers={r => markerBufferSetter(r, 'Symb')}
                         EventSettings={markers.Event.Default} SetEventSettings={r => markerBufferSetter(r, 'Event')} DisplayEventSettings={true} DisplayDescription={true} />

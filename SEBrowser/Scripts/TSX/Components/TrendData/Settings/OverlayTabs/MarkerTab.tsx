@@ -176,12 +176,12 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
 
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
-            <div className="col" style={{ width: '40%', height: markersHeight }}>
+            <div className="col" style={{ width: '40%'}}>
                 <TrendMarkerTable Height={markersHeight} Markers={allMarkers} DisplayDescription={props.DisplayDescription}
                     RemoveMarker={(marker) => applyToMarker(marker, removeFromArray)}
                     Selected={currentMarker} SetSelected={setCurrentMarker} />
             </div>
-            <div className="col" style={{ width: '60%' }} ref={sideMarkerRef}>
+            <div className="col" style={{ width: '60%', overflowY: 'scroll', maxHeight: 'calc(100vh - 264px)' }} ref={sideMarkerRef}>
                 {getSettingsList()}
             </div>
         </div>

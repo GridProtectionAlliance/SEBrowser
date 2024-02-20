@@ -133,18 +133,18 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
 
         }}>
             <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
-            <hr />
+            <div className="tab-content" style={{ overflow: 'hidden' }}>
             <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
                     <PlotSettings Plot={plotBuffer} SetPlot={setPlotBuffer} SetConfirmDisabled={setConfirmDisabled} />
                 </div>
             </div>
-            <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
+            <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "series" ? " active" : "fade")} id="series">
                     <ChannelTab Type={props.Plot.Type} SetChannels={setChannelsBuffer} Channels={channelsBuffer} SeriesSettings={seriesBuffer} SetSeriesSettings={setSeriesBuffer} />
                 </div>
             </div>
-            <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
+            <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
                     <MarkerTab VeHoMarkers={markersBuffer} SetVeHoMarkers={setMarkersBuffer} SymbMarkers={symbolicsBuffer} SetSymbMarkers={setSymbolicsBuffer}
                         EventSettings={eventBuffer} SetEventSettings={setEventBuffer} DisplayEventSettings={plotBuffer?.ShowEvents ?? false} />
