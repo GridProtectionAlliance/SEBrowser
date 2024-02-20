@@ -58,7 +58,7 @@ interface IContainerProps {
     MarkerDefaults: TrendSearch.IMarkerSettingsBundle
 }
 
-const TrendPlot = React.memo((props: IContainerProps) => {
+const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerProps) => {
     // Sizing Variables
     const chartRef = React.useRef(null);
     const [chartWidth, setChartWidth] = React.useState<number>(500);
@@ -499,7 +499,7 @@ const TrendPlot = React.memo((props: IContainerProps) => {
                 EventSettings={eventSettings} SetEventSettings={setEventSettings} />
         </div>
     );
-});
+};
 
 interface IDragHalf {
     isLeft: boolean,
