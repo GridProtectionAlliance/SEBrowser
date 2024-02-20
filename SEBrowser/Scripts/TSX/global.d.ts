@@ -216,7 +216,7 @@ export namespace TrendSearch {
         DefaultZoom?: [number, number][]
     }
 
-    type LineStyles = ":" | "-";
+    type LineStyles = "short-dash" | "long-dash" | "dash" | "solid";
 
     interface IMarker {
         ID: string,

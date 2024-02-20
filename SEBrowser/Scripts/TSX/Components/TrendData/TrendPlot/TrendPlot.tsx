@@ -141,9 +141,9 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                     const color = SpacedColor(0.9, 0.9);
                     return ({
                         Channel: channel,
-                        Min: { Color: color, Width: 3, Type: ':', Axis: 'left', Label: baseLabel + ' min', HasData: false },
-                        Avg: { Color: color, Width: 3, Type: '-', Axis: 'left', Label: baseLabel + ' avg', HasData: false },
-                        Max: { Color: color, Width: 3, Type: ':', Axis: 'left', Label: baseLabel + ' max', HasData: false }
+                        Min: { Color: color, Width: 3, Type: 'short-dash', Axis: 'left', Label: baseLabel + ' min', HasData: false },
+                        Avg: { Color: color, Width: 3, Type: 'solid', Axis: 'left', Label: baseLabel + ' avg', HasData: false },
+                        Max: { Color: color, Width: 3, Type: 'short-dash', Axis: 'left', Label: baseLabel + ' max', HasData: false }
                     });
                 }
                 case 'Cyclic': {

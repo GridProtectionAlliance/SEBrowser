@@ -134,7 +134,6 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
         }}>
             <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
             <div className="tab-content" style={{ overflow: 'hidden' }}>
-            <div className="tab-content" style={{ maxHeight: window.innerHeight - 235, overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
                     <PlotSettings Plot={plotBuffer} SetPlot={setPlotBuffer} SetConfirmDisabled={setConfirmDisabled} />
                 </div>
@@ -154,7 +153,7 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
     );
 });
 
-const LineTypeOptions = [{ Label: "Dashed", Value: ":" }, { Label: "Solid", Value: "-" }];
+const LineTypeOptions = [{ Label: "Solid", Value: "solid" }, { Label: "Short Dashes", Value: "short-dash" }, { Label: "Dashes", Value: "dash" }, { Label: "Long Dashes", Value: "long-dash" }];
 const AxisOptions = [{ Label: "Right", Value: "right" }, { Label: "Left", Value: "left" }];
 
 export { SettingsModal, LineTypeOptions, AxisOptions };

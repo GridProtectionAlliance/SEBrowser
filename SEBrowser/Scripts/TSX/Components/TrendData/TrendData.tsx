@@ -84,7 +84,7 @@ const TrendData = () => {
                 isHori: undefined,
                 // Defaults
                 color: "#E41000",
-                line: ":",
+                line: "short-dash",
                 width: 4,
                 type: "VeHo"
             },
@@ -97,7 +97,7 @@ const TrendData = () => {
                 axis: "left",
                 type: "Event-Vert",
                 color: "#E41000",
-                line: ":",
+                line: "short-dash",
                 width: 4
             },
             ShouldApply: false
