@@ -149,12 +149,12 @@ const CyclicHistogram = React.memo((props: IProps) => {
     }, [metaData]);
 
     React.useEffect(() => {
-        if (chartData == null || chartData.Series.length === 0) setTimeLimits([0, 1]);
-        else {
-            const timeSeries = chartData.Series.map(point => point[0]);
-            setTimeLimits([Math.min(...timeSeries), Math.max(...timeSeries) + chartData.TimeSpan]);
-        }
-    }, [chartData]);
+        const centerTime: moment.Moment = moment.utc(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
+        const startTime: number = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
+        // Need to move back in the other direction, so entire window
+        const endTime: number = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
+        setTimeLimits([startTime, endTime]);
+    }, [props.TimeFilter]);
 
     React.useEffect(() => {
         if (props.ChannelInfo?.Color == null) return;
@@ -249,7 +249,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
                 </h4>
                 <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2} menuLocation={generalSettings.MoveOptionsLeft ? 'outer-left' : 'outer-right'}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
-                    legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={false}
+                    legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={false} limitZoom={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={props.MouseHighlight} yDomain={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {(chartData?.Series?.length == null || chartData.Series.length === 0 || barColor === null) ? null :
                         <HeatMapChart data={chartData.Series} sampleMs={chartData.TimeSpan} binSize={chartData.BinSize} hue={barColor.Hue} saturation={barColor.Saturation} fillStyle={'fill'} axis={'left'} legendUnit={'%'} />

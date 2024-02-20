@@ -153,14 +153,12 @@ const LineGraph = React.memo((props: IProps) => {
     }, [props.PlotFilter]);
 
     React.useEffect(() => {
-        let chartData: IChartData = undefined;
-        allChartData.forEach(data => {
-            if ((chartData === undefined && data.AvgSeries.length > 0) ||
-                (chartData !== undefined && chartData.AvgSeries.length < data.AvgSeries.length))
-                chartData = data;
-        });
-        setTimeLimits(chartData === undefined ? [0, 1] : [chartData.AvgSeries[0][0], chartData.AvgSeries[chartData.AvgSeries.length - 1][0]]);
-    }, [allChartData]);
+        const centerTime: moment.Moment = moment.utc(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
+        const startTime: number = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
+        // Need to move back in the other direction, so entire window
+        const endTime: number = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
+        setTimeLimits([startTime, endTime]);
+    }, [props.TimeFilter]);
 
     React.useEffect(() => {
         setPlotHeight(props.Height - titleHeight - 5);
@@ -261,7 +259,7 @@ const LineGraph = React.memo((props: IProps) => {
                 </h4>
                 <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2} menuLocation={generalSettings.MoveOptionsLeft ? 'outer-left' : 'outer-right'}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
-                    legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={false}
+                    legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={false} limitZoom={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={props.MouseHighlight} yDomain={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {props?.ChannelInfo == null ? null : props.ChannelInfo.map((series, index) => {
                         const lineArray: JSX.Element[] = [];
