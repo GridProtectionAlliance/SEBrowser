@@ -488,7 +488,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
     return (
         <div id={props.Plot.ID} className="col"
             style={{
-                width: (props.Plot.Width ?? 100) - 1 + '%', height: `calc(${(props.Plot.Height ?? 50) - 1}% + ${extraHeight}px)`, float: 'left',
+                width: (props.Plot.Width ?? 100) + '%', height: `calc(${(props.Plot.Height ?? 50)}% + ${extraHeight}px)`, float: 'left',
                 border: (trendDatasettings.BorderPlots ? "thin black solid" : undefined)
             }}
             ref={chartRef} onDragOver={handleDragOverChannel} onDrop={handleDropChannel}>
