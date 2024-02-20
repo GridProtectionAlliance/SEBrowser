@@ -37,7 +37,7 @@ interface IMarkerTabProps {
     EventSettings: TrendSearch.EventMarkerSettings,
     SetEventSettings: (setting: TrendSearch.EventMarkerSettings) => void,
     DisplayEventSettings: boolean,
-    DisplayDescription?: boolean
+    IsGlobalSettings: boolean
 }
 const EventOptions = [{ Label: "Vertical Lines", Value: "Event-Vert" }, { Label: "Custom Symbols", Value: "Event-Symb" }];
 // Loading all SVGIcons into the options menue
@@ -110,7 +110,10 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
                             <BlockPicker onChangeComplete={(color) => applyToMarker({ ...currentMarker, color: color.hex } as TrendSearch.ISymbolic, editFromArray)}
                                 color={currentMarker['color']} triangle={"hide"} />
                             <StylableSelect<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Marker Symbol'} Field={'symbol'} Setter={state => applyToMarker(state, editFromArray)} Options={markerSymbolOptions} />
-                            <Select<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Axis'} Field={'axis'} Setter={state => applyToMarker(state, editFromArray)} Options={AxisOptions} />
+                            {
+                                props.IsGlobalSettings ? <></> :
+                                    <Select<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Axis'} Field={'axis'} Setter={state => applyToMarker(state, editFromArray)} Options={AxisOptions} />
+                            }
                         </div>
                         <div className="col" style={{ width: 'auto' }}>
                             <h4>Text Settings</h4>
@@ -126,7 +129,10 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
                             <Input<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Note Text Size (em)'} Field={'fontSize'} Setter={state => applyToMarker(state, editFromArray)} Feedback={"Font size must be a positive number"} Valid={() => {
                                 return currentMarker['fontSize'] > 0;
                             }} />
-                            <TextArea<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Marker Note'} Field={'note'} Setter={state => applyToMarker(state, editFromArray)} Rows={3} Valid={() => true} />
+                            {
+                                props.IsGlobalSettings ? <></> :
+                                    <TextArea<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Marker Note'} Field={'note'} Setter={state => applyToMarker(state, editFromArray)} Rows={3} Valid={() => true} />
+                            }
                         </div>
                     </div>
                 );
@@ -140,7 +146,10 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
                             Feedback={"Width must be a positive number"} Valid={() => {
                                 return (currentMarker['width'] ?? 0) > 0;
                             }} />
-                        <Select<TrendSearch.IVertHori> Record={currentMarker as TrendSearch.IVertHori} Label={'Axis'} Field={'axis'} Setter={marker => applyToMarker(marker, editFromArray)} Options={AxisOptions} />
+                        {
+                            props.IsGlobalSettings ? <></> :
+                                <Select<TrendSearch.IVertHori> Record={currentMarker as TrendSearch.IVertHori} Label={'Axis'} Field={'axis'} Setter={marker => applyToMarker(marker, editFromArray)} Options={AxisOptions} />
+                        }
                     </>
                 );
             case 'Event-Vert': case 'Event-Symb':
@@ -163,7 +172,10 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
                                 <CheckBox<TrendSearch.IEventSymbolicSettings> Record={props.EventSettings} Label={'Move to Top'} Field={'alignTop'} Setter={props.SetEventSettings} />
                             </>
                         }
-                        <Select<TrendSearch.EventMarkerSettings> Record={props.EventSettings} Label={'Axis'} Field={'axis'} Setter={props.SetEventSettings} Options={AxisOptions} />
+                        {
+                            props.IsGlobalSettings ? <></> :
+                                <Select<TrendSearch.EventMarkerSettings> Record={props.EventSettings} Label={'Axis'} Field={'axis'} Setter={props.SetEventSettings} Options={AxisOptions} />
+                        }
                         <Select<TrendSearch.EventMarkerSettings> Record={props.EventSettings} Label={'Event Marker Type'} Field={'type'} Setter={props.SetEventSettings} Options={EventOptions} />
                     </>);
             case undefined:
@@ -177,7 +189,7 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
             <div className="col" style={{ width: '40%'}}>
-                <TrendMarkerTable Height={markersHeight} Markers={allMarkers} DisplayDescription={props.DisplayDescription}
+                <TrendMarkerTable Height={markersHeight} Markers={allMarkers} DisplayDescription={props.IsGlobalSettings}
                     RemoveMarker={(marker) => applyToMarker(marker, removeFromArray)}
                     Selected={currentMarker} SetSelected={setCurrentMarker} />
             </div>

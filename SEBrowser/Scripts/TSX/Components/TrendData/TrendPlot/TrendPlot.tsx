@@ -42,7 +42,7 @@ const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
 const defaultSelect = "drag";
 const defaultHighlight = "vertical";
 const defaultCursor = undefined;
-const defaultsIgnored = new Set(["ID", "xPos", "yPos", "xBox", "yBox", "axis", "value", "isHori"]);
+const defaultsIgnored = new Set(["ID", "xPos", "yPos", "xBox", "yBox", "axis", "value", "isHori", "note"]);
 
 interface IContainerProps {
     // Manage Plot

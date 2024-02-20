@@ -58,7 +58,7 @@ const TrendData = () => {
                 ID: "Symb",
                 xPos: undefined,
                 yPos: undefined,
-                axis: undefined,
+                axis: "left",
                 xBox: undefined,
                 yBox: undefined,
                 // Symbol
@@ -80,7 +80,7 @@ const TrendData = () => {
                 // Need to overwrite these
                 ID: "Veho",
                 value: undefined,
-                axis: undefined,
+                axis: "left",
                 isHori: undefined,
                 // Defaults
                 color: "#E41000",

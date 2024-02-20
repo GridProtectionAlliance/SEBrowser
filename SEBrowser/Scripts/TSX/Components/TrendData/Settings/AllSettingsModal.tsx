@@ -100,7 +100,7 @@ const AllSettingsModal = React.memo((props: IProps) => {
             <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
                     <MarkerTab VeHoMarkers={[markers.VeHo.Default]} SetVeHoMarkers={r => markerBufferSetter(r, 'VeHo')} SymbMarkers={[markers.Symb.Default]} SetSymbMarkers={r => markerBufferSetter(r, 'Symb')}
-                        EventSettings={markers.Event.Default} SetEventSettings={r => markerBufferSetter(r, 'Event')} DisplayEventSettings={true} DisplayDescription={true} />
+                        EventSettings={markers.Event.Default} SetEventSettings={r => markerBufferSetter(r, 'Event')} DisplayEventSettings={true} IsGlobalSettings={true} />
                 </div>
             </div>
         </Modal>

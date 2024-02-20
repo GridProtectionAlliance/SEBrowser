@@ -146,7 +146,7 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
             <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
                     <MarkerTab VeHoMarkers={markersBuffer} SetVeHoMarkers={setMarkersBuffer} SymbMarkers={symbolicsBuffer} SetSymbMarkers={setSymbolicsBuffer}
-                        EventSettings={eventBuffer} SetEventSettings={setEventBuffer} DisplayEventSettings={plotBuffer?.ShowEvents ?? false} />
+                        EventSettings={eventBuffer} SetEventSettings={setEventBuffer} DisplayEventSettings={plotBuffer?.ShowEvents ?? false} IsGlobalSettings={false}/>
                 </div>
             </div>
         </Modal>
