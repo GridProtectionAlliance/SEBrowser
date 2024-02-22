@@ -30,7 +30,7 @@ import { SelectWidgetCategories } from '../../SettingsSlice';
 import { TabSelector } from '@gpa-gemstone/react-interactive';
 import WidgetRouter from '../../../../../EventWidgets/TSX/WidgetWrapper';
 import { EventWidget } from '../../../../../EventWidgets/TSX/global';
-import { EventNoteSlice, MeterNoteSlice, AssetNoteSlice, LocationNoteSlice } from '../../../Store';
+import { EventNoteSlice, MeterNoteSlice, AssetNoteSlice, LocationNoteSlice, EventTypeSlice } from '../../../Store';
 interface IProps {
     EventID: number,
     InitialTab?: string,
@@ -45,7 +45,8 @@ const widgetStore = {
     EventNoteSlice,
     MeterNoteSlice,
     AssetNoteSlice,
-    LocationNoteSlice
+    LocationNoteSlice,
+    EventTypeSlice
 }
 
 export default function EventPreviewPane(props: IProps) {
