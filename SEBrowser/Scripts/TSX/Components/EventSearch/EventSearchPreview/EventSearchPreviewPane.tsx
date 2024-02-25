@@ -104,7 +104,7 @@ export default function EventPreviewPane(props: IProps) {
                 return { Id: t.ID.toString(), Label: t.Name }
             })} />
             <div style={{ height: props.Height - 37.5, maxHeight: props.Height - 37.5, overflowY: 'scroll', overflowX: 'hidden' }}>
-                {widgets.filter(widget => widget.Enabled).map((widget) => {
+                {widgets.map((widget) => {
                     return <WidgetRouter
                         Widget={widget}
                         DisturbanceID={0}
