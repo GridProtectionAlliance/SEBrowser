@@ -152,9 +152,9 @@ const TrendChannelTable = (props: IProps) => {
                 Field={'Phase'}
             />
             {colList.map(name =>
-                <ConfigTable.Configurable key={name} Key={name} Label={name} Default={defaultCols.has(name)}>
+                <ConfigTable.Configurable key={name.replace(/\s/, "")} Key={name.replace(/\s/, "")} Label={name} Default={defaultCols.has(name)}>
                     <ReactTable.AdjustableCol<TrendSearch.ITrendChannel>
-                        Key={name}
+                        Key={name.replace(/\s/, "")}
                         AllowSort={true}
                         Field={name.replace(/\s/, "") as keyof TrendSearch.ITrendChannel}
                     >{name}</ReactTable.AdjustableCol>
@@ -162,7 +162,7 @@ const TrendChannelTable = (props: IProps) => {
             }
             {props.OnChannelRemoval !== undefined ?
                 <ReactTable.Column<TrendSearch.ITrendChannel>
-                    Key={'RemoveChannel'}
+                    Key={'ID'}
                     AllowSort={false}
                     Field={'ID'}
                     RowStyle={{ width: "50px" }}
