@@ -192,7 +192,7 @@ export const EventSearchsSlice = createSlice({
         ProcessQuery: (state, action: PayloadAction<{
             query: queryString.ParsedUrlQuery, assets: SystemCenter.Types.DetailedAsset[],
             groups: OpenXDA.Types.AssetGroup[], locations: SystemCenter.Types.DetailedLocation[],
-            meters: SystemCenter.Types.DetailedMeter[], typeIDs: SEBrowser.EventType[]
+            meters: SystemCenter.Types.DetailedMeter[], typeIDs: OpenXDA.Types.EventType[]
         }>) => {
 
 
@@ -242,7 +242,7 @@ export const EventSearchsSlice = createSlice({
             state.isReset = computeReset(state, action.payload.typeIDs);
             state.Status = 'changed';
         },
-        SetFilters: (state, action: PayloadAction<{ eventTypes: SEBrowser.EventType[], characteristics?: SEBrowser.IEventCharacteristicFilters, types?: number[], time?: SEBrowser.IReportTimeFilter }>) => {
+        SetFilters: (state, action: PayloadAction<{ eventTypes: OpenXDA.Types.EventType[], characteristics?: SEBrowser.IEventCharacteristicFilters, types?: number[], time?: SEBrowser.IReportTimeFilter }>) => {
             state.Status = 'changed';
             if (action.payload.time !== undefined)
                 state.TimeRange = action.payload.time;
@@ -264,7 +264,7 @@ export const EventSearchsSlice = createSlice({
 
             state.isReset = computeReset(state, action.payload.eventTypes);
         },
-        ResetFilters: (state, action: PayloadAction<{ types: SEBrowser.EventType[] }>) => {
+        ResetFilters: (state, action: PayloadAction<{ types: OpenXDA.Types.EventType[] }>) => {
             state.EventCharacteristic = {
                 durationMax: null, durationMin: null,
                 phases: { AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true }, 
@@ -283,7 +283,7 @@ export const EventSearchsSlice = createSlice({
         SetFilterLists: (state, action: PayloadAction<{
             Meters: SystemCenter.Types.DetailedMeter[],
             Assets: SystemCenter.Types.DetailedAsset[], Groups: OpenXDA.Types.AssetGroup[], Stations: SystemCenter.Types.DetailedLocation[],
-            eventTypes: SEBrowser.EventType[]
+            eventTypes: OpenXDA.Types.EventType[]
         }>) => {
             state.SelectedStations = action.payload.Stations;
             state.SelectedMeters = action.payload.Meters;
@@ -375,7 +375,7 @@ function GetEventSearchs(params: any): JQuery.jqXHR<any[]> {
     });
 }
 
-function computeReset(state: Redux.EventSearchState, eventTypes: SEBrowser.EventType[]): boolean {
+function computeReset(state: Redux.EventSearchState, eventTypes: OpenXDA.Types.EventType[]): boolean {
     const event = state.EventCharacteristic.durationMax == null && state.EventCharacteristic.durationMin == null &&
         state.EventCharacteristic.transientMin == null && state.EventCharacteristic.transientMax == null &&
         state.EventCharacteristic.sagMin == null && state.EventCharacteristic.sagMax == null &&

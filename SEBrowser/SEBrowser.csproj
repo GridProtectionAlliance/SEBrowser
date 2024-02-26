@@ -447,6 +447,7 @@
     <Compile Include="EventWidgets\Controller\BreakerPerformance.cs" />
     <Compile Include="EventWidgets\Controller\CorrelatedSags.cs" />
     <Compile Include="EventWidgets\Controller\ESRIMap.cs" />
+    <Compile Include="EventWidgets\Controller\EventInfo.cs" />
     <Compile Include="EventWidgets\Controller\FaultInfo.cs" />
     <Compile Include="EventWidgets\Controller\FileInfo.cs" />
     <Compile Include="EventWidgets\Controller\InterruptionReport.cs" />
@@ -542,6 +543,7 @@
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\BreakerPerformance.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\CapBankAnalyticOverview.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\CorrelatedSags.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\EventInfo.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\FileInfo.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\MatlabAnalyticResults.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\NoteWindow.tsx" />

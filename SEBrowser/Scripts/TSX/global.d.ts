@@ -116,8 +116,6 @@ export namespace SEBrowser {
     }
 
     // Temporary until next gpa-gemstone update
-    interface EventType extends XDA.Types.EventType { ShowInFilter: boolean, Category?: string, Name: string }
-
     interface IWidgetCategory { ID: number, Name: string, OrderBy: number }
 }
 

@@ -28,6 +28,7 @@ import { SelectTypeFilter } from './EventSearchSlice';
 import {  SetFilters } from './EventSearchSlice';
 import {  EventTypeSlice } from '../../Store';
 import { SEBrowser } from '../../Global';
+import { OpenXDA } from '@gpa-gemstone/application-typings';
 interface IProps {
     Height: number
 }
@@ -141,9 +142,9 @@ const EventSearchTypeFilters = (props: IProps) => {
 interface ICategoryProps {
     Label: string,
     SetHeight: (h: number) => void,
-    Data: SEBrowser.EventType[],
+    Data: OpenXDA.Types.EventType[],
     SelectedID:number[],
-    OnChange: (record: SEBrowser.EventType, selected: boolean) => void
+    OnChange: (record: OpenXDA.Types.EventType, selected: boolean) => void
     SelectAll: (selected: boolean) => void
 }
 

@@ -30,7 +30,7 @@ import { SelectWidgetCategories } from '../../SettingsSlice';
 import { TabSelector } from '@gpa-gemstone/react-interactive';
 import WidgetRouter from '../../../../../EventWidgets/TSX/WidgetWrapper';
 import { EventWidget } from '../../../../../EventWidgets/TSX/global';
-import { EventNoteSlice, MeterNoteSlice, AssetNoteSlice, LocationNoteSlice } from '../../../Store';
+import { EventNoteSlice, MeterNoteSlice, AssetNoteSlice, LocationNoteSlice, EventTypeSlice } from '../../../Store';
 interface IProps {
     EventID: number,
     InitialTab?: string,
@@ -45,7 +45,8 @@ const widgetStore = {
     EventNoteSlice,
     MeterNoteSlice,
     AssetNoteSlice,
-    LocationNoteSlice
+    LocationNoteSlice,
+    EventTypeSlice
 }
 
 export default function EventPreviewPane(props: IProps) {
@@ -103,7 +104,7 @@ export default function EventPreviewPane(props: IProps) {
                 return { Id: t.ID.toString(), Label: t.Name }
             })} />
             <div style={{ height: props.Height - 37.5, maxHeight: props.Height - 37.5, overflowY: 'scroll', overflowX: 'hidden' }}>
-                {widgets.filter(widget => widget.Enabled).map((widget) => {
+                {widgets.map((widget) => {
                     return <WidgetRouter
                         Widget={widget}
                         DisturbanceID={0}
