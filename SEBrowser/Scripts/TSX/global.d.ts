@@ -175,6 +175,37 @@ export namespace TrendSearch {
         Timestamp: string
     }
 
+    interface IColor {
+        Label: string,
+        MinColor: string,
+        AvgColor: string,
+        MaxColor: string
+    }
+
+    interface IColorSettings {
+        ApplyType: 'Random' | 'Individual' | 'PhaseType' | 'Asset',
+        Colors: IColor[]
+    }
+
+    interface ILineStyleSettings {
+        Width: number,
+        Type: TrendSearch.LineStyles,
+    }
+
+    interface ILineSettings extends ILineStyleSettings {
+        Color: string,
+        Axis: 'right' | 'left',
+        Label: string,
+        HasData: boolean
+    }
+
+    interface ILineSeries {
+        Channel?: TrendSearch.ITrendChannel,
+        Min: TrendSearch.ILineSettings,
+        Max: TrendSearch.ILineSettings,
+        Avg: TrendSearch.ILineSettings
+    }
+
     interface IMetaData {
         ChannelID: number,
         FundamentalFrequency: number,
@@ -283,6 +314,24 @@ export namespace TrendSearch {
         }
         VeHo: {
             Default: IVertHori,
+            ShouldApply: boolean
+        }
+    }
+    interface ILinePlotSettingsBundle {
+        Min: {
+            Default: ILineStyleSettings,
+            ShouldApply: boolean
+        }
+        Max: {
+            Default: ILineStyleSettings,
+            ShouldApply: boolean
+        }
+        Avg: {
+            Default: ILineStyleSettings,
+            ShouldApply: boolean
+        }
+        Colors: {
+            Default: IColorSettings,
             ShouldApply: boolean
         }
     }

@@ -24,11 +24,10 @@
 //******************************************************************************************************
 import React from 'react';
 import _ from 'lodash';
-import { ILineSeries } from '../TrendPlot/LineGraph';
 import { ICyclicSeries } from '../TrendPlot/CyclicHistogram';
 import { TrendSearch } from '../../../global';
 import { TabSelector, Modal } from '@gpa-gemstone/react-interactive';
-import { PlotSettings } from './PlotSettings';
+import { PlotSettingsTab } from './OverlayTabs/PlotSettingsTab';
 import { MarkerTab } from './OverlayTabs/MarkerTab';
 import { ChannelTab } from './OverlayTabs/ChannelTab';
 
@@ -52,7 +51,7 @@ interface IOverlayProps {
     OverlayPortalID: string
 }
 
-export type SeriesSettings = ILineSeries | ICyclicSeries;
+export type SeriesSettings = TrendSearch.ILineSeries | ICyclicSeries;
 
 const SettingsModal = React.memo((props: IOverlayProps) => {
     // Settings Controls
@@ -135,7 +134,7 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
             <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
             <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
-                    <PlotSettings Plot={plotBuffer} SetPlot={setPlotBuffer} SetConfirmDisabled={setConfirmDisabled} />
+                    <PlotSettingsTab Plot={plotBuffer} SetPlot={setPlotBuffer} SetConfirmDisabled={setConfirmDisabled} />
                 </div>
             </div>
             <div className="tab-content" style={{ overflow: 'hidden' }}>

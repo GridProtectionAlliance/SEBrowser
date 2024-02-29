@@ -573,9 +573,13 @@
     <Content Include="Scripts\TSX\Components\TrendData\Components\TrendChannelTable.tsx" />
     <Content Include="Scripts\TSX\Components\TrendData\Components\TrendMarkerTable.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\AllSettingsModal.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\OverlayTabs\ColorTab.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\TabProperties\LineStyles.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\OverlayTabs\LineStylesTab.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\TabProperties\LineSettings.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\OverlayTabs\MarkerTab.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\OverlayTabs\ChannelTab.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\PlotSettings.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\OverlayTabs\PlotSettingsTab.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\Settings\SettingsModal.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\CyclicHistogram.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\GraphError.tsx" />

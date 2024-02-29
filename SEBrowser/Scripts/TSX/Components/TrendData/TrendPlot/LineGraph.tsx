@@ -35,8 +35,8 @@ import { Warning } from '@gpa-gemstone/gpa-symbols';
 interface IProps {
     ID: string,
     TimeFilter: SEBrowser.IReportTimeFilter,
-    ChannelInfo: ILineSeries[],
-    SetChannelInfo: (newSettings: ILineSeries[]) => void,
+    ChannelInfo: TrendSearch.ILineSeries[],
+    SetChannelInfo: (newSettings: TrendSearch.ILineSeries[]) => void,
     PlotFilter: IMultiCheckboxOption[],
     Height: number,
     Width: number,
@@ -53,16 +53,6 @@ interface IProps {
     DefaultZoom?: [number, number][]
     AlwaysRender: React.ReactNode,
     children: React.ReactNode
-}
-
-interface ILineSettings { Color: string, Width: number, Type: TrendSearch.LineStyles, Axis: 'right'|'left', Label: string, HasData: boolean }
-
-// Exported Type
-interface ILineSeries{
-    Channel: TrendSearch.ITrendChannel,
-    Min: ILineSettings,
-    Max: ILineSettings,
-    Avg: ILineSettings
 }
 
 interface IChartData {
@@ -108,7 +98,7 @@ const LineGraph = React.memo((props: IProps) => {
     const [plotHeight, setPlotHeight] = React.useState<number>(props.Height);
     const [extraLegendHeight, setExtraLegendHeight] = React.useState<number>(0);
     const titleRef = React.useRef(null);
-    const oldValues = React.useRef<{ ChannelInfo: ILineSeries[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
+    const oldValues = React.useRef<{ ChannelInfo: TrendSearch.ILineSeries[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const generalSettings = useAppSelector(SelectGeneralSettings);
 
@@ -263,7 +253,7 @@ const LineGraph = React.memo((props: IProps) => {
                     Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={props.MouseHighlight} yDomain={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {props?.ChannelInfo == null ? null : props.ChannelInfo.map((series, index) => {
                         const lineArray: JSX.Element[] = [];
-                        const channelSetting: ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === series.Channel.ID);
+                        const channelSetting: TrendSearch.ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === series.Channel.ID);
                         const dataKey = [...allChartData.keys()].find(key => series.Channel.ID === Number("0x" + key))
                         const chartData = allChartData.get(dataKey);
                         if (channelSetting === undefined) return null;
@@ -287,4 +277,4 @@ const LineGraph = React.memo((props: IProps) => {
             </div>);
 });
 
-export { LineGraph, ILineSeries, ILineSettings };
+export { LineGraph };

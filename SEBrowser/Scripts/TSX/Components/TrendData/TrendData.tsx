@@ -103,6 +103,73 @@ const TrendData = () => {
             ShouldApply: false
         }
     });
+    const [lineDefaults, setLineDefaults] = React.useState<TrendSearch.ILinePlotSettingsBundle>({
+        Min: {
+            Default: {
+                Width: 3,
+                Type: 'short-dash'
+            },
+            ShouldApply: false
+        },
+        Max: {
+            Default: {
+                Width: 3,
+                Type: 'short-dash'
+            },
+            ShouldApply: false
+        },
+        Avg: {
+            Default: {
+                Width: 3,
+                Type: 'solid'
+            },
+            ShouldApply: false
+        },
+        Colors: {
+            Default: {
+                ApplyType: "Random",
+                Colors: [
+                    {
+                        Label: "Color 1",
+                        MinColor: "#A30000",
+                        AvgColor: "#A30000",
+                        MaxColor: "#A30000"
+                    },
+                    {
+                        Label: "Color 2",
+                        MinColor: "#0029A3",
+                        AvgColor: "#0029A3",
+                        MaxColor: "#0029A3"
+                    },
+                    {
+                        Label: "Color 3",
+                        MinColor: "#007A29",
+                        AvgColor: "#007A29",
+                        MaxColor: "#007A29"
+                    },
+                    {
+                        Label: "Color 4",
+                        MinColor: "#FF0000",
+                        AvgColor: "#FF0000",
+                        MaxColor: "#FF0000"
+                    },
+                    {
+                        Label: "Color 5",
+                        MinColor: "#0066CC",
+                        AvgColor: "#0066CC",
+                        MaxColor: "#0066CC"
+                    },
+                    {
+                        Label: "Color 6",
+                        MinColor: "#33CC33",
+                        AvgColor: "#33CC33",
+                        MaxColor: "#33CC33"
+                    }
+                ]
+            },
+            ShouldApply: false
+        }
+    });
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
     const [plotsMovable, setPlotsMovable] = React.useState<boolean>(false);
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
@@ -198,11 +265,15 @@ const TrendData = () => {
                 <div className={'col-12'} style={{ height: '100%', overflow: 'scroll' }}>
                     {plotList.map(element => <TrendPlot key={element.ID} DragMode={plotsMovable}
                         Plot={element} SetPlot={setPlot} RemovePlot={removePlot} SplicePlot={movePlot}
-                        OverlayPortalID={overlayPortalID} HandleOverlay={closeSettings} MarkerDefaults={markerDefaults}
+                        OverlayPortalID={overlayPortalID} HandleOverlay={closeSettings}
+                        MarkerDefaults={markerDefaults} LineDefaults={lineDefaults}
                     />)}
                 </div>
             </div>
-            <AllSettingsModal Show={showSettings} SetShow={setShowSettings} ApplyFieldToAll={setAllPlot} Defaults={defaultPlotSettings} SetDefaults={setDefaultPlotSettings} MarkerDefaults={markerDefaults} SetMarkerDefaults={setMarkerDefaults} />
+            <AllSettingsModal Show={showSettings} SetShow={setShowSettings} ApplyFieldToAll={setAllPlot}
+                Defaults={defaultPlotSettings} SetDefaults={setDefaultPlotSettings}
+                MarkerDefaults={markerDefaults} SetMarkerDefaults={setMarkerDefaults}
+                LinePlotDefaults={lineDefaults} SetLinePlotDefaults={setLineDefaults} />
         </div>
     );
 }

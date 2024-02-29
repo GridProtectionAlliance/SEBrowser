@@ -25,10 +25,10 @@ import _ from 'lodash';
 import queryString from 'querystring';
 import moment from 'moment';
 import { CreateGuid, SpacedColor } from '@gpa-gemstone/helper-functions';
-import { TrashCan, Pencil, Plus, SVGIcons } from '@gpa-gemstone/gpa-symbols';
+import { TrashCan, Pencil, Plus } from '@gpa-gemstone/gpa-symbols';
 import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, AxisMap } from '@gpa-gemstone/react-graph';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
-import { LineGraph, ILineSeries } from './LineGraph';
+import { LineGraph } from './LineGraph';
 import { SEBrowser, TrendSearch } from '../../../global';
 import { SelectTrendDataSettings, SelectGeneralSettings } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
@@ -42,7 +42,20 @@ const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
 const defaultSelect = "drag";
 const defaultHighlight = "vertical";
 const defaultCursor = undefined;
-const defaultsIgnored = new Set(["ID", "xPos", "yPos", "xBox", "yBox", "axis", "value", "isHori", "note"]);
+const phaseMeasurementColorIndex = new Map<string, number>([
+    ["VoltageAN", 0],
+    ["VoltageAB", 0],
+    ["VoltageBN", 1],
+    ["VoltageBC", 1],
+    ["VoltageCN", 2],
+    ["VoltageCA", 2],
+    ["CurrentAN", 3],
+    ["CurrentAC", 3],
+    ["CurrentBN", 4],
+    ["CurrentBC", 4],
+    ["CurrentCN", 5],
+    ["CurrentCA", 5]
+])
 
 interface IContainerProps {
     // Manage Plot
@@ -55,7 +68,8 @@ interface IContainerProps {
     // Drag Mode
     DragMode: boolean,
     OverlayPortalID: string,
-    MarkerDefaults: TrendSearch.IMarkerSettingsBundle
+    MarkerDefaults: TrendSearch.IMarkerSettingsBundle,
+    LineDefaults: TrendSearch.ILinePlotSettingsBundle
 }
 
 const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerProps) => {
@@ -69,6 +83,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
     const generalSettings = useAppSelector(SelectGeneralSettings);
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const [plotAllSeriesSettings, setPlotAllSeriesSettings] = React.useState<SeriesSettings[]>(null);
+    const colorIndex = React.useRef<{ ind: number, assetMap: Map<string, number> }>({ind: -1, assetMap: new Map<string, number>()});
     const changedProperties = React.useRef<Set<string>>(new Set<string>());
 
     // Plot Markers
@@ -86,6 +101,61 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
     const [customCursor, setCustomCursor] = React.useState<string>(defaultCursor);
     const [lineHighlight, setLineHighlight] = React.useState<'none' | 'horizontal' | 'vertical'>(defaultHighlight);
 
+    // Determine color to use
+    const getColor = React.useCallback((colorSetting: TrendSearch.IColorSettings, channel?: TrendSearch.ITrendChannel) => {
+        const getRandomColor = () => {
+            const randomColor = SpacedColor(0.9, 0.9);
+            const newColor: TrendSearch.IColor = {
+                Label: '',
+                MinColor: randomColor,
+                AvgColor: randomColor,
+                MaxColor: randomColor
+            }
+            return newColor;
+        }
+        const getDefaultColor = () => {
+            if (colorSetting.Colors.length !== 0) return colorSetting.Colors[0];
+            return getRandomColor();
+        }
+        switch (colorSetting.ApplyType) {
+            case "Random":
+                return getRandomColor();
+            case "Individual": {
+                colorIndex.current.ind = (colorIndex.current.ind + 1) % colorSetting.Colors.length;
+                return colorSetting.Colors[colorIndex.current.ind];
+            }
+            case "Asset": {
+                if (channel === undefined) return getDefaultColor();
+                const currentIndex = colorIndex.current.assetMap.get(channel.AssetKey);
+                if (currentIndex === undefined || colorIndex.current.ind === -1) {
+                    colorIndex.current.ind = (colorIndex.current.ind + 1) % colorSetting.Colors.length;
+                    colorIndex.current.assetMap.set(channel.AssetKey, colorIndex.current.ind);
+                }
+                return colorSetting.Colors[currentIndex];
+            }
+            case "PhaseType": {
+                if (channel === undefined) return getDefaultColor();
+                const currentIndex = phaseMeasurementColorIndex.get(channel.ChannelGroup + channel.Phase) ?? 0;
+                if (currentIndex >= colorSetting.Colors.length) getDefaultColor();
+                return colorSetting.Colors[currentIndex];
+            }
+        }
+    }, []);
+
+    const buildAssetDictionary = React.useCallback((channels: TrendSearch.ITrendChannel[]) => {
+        const sortedChannels = _.orderBy(channels, ["AssetName"], ["asc"]);
+        let previousKey: string = undefined;
+        let previousIndex = -1;
+        sortedChannels.forEach(chan => {
+            if (chan.AssetKey !== previousKey || previousIndex === -1) {
+                previousIndex += 1;
+                previousKey = chan.AssetKey;
+                colorIndex.current.assetMap.set(previousKey, previousIndex);
+            }
+        });
+        colorIndex.current.ind = previousIndex;
+    }, []);
+
     // Get Heights and Widths
     React.useLayoutEffect(() => {
         setChartWidth(chartRef?.current?.offsetWidth ?? 500);
@@ -102,11 +172,12 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
 
     // Update markers if they should be updated
     React.useEffect(() => {
+        const defaultsIgnoredMarker = new Set(["ID", "xPos", "yPos", "xBox", "yBox", "axis", "value", "isHori", "note"]);
         const applyFunc: <T>(markers: T[], defaultMarker: T) => T[] = (markers, defaultMarker) => {
             const newMarkers = [...markers];
             newMarkers.forEach((marker, ind) => {
                 Object.keys(marker).forEach(field => {
-                    if (!defaultsIgnored.has(field)) newMarkers[ind][field] = defaultMarker[field];
+                    if (!defaultsIgnoredMarker.has(field)) newMarkers[ind][field] = defaultMarker[field];
                 });
             });
             return newMarkers;
@@ -114,6 +185,46 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         if (props.MarkerDefaults.Symb.ShouldApply) setSymbolicMarkers(applyFunc(symbolicMarkers, props.MarkerDefaults.Symb.Default));
         if (props.MarkerDefaults.VeHo.ShouldApply) setHoriVertMarkers(applyFunc(horiVertMarkers, props.MarkerDefaults.VeHo.Default));
         if (props.MarkerDefaults.Event.ShouldApply) setEventSettings(props.MarkerDefaults.Event.Default);
+    }, [props.MarkerDefaults]);
+
+    // Update lines if they should be updated
+    React.useEffect(() => {
+        if (props.Plot.Type !== 'Line' || plotAllSeriesSettings == null || plotAllSeriesSettings.length === 0) return;
+        const applyStyleFunc: (
+            newSettings: TrendSearch.ILineSeries[],
+            defaultStyle: TrendSearch.ILineStyleSettings,
+            styleField: 'Min' | 'Max' | 'Avg')
+            => boolean = (newSettings, defaultStyle, styleField) => {
+                newSettings.forEach((_setting, ind) => {
+                    Object.keys(defaultStyle).forEach(field => {
+                        newSettings[ind][styleField][field] = defaultStyle[field];
+                    });
+                });
+                return true;
+            }
+        const applyColorFunc: (
+            newSettings: TrendSearch.ILineSeries[],
+            newColors: TrendSearch.IColorSettings)
+            => void = (newSettings, newColors) => {
+                newSettings.forEach((setting, ind) => {
+                    const newColor = getColor(newColors, setting.Channel);
+                    newSettings[ind]["Min"].Color = newColor.MinColor;
+                    newSettings[ind]["Avg"].Color = newColor.AvgColor;
+                    newSettings[ind]["Max"].Color = newColor.MaxColor;
+                });
+            }
+        const newSettings: TrendSearch.ILineSeries[] = [...(plotAllSeriesSettings as TrendSearch.ILineSeries[])];
+        let shouldApply = false;
+        if (props.LineDefaults.Min.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Min.Default, 'Min');
+        if (props.LineDefaults.Avg.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Avg.Default, 'Avg');
+        if (props.LineDefaults.Max.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Max.Default, 'Max');
+        if (props.LineDefaults.Colors.ShouldApply) {
+            shouldApply = true;
+            colorIndex.current = { ind: -1, assetMap: new Map<string, number>() };
+            if (props.LineDefaults.Colors.Default.ApplyType === "Asset") buildAssetDictionary(props.Plot.Channels);
+            applyColorFunc(newSettings, props.LineDefaults.Colors.Default);
+        }
+        if (shouldApply) setPlotAllSeriesSettings(newSettings);
     }, [props.MarkerDefaults]);
 
     // Set default channel settings
@@ -134,16 +245,16 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             return label;
         };
 
-        const getDefaultValue: (channel: TrendSearch.ITrendChannel) => SeriesSettings = (channel) => {
+        const getDefaultValue: (channel: TrendSearch.ITrendChannel, passChannelToColor: boolean) => SeriesSettings = (channel, passChannelToColor) => {
             switch (props.Plot.Type) {
                 case 'Line': default: {
                     const baseLabel = constructLabel(channel);
-                    const color = SpacedColor(0.9, 0.9);
+                    const color: TrendSearch.IColor = getColor(props.LineDefaults.Colors.Default, passChannelToColor ? channel : undefined);
                     return ({
                         Channel: channel,
-                        Min: { Color: color, Width: 3, Type: 'short-dash', Axis: 'left', Label: baseLabel + ' min', HasData: false },
-                        Avg: { Color: color, Width: 3, Type: 'solid', Axis: 'left', Label: baseLabel + ' avg', HasData: false },
-                        Max: { Color: color, Width: 3, Type: 'short-dash', Axis: 'left', Label: baseLabel + ' max', HasData: false }
+                        Min: { Color: color.MinColor, Width: props.LineDefaults.Min.Default.Width, Type: props.LineDefaults.Min.Default.Type, Axis: 'left', Label: baseLabel + ' min', HasData: false },
+                        Avg: { Color: color.AvgColor, Width: props.LineDefaults.Avg.Default.Width, Type: props.LineDefaults.Avg.Default.Type, Axis: 'left', Label: baseLabel + ' avg', HasData: false },
+                        Max: { Color: color.MaxColor, Width: props.LineDefaults.Max.Default.Width, Type: props.LineDefaults.Max.Default.Type, Axis: 'left', Label: baseLabel + ' max', HasData: false }
                     });
                 }
                 case 'Cyclic': {
@@ -154,11 +265,17 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             }
         };
 
+        let passChannel = false;
+        if (plotAllSeriesSettings == null && props.Plot.Type === "Line") {
+            passChannel = true;
+            colorIndex.current = { ind: -1, assetMap: new Map<string, number>() };
+            if (props.LineDefaults.Colors.Default.ApplyType === "Asset") buildAssetDictionary(props.Plot.Channels);
+        }
         // Get old setting if it exists, otherwise just make a new one
         setPlotAllSeriesSettings(
             props.Plot.Channels.map(channel => {
                 const oldSettings = plotAllSeriesSettings?.find(oldSetting => oldSetting.Channel.ID === channel.ID)
-                if (oldSettings === undefined) return getDefaultValue(channel);
+                if (oldSettings === undefined) return getDefaultValue(channel, passChannel);
                 if (props.Plot.Type === 'Line') {
                     const baseLabel = constructLabel(channel);
                     oldSettings['Min']['Label'] = baseLabel + ' min';
@@ -413,7 +530,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         switch (props.Plot.Type) {
             case 'Line':
                 plotBody = (
-                    <LineGraph ID={props.Plot.ID} ChannelInfo={plotAllSeriesSettings as ILineSeries[]} SetChannelInfo={setPlotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
+                    <LineGraph ID={props.Plot.ID} ChannelInfo={plotAllSeriesSettings as TrendSearch.ILineSeries[]} SetChannelInfo={setPlotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
                         Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel} MouseHighlight={lineHighlight} SetExtraSpace={setExtraHeight}
                         Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
                         OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>

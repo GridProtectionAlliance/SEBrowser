@@ -21,13 +21,12 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import { ILineSeries, ILineSettings } from '../../TrendPlot/LineGraph';
 import { ICyclicSeries } from '../../TrendPlot/CyclicHistogram';
 import { TrendSearch } from '../../../../global';
 import { BlockPicker } from 'react-color';
-import { Input, Select } from '@gpa-gemstone/react-forms';
-import { LineTypeOptions, AxisOptions } from '../SettingsModal';
+import { LineTypeOptions } from '../SettingsModal';
 import TrendChannelTable from '../../Components/TrendChannelTable';
+import { LineSettings } from '../TabProperties/LineSettings';
 
 interface IChannelTabProps {
     // Assumption that this doesnt change outside of this overlay
@@ -38,7 +37,7 @@ interface IChannelTabProps {
     Type: TrendSearch.IPlotTypes
 }
 
-export type SeriesSettings = ILineSeries | ICyclicSeries;
+export type SeriesSettings = TrendSearch.ILineSeries | ICyclicSeries;
 
 const ChannelTab = React.memo((props: IChannelTabProps) => {
     // Sizing Variables
@@ -93,9 +92,9 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
                     );
                 return (
                     <div className="row" style={{height: '100%', width: '100%'}}>
-                        <LineSettings SeriesSettings={currentSeriesSetting} SetSeriesSettings={editChannel} Series='Min' />
-                        <LineSettings SeriesSettings={currentSeriesSetting} SetSeriesSettings={editChannel} Series='Avg' />
-                        <LineSettings SeriesSettings={currentSeriesSetting} SetSeriesSettings={editChannel} Series='Max' />
+                        <LineSettings SeriesSettings={currentSeriesSetting as TrendSearch.ILineSeries} SetSeriesSettings={editChannel} Series='Min' />
+                        <LineSettings SeriesSettings={currentSeriesSetting as TrendSearch.ILineSeries} SetSeriesSettings={editChannel} Series='Avg' />
+                        <LineSettings SeriesSettings={currentSeriesSetting as TrendSearch.ILineSeries} SetSeriesSettings={editChannel} Series='Max' />
                     </div>
                 );
             case 'Cyclic':
@@ -124,48 +123,5 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
         </div>
     );
 });
-
-interface ILineProps {
-    // Assumption that this doesnt change outside of this overlay
-    SeriesSettings: SeriesSettings,
-    SetSeriesSettings: (newSettings: SeriesSettings) => void,
-    Series: 'Min'|'Max'|'Avg'
-}
-
-const LineSettings = React.memo((props: ILineProps) => {
-    const [series, setSeries] = React.useState<ILineSettings>(undefined);
-
-    const setter = React.useCallback((record: ILineSettings) => {
-        setSeries(record);
-        const newSettings = { ...props.SeriesSettings };
-        newSettings[props.Series] = record;
-        props.SetSeriesSettings(newSettings);
-    }, [setSeries, props]);
-
-    React.useEffect(() => {
-        setSeries(props.SeriesSettings[props.Series]);
-    }, [props.SeriesSettings, props.Series]);
-
-    // No data = return null
-    if (series === undefined || !series.HasData) return null;
-
-    return (
-        <div className="col" style={{ width: 'auto' }}>
-            <h4>{(props.Series === 'Avg' && !props.SeriesSettings['Min']?.HasData && !props.SeriesSettings['Max']?.HasData) ? 'Values' : props.Series} Settings</h4>
-            <BlockPicker onChangeComplete={(color) => setter({ ...series, Color: color.hex })} color={series['Color']} triangle={"hide"} />
-            <Input<ILineSettings> Record={series} Label={'Legend Label'} Field={'Label'} Setter={setter} Valid={() => true} />
-            <Input<ILineSettings> Record={series} Label={'Line Width (pixels)'} Field={'Width'} Setter={setter} Type={'number'}
-                Feedback={"Width must be a positive number"} Valid={() => {
-                    return series['Width'] > 0;
-                }} />
-            <Select<ILineSettings> Record={series} Label={'Line Style'} Field={'Type'} Setter={setter} Options={LineTypeOptions} />
-            <Select<ILineSettings> Record={series} Label={'Axis'} Field={'Axis'} Setter={setter} Options={AxisOptions} />
-        </div>
-    );
-});
-
-
-
-
 
 export { ChannelTab };

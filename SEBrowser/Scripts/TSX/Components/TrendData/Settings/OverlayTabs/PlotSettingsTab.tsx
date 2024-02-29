@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  PlotSettings.tsx - Gbtc
+//  PlotSettingsTab.tsx - Gbtc
 //
 //  Copyright © 2023, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -22,8 +22,8 @@
 //******************************************************************************************************
 import React from 'react';
 import _ from 'lodash';
-import { IMultiCheckboxOption, TrendSearch } from '../../../global';
-import ReportTimeFilter from '../../ReportTimeFilter';
+import { IMultiCheckboxOption, TrendSearch } from '../../../../global';
+import ReportTimeFilter from '../../../ReportTimeFilter';
 import { CheckBox, Input, MultiCheckBoxSelect, Select } from '@gpa-gemstone/react-forms';
 
 interface IProps {
@@ -42,7 +42,7 @@ const axisOptions: { Value: string, Label: string }[] = [
     { Value: 'Manual', Label: 'Manual' }
 ]
 
-const PlotSettings = React.memo((props: IProps) => {
+const PlotSettingsTab = React.memo((props: IProps) => {
     const [limits, setLimits] = React.useState<AxisLimits>({ LeftUpper: 1, LeftLower: 0, RightUpper: 1, RightLower: 0 });
 
     const setPlotLimits = React.useCallback((limits: AxisLimits) => {
@@ -170,4 +170,4 @@ const PlotSettings = React.memo((props: IProps) => {
     );
 });
 
-export { PlotSettings };
+export { PlotSettingsTab };
