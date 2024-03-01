@@ -21,49 +21,20 @@
 //
 //******************************************************************************************************
 
-using FaultData.DataAnalysis;
-using GSF;
-using GSF.Data;
 using GSF.Data.Model;
-using GSF.Web;
 using GSF.Web.Model;
-using openXDA.Model;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Runtime.Caching;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
 
 namespace SEBrowser.Controllers
 {
     [CustomView(@"SELECT
                     ID, Name, XHigh, XLow, YHigh, YLow, NULL AS UpperCurve, NULL AS LowerCurve,
-                    REPLACE(REPLACE(RIGHT(Area.STAsText(), len(Area.STAsText()) - charindex('(', Area.STAsText())),')',''),'(','') AS Area
+                    REPLACE(REPLACE(RIGHT(Area.STAsText(), len(Area.STAsText()) - charindex('(', Area.STAsText())),')',''),'(','') AS Area, Color
                     FROM StandardMagDurCurve")]
     [SettingsCategory("systemSettings")]
-    public class StandardMagDurCurve
-    {
-        [PrimaryKey]
-        public int ID { get; set; }
-        public string Name { get; set; }
-        public double XHigh { get; set; }
-        public double XLow { get; set; }
-        public double YHigh { get; set; }
-        public double YLow { get; set; }
-        public string UpperCurve { get; set; }
-        public string LowerCurve { get; set; }
-        public string Area { get; set; }
-    }
 
     [RoutePrefix("api/StandardMagDurCurve")]
-    public class StandardMagDurCurveController : ModelController<StandardMagDurCurve>
+    public class StandardMagDurCurveController : ModelController<openXDA.Model.StandardMagDurCurve>
     { }
 
 }
