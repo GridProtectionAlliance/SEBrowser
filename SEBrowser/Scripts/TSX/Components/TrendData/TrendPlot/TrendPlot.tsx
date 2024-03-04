@@ -295,8 +295,10 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                 "Multi-Meter " : (plotAllSeriesSettings[0].Channel.MeterShortName ?? plotAllSeriesSettings[0].Channel.MeterName);
             title += plotAllSeriesSettings.some(series => series.Channel.AssetID !== plotAllSeriesSettings[0].Channel.AssetID) ?
                 "" : ` - ${plotAllSeriesSettings[0].Channel.AssetName}`;
-            title += plotAllSeriesSettings.some(series => series.Channel.ChannelGroup !== plotAllSeriesSettings[0].Channel.ChannelGroup) ?
-                "" : ` - ${plotAllSeriesSettings[0].Channel.ChannelGroup}`;
+            if (plotAllSeriesSettings[0].Channel.ChannelGroup != null) {
+                title += plotAllSeriesSettings.some(series => series.Channel.ChannelGroup !== plotAllSeriesSettings[0].Channel.ChannelGroup) ?
+                    "" : ` - ${plotAllSeriesSettings[0].Channel.ChannelGroup}`;
+            }
             newPlot.Title = title;
             props.SetPlot(newPlot.ID, newPlot, 'Title');
         }
@@ -313,7 +315,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                 let label = "";
                 for (let index = 0; index < foundArray.length; index++) {
                     const firstOnAxis = plotAllSeriesSettings.find(series => isOnAxis(series['RightAxis'] ?? false) && foundArray.find(type => type === series.Channel[field]) === undefined);
-                    if (firstOnAxis === undefined) break;
+                    if (firstOnAxis === undefined || firstOnAxis.Channel[field] == null) break;
                     foundArray[index] = firstOnAxis.Channel[field];
                     if (index !== 0)
                         label += '/';
