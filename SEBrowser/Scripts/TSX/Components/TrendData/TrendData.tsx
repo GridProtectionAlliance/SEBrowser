@@ -265,8 +265,7 @@ const TrendData = () => {
                 <div className={'col-12'} style={{ height: '100%', overflow: 'scroll' }}>
                     {plotList.map(element => <TrendPlot key={element.ID} DragMode={plotsMovable}
                         Plot={element} SetPlot={setPlot} RemovePlot={removePlot} SplicePlot={movePlot}
-                        OverlayPortalID={overlayPortalID} HandleOverlay={closeSettings}
-                        MarkerDefaults={markerDefaults} LineDefaults={lineDefaults}
+                        HandleOverlay={closeSettings} MarkerDefaults={markerDefaults} LineDefaults={lineDefaults}
                     />)}
                 </div>
             </div>

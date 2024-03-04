@@ -47,8 +47,7 @@ interface IOverlayProps {
     SetSeriesSettings: (newSettings: SeriesSettings[]) => void
     // Manage Overlay
     Show: boolean,
-    SetShow: (value: boolean) => void,
-    OverlayPortalID: string
+    SetShow: (value: boolean) => void
 }
 
 export type SeriesSettings = TrendSearch.ILineSeries | ICyclicSeries;

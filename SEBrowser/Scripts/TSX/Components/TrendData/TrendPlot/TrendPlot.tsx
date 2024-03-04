@@ -67,7 +67,6 @@ interface IContainerProps {
     HandleOverlay: (open: boolean) => void,
     // Drag Mode
     DragMode: boolean,
-    OverlayPortalID: string,
     MarkerDefaults: TrendSearch.IMarkerSettingsBundle,
     LineDefaults: TrendSearch.ILinePlotSettingsBundle
 }
@@ -610,7 +609,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             }}
             ref={chartRef} onDragOver={handleDragOverChannel} onDrop={handleDropChannel}>
             {plotBody}
-            <SettingsModal OverlayPortalID={props.OverlayPortalID} SetShow={setShowSettings} Show={showSettings}
+            <SettingsModal SetShow={setShowSettings} Show={showSettings}
                 Plot={props.Plot} SetPlot={handleSetPlot} SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings} 
                 SymbolicMarkers={symbolicMarkers} SetSymbolicMarkers={setSymbolicMarkers} VertHoriMarkers={horiVertMarkers} SetVertHoriMarkers={setHoriVertMarkers}
                 EventSettings={eventSettings} SetEventSettings={setEventSettings} />
