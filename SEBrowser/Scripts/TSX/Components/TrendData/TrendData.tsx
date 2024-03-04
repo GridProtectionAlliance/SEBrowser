@@ -33,7 +33,7 @@ import { useAppSelector } from './../../hooks';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 
 const momentDateFormat = "MM/DD/YYYY";
-const overlayPortalID = "TrendDataChartPortal";
+const trendSearchId = "TrendDataChartAll";
 const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFilter"]);
 
 const TrendData = () => {
@@ -252,7 +252,6 @@ const TrendData = () => {
             <TrendSearchNavbar
                 ToggleVis={toggleNavbar}
                 ShowNav={showNav}
-                HasNoPlots={plotList.length === 0} //TODO: Does this count as a function? Should this be a const with callback?
                 SetShowAllSettings={setShowSettings}
                 AddNewCharts={concatNewContainers}
                 RemoveAllCharts={removeAllCharts}
@@ -260,9 +259,10 @@ const TrendData = () => {
                 LinePlot={defaultPlotSettings.PlotFilter}
                 Movable={plotsMovable}
                 SetMovable={setPlotsMovable}
+                PlotIds={plotList.map(plot => { return { ID: plot.ID, Width: plot.Width, Height: plot.Height } })}
             />
             <div className={'row'} style={{ flex: 1, overflow: 'hidden' }}>
-                <div className={'col-12'} style={{ height: '100%', overflow: 'scroll' }}>
+                <div className={'col-12'} style={{ height: '100%', overflowY: 'scroll', overflowX: 'hidden' }} id={trendSearchId}>
                     {plotList.map(element => <TrendPlot key={element.ID} DragMode={plotsMovable}
                         Plot={element} SetPlot={setPlot} RemovePlot={removePlot} SplicePlot={movePlot}
                         HandleOverlay={closeSettings} MarkerDefaults={markerDefaults} LineDefaults={lineDefaults}

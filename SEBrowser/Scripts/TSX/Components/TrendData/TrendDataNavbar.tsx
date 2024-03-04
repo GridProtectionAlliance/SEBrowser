@@ -35,16 +35,18 @@ import { CreateGuid } from '@gpa-gemstone/helper-functions';
 import ReportTimeFilter from '../ReportTimeFilter';
 import NavbarFilterButton from '../Common/NavbarFilterButton';
 import TrendChannelTable from './Components/TrendChannelTable';
+import html2canvas from 'html2canvas';
+import jspdf from 'jspdf';
 
 interface IProps {
     ToggleVis: () => void,
     ShowNav: boolean,
     SetShowAllSettings: (show: boolean) => void,
-    HasNoPlots: boolean,
     AddNewCharts: (chartData: TrendSearch.ITrendPlot[]) => void,
     RemoveAllCharts: () => void,
     SetMovable: (toggle: boolean) => void,
     Movable: boolean,
+    PlotIds: { ID: string, Height: number, Width: number }[],
     // Set for defaults
     TimeFilter: SEBrowser.IReportTimeFilter,
     LinePlot: IMultiCheckboxOption[],
@@ -88,7 +90,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
     // Button Consts
-    const [hover, setHover] = React.useState < 'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Group-Line' | 'Cyclic' | 'Move' | 'Trash' | 'Select' >('None');
+    const [hover, setHover] = React.useState < 'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Group-Line' | 'Cyclic' | 'Move' | 'Trash' | 'Select' | 'Capture' >('None');
 
     // Page effects
     React.useLayoutEffect(() => {
@@ -386,14 +388,14 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     <ToolTip Show={hover === 'Cog'} Position={'left'} Theme={'dark'} Target={"Cog"}>
                         {<p>Changes Settings for All Plots and Defaults</p>}
                     </ToolTip>
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${props.Movable ? 'Warning' : 'primary'} btn-sm${props.HasNoPlots ? ' disabled' : ''}`}
-                        onClick={() => { if (!props.HasNoPlots) props.SetMovable(!props.Movable); }}
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${props.Movable ? 'Warning' : 'primary'} btn-sm${props.PlotIds.length === 0 ? ' disabled' : ''}`}
+                        onClick={() => { if (props.PlotIds.length !== 0) props.SetMovable(!props.Movable); }}
                         data-tooltip='Move' onMouseEnter={() => setHover('Move')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.DataContainer}</span>
                     </button>
                     <ToolTip Show={hover === 'Move'} Position={'left'} Theme={'dark'} Target={"Move"}>
                         {<p>Change Plot Order by Dragging Plots</p>}
-                        {props.HasNoPlots ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
+                        {props.PlotIds.length === 0 ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${trendChannels.length === 0 ? ' disabled' : ''}`}
                         onClick={() => {
@@ -410,16 +412,72 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         {<p>Select All Channels in Table</p>}
                         {(trendChannels.length === 0) ? <p>{CrossMark} {'Action Requires Table to Have Channels'}</p> : null}
                     </ToolTip>
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${props.Movable ? 'Warning' : 'primary'} btn-sm${props.PlotIds.length === 0 ? ' disabled' : ''}`}
+                        onClick={() => {
+                            if (props.PlotIds.length !== 0) {
+                                const allImgData = Array<string>(props.PlotIds.length);
+                                const handles = props.PlotIds.map((plot, index) => {
+                                    const element = document.getElementById(plot.ID);
+                                    if (element == null) {
+                                        console.error(`Could not find document element with id ${plot.ID}`);
+                                    } else {
+                                        return html2canvas(element).then((canvas) => {
+                                            const imgData = canvas.toDataURL("image/png")
+                                                .replace("image/png", "image/octet-stream");
+                                            allImgData[index] = imgData;
+                                            Promise.resolve(imgData);
+                                        });
+                                    }
+                                });
+                                Promise.all(handles).then(() => {
+                                    const pdf = new jspdf("l", "mm", "a4");
+                                    const pdfPageHeight = pdf.internal.pageSize.getHeight();
+                                    const pdfPageWidth = pdf.internal.pageSize.getWidth();
+                                    let widthLeft = pdfPageWidth;
+                                    let heightLeft = pdfPageHeight;
+                                    let biggestRowHeight = 0;
+                                    allImgData.forEach((imgData, ind) => {
+                                        const plot = props.PlotIds[ind];
+                                        const imgWidth = pdfPageWidth * plot.Width / 100;
+                                        const imgProps = pdf.getImageProperties(imgData);
+                                        const imgHeight = imgProps.height * imgWidth / imgProps.width;
+                                        if (widthLeft - imgWidth < 0) {
+                                            widthLeft = pdfPageWidth;
+                                            heightLeft -= biggestRowHeight;
+                                            biggestRowHeight = 0;
+                                            if (heightLeft - imgHeight < 0) {
+                                                pdf.addPage();
+                                                heightLeft = pdfPageHeight;
+                                            }
+                                        }
+                                        const currentHeight = pdfPageHeight - heightLeft;
+                                        const currentWidth = pdfPageWidth - widthLeft;
+                                        pdf.addImage(imgData, "PNG", currentWidth, currentHeight, imgWidth, imgHeight);
+                                        widthLeft -= imgWidth;
+                                        biggestRowHeight = Math.max(imgHeight, biggestRowHeight);
+                                        window.URL.revokeObjectURL(imgData);
+                                    });
+                                    pdf.save('AllTrendPlots.pdf');
+                                });
+                            }
+                        }}
+                        data-tooltip='Capture' onMouseEnter={() => setHover('Capture')} onMouseLeave={() => setHover('None')}>
+                        <span>{SVGIcons.Folder}</span>
+                    </button>
+                    <ToolTip Show={hover === 'Capture'} Position={'left'} Theme={'dark'} Target={"Capture"}>
+                        {<p>Saves all plots to PDF</p>}
+                        {props.PlotIds.length === 0 ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
+                    </ToolTip>
                 </div>
                 <div className="btn-group-vertical float-right">
-                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${props.HasNoPlots ? ' disabled' : ''}`}
-                        onClick={() => { if (!props.HasNoPlots) props.RemoveAllCharts(); }}
+                    <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${props.PlotIds.length === 0 ? ' disabled' : ''}`}
+                        onClick={() => { if (props.PlotIds.length !== 0) props.RemoveAllCharts(); }}
                         data-tooltip='Trash' onMouseEnter={() => setHover('Trash')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.TrashCan}</span>
                     </button>
                     <ToolTip Show={hover === 'Trash'} Position={'left'} Theme={'dark'} Target={"Trash"}>
                         {<p>Removes All Plots</p>}
-                        {props.HasNoPlots ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
+                        {props.PlotIds.length === 0 ? <p>{CrossMark} {'Action Requires Plots to Exist'}</p> : null}
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${selectedSet.size === 0 ? ' disabled' : ''}`}
                         data-tooltip='Single-Line' onMouseEnter={() => setHover('Single-Line')} onMouseLeave={() => setHover('None')}
@@ -459,7 +517,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                                 })
                             );
                         }}>
-                        <span>{SVGIcons.Folder}</span>
+                        <span>{SVGIcons.House}</span>
                     </button>
                     <ToolTip Show={hover === 'Multi-Line'} Position={'left'} Theme={'dark'} Target={"Multi-Line"}>
                         {<p>Add All Selected Channels to New Line Plots</p>}
