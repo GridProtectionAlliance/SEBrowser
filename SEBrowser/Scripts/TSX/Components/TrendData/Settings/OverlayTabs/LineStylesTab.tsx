@@ -37,11 +37,7 @@ const LineStylesTab = React.memo((props: IChannelTabProps) => {
     return (
         <div className="col" style={{ paddingLeft: 20, paddingRight: 20 }}>
             <br/>
-            <div className="row">
-                <div style={{
-                    border: "thin black solid", color: "white", backgroundColor: "#1064da"
-                    }}>These settings will only apply to line plots.</div>
-            </div>
+            <div className="alert alert-primary">These settings will only apply to line plots.</div>
             <div className="row" style={{ overflowY: 'scroll', maxHeight: 'calc(100vh - 264px)' }}>
                 <LineStyles DefaultStyle={props.MinStyle} SetDefaultStyle={props.SetMinStyle} Series='Min' />
                 <LineStyles DefaultStyle={props.AvgStyle} SetDefaultStyle={props.SetAvgStyle} Series='Avg' />

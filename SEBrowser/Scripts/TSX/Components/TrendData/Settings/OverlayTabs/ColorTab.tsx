@@ -70,12 +70,8 @@ const ColorTab = React.memo((props: IColorTabProps) => {
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
             <div className="col" style={{ width: '40%', height: 'calc(100vh - 264px)'}}>
-                <br/>
-                <div className="row">
-                    <div style={{
-                        border: "thin black solid", color: "white", backgroundColor: "#1064da"
-                        }}>These settings will only apply to line plots.</div>
-                </div>
+                <br />
+                <div className="alert alert-primary">These settings will only apply to line plots.</div>
                 <div className="row">
                     <Select<TrendSearch.IColorSettings> Record={props.Colors} Label={'Grouping'} Field={'ApplyType'} Setter={props.SetColors} Options={ColorOptions} />
                 </div>
