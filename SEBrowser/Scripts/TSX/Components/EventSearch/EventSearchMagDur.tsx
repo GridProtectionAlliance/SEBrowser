@@ -200,7 +200,7 @@ const MagDurChart = (props: IProps) => {
                 Ylabel={'Magnitude (pu)'}
                 showMouse={false}
                 showGrid={true}
-                zoomMode={'Rect'}
+                yDomain={'Manual'}
                 zoom={true} pan={true} useMetricFactors={false} XAxisType={'log'} onSelect={empty}>
                 {plotContent}
             </Plot> 
