@@ -50,11 +50,11 @@ const searchSettingsOptions = [
 const legendDisplayOptions = [
     {
         Value: 'bottom',
-        Label: 'Show Legend at Bottom of Plot',
+        Label: 'Beneath Plot',
     },
     {
         Value: 'right',
-        Label: 'Show Legend at Right of Plot',
+        Label: 'Right of Plot',
     },
     {
         Value: 'hidden',
@@ -139,7 +139,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={trendData}
                                         Field='LegendDisplay'
                                         Setter={setTrendData}
-                                        Label='Display Mode of Plot Legends'
+                                        Label='Plot Legend Display Options'
                                     />
                                 </div>
                             </div>
@@ -149,7 +149,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={trendData}
                                         Field='BorderPlots'
                                         Setter={setTrendData}
-                                        Label='Display Border Around Trend Data Plots'/>
+                                        Label='Enable Plot Borders'/>
                                 </div>
                             </div>
                             <div className={"row"}>
@@ -158,7 +158,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={trendData}
                                         Field='InsertAtStart'
                                         Setter={setTrendData}
-                                        Label='Insert New Plots at Beginning of Page'/>
+                                        Label='Add New Plots to Top'/>
                                 </div>
                             </div>
                             <div className={"row"}>
@@ -167,7 +167,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={trendData}
                                         Field='StartWithOptionsClosed'
                                         Setter={setTrendData}
-                                        Label='Plot Toolbar Closed on Plot Creation'/>
+                                        Label='Toolbar Closed by Default'/>
                                 </div>
                             </div>
                             <div className={"row"}>
@@ -176,7 +176,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={trendData}
                                         Field='MarkerSnapping'
                                         Setter={setTrendData}
-                                        Label='Enforce New Markers to Snap to Nearest Datapoint'/>
+                                        Label='Snap Markers to Nearest Data Point'/>
                                 </div>
                             </div>
                         </fieldset>
@@ -203,7 +203,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={general}
                                         Field='MoveOptionsLeft'
                                         Setter={(g) => setGeneral(g)}
-                                        Label='Display Plot Toolbar on Left Side of Plot' />
+                                        Label='Move Toolbar to Left of Plot' />
                                 </div>
                             </div>
                             <div className={"row"}>
