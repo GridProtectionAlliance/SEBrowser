@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  EventSearchFilterButton.tsx - Gbtc
+//  NavbarFilterButton.tsx - Gbtc
 //
 //  Copyright © 2019, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -28,14 +28,16 @@ interface S { ID: number }
 interface IProps<T extends S> {
     Data: T[],
     Type: ('Meter' | 'Asset' | 'AssetGroup' | 'Station'),
-    OnClick: () => void
+    OnClick: () => void,
+    AlternateColors?: { normal: string, selected: string }
 }
 
 
-function EventSearchFilterButton<T extends S>(props: IProps<T>) {
+function NavbarFilterButton<T extends S>(props: IProps<T>) {
     const [hover, setHover] = React.useState<boolean>(false);
     const [rows, setRows] = React.useState<JSX.Element[]>([]);
     const [header, setHeader] = React.useState<JSX.Element>(null);
+    const [buttonStyle, setButtonStyle] = React.useState<React.CSSProperties>({ marginBottom: 5 });
 
     React.useEffect(() => {
         switch (props.Type) {
@@ -52,6 +54,10 @@ function EventSearchFilterButton<T extends S>(props: IProps<T>) {
                 setHeader(<tr><th>Name</th><th>Key</th><th>Meters</th><th>Assets</th></tr>);
         }
     }, [props.Type]);
+
+    React.useEffect(() => {
+        setButtonStyle({ ...buttonStyle, backgroundColor: (props.Data.length > 0 ? props.AlternateColors?.selected : props.AlternateColors?.normal) });
+    }, [props.AlternateColors, props.Data.length]);
 
     React.useEffect(() => {
         switch (props.Type) {
@@ -92,7 +98,7 @@ function EventSearchFilterButton<T extends S>(props: IProps<T>) {
     
     return (
         <>
-            <button className={"btn btn-block btn-sm btn-" + (props.Data.length > 0 ? "warning" : "primary")} style={{ marginBottom: 5 }} onClick={(evt) => { evt.preventDefault(); props.OnClick(); }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+            <button className={"btn btn-block btn-sm btn-" + (props.Data.length > 0 ? "warning" : "primary")} style={buttonStyle} onClick={(evt) => { evt.preventDefault(); props.OnClick(); }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
                 {typeToString(props.Type)} {props.Data.length > 0 ? ('(' + props.Data.length + ')') : ''}
             </button>
             <div style={{ width: window.innerWidth / 3, display: hover ? 'block' : 'none', position: 'absolute', backgroundColor: '#f1f1f1', boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)', zIndex: 1, right: 0 }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
@@ -126,4 +132,4 @@ function typeToString(Type: 'Meter' | 'Asset' | 'AssetGroup' | 'Station'): strin
 
 
 
-export default EventSearchFilterButton;
+export default NavbarFilterButton;

@@ -28,6 +28,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import MeterActivity from './Components/MeterActivity';
 import EventSearch from './Components/EventSearch/EventSearch';
+import TrendData from './Components/TrendData/TrendData';
 import BreakerReport from './Components/BreakerReport/BreakerReport';
 import RelayReport from './Components/RelayReport/RelayReport';
 import CapBankReport from './Components/CapBankReport/CapBankReport';
@@ -100,6 +101,9 @@ const SEBrowserMainPage = () => {
             </Page>
             <Page Name={'meteractivity'} Label={'Meter Activity'}>
                 <MeterActivity />
+            </Page>
+            <Page Name={'trenddata'} Label={'Trend Data'}>
+                <TrendData />
             </Page>
             <Section Label={"Custom Reports"}>
                 {links.map((item, i) => <Page key={i} Name={item.AltValue ?? item.Value} Label={item.Value}>{createWidget(item.AltValue ?? item.Value)}</Page>)}

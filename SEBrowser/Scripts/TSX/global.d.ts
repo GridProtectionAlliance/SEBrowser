@@ -40,6 +40,13 @@ declare global {
 
 }
 
+//Todo: Move to gemstone?
+export interface IMultiCheckboxOption {
+    Value: number | string,
+    Text: string,
+    Selected: boolean
+}
+
 export namespace Redux {
     interface StoreState {
         EventSearch: EventSearchState,
@@ -54,6 +61,8 @@ export namespace Redux {
         MeterNote: IGenericSliceState<XDA.Types.Note>,
         AssetNote: IGenericSliceState<XDA.Types.Note>,
         LocationNote: IGenericSliceState<XDA.Types.Note>,
+        Phase: IGenericSliceState<XDA.Types.Phase>,
+        ChannelGroup: IGenericSliceState<SEBrowser.ChannelGroup>
     }
 
     interface State<T> {
@@ -79,15 +88,29 @@ export namespace Redux {
 
     interface SettingsState {
         eventSearch: IEventSearchSettings,
-        timeZone: string,
-        DateTimeSetting: SEBrowser.TimeWindowMode
+        trendData: ITrendDataSettings,
+        general: IGeneralSettings,
+        timeZone: string
+    }
+
+    interface IGeneralSettings {
+        MoveOptionsLeft: boolean,
+        ShowDataPoints: boolean,
+        DateTime: SEBrowser.TimeWindowMode
     }
 
     interface IEventSearchSettings {
         NumberResults: number,
         WidgetCategories: SEBrowser.IWidgetCategory[],
         AggregateMagDur: boolean
-        
+    }
+
+    interface ITrendDataSettings {
+        BorderPlots: boolean,
+        InsertAtStart: boolean,
+        MarkerSnapping: boolean,
+        StartWithOptionsClosed: boolean,
+        LegendDisplay: 'bottom' | 'right' | 'hidden'
     }
 }
 export namespace SEBrowser {
@@ -119,9 +142,202 @@ export namespace SEBrowser {
     interface IWidgetCategory { ID: number, Name: string, OrderBy: number }
 }
 
+export namespace TrendSearch {
+    interface ChannelGroup {
+        ID: number,
+        Name: string,
+        Description: string
+    }
+
+    interface ITrendChannel {
+        ID: number,
+        Name: string,
+        Description: string,
+        AssetID: number,
+        AssetKey: string,
+        AssetName: string,
+        MeterID: number,
+        MeterKey: string,
+        MeterName: string,
+        MeterShortName: string,
+        Phase: string,
+        ChannelGroup: string,
+        ChannelGroupType: string,
+        Unit: string
+    }
+
+    interface IPQData {
+        Tag: string,
+        Minimum: number,
+        Maximum: number,
+        Average: number,
+        QualityFlags: number,
+        Timestamp: string
+    }
+
+    interface IColor {
+        Label: string,
+        MinColor: string,
+        AvgColor: string,
+        MaxColor: string
+    }
+
+    interface IColorSettings {
+        ApplyType: 'Random' | 'Individual' | 'PhaseType' | 'Asset',
+        Colors: IColor[]
+    }
+
+    interface ILineStyleSettings {
+        Width: number,
+        Type: TrendSearch.LineStyles,
+    }
+
+    interface ILineSettings extends ILineStyleSettings {
+        Color: string,
+        Axis: 'right' | 'left',
+        Label: string,
+        HasData: boolean
+    }
+
+    interface ILineSeries {
+        Channel?: TrendSearch.ITrendChannel,
+        Min: TrendSearch.ILineSettings,
+        Max: TrendSearch.ILineSettings,
+        Avg: TrendSearch.ILineSettings
+    }
+
+    interface IMetaData {
+        ChannelID: number,
+        FundamentalFrequency: number,
+        SamplingRate: number,
+        StartTime: string,
+        EndTime: string,
+        TotalCapturedCycles: number,
+        // Note: the following data exists for Residuals, Frequencies, and RMS, but they are unused at the moment
+        CyclesMax: number,
+        CyclesMin: number,
+        CyclicHistogramBins: number
+    }
+
+    interface ICyclicData {
+        Bin: number,
+        Sample: number,
+        Value: number
+    }
+
+    type IPlotTypes = 'Line'|'Cyclic';
+
+    interface ITrendPlot {
+        // Represents Data Needed by Outer
+        TimeFilter: SEBrowser.IReportTimeFilter,
+        Type: IPlotTypes,
+        Channels: SEBrowser.ITrendChannel[],
+        PlotFilter: IMultiCheckboxOption[],
+        ID: string,
+        // Represents Non-default Data
+        Title?: string,
+        XAxisLabel?: string,
+        YLeftLabel?: string,
+        YRightLabel?: string,
+        Metric?: boolean,
+        Width?: number,
+        Height?: number,
+        ShowEvents?: boolean,
+        AxisZoom?: 'Manual' | 'AutoValue' | 'HalfAutoValue',
+        DefaultZoom?: [number, number][]
+    }
+
+    type LineStyles = "short-dash" | "long-dash" | "dash" | "solid";
+
+    interface IMarker {
+        ID: string,
+        axis: 'right' | 'left',
+        color: string,
+        type: string
+    }
+
+    interface ISymbolic extends IMarker {
+        // Symbolic marker
+        format: string,
+        symbol: JSX.Element,
+        xPos: number,
+        yPos: number,
+        radius: number,
+        // Infobox
+        note: string,
+        xBox: number,
+        yBox: number,
+        opacity: number,
+        fontColor: string,
+        fontSize: number,
+        type: "Symb"
+    }
+
+    interface IVertHori extends IMarker {
+        isHori: boolean,
+        value: number,
+        width: number,
+        line: LineStyles,
+        type: "VeHo"
+    }
+
+    // Properties of indivdual events
+    interface IEventMarker {
+        value: number,
+        meterID: number,
+        eventID: number
+    }
+
+    // Settings that will apply to all event markers
+    interface IEventSymbolicSettings extends IMarker {
+        type: "Event-Symb",
+        symbol: JSX.Element,
+        alignTop: boolean,
+    }
+
+    interface IEventVertSettings extends IMarker {
+        type: "Event-Vert",
+        width: number,
+        line: LineStyles
+    }
+
+    type EventMarkerSettings = IEventSymbolicSettings | IEventVertSettings;
+
+    interface IMarkerSettingsBundle {
+        Symb: {
+            Default: ISymbolic,
+            ShouldApply: boolean
+        }
+        Event: {
+            Default: EventMarkerSettings,
+            ShouldApply: boolean
+        }
+        VeHo: {
+            Default: IVertHori,
+            ShouldApply: boolean
+        }
+    }
+    interface ILinePlotSettingsBundle {
+        Min: {
+            Default: ILineStyleSettings,
+            ShouldApply: boolean
+        }
+        Max: {
+            Default: ILineStyleSettings,
+            ShouldApply: boolean
+        }
+        Avg: {
+            Default: ILineStyleSettings,
+            ShouldApply: boolean
+        }
+        Colors: {
+            Default: IColorSettings,
+            ShouldApply: boolean
+        }
+    }
+}
+
 export namespace OpenXDA {
     type AssetTypeName = 'Line' | 'Breaker' | 'Transformer' | 'CapacitorBank' | 'Bus';
     type EventTypeName = 'Fault' | 'RecloseIntoFault' | 'BreakerOpen' | 'Interruption' | 'Sag' | 'Swell' | 'Transient' | 'Other' | 'Test' | 'Breaker' | 'Snapshot';
 }
-
-

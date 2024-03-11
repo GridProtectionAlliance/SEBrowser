@@ -178,8 +178,8 @@ namespace SEBrowser.Controllers
             {
                 DateTime dateTime = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
 
-                string eventType = getEventTypeFilter(postData);
-                string phase = getPhaseFilter(postData);
+                string eventType = (postData.typeIDs is null) ? null : getEventTypeFilter(postData);
+                string phase = (postData.phases is null) ? null : getPhaseFilter(postData);
                 string eventCharacteristic = getEventCharacteristicFilter(postData);
                 string asset = getAssetFilters(postData);
 

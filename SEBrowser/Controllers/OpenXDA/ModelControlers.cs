@@ -62,7 +62,7 @@ namespace SEBrowser.Controllers.OpenXDA
     public class WidgetCategoryController : ModelController<WidgetCategory> { }
 
     [RoutePrefix("api/openXDA/AdditionalField")]
-    public class AdditionalFieldController : ModelController<AdditionalField>
+    public class AdditionalFieldController : ModelController<AdditionalFieldView>
     {
 
         [HttpGet, Route("ParentTable/{openXDAParentTable}/{sort}/{ascending:int}")]
@@ -114,4 +114,9 @@ namespace SEBrowser.Controllers.OpenXDA
 
     }
 
+    [RoutePrefix("api/openXDA/Phase")]
+    public class PhaseController : ModelController<Phase> { }
+
+    [RoutePrefix("api/openXDA/ChannelGroup")]
+    public class ChannelGroupController : ModelController<ChannelGroup> { }
 }
