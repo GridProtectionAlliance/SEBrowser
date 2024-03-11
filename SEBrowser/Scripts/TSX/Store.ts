@@ -34,7 +34,7 @@ declare let homePath: string;
 export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>
 
-export const MagDurCurveSlice = new GenericSlice<OpenXDA.Types.MagDurCurve>('MagDurCurve', `${homePath}api/StandardMagDurCurve`, 'Name');
+export const MagDurCurveSlice = new GenericSlice<OpenXDA.Types.MagDurCurve>('MagDurCurve', `${homePath}api/openXDA/StandardMagDurCurve`, 'Name');
 export const AssetGroupSlice = new GenericSlice<OpenXDA.Types.AssetGroup>('AssetGroup', `${homePath}api/openXDA/AssetGroup`, 'Name');
 
 export const MeterSlice = new GenericSlice<SystemCenter.Types.DetailedMeter>("Meter", `${homePath}api/OpenXDA/Meter`, "Name", true);
