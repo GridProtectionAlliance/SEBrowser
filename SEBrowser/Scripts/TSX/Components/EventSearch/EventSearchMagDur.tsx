@@ -30,7 +30,7 @@ import { Line, Plot, Circle, AggregatingCircles } from '@gpa-gemstone/react-grap
 import { SelectEventSearchSettings, SelectGeneralSettings } from '../SettingsSlice';
 import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
 import Table, { Column } from '@gpa-gemstone/react-table';
-
+import { OpenXDA } from '@gpa-gemstone/application-typings'
 
 interface IProps {
     Height: number,
@@ -43,8 +43,8 @@ const MagDurChart = (props: IProps) => {
     const count = React.useRef(null);
     const empty = React.useCallback(() => {/*Do Nothing*/}, []);
     const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
-    const magDurCurves = useAppSelector(MagDurCurveSlice.Data) as SEBrowser.MagDurCurve[];
-    const [currentCurve, setCurrentCurve] = React.useState<SEBrowser.MagDurCurve>(null)
+    const magDurCurves = useAppSelector(MagDurCurveSlice.Data) as OpenXDA.Types.MagDurCurve[];
+    const [currentCurve, setCurrentCurve] = React.useState<OpenXDA.Types.MagDurCurve>(null)
     const numberResults = useAppSelector((state: Redux.StoreState) => SelectEventSearchSettings(state).NumberResults)
     const generalSettings: Redux.IGeneralSettings = useAppSelector(SelectGeneralSettings);
     const [width, setWidth] = React.useState<number>(0);
@@ -108,7 +108,7 @@ const MagDurChart = (props: IProps) => {
     }, [points])
 
 
-    function generateCurve(curve: SEBrowser.MagDurCurve) {
+    function generateCurve(curve: OpenXDA.Types.MagDurCurve) {
        
         if (curve.LowerCurve == null && curve.UpperCurve == null) {
             const pt = curve.Area.split(',');
