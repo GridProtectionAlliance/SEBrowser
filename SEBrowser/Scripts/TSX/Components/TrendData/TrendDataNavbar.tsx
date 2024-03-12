@@ -521,7 +521,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </button>
                     <ToolTip Show={hover === 'Multi-Line'} Position={'left'} Theme={'dark'} Target={"Multi-Line"}>
                         {<p>Add Selected Channels to New Plots Separated by Meter</p>}
-                        {selectedSet.size === 0 ? <p>{CrossMark} {'Requires a Selected Channel'}</p> : null}
+                        {selectedSet.size === 0 ? <p>{CrossMark} Requires a Selected Channel </p> : null}
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${selectedSet.size === 0 ? ' disabled' : ''}`}
                         data-tooltip='Group-Line' onMouseEnter={() => setHover('Group-Line')} onMouseLeave={() => setHover('None')}
@@ -549,7 +549,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </button>
                     <ToolTip Show={hover === 'Group-Line'} Position={'left'} Theme={'dark'} Target={"Group-Line"}>
                         {<p>Add Selected Channels to New Plots Separated by Channel Group</p>}
-                        {selectedSet.size === 0 ? <p>{CrossMark} {'Requires a Selected Channel'}</p> : null}
+                        {selectedSet.size === 0 ? <p>{CrossMark} Requires a Selected Channel</p> : null}
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm ${selectedSet.size !== 1 ? ' disabled' : ''}`}
                         data-tooltip='Cyclic' onMouseEnter={() => setHover('Cyclic')} onMouseLeave={() => setHover('None')}
@@ -565,7 +565,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </button>
                     <ToolTip Show={hover === 'Cyclic'} Position={'left'} Theme={'dark'} Target={"Cyclic"}>
                         {<p>Add Selected Channel to New Cyclic Histogram Plot</p>}
-                        {selectedSet.size !== 1 ? <p>{CrossMark} {'Requires a Single Channel Selection'}</p> : null}
+                        {selectedSet.size !== 1 ? <p>{CrossMark} Requires a Single Channel Selection</p> : null}
                     </ToolTip>
                 </div>
             </>);
