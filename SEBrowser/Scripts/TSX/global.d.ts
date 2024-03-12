@@ -130,8 +130,6 @@ export namespace SEBrowser {
         curveID: number, curveInside: boolean, curveOutside: boolean
     }
     
-    interface MagDurCurve { ID: number, Name: string, XHigh: number, XLow: number, YHigh: number, YLow: number, UpperCurve: string, LowerCurve: string, Area: string }
-
     interface EventNote extends XDA.Types.Note {
         EventIDs: number[],
         IDs: number[],

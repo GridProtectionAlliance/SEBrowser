@@ -464,7 +464,6 @@
     <Compile Include="EventWidgets\Controller\PQI.cs" />
     <Compile Include="EventWidgets\Controller\RelayPerformance.cs" />
     <Compile Include="EventWidgets\Controller\SOE.cs" />
-    <Compile Include="Model\StandardMagDurCurve.cs" />
     <Compile Include="Controllers\OpenXDA\NoteController.cs" />
     <Compile Include="Controllers\OpenXDA\FaultInfoController.cs" />
     <Compile Include="Controllers\RelayReport\RelayReportController.cs" />

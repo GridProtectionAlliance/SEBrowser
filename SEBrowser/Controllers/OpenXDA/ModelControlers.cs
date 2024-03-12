@@ -119,4 +119,8 @@ namespace SEBrowser.Controllers.OpenXDA
 
     [RoutePrefix("api/openXDA/ChannelGroup")]
     public class ChannelGroupController : ModelController<ChannelGroup> { }
+
+    [RoutePrefix("api/openXDA/StandardMagDurCurve")]
+    public class StandardMagDurCurveController : ModelController<openXDA.Model.StandardMagDurCurve>
+    { }
 }

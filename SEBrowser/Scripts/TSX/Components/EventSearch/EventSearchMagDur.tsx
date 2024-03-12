@@ -30,7 +30,7 @@ import { Line, Plot, Circle, AggregatingCircles } from '@gpa-gemstone/react-grap
 import { SelectEventSearchSettings, SelectGeneralSettings } from '../SettingsSlice';
 import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
 import Table, { Column } from '@gpa-gemstone/react-table';
-
+import { OpenXDA } from '@gpa-gemstone/application-typings'
 
 interface IProps {
     Height: number,
@@ -43,8 +43,8 @@ const MagDurChart = (props: IProps) => {
     const count = React.useRef(null);
     const empty = React.useCallback(() => {/*Do Nothing*/}, []);
     const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
-    const magDurCurves = useAppSelector(MagDurCurveSlice.Data) as SEBrowser.MagDurCurve[];
-    const [currentCurve, setCurrentCurve] = React.useState<SEBrowser.MagDurCurve>(null)
+    const magDurCurves = useAppSelector(MagDurCurveSlice.Data) as OpenXDA.Types.MagDurCurve[];
+    const [currentCurve, setCurrentCurve] = React.useState<OpenXDA.Types.MagDurCurve>(null)
     const numberResults = useAppSelector((state: Redux.StoreState) => SelectEventSearchSettings(state).NumberResults)
     const generalSettings: Redux.IGeneralSettings = useAppSelector(SelectGeneralSettings);
     const [width, setWidth] = React.useState<number>(0);
@@ -107,12 +107,8 @@ const MagDurChart = (props: IProps) => {
         })))
     }, [points])
 
-    const baseColors = ["#A30000","#0029A3","#007A29", "#d3d3d3", "#edc240",
-             "#afd8f8", "#cb4b4b", "#4da74d", "#9440ed", "#BD9B33", "#EE2E2F",
-        "#008C48", "#185AA9", "#F47D23", "#662C91", "#A21D21", "#B43894",
-        "#737373"]
 
-    function generateCurve(curve: SEBrowser.MagDurCurve) {
+    function generateCurve(curve: OpenXDA.Types.MagDurCurve) {
        
         if (curve.LowerCurve == null && curve.UpperCurve == null) {
             const pt = curve.Area.split(',');
@@ -170,7 +166,7 @@ const MagDurChart = (props: IProps) => {
             ...magDurCurves.map((s, i) => <Line highlightHover={false}
                 autoShowPoints={generalSettings.ShowDataPoints}
                 lineStyle={'-'}
-                color={baseColors[i % baseColors.length]}
+                color={s.Color}
                 data={generateCurve(s)}
                 legend={s.Name} key={i}
                 width={showSelectedCurve && selectedCurve == s.ID? 9 : 3}
