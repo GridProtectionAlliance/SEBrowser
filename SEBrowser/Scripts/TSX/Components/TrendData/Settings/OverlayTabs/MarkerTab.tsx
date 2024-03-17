@@ -22,8 +22,7 @@
 //******************************************************************************************************
 import React from 'react';
 import { TrendSearch } from '../../../../global';
-import { BlockPicker } from 'react-color';
-import { Input, TextArea, StylableSelect, CheckBox, Select } from '@gpa-gemstone/react-forms';
+import { Input, TextArea, StylableSelect, CheckBox, Select, ColorPicker } from '@gpa-gemstone/react-forms';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import TrendMarkerTable from '../../Components/TrendMarkerTable';
 import { LineTypeOptions, AxisOptions } from '../SettingsModal';
@@ -107,8 +106,8 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
                     <div className="row" style={{ height: '100%', width: '100%' }}>
                         <div className="col" style={{ width: 'auto' }}>
                             <h4>Symbol Settings</h4>
-                            <BlockPicker onChangeComplete={(color) => applyToMarker({ ...currentMarker, color: color.hex } as TrendSearch.ISymbolic, editFromArray)}
-                                color={currentMarker['color']} triangle={"hide"} />
+                            <ColorPicker OnColorChange={(color) => applyToMarker({ ...currentMarker, color: color.hex } as TrendSearch.ISymbolic, editFromArray)}
+                                CurrentColor={currentMarker['color']} Triangle={"hide"} />
                             <StylableSelect<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Marker Symbol'} Field={'symbol'} Setter={state => applyToMarker(state, editFromArray)} Options={markerSymbolOptions} />
                             {
                                 props.IsGlobalSettings ? <></> :
@@ -117,8 +116,8 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
                         </div>
                         <div className="col" style={{ width: 'auto' }}>
                             <h4>Text Settings</h4>
-                            <BlockPicker onChangeComplete={(color) => applyToMarker({ ...currentMarker, fontColor: color.hex } as TrendSearch.ISymbolic, editFromArray)}
-                                color={currentMarker['fontColor']} triangle={"hide"} />
+                            <ColorPicker OnColorChange={(color) => applyToMarker({ ...currentMarker, fontColor: color.hex } as TrendSearch.ISymbolic, editFromArray)}
+                                CurrentColor={currentMarker['fontColor']} Triangle={"hide"} />
                             <Input<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Infobox Opacity'} Field={'opacity'} Setter={state => applyToMarker(state, editFromArray)} Feedback={"Opacity must be between 0 and 1"} Valid={() => {
                                 return (currentMarker['opacity'] <= 1 && currentMarker['opacity'] >= 0);
                             }} />
@@ -139,8 +138,8 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
             case 'VeHo':
                 return (
                     <>
-                        <BlockPicker onChangeComplete={(color) => applyToMarker({ ...currentMarker, color: color.hex } as TrendSearch.IVertHori, editFromArray)}
-                            color={currentMarker['color']} triangle={"hide"} />
+                        <ColorPicker OnColorChange={(color) => applyToMarker({ ...currentMarker, color: color.hex } as TrendSearch.IVertHori, editFromArray)}
+                            CurrentColor={currentMarker['color']} Triangle={"hide"} />
                         <Select<TrendSearch.IVertHori> Record={currentMarker as TrendSearch.IVertHori} Label={'Line Style'} Field={'line'} Setter={marker => applyToMarker(marker, editFromArray)} Options={LineTypeOptions} />
                         <Input<TrendSearch.IVertHori> Record={currentMarker as TrendSearch.IVertHori} Label={'Line Width (pixels)'} Field={'width'} Setter={marker => applyToMarker(marker, editFromArray)} Type={'number'}
                             Feedback={"Width must be a positive number"} Valid={() => {
@@ -155,8 +154,8 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
             case 'Event-Vert': case 'Event-Symb':
                 return (
                     <>
-                        <BlockPicker onChangeComplete={(color) => props.SetEventSettings({ ...props.EventSettings, color: color.hex })}
-                            color={props.EventSettings.color} triangle={"hide"} />
+                        <ColorPicker OnColorChange={(color) => props.SetEventSettings({ ...props.EventSettings, color: color.hex })}
+                            CurrentColor={props.EventSettings.color} Triangle={"hide"} />
                         {props.EventSettings.type === "Event-Vert" ?
                             <>
                                 <Select<TrendSearch.IEventVertSettings> Record={props.EventSettings} Label={'Line Style'} Field={'line'} Setter={props.SetEventSettings} Options={LineTypeOptions} />

@@ -23,11 +23,10 @@
 import React from 'react';
 import { ICyclicSeries } from '../../TrendPlot/CyclicHistogram';
 import { TrendSearch } from '../../../../global';
-import { BlockPicker } from 'react-color';
 import { LineTypeOptions } from '../SettingsModal';
 import TrendChannelTable from '../../Components/TrendChannelTable';
 import { LineSettings } from '../TabProperties/LineSettings';
-
+import { ColorPicker } from '@gpa-gemstone/react-forms'
 interface IChannelTabProps {
     // Assumption that this doesnt change outside of this overlay
     SeriesSettings: SeriesSettings[],
@@ -100,7 +99,12 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
             case 'Cyclic':
                 return (
                     <>
-                        <BlockPicker onChangeComplete={(color) => editChannel({ ...currentSeriesSetting, Color: color.hex })} color={currentSeriesSetting['Color']} triangle={"hide"} />
+                        <ColorPicker
+                            CurrentColor={currentSeriesSetting['Color']}
+                            Triangle={'hide'} 
+                            BtnText={'Color'}
+                            OnColorChange={(color) => editChannel({ ...currentSeriesSetting, Color: color.hex })}
+                        />
                     </>
                 );
             default:

@@ -21,8 +21,7 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import { BlockPicker } from 'react-color';
-import { Input, Select } from '@gpa-gemstone/react-forms';
+import { Input, Select, ColorPicker } from '@gpa-gemstone/react-forms';
 import { LineTypeOptions, AxisOptions } from '../SettingsModal';
 import { TrendSearch } from '../../../../Global';
 
@@ -53,7 +52,7 @@ const LineSettings = React.memo((props: ILineProps) => {
     return (
         <div className="col" style={{ width: 'auto' }}>
             <h4>{(props.Series === 'Avg' && !props.SeriesSettings['Min']?.HasData && !props.SeriesSettings['Max']?.HasData) ? 'Values' : props.Series} Settings</h4>
-            <BlockPicker onChangeComplete={(color) => setter({ ...series, Color: color.hex })} color={series['Color']} triangle={"hide"} />
+            <ColorPicker OnColorChange={(color) => setter({ ...series, Color: color.hex })} CurrentColor={series['Color']} Triangle={"hide"} />
             <Input<TrendSearch.ILineSettings> Record={series} Label={'Legend Label'} Field={'Label'} Setter={setter} Valid={() => true} />
             <Input<TrendSearch.ILineSettings> Record={series} Label={'Line Width (pixels)'} Field={'Width'} Setter={setter} Type={'number'}
                 Feedback={"Width must be a positive number"} Valid={() => {

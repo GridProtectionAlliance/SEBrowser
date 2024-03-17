@@ -20,14 +20,13 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-import { Input, Select } from '@gpa-gemstone/react-forms';
+import { Input, Select, ColorPicker } from '@gpa-gemstone/react-forms';
 import { ReactTable } from '@gpa-gemstone/react-table';
 import { Column } from '@gpa-gemstone/react-table';
 import React from 'react';
 import { TrendSearch } from '../../../../Global';
 import { LineStyles } from '../TabProperties/LineStyles';
 import { TrashCan, UpArrow, DownArrow } from '@gpa-gemstone/gpa-symbols';
-import { BlockPicker } from 'react-color';
 import _ from 'lodash';
 
 interface IColorTabProps {
@@ -127,18 +126,18 @@ const ColorTab = React.memo((props: IColorTabProps) => {
                         <div className="row">
                             <div className="col" style={{ width: 'auto' }}>
                                 <h4>Min Color</h4>
-                                <BlockPicker onChangeComplete={(color) => setColors({ ...props.Colors.Colors[currentIndex], MinColor: color.hex })}
-                                    color={props.Colors.Colors[currentIndex].MinColor} triangle={"hide"} />
+                                <ColorPicker OnColorChange={(color) => setColors({ ...props.Colors.Colors[currentIndex], MinColor: color.hex })}
+                                    CurrentColor={props.Colors.Colors[currentIndex].MinColor} Triangle={"hide"} />
                             </div>
                             <div className="col" style={{ width: 'auto' }}>
                                 <h4>Avg Color</h4>
-                                <BlockPicker onChangeComplete={(color) => setColors({ ...props.Colors.Colors[currentIndex], AvgColor: color.hex })}
-                                    color={props.Colors.Colors[currentIndex].AvgColor} triangle={"hide"} />
+                                <ColorPicker OnColorChange={(color) => setColors({ ...props.Colors.Colors[currentIndex], AvgColor: color.hex })}
+                                    CurrentColor={props.Colors.Colors[currentIndex].AvgColor} Triangle={"hide"} />
                             </div>
                             <div className="col" style={{ width: 'auto' }}>
                                 <h4>Max Color</h4>
-                                <BlockPicker onChangeComplete={(color) => setColors({ ...props.Colors.Colors[currentIndex], MaxColor: color.hex })}
-                                    color={props.Colors.Colors[currentIndex].MaxColor} triangle={"hide"} />
+                                <ColorPicker OnColorChange={(color) => setColors({ ...props.Colors.Colors[currentIndex], MaxColor: color.hex })}
+                                    CurrentColor={props.Colors.Colors[currentIndex].MaxColor} Triangle={"hide"} />
                             </div>
                         </div>
                     </>}
