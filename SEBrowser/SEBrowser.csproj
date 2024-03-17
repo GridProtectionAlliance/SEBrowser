@@ -494,7 +494,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EventWidgets\Controller\LineParameters.cs" />
-    <None Include="package.json" />
     <None Include="EventWidgets\TSX\global.tsx" />
     <None Include="EventWidgets\TSX\WidgetWrapper.tsx" />
     <None Include="EventWidgets\TSX\Widget\LineParameters.tsx" />
