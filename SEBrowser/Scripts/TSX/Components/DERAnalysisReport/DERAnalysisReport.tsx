@@ -190,7 +190,7 @@ function DERAnalysisReport() {
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>DER:</legend>
                                 <form>
                                     <div className="form-group" style={{ height: 60, width: '100%' }}>
-                                        <MultiCheckBoxSelect Label={'Substation:'} Options={stations} OnChange={(evt, options) => {
+                                        <MultiCheckBoxSelect Label={'Substation:'} Options={stations} ItemTooltip={'dark'} OnChange={(evt, options) => {
                                             const records = [...stations]
                                             for (const option of options) {
                                                 const index = records.findIndex(r => r.Value == option.Value)
@@ -201,7 +201,7 @@ function DERAnalysisReport() {
 
                                     </div>
                                     <div className="form-group" style={{ height: 60, width: '100%' }}>
-                                        <MultiCheckBoxSelect Label={'DER:'} Options={ders} OnChange={(evt, options) => {
+                                        <MultiCheckBoxSelect Label={'DER:'} Options={ders} ItemTooltip={'dark'} OnChange={(evt, options) => {
                                             const records = [...ders]
                                             for (const option of options) {
                                                 const index = records.findIndex(r => r.Value == option.Value)
@@ -211,7 +211,7 @@ function DERAnalysisReport() {
                                         }} />
                                     </div>
                                     <div className="form-group" style={{ height: 60, width: '100%' }}>
-                                        <MultiCheckBoxSelect Label={'Regulations:'} Options={regulations} OnChange={(evt, options) => {
+                                        <MultiCheckBoxSelect Label={'Regulations:'} Options={regulations} ItemTooltip={'dark'} OnChange={(evt, options) => {
                                             const records = [...regulations]
                                             for (const option of options) {
                                                 const index = records.findIndex(r => r.Value == option.Value)
