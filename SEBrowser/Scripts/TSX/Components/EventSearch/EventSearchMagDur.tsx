@@ -24,7 +24,7 @@
 import * as React from 'react';
 import { SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs, SelectCharacteristicFilter, SelectEventSearchsSortField, SelectEventSearchsAscending, Sort } from './EventSearchSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { Redux, SEBrowser } from '../../global';
+import { Redux } from '../../global';
 import { MagDurCurveSlice } from '../../Store';
 import { Line, Plot, Circle, AggregatingCircles } from '@gpa-gemstone/react-graph';
 import { SelectEventSearchSettings, SelectGeneralSettings } from '../SettingsSlice';
@@ -41,7 +41,7 @@ interface IProps {
 const MagDurChart = (props: IProps) => {
     const chart = React.useRef(null);
     const count = React.useRef(null);
-    const empty = React.useCallback(() => {/*Do Nothing*/}, []);
+    const empty = React.useCallback(() => {/*Do Nothing*/ }, []);
     const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
     const magDurCurves = useAppSelector(MagDurCurveSlice.Data) as OpenXDA.Types.MagDurCurve[];
     const [currentCurve, setCurrentCurve] = React.useState<OpenXDA.Types.MagDurCurve>(null)
@@ -79,7 +79,7 @@ const MagDurChart = (props: IProps) => {
 
     React.useEffect(() => {
         if (status != 'unitiated' && status != 'changed') return;
-         dispatch(FetchEventSearches());
+        dispatch(FetchEventSearches());
 
     }, [status]);
 
@@ -109,22 +109,17 @@ const MagDurChart = (props: IProps) => {
 
 
     function generateCurve(curve: OpenXDA.Types.MagDurCurve) {
-       
-        if (curve.LowerCurve == null && curve.UpperCurve == null) {
-            const pt = curve.Area.split(',');
-            const cu = pt.map(point => { const s = point.trim().split(" "); return [parseFloat(s[0]), parseFloat(s[1])] as [number, number]; })
-            return cu;
-        }
-
-        return [];
+        const pt = curve.Area.split(',');
+        const cu = pt.map(point => { const s = point.trim().split(" "); return [parseFloat(s[0]), parseFloat(s[1])] as [number, number]; })
+        return cu;
     }
 
     function AggregateCurves(d, { XTransformation, YTransformation, YInverseTransformation, XInverseTransformation }) {
         const xmax = Math.max(...d.map(c => XTransformation(c.data[0]))) + 5;
         const ymax = Math.max(...d.map(c => YTransformation(c.data[1]))) + 5;
-        const xmin = Math.min(...d.map(c => XTransformation(c.data[0]))) - 5 ;
+        const xmin = Math.min(...d.map(c => XTransformation(c.data[0]))) - 5;
         const ymin = Math.min(...d.map(c => YTransformation(c.data[1]))) - 5;
-        const xcenter = 0.5*(xmax + xmin);
+        const xcenter = 0.5 * (xmax + xmin);
         const ycenter = 0.5 * (ymax + ymin);
         const r = Math.max(Math.abs(xmax - xcenter), Math.abs(xmin - xcenter), Math.abs(ymax - ycenter), Math.abs(ymin - ycenter))
         let handler = ({ setTDomain, setYDomain }) => {
@@ -154,10 +149,10 @@ const MagDurChart = (props: IProps) => {
         const dx = XTransformation(d1.data[0]) - XTransformation(d2.data[0]);
         const dy = YTransformation(d1.data[1]) - YTransformation(d2.data[1]);
         const r = d1.radius + d2.radius;
-        return (Math.pow(dx,2) + Math.pow(dy,2) < Math.pow(r,2));
+        return (Math.pow(dx, 2) + Math.pow(dy, 2) < Math.pow(r, 2));
     }
 
-    function IsSame (d1, d2) {
+    function IsSame(d1, d2) {
         return Math.abs(d1.data[0] - d2.data[0]) < 0.0001 && Math.abs(d1.data[1] - d2.data[1]) < 1E-10;
     }
 
@@ -169,7 +164,7 @@ const MagDurChart = (props: IProps) => {
                 color={s.Color}
                 data={generateCurve(s)}
                 legend={s.Name} key={i}
-                width={showSelectedCurve && selectedCurve == s.ID? 9 : 3}
+                width={showSelectedCurve && selectedCurve == s.ID ? 9 : 3}
             />),
             <AggregatingCircles data={data}
                 canAggregate={settings.AggregateMagDur ? CanAggregate : IsSame}
@@ -185,30 +180,30 @@ const MagDurChart = (props: IProps) => {
     return (
         <>
             <div ref={chart} style={{ height: props.Height, width: '100%', display: 'inline-block' }}>
-            <Plot height={props.Height - hCounter} width={width} showBorder={false} menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
-                defaultTdomain={[0.00001, 1000]}
-                defaultYdomain={[0, 5]}
-                Tmax={1000}
-                Tmin={0.00001}
-                Ymax={9999}
-                Ymin={0}
-                legend={'right'}
-                Tlabel={'Duration (s)'}
-                Ylabel={'Magnitude (pu)'}
-                showMouse={false}
-                showGrid={true}
-                yDomain={'Manual'}
-                zoom={true} pan={true} useMetricFactors={false} XAxisType={'log'} onSelect={empty}>
-                {plotContent}
-            </Plot> 
-            {status == 'loading' ? null :
-                data.length == numberResults ?
-                    <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
-                        Only the first {data.length}  chronological results are shown - please narrow your search or increase the number of results in the application settings.
-                    </div> :
-                    <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
-                        {data.length} results
-                    </div>}
+                <Plot height={props.Height - hCounter} width={width} showBorder={false} menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
+                    defaultTdomain={[0.00001, 1000]}
+                    defaultYdomain={[0, 5]}
+                    Tmax={1000}
+                    Tmin={0.00001}
+                    Ymax={9999}
+                    Ymin={0}
+                    legend={'right'}
+                    Tlabel={'Duration (s)'}
+                    Ylabel={'Magnitude (pu)'}
+                    showMouse={false}
+                    showGrid={true}
+                    yDomain={'Manual'}
+                    zoom={true} pan={true} useMetricFactors={false} XAxisType={'log'} onSelect={empty}>
+                    {plotContent}
+                </Plot>
+                {status == 'loading' ? null :
+                    data.length == numberResults ?
+                        <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
+                            Only the first {data.length}  chronological results are shown - please narrow your search or increase the number of results in the application settings.
+                        </div> :
+                        <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
+                            {data.length} results
+                        </div>}
             </div>
             <EventList Height={props.Height} Select={props.SelectEvent} Magnitude={selectedMag} Duration={selectedDur} Width={width} />
         </>
@@ -226,7 +221,7 @@ interface IEventListProps {
 }
 
 const EventList = (props: IEventListProps) => {
-    const closureHandler = React.useRef<((o: boolean) => void)>(() => {/*Do Nothing*/});
+    const closureHandler = React.useRef<((o: boolean) => void)>(() => {/*Do Nothing*/ });
 
     const dataFilter = React.useCallback((state: Redux.StoreState) => SelectEventSearchs(state).filter(p =>
         Math.abs(p['MagDurDuration'] - props.Duration) < 1E-10 && Math.abs(p['MagDurMagnitude'] - props.Magnitude) < 0.0001),
@@ -268,7 +263,7 @@ const EventList = (props: IEventListProps) => {
             keys = currentState.split(",");
 
         c = c.concat(flds.filter(f => keys.includes(f)).map(f => ({ field: f, key: f, label: f, content: (item, key, fld) => ProcessWhitespace(item[fld]) })));
-       
+
         setCollumns(c);
     }
     return <OverlayDrawer Title={''} Open={false} Location={'right'} Target={'eventPreviewPane'} GetOverride={(s) => { closureHandler.current = s; }} HideHandle={true}>
