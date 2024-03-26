@@ -50,7 +50,7 @@ export interface IMultiCheckboxOption {
 export namespace Redux {
     interface StoreState {
         EventSearch: EventSearchState,
-        MagDurCurve: IGenericSliceState<SEBrowser.MagDurCurve>,
+        MagDurCurve: IGenericSliceState<XDA.Types.MagDurCurve>,
         Meter: IGenericSliceState<SystemCenter.Types.DetailedMeter>,
         Asset: IGenericSliceState<SystemCenter.Types.DetailedAsset>,
         AssetGroup: IGenericSliceState<XDA.Types.AssetGroup>,
