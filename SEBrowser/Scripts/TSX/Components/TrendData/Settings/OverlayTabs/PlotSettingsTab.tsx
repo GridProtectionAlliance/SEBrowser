@@ -124,6 +124,7 @@ const PlotSettingsTab = React.memo((props: IProps) => {
                 <MultiCheckBoxSelect
                     Options={props.Plot.PlotFilter}
                     Label={''}
+                    ItemTooltip={'dark'}
                     OnChange={(evt, newOptions: IMultiCheckboxOption[]) => {
                         const options: IMultiCheckboxOption[] = [];
                         props.Plot.PlotFilter.forEach(item => {

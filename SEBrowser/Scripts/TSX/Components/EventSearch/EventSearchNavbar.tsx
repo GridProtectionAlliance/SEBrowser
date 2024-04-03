@@ -453,23 +453,24 @@ const EventSearchNavbar = (props: IProps) => {
                                         </form>
                                     </div>
                                     <div className={"col-4"}>
-                                            <MultiCheckBoxSelect
+                                        <MultiCheckBoxSelect
                                             Options={newPhases}
                                             Label={'Phases'}
-                                                OnChange={
-                                                    (evt, Options: { Value: number; Text: string; Selected: boolean; }[]) => { 
-                                                        const phaseList = [];
-                                                        const phaseFilter: SEBrowser.IPhaseFilters = { ...newEventCharacteristicFilter.phases };
-                                                        newPhases.forEach(phase => {
-                                                            const phaseSelected: boolean = phase.Selected != (Options.findIndex(option => phase.Value === option.Value) > -1);
-                                                            phaseList.push({ ...phase, Selected: phaseSelected });
-                                                            phaseFilter[phase.Text] = phaseSelected;
-                                                        })
-                                                        setNewPhases(phaseList);
-                                                        setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, phases: phaseFilter });
-                                                    }
+                                            ItemTooltip={'dark'}
+                                            OnChange={
+                                                (evt, Options: { Value: number; Text: string; Selected: boolean; }[]) => { 
+                                                    const phaseList = [];
+                                                    const phaseFilter: SEBrowser.IPhaseFilters = { ...newEventCharacteristicFilter.phases };
+                                                    newPhases.forEach(phase => {
+                                                        const phaseSelected: boolean = phase.Selected != (Options.findIndex(option => phase.Value === option.Value) > -1);
+                                                        phaseList.push({ ...phase, Selected: phaseSelected });
+                                                        phaseFilter[phase.Text] = phaseSelected;
+                                                    })
+                                                    setNewPhases(phaseList);
+                                                    setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, phases: phaseFilter });
                                                 }
-                                            /> 
+                                            }
+                                        /> 
                                     </div>
                                     
                                 <div className={"col-4"}>
