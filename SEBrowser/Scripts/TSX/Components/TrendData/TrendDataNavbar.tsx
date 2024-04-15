@@ -53,8 +53,7 @@ interface IProps {
 }
 
 interface IKeyValuePair {
-    Key: string,
-    Value: boolean
+    [key: string]: boolean
 }
 
 interface ITrendDataFilter {
@@ -89,6 +88,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [selectedSet, setSelectedSet] = React.useState<Set<number>>(new Set<number>());
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
+    const queryRef = React.useRef<{ phaseIds: Set<number>, groupIds: Set<number>, assetIds: Set<number>, meterIds: Set<number> }>({ phaseIds: undefined, groupIds: undefined, assetIds: undefined, meterIds: undefined})
     // Button Consts
     const [hover, setHover] = React.useState < 'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Group-Line' | 'Cyclic' | 'Move' | 'Trash' | 'Select' | 'Capture' >('None');
 
@@ -148,15 +148,25 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         });
     }, [channelGroupStatus, phaseStatus]);
 
-    function makeKeyValuePairs(allKeys: { ID: number, Name: string, Description: string }[], defaultTrueSet?: Set<string>): IKeyValuePair[] {
+        // Note: the different arguements of startingArray and fallBack need different types since we don't know Id's at compile time and don't know names at query parse time
+        function makeKeyValuePairs(allKeys: { ID: number, Name: string, Description: string }[], startingTrueSet: Set<number> | undefined, fallBackTrueSet: Set<string>): IKeyValuePair[] {
         if (allKeys == null) return [];
-        return allKeys.map(key => ({ Key: key.Name, Value: defaultTrueSet?.has(key.Name) ?? false }));
+            if (startingTrueSet == null) return allKeys.map(key => ({ [key.ID]: fallBackTrueSet.has(key.Name) }));
+            return allKeys.map(key => ({ [key.ID]: startingTrueSet.has(key.ID) }));
     }
+
+        setTrendFilter({
+            Phases: makeKeyValuePairs(allPhases, queryRef.current.phaseIds, new Set(["AB", "BC", "CA"])),
+            ChannelGroups: makeKeyValuePairs(allChannelGroups, queryRef.current.groupIds, new Set(["Voltage"])),
+            MeterList: queryRef.current.meterIds == null ? [] : allMeters.filter(meter => queryRef.current.meterIds.has(meter.ID)),
+            AssetList: queryRef.current.assetIds == null ? [] : allAssets?.filter(asset => queryRef.current.assetIds.has(asset.ID)) ?? []
+        });
+    }, [channelGroupStatus, phaseStatus, meterStatus, assetStatus, queryReady]);
 
     function makeMultiCheckboxOptions(keyValues: IKeyValuePair[], setOptions: (options: IMultiCheckboxOption[]) => void, allKeys: { ID: number, Name: string, Description: string }[]) {
         if (allKeys == null || keyValues == null) return;
         const newOptions: IMultiCheckboxOption[] = [];
-        allKeys.forEach((key, index) => newOptions.push({ Value: index, Text: key.Name, Selected: keyValues.find(e => e.Key === key.Name)?.Value ?? false }));
+        allKeys.forEach((key) => newOptions.push({ Value: key.ID, Text: key.Name, Selected: keyValues.find(e => e[key.ID] !== undefined)[key.ID] ?? false }));
         setOptions(newOptions);
     }
 
@@ -166,8 +176,8 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         oldOptions.forEach(item => {
             const selected: boolean = item.Selected != (newOptions.findIndex(option => item.Value === option.Value) > -1);
             options.push({ ...item, Selected: selected });
-            pairs.push({ Key: item.Text, Value: selected });
-        })
+            pairs.push({ [item.Value]: selected });
+        });
         setOptions(options);
         setTrendFilter({ ...trendFilter, [filterField]: pairs });
     }
