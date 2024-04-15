@@ -75,6 +75,12 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const channelGroupStatus = useAppSelector(ChannelGroupSlice.SearchStatus);
     const allChannelGroups = useAppSelector(ChannelGroupSlice.SearchResults);
 
+    const meterStatus = useAppSelector(MeterSlice.Status);
+    const allMeters = useAppSelector(MeterSlice.Data);
+
+    const assetStatus = useAppSelector(AssetSlice.Status);
+    const allAssets = useAppSelector(AssetSlice.Data);
+
     const [showFilter, setShowFilter] = React.useState<('None' | 'Meter' | 'Asset')>('None');
 
     const [timeFilter, setTimeFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.TimeFilter);
@@ -127,6 +133,16 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         if (channelGroupStatus == 'changed' || channelGroupStatus == 'unintiated')
             dispatch(ChannelGroupSlice.DBSearch({ filter: [], sortField: "Name", ascending: true }));
     }, [channelGroupStatus]);
+
+    React.useEffect(() => {
+        if (meterStatus == 'changed' || meterStatus == 'unintiated')
+            dispatch(MeterSlice.Fetch());
+    }, [meterStatus]);
+
+    React.useEffect(() => {
+        if (assetStatus == 'changed' || assetStatus == 'unintiated')
+            dispatch(AssetSlice.Fetch());
+    }, [assetStatus]);
 
     React.useEffect(() => {
         if (trendFilter === null) return;
