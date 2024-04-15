@@ -24,6 +24,7 @@
 import React from 'react';
 import _ from 'lodash';
 import { useAppDispatch, useAppSelector } from '../../hooks';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AssetSlice, MeterSlice, PhaseSlice, ChannelGroupSlice } from '../../Store';
 import { SEBrowser, TrendSearch, IMultiCheckboxOption } from '../../Global';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
@@ -37,6 +38,7 @@ import NavbarFilterButton from '../Common/NavbarFilterButton';
 import TrendChannelTable from './Components/TrendChannelTable';
 import html2canvas from 'html2canvas';
 import jspdf from 'jspdf';
+import queryString from 'querystring';
 
 interface IProps {
     ToggleVis: () => void,
@@ -68,6 +70,8 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const timeRef = React.useRef(null);
     const filtRef = React.useRef(null);
     const dispatch = useAppDispatch();
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const phaseStatus = useAppSelector(PhaseSlice.SearchStatus);
     const allPhases = useAppSelector(PhaseSlice.SearchResults);
@@ -95,6 +99,8 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
     const queryRef = React.useRef<{ phaseIds: Set<number>, groupIds: Set<number>, assetIds: Set<number>, meterIds: Set<number> }>({ phaseIds: undefined, groupIds: undefined, assetIds: undefined, meterIds: undefined})
+    const [queryReady, setQueryReady] = React.useState<boolean>(false);
+
     // Button Consts
     const [hover, setHover] = React.useState < 'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Group-Line' | 'Cyclic' | 'Move' | 'Trash' | 'Select' | 'Capture' >('None');
 
@@ -104,6 +110,33 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         const filtHeight = filtRef?.current?.offsetHeight ?? 0;
         setTableHeight(timeHeight > filtRef ? timeHeight : filtHeight);
     });
+
+    // Parsing URL Params
+    React.useEffect(() => {
+        function parseArrayIntoSet(array: string): Set<number> {
+            const returnSet = new Set<number>();
+            array.substring(1, array.length - 1).split(',').forEach(strId => {
+                const id = parseInt(strId);
+                if (id !== NaN) returnSet.add(id);
+            });
+            return returnSet;
+        }
+
+        const query = queryString.parse(location.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
+        setTimeFilter({
+            windowSize: query['windowSize'] !== undefined ? parseInt(query['windowSize'].toString()) : props.TimeFilter.windowSize,
+            timeWindowUnits: query['timeWindowUnits'] !== undefined ? parseInt(query['timeWindowUnits'].toString()) : props.TimeFilter.timeWindowUnits,
+            time: query['time'] !== undefined ? query['time'].toString() : props.TimeFilter.time,
+            date: query['date'] !== undefined ? query['date'].toString() : props.TimeFilter.date
+        });
+        if (query['phases'] !== undefined) queryRef.current.phaseIds = parseArrayIntoSet(query['phases'].toString());
+        if (query['groups'] !== undefined) queryRef.current.groupIds = parseArrayIntoSet(query['groups'].toString());
+        if (query['meters'] !== undefined) queryRef.current.meterIds = parseArrayIntoSet(query['meters'].toString());
+        if (query['assets'] !== undefined) queryRef.current.assetIds = parseArrayIntoSet(query['assets'].toString());
+
+        setQueryReady(true);
+        console.log(query);
+    }, []);
 
     // Multicheckbox Options Updates
     React.useEffect(() => {
@@ -120,7 +153,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     }, [props.LinePlot]);
 
     React.useEffect(() => {
-        setTimeFilter(props.TimeFilter);
+        if (queryReady) setTimeFilter(props.TimeFilter);
     }, [props.TimeFilter]);
 
     // Slice dispatches
@@ -154,22 +187,47 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     }, [trendFilter]);
 
     React.useEffect(() => {
+        const queryParams = {};
+        queryParams['time'] = timeFilter.time;
+        queryParams['date'] = timeFilter.date;
+        queryParams['windowSize'] = timeFilter.windowSize;
+        queryParams['timeWindowUnits'] = timeFilter.timeWindowUnits;
+
+        function SetParamArrayKeyVal(field: string, options?: IKeyValuePair[]): string {
+            if (options == null) return;
+            const optionsSelected = options.filter(opt => opt[Object.keys(opt)[0]]);
+            if (optionsSelected.length === 0) return;
+            queryParams[field] = `[${optionsSelected.map(opt => Object.keys(opt)[0]).join(',')}]`;
+        }
+        function SetParamArrayFilter(field: string, selected?: { ID: number }[]): string {
+            if (selected == null || selected.length === 0) return;
+            queryParams[field] = `[${selected.map(select => select.ID).join(',')}]`;
+        }
+
+        SetParamArrayFilter('assets', trendFilter?.AssetList);
+        SetParamArrayFilter('meters', trendFilter?.MeterList);
+        SetParamArrayKeyVal('phases', trendFilter?.Phases);
+        SetParamArrayKeyVal('groups', trendFilter?.ChannelGroups);
+
+        console.log(timeFilter);
+
+        const q = queryString.stringify(queryParams, "&", "=", { encodeURIComponent: queryString.escape });
+        const handle = setTimeout(() => navigate(location.pathname + '?' + q), 500);
+        return (() => { clearTimeout(handle); })
+    }, [trendFilter, timeFilter]);
+
+    React.useEffect(() => {
         // Todo: get filters from memory
-        if (trendFilter !== null || channelGroupStatus !== 'idle' || phaseStatus !== 'idle') return;
-        setTrendFilter({
-            Phases: makeKeyValuePairs(allPhases, new Set(["AB", "BC", "CA"])),
-            ChannelGroups: makeKeyValuePairs(allChannelGroups, new Set(["Voltage"])),
-            MeterList: [],
-            AssetList: []
-        });
-    }, [channelGroupStatus, phaseStatus]);
+        if (trendFilter !== null ||
+            channelGroupStatus !== 'idle' || phaseStatus !== 'idle' || meterStatus !== 'idle' || assetStatus !== 'idle' ||
+            !queryReady) return;
 
         // Note: the different arguements of startingArray and fallBack need different types since we don't know Id's at compile time and don't know names at query parse time
         function makeKeyValuePairs(allKeys: { ID: number, Name: string, Description: string }[], startingTrueSet: Set<number> | undefined, fallBackTrueSet: Set<string>): IKeyValuePair[] {
-        if (allKeys == null) return [];
+            if (allKeys == null) return [];
             if (startingTrueSet == null) return allKeys.map(key => ({ [key.ID]: fallBackTrueSet.has(key.Name) }));
             return allKeys.map(key => ({ [key.ID]: startingTrueSet.has(key.ID) }));
-    }
+        }
 
         setTrendFilter({
             Phases: makeKeyValuePairs(allPhases, queryRef.current.phaseIds, new Set(["AB", "BC", "CA"])),
