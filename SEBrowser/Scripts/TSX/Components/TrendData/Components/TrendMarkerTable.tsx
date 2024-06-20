@@ -23,7 +23,7 @@
 import React from 'react';
 import _ from 'lodash';
 import { TrashCan } from '@gpa-gemstone/gpa-symbols';
-import Table from '@gpa-gemstone/react-table';
+import { ReactTable } from '@gpa-gemstone/react-table';
 import { TrendSearch } from '../../../global';
 import moment from 'moment';
 
@@ -66,57 +66,20 @@ const TrendMarkerTable = (props: IProps) => {
         }, [ascending]);
 
     return (
-        <Table<TrendSearch.IMarker>
-            cols={[
-                {
-                    key: "symbol", field: "ID", label: "", content: (item) => {
-                        switch (item.type) {
-                            case "VeHo":
-                                if (props.DisplayDescription ?? false) return "+"
-                                return item["isHori"] ? "-" : "|"
-                            case "Symb": return item["symbol"];
-                            default:
-                                return "Event";
-                        }
-                    }
-                },
-                {
-                    key: "type", field: "type", label: (props.DisplayDescription ?? false) ? "" : "Value", content: (item) => {
-                        if (props.DisplayDescription ?? false) {
-                            switch (item.type) {
-                                case "VeHo":
-                                    return "Vertical and Horizontal Line Marker(s)";
-                                case "Symb":
-                                    return "Icon Marker(s) and Infobox(es)";
-                                default:
-                                    return "Event Marker(s)";
-                            }
-                        } else {
-                            switch (item.type) {
-                                case "VeHo":
-                                    return (item["isHori"] ?? true) ? item["value"].toFixed(2) : moment.utc(item["value"]).format(momentFormat);
-                                case "Symb":
-                                    return `${moment.utc(item["xPos"]).format(momentFormat)} | ${item["yPos"].toFixed(2)}`;
-                                default:
-                                    return "All Events";
-                            }
-                        }
-                    }
-                },
-                { key: "RemoveChannel", field: "ID", label: "", rowStyle: { width: "50px" }, headerStyle: { width: "50px" }, content: removeButton }
-            ]}
-            data={trendMarkers}
-            sortKey={sortField}
-            ascending={ascending}
-            onSort={sortCallback}
-            onClick={(item, event) => {
+        <ReactTable.Table<TrendSearch.IMarker>
+            Data={trendMarkers}
+            SortKey={sortField}
+            Ascending={ascending}
+            OnSort={sortCallback}
+            OnClick={(item, event) => {
                 event.preventDefault();
                 props.SetSelected(item.row);
             }}
-            selected={(item) => props.Selected?.ID === item.ID}
-            theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-            tbodyStyle={{ display: 'block', overflowY: 'scroll', height: props.Height - 30, userSelect: 'none' }}
-            rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
+            Selected={(item) => props.Selected?.ID === item.ID}
+            KeySelector={(item) => item.ID}
+            TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+            TbodyStyle={{ display: 'block', overflowY: 'scroll', height: props.Height - 30, userSelect: 'none' }}
+            RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
         />);
 }
 
