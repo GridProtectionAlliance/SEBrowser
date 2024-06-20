@@ -29,7 +29,7 @@ import { MagDurCurveSlice } from '../../Store';
 import { Line, Plot, Circle, AggregatingCircles } from '@gpa-gemstone/react-graph';
 import { SelectEventSearchSettings, SelectGeneralSettings } from '../SettingsSlice';
 import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
-import Table, { Column } from '@gpa-gemstone/react-table';
+import { Column, ReactTable } from '@gpa-gemstone/react-table';
 import { OpenXDA } from '@gpa-gemstone/application-typings'
 
 interface IProps {
@@ -205,7 +205,13 @@ const MagDurChart = (props: IProps) => {
                             {data.length} results
                         </div>}
             </div>
-            <EventList Height={props.Height} Select={props.SelectEvent} Magnitude={selectedMag} Duration={selectedDur} Width={width} />
+            <EventList
+                Height={props.Height}
+                Select={props.SelectEvent}
+                Magnitude={selectedMag}
+                Duration={selectedDur}
+                Width={width}
+            />
         </>
     )
 }
@@ -231,7 +237,7 @@ const EventList = (props: IEventListProps) => {
     const sortField = useAppSelector(SelectEventSearchsSortField);
     const ascending = useAppSelector(SelectEventSearchsAscending);
     const data = useAppSelector(dataFilter);
-    const [collumns, setCollumns] = React.useState<Column<any>[]>([]);
+    const [columns, setColumns] = React.useState<Column<any>[]>([]);
 
     React.useEffect(() => {
         if (props.Magnitude !== 0 && props.Duration !== 0) {
@@ -264,7 +270,7 @@ const EventList = (props: IEventListProps) => {
 
         c = c.concat(flds.filter(f => keys.includes(f)).map(f => ({ field: f, key: f, label: f, content: (item, key, fld) => ProcessWhitespace(item[fld]) })));
 
-        setCollumns(c);
+        setColumns(c);
     }
     return <OverlayDrawer Title={''} Open={false} Location={'right'} Target={'eventPreviewPane'} GetOverride={(s) => { closureHandler.current = s; }} HideHandle={true}>
 
@@ -274,24 +280,23 @@ const EventList = (props: IEventListProps) => {
                     Close
                 </button>
             </div>
-            <Table<any>
-                cols={collumns}
-                tableClass="table table-hover"
-                data={data}
-                sortKey={sortField as string}
-                ascending={ascending}
-                onSort={(d) => {
+            <ReactTable.Table<any>
+                TableClass="table table-hover"
+                Data={data}
+                SortKey={sortField as string}
+                KeySelector={item => item.ID}
+                Ascending={ascending}
+                OnSort={(d) => {
                     if (d.colKey == sortField) dispatch(Sort({ Ascending: ascending, SortField: sortField }));
                     else dispatch(Sort({ Ascending: true, SortField: d.colKey }));
                 }}
-                onClick={(item) => { closureHandler.current(false); props.Select(item.row.EventID) }}
-                theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '250px', height: 60 }}
-                tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.Height - 60 - 160 }}
-                rowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
-                tableStyle={{ marginBottom: 0 }}
-                selected={() => false}
+                OnClick={(item) => { closureHandler.current(false); props.Select(item.row.EventID) }}
+                TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '250px', height: 60 }}
+                TbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.Height - 60 - 160 }}
+                RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
+                TableStyle={{ marginBottom: 0 }}
+                Selected={() => false}
             />
-
         </div>
     </OverlayDrawer>
 }
