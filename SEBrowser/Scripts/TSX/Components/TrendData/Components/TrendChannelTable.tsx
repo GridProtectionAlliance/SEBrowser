@@ -141,23 +141,23 @@ const TrendChannelTable = (props: IProps) => {
             RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
             TableClass="table table-hover"
             TableStyle={{ marginBottom: 0 }}>
-            <ReactTable.AdjustableCol<TrendSearch.ITrendChannel>
+            <ReactTable.AdjustableColumn<TrendSearch.ITrendChannel>
                 Key={'Name'}
                 AllowSort={true}
                 Field={'Name'}
-            >Channel Name</ReactTable.AdjustableCol>
-            <ReactTable.AdjustableCol<TrendSearch.ITrendChannel>
+            >Channel Name</ReactTable.AdjustableColumn>
+            <ReactTable.AdjustableColumn<TrendSearch.ITrendChannel>
                 Key={'Phase'}
                 AllowSort={true}
                 Field={'Phase'}
             />
             {colList.map(name =>
                 <ConfigTable.Configurable key={name.replace(/\s/, "")} Key={name.replace(/\s/, "")} Label={name} Default={defaultCols.has(name)}>
-                    <ReactTable.AdjustableCol<TrendSearch.ITrendChannel>
+                    <ReactTable.AdjustableColumn<TrendSearch.ITrendChannel>
                         Key={name.replace(/\s/, "")}
                         AllowSort={true}
                         Field={name.replace(/\s/, "") as keyof TrendSearch.ITrendChannel}
-                    >{name}</ReactTable.AdjustableCol>
+                    >{name}</ReactTable.AdjustableColumn>
                 </ConfigTable.Configurable>)
             }
             {props.OnChannelRemoval !== undefined ?

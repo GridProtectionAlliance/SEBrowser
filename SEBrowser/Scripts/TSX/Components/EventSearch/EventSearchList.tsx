@@ -181,24 +181,26 @@ export default function EventSearchList(props: IProps) {
                     SettingsPortal={'TableSettings'}
                     OnSettingsChange={closeSettings}
                 >
-                    <ReactTable.Column<any>
+                    <ReactTable.AdjustableColumn<any>
                         Key={'Time'}
                         AllowSort={true}
                         Content={({ item, field }) => ProcessWhitespace(item[field])}
+                        RowStyle={{ minWidth: '100px' }}
                         Field={'Time'}
                     >
                         Time
-                    </ReactTable.Column>
+                    </ReactTable.AdjustableColumn>
                     {...cols.map(c => (
                         <ConfigTable.Configurable Key={c.label} Label={c.label} Default={c.key === 'Event Type'}>
-                            <ReactTable.Column<any>
+                            <ReactTable.AdjustableColumn<any>
                                 Key={c.key}
                                 AllowSort={true}
                                 Field={c.label}
+                                RowStyle={{ minWidth: '100px' }}
                                 Content={({ item, field }) => ProcessWhitespace(item[field])}
                             >
                                 {c.label}
-                            </ReactTable.Column>
+                            </ReactTable.AdjustableColumn>
                         </ConfigTable.Configurable>
                     ))}
                 </ConfigTable.Table> : null}
