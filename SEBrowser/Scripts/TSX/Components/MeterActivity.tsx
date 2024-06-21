@@ -22,7 +22,7 @@
 //******************************************************************************************************
 
 import React from 'react';
-import Table from './Table';
+import { ReactTable } from '@gpa-gemstone/react-table';
 import SEBrowserService from './../../TS/Services/SEBrowser';
 import moment from 'moment';
 
@@ -59,12 +59,17 @@ export default MeterActivity;
 
 interface MostActiveMeterActivityRow {
     AssetKey: string,
+    sortField: string,
     '24Hours': number,
     '7Days': number,
     '30Days': number
 }
 
-class MostActiveMeters extends React.Component<unknown, { meterTable: Array<MostActiveMeterActivityRow>, sortField: string, rowsPerPage: number }>{
+class MostActiveMeters extends React.Component<unknown, {
+    meterTable: Array<MostActiveMeterActivityRow>,
+    sortField: string,
+    rowsPerPage: number
+}>{
     seBrowserService: SEBrowserService;
     constructor(props) {
         super(props);
@@ -82,7 +87,6 @@ class MostActiveMeters extends React.Component<unknown, { meterTable: Array<Most
         $(window).on('resize', () => this.resize());
 
         this.resize();
-
     }
 
     componentWillUnmount() {
@@ -97,12 +101,10 @@ class MostActiveMeters extends React.Component<unknown, { meterTable: Array<Most
 
     resize() {
         const headerHeight = $(this.refs.divElement).find('th').innerHeight();
-
         const height = $(this.refs.divElement).height() - headerHeight;
-
         let rowHeight = $(this.refs.divElement).find('td').innerHeight();
-        if (headerHeight == headerHeight) rowHeight = 43;
 
+        if (headerHeight == headerHeight) rowHeight = 43;
         if (rowHeight == undefined) rowHeight = 48;
 
         this.setState({ rowsPerPage: Math.floor(height / rowHeight) }, () => this.createTableRows());
@@ -143,21 +145,16 @@ class MostActiveMeters extends React.Component<unknown, { meterTable: Array<Most
                 <span style={{ float: 'right', color: 'silver' }}>{/*Click on event count to view events*/}</span>
                 <div style={{ height: '2px', width: '100%', display: 'inline-block', backgroundColor: 'black' }}></div>
                 <div style={{ backgroundColor: 'white', borderColor: 'black', height: 'calc(100% - 60px)', overflowY: 'auto'}} ref='divElement'>
-                    <Table<MostActiveMeterActivityRow>
-                        cols={[
-                            { key: 'AssetKey', label: 'Name', headerStyle: { width: 'calc(40%)' } },
-                            { key: '24Hours', label: 'Files(Evts) 24H', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key) },
-                            { key: '7Days', label: 'Files(Evts) 7D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key) },
-                            { key: '30Days', label: 'Files(Evts) 30D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key) },
-                        ]}
-                        tableClass="table"
-                        data={this.state.meterTable}
-                        sortField={this.state.sortField}
-                        ascending={true}
-                        selected={() => false }
-                        onSort={(data) => { this.setState({ sortField: data.col }, () => this.createTableRows()) }}
-                        onClick={() => {/*Do Nothing*/}}
-                        theadStyle={{ fontSize: 'smaller' }}
+                    <ReactTable.Table<MostActiveMeterActivityRow>
+                        TableClass="table"
+                        KeySelector={item => item.AssetKey}
+                        Data={this.state.meterTable}
+                        SortKey={this.state.sortField }
+                        Ascending={true}
+                        Selected={() => false}
+                        OnSort={(col) => { this.setState({ sortField: col.colKey }, this.createTableRows) }}
+                        OnClick={() => {/*Do Nothing*/}}
+                        TheadStyle={{ fontSize: 'smaller' }}
                     />
                 </div>
             </div>
@@ -174,7 +171,11 @@ interface LeastActiveMeterActivityRow {
     FirstEventID: number
 }
         
-class LeastActiveMeters extends React.Component<unknown, { meterTable: Array<LeastActiveMeterActivityRow>, sortField: keyof(LeastActiveMeterActivityRow), rowsPerPage: number }>{
+class LeastActiveMeters extends React.Component<unknown, {
+    meterTable: Array<LeastActiveMeterActivityRow>,
+    sortField: string,
+    rowsPerPage: number
+}>{
     seBrowserService: SEBrowserService;
     constructor(props) {
         super(props);
@@ -251,21 +252,16 @@ class LeastActiveMeters extends React.Component<unknown, { meterTable: Array<Lea
                 <span style={{ float: 'right', color: 'silver' }}>{/*Click on event count to view events*/}</span>
                 <div style={{ height: '2px', width: '100%', display: 'inline-block', backgroundColor: 'black' }}></div>
                 <div style={{ backgroundColor: 'white', borderColor: 'black', height: 'calc(100% - 60px)', overflowY: 'auto' }} ref='divElement'>
-                    <Table<LeastActiveMeterActivityRow>
-                        cols={[
-                            { key: 'AssetKey', label: 'Name', headerStyle: { width: 'calc(40%)' } },
-                            { key: '30Days', label: 'Files(Events) 30D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key)  },
-                            { key: '90Days', label: 'Files(Events) 90D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key)  },
-                            { key: '180Days', label: 'Files(Events) 180D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key)  },
-                        ]}
-                        tableClass="table"
-                        data={this.state.meterTable}
-                        sortField={this.state.sortField}
-                        selected={() => false}
-                        ascending={true}
-                        onSort={(data) => { this.setState({ sortField: data.col }, () => this.createTableRows()) }}
-                        onClick={() => { /*Do Nothing*/ }}
-                        theadStyle={{ fontSize: 'smaller' }}
+                    <ReactTable.Table<LeastActiveMeterActivityRow>
+                        TableClass="table"
+                        Data={this.state.meterTable}
+                        SortKey={this.state.sortField}
+                        Selected={() => false}
+                        Ascending={true}
+                        KeySelector={item => item.AssetKey}
+                        OnSort={(col) => { this.setState({ sortField: col.colKey }, this.createTableRows) }}
+                        OnClick={() => { /*Do Nothing*/ }}
+                        TheadStyle={{ fontSize: 'smaller' }}
                     />
                 </div>
             </div>
