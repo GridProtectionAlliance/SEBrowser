@@ -169,7 +169,8 @@ const TrendChannelTable = (props: IProps) => {
                     HeaderStyle={{ width: "50px" }}
                     Content={removeButton}
                 > </ReactTable.Column>: null}
-        </ConfigTable.Table>);
+        </ConfigTable.Table>
+    );
 }
 
 export default TrendChannelTable;
