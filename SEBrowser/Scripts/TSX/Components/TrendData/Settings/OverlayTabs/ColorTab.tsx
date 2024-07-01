@@ -22,7 +22,6 @@
 //******************************************************************************************************
 import { Input, Select } from '@gpa-gemstone/react-forms';
 import { ReactTable } from '@gpa-gemstone/react-table';
-import { Column } from '@gpa-gemstone/react-table';
 import React from 'react';
 import { TrendSearch } from '../../../../Global';
 import { LineStyles } from '../TabProperties/LineStyles';
