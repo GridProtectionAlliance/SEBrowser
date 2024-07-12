@@ -43,6 +43,7 @@ namespace SEBrowser.Controllers.OpenXDA
     {
         #region [ Members ]
         const string SettingsCategory = "systemSettings";
+        SEBrowserXDAAPIHelper helper = new SEBrowserXDAAPIHelper();
         #endregion
 
         #region [ Http Methods ]
@@ -100,13 +101,13 @@ namespace SEBrowser.Controllers.OpenXDA
         [Route("GetLineChartData"), HttpPost]
         public Task<HttpResponseMessage> GetLineChartData([FromBody] JObject postData)
         {
-            return XDAAPIHelper.GetResponseTask("api/HIDS/QueryPoints", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
+            return helper.GetResponseTask("api/HIDS/QueryPoints", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
         }
 
         [Route("GetMetaData"), HttpPost]
         public Task<HttpResponseMessage> GetCyclicMetaData([FromBody] JObject postData)
         {
-            return XDAAPIHelper.GetResponseTask("api/HIDS/QueryHistogramMetadata", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
+            return helper.GetResponseTask("api/HIDS/QueryHistogramMetadata", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
         }
 
         [Route("GetChartData/{type}"), HttpPost]
@@ -132,7 +133,7 @@ namespace SEBrowser.Controllers.OpenXDA
                     throw new InvalidOperationException($"Unknown type parameter: {type}");
             }
             // Read metadata into list
-            return XDAAPIHelper.GetResponseTask($"api/HIDS/{route}", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
+            return helper.GetResponseTask($"api/HIDS/{route}", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
         }
         #endregion
 
@@ -149,90 +150,6 @@ namespace SEBrowser.Controllers.OpenXDA
             if (idObjectList.Count() == 0) return null;
             return $"{fieldName} IN ({string.Join(", ", idObjectList.Select(idObject => idObject["ID"].ToObject<int>()))})";
         }
-        #endregion
-
-        // TODO: This code was basically copied from LSCVS, do we want to simply move it to be something in APIAuth?
-        #region [ XDA Helper ]
-        /// <summary>
-        /// Static Helper class that provides openXDA API Calls
-        /// </summary>
-        public static class XDAAPIHelper
-        {
-            #region [Static]
-
-            /// <summary>
-            /// API Token used to access OpenXDA
-            /// </summary>
-            private static string Token
-            {
-                get
-                {
-                    using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
-                        return new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAApiToken' AND Scope='app.setting'")?.Value ?? "localhost:8989/";
-                }
-
-            }
-
-            /// <summary>
-            /// API Key used to access OpenXDA
-            /// </summary>
-            private static string Key
-            {
-                get
-                {
-                    using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
-                        return new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAApiKey' AND Scope='app.setting'")?.Value ?? "";
-                }
-
-            }
-
-            /// <summary>
-            /// API Key used to access OpenXDA
-            /// </summary>
-            private static string Host
-            {
-                get
-                {
-                    using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
-                        return new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAInstance' AND Scope='app.setting'")?.Value ?? "";
-                }
-
-            }
-
-            /// <summary>
-            /// Gets Response Task from XDA 
-            /// </summary>
-            /// <param name="requestURI">Path to specific API request</param>
-            /// <param name="content"> The <see cref="HttpContent"/> of the request </param>
-            /// <returns> response as a <see cref="Stream"/></returns>
-            public static Task<HttpResponseMessage> GetResponseTask(string requestURI, HttpContent content)
-            {
-                APIQuery query = new APIQuery(Key, Token, Host.Split(';'));
-
-                void ConfigureRequest(HttpRequestMessage request)
-                {
-                    request.Method = HttpMethod.Post;
-                    request.Content = content;
-                }
-
-                return query.SendWebRequestAsync(ConfigureRequest, requestURI);
-            }
-
-            /// <summary>
-            /// Makes Post request on OpenXDA
-            /// </summary>
-            /// <param name="requestURI">Path to specific API request</param>
-            /// <param name="content"> The <see cref="HttpContent"/> of the request </param>
-            /// <returns> response as a <see cref="Stream"/></returns>
-            public static async Task<Stream> Post(string requestURI, HttpContent content)
-            {
-                HttpResponseMessage responseMessage = await GetResponseTask(requestURI, content).ConfigureAwait(false);
-                return await responseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            }
-            #endregion
-
-        }
-
         #endregion
     }
 }
