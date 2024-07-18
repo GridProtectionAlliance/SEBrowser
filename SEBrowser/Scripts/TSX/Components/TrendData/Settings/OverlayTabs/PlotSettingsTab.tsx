@@ -23,8 +23,10 @@
 import React from 'react';
 import _ from 'lodash';
 import { IMultiCheckboxOption, TrendSearch } from '../../../../global';
-import ReportTimeFilter from '../../../ReportTimeFilter';
+import { TimeFilter } from '@gpa-gemstone/common-pages'
 import { CheckBox, Input, MultiCheckBoxSelect, Select } from '@gpa-gemstone/react-forms';
+import { useSelector } from 'react-redux';
+import { SelectTimeZone, SelectDateTimeSetting } from '../../../SettingsSlice';
 
 interface IProps {
     Plot: TrendSearch.ITrendPlot,
@@ -44,6 +46,8 @@ const axisOptions: { Value: string, Label: string }[] = [
 
 const PlotSettingsTab = React.memo((props: IProps) => {
     const [limits, setLimits] = React.useState<AxisLimits>({ LeftUpper: 1, LeftLower: 0, RightUpper: 1, RightLower: 0 });
+    const timeZone = useSelector(SelectTimeZone);
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
 
     const setPlotLimits = React.useCallback((limits: AxisLimits) => {
         const newPlot = { ...props.Plot };
@@ -83,6 +87,27 @@ const PlotSettingsTab = React.memo((props: IProps) => {
     function isValid(): boolean {
         return validateTrendPlot('Height') && validateTrendPlot('Width') && validateLimit("LeftUpper") && validateLimit("RightUpper");
     }
+
+    type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
+    const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
+
+    // converts the SEBrowser filter to ICenterDuration filter
+    const convertTimeFilter = (flt) => ({
+        center: flt.date + ' ' + flt.time,
+        halfDuration: flt.windowSize,
+        unit: units[flt.timeWindowUnits]
+    });
+
+    // Wrapper function to match the expected type for setFilter
+    const handleSetFilter = (center: string, start: string, end: string, unit: TimeUnit, duration: number) => {
+        const newFilter = {
+            time: center.split(' ')[1],
+            date: center.split(' ')[0],
+            windowSize: duration / 2.0,
+            timeWindowUnits: units.findIndex(u => u == unit)
+        }
+        props.SetPlot({ ...props.Plot, TimeFilter: newFilter })
+    };
 
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20, paddingTop: 20, overflowY: 'scroll', maxHeight: 'calc(100vh - 284px)' }}>
@@ -134,8 +159,9 @@ const PlotSettingsTab = React.memo((props: IProps) => {
                         props.SetPlot({ ...props.Plot, PlotFilter: options });
                     }}
                 />
-                <ReportTimeFilter filter={props.Plot.TimeFilter} showQuickSelect={false}
-                    setFilter={newFilter => props.SetPlot({ ...props.Plot, TimeFilter: newFilter })} />
+                <TimeFilter filter={convertTimeFilter(props.Plot.TimeFilter)} showQuickSelect={false}
+                    setFilter={handleSetFilter} timeZone={timeZone}
+                    dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                 <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                     <legend className="w-auto" style={{ fontSize: 'large' }}>Axis Limits:</legend>
                     <div className="row">

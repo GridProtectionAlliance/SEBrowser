@@ -22,11 +22,9 @@
 //******************************************************************************************************
 import * as React from 'react';
 import _ from 'lodash';
-import ReportTimeFilter from '../ReportTimeFilter';
-
-const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS";
-
+import { TimeFilter } from '@gpa-gemstone/common-pages'
+import { useSelector } from 'react-redux';
+import { SelectTimeZone, SelectDateTimeSetting } from '../SettingsSlice';
 
 interface Substation {
     LocationID: number, AssetKey: string, AssetName: string
@@ -59,6 +57,8 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
     const [breakers, setBreakers] = React.useState<Breaker[]>([]);
     const [substations, setSubstations] = React.useState<Substation[]>([]);
     const [channels, setChannels] = React.useState<Channel[]>([]);
+    const timeZone = useSelector(SelectTimeZone);
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
 
     React.useEffect(() => {
         const handle = getSubstationData();
@@ -199,6 +199,8 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
         props.stateSetter({ searchBarProps: object });
     }
 
+    type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
+    const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
 
         return (
             <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -238,12 +240,14 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                         </li>
                         
                         <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
-                            <ReportTimeFilter filter={{ date: props.date, time: props.time, windowSize: props.windowSize, timeWindowUnits: props.timeWindowUnits }} setFilter={(f) => {
-                                setDate(f.date);
-                                setTime(f.time);
-                                setTimeWindowUnits(f.timeWindowUnits);
-                                setWindowSize(f.windowSize);
-                            }} showQuickSelect={false} />
+                            <TimeFilter filter={{ center: props.date + ' ' + props.time, halfDuration: props.windowSize, unit: units[props.timeWindowUnits] }}
+                                setFilter={(center: string, start: string, end: string, unit: TimeUnit, duration: number) => {
+                                setDate(center.split(' ')[0]);
+                                setTime(center.split(' ')[0]);
+                                    setTimeWindowUnits(units.findIndex(u => u == unit));
+                                setWindowSize(duration / 2.0);
+                                }} showQuickSelect={false} timeZone={timeZone}
+                                dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                         </li>
 
 

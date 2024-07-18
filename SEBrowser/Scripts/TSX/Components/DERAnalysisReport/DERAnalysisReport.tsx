@@ -27,11 +27,13 @@ import Table from '@gpa-gemstone/react-table';
 import { OpenXDA } from '@gpa-gemstone/application-typings';
 import queryString from 'querystring';
 import moment from 'moment';
-import ReportTimeFilter from '../ReportTimeFilter';
 import { orderBy } from 'lodash';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { findAppropriateUnit, getMoment, getStartEndTime } from '../EventSearch/TimeWindowUtils';
+import { TimeFilter } from '@gpa-gemstone/common-pages'
+import { useSelector } from 'react-redux';
+import { SelectTimeZone, SelectDateTimeSetting } from '../SettingsSlice';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -53,6 +55,9 @@ interface DERAnalyticResult {
 function DERAnalysisReport() {
     const history = useLocation();
     const navigate = useNavigate();
+
+    const timeZone = useSelector(SelectTimeZone);
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
 
     const [date, setDate] = React.useState<string>(moment().format(momentDateFormat));
     const [time, setTime] = React.useState<string>(moment().format(momentTimeFormat));
@@ -177,7 +182,10 @@ function DERAnalysisReport() {
             if (handle1.abort != undefined) handle1.abort();
 
         };
-    }, [ders, date,  time, windowSize, timeWindowUnits, regulations]);
+    }, [ders, date, time, windowSize, timeWindowUnits, regulations]);
+
+    type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
+    const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
@@ -225,12 +233,14 @@ function DERAnalysisReport() {
                         </li>
 
                         <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
-                            <ReportTimeFilter filter={{ date: date, time: time, windowSize: windowSize, timeWindowUnits: timeWindowUnits }} setFilter={(f) => {
-                                setDate(f.date);
-                                setTime(f.time);
-                                setTimeWindowUnits(f.timeWindowUnits);
-                                setWindowSize(f.windowSize);
-                            }} showQuickSelect={false} />
+                            <TimeFilter filter={{ center: date + ' ' + time, halfDuration: windowSize, unit: units[timeWindowUnits] }}
+                                setFilter={(center: string, start: string, end: string, unit: TimeUnit, duration: number) => {
+                                setDate(center.split(' ')[0]);
+                                setTime(center.split(' ')[0]);
+                                setTimeWindowUnits(units.findIndex(u => u == unit));
+                                setWindowSize(duration / 2.0);
+                                }} showQuickSelect={false} timeZone={timeZone}
+                                dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                             <button style={{ position: 'absolute', top: 30, right: 30 }} data-toggle="modal" data-target="#epriModal">⚠</button>
                         </li>
 

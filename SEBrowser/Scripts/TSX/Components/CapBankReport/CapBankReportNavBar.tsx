@@ -22,15 +22,12 @@
 //******************************************************************************************************
 import * as React from 'react';
 import _ from 'lodash';
-
 import SEBrowserService from './../../../TS/Services/SEBrowser';
 import { Modal } from '@gpa-gemstone/react-interactive';
-import ReportTimeFilter from '../ReportTimeFilter';
 import { SEBrowser } from '../../global';
-
-
-const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS";
+import { TimeFilter } from '@gpa-gemstone/common-pages'
+import { useSelector } from 'react-redux';
+import { SelectTimeZone, SelectDateTimeSetting } from '../SettingsSlice';
 
 
 export interface Substation {
@@ -84,6 +81,9 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
             showFilter: false,
         };
     }
+
+    timeZone = useSelector(SelectTimeZone);
+    dateTimeSetting = useSelector(SelectDateTimeSetting);
 
     componentDidMount() {
         this.getSubstationData();
@@ -169,6 +169,19 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
 
         bankOptions.push(<option key={-2} value={-2}> {'Unknown'} </option>);
 
+        type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
+        const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
+
+        // Wrapper function to match the expected type for setFilter
+        const handleSetFilter = (center: string, start: string, end: string, unit: TimeUnit, duration: number) => {
+            this.setDate({
+                time: center.split(' ')[1],
+                date: center.split(' ')[0],
+                windowSize: duration / 2.0,
+                timeWindowUnits: units.findIndex(u => u == unit)
+            });
+        };
+
         return (
             <>
             <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -207,7 +220,12 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                             </fieldset>
                         </li>
                         <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
-                            <ReportTimeFilter filter={this.props.TimeFilter} setFilter={(f) => this.setDate(f)} showQuickSelect={true} />
+                                <TimeFilter filter={{
+                                    center: this.props.TimeFilter.date + ' ' + this.props.TimeFilter.time,
+                                    halfDuration: this.props.TimeFilter.windowSize,
+                                    unit: units[this.props.TimeFilter.timeWindowUnits]
+                                }} setFilter={handleSetFilter} showQuickSelect={false} timeZone={this.timeZone}
+                                    dateTimeSetting={this.dateTimeSetting} isHorizontal={false} />
                         </li>
                         <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>

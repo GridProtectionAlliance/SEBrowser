@@ -24,12 +24,11 @@
 //******************************************************************************************************
 import React from 'react';
 import _ from 'lodash';
-import ReportTimeFilter from '../ReportTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SelectAssetGroupList, SelectAssetList, SelectCharacteristicFilter, SelectMeterList, SelectReset, SelectStationList, SelectTimeFilter, SelectTypeFilter, SetFilterLists } from './EventSearchSlice';
 import { ResetFilters,  SetFilters } from './EventSearchSlice';
 import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice, MagDurCurveSlice, EventTypeSlice } from '../../Store';
-import { DefaultSelects } from '@gpa-gemstone/common-pages';
+import { DefaultSelects, TimeFilter } from '@gpa-gemstone/common-pages';
 import NavbarFilterButton from '../Common/NavbarFilterButton';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { Input, Select, MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
@@ -38,6 +37,7 @@ import { SEBrowser } from '../../Global';
 import EventSearchTypeFilters from './EventSearchTypeFilter';
 import { SelectDateTimeSetting, SelectTimeZone } from '../SettingsSlice';
 import { getMoment, getStartEndTime, readableUnit } from './TimeWindowUtils';
+import { useSelector } from 'react-redux';
 
 interface IProps {
     toggleVis: () => void,
@@ -46,6 +46,8 @@ interface IProps {
 }
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
+type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
+const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
 
 const EventSearchNavbar = (props: IProps) => {
     const navRef = React.useRef(null);
@@ -312,6 +314,19 @@ const EventSearchNavbar = (props: IProps) => {
     const swellsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Swell')?.ID ?? -1) != null;
     const transientsSelected = newTypeFilter.find(i => i == eventTypes.find(item => item.Name == 'Transient')?.ID ?? -1) != null;
 
+    
+
+    // Wrapper function to match the expected type for setFilter
+    const handleSetFilter = (center: string, start: string, end: string, unit: TimeUnit, duration: number) => {
+        dispatch(SetFilters({
+            time: {
+                time: center.split(' ')[1],
+                date: center.split(' ')[0],
+                windowSize: duration / 2.0,
+                timeWindowUnits: units.findIndex(u => u == unit)
+            } }))
+    };
+
     return (
         <>
             <nav className="navbar navbar-expand-xl navbar-light bg-light" ref={navRef}>
@@ -319,7 +334,9 @@ const EventSearchNavbar = (props: IProps) => {
             <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                 <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                     <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
-                            <ReportTimeFilter filter={timeFilter} setFilter={(f) => dispatch(SetFilters({ time: f })) } showQuickSelect={true} />
+                            <TimeFilter filter={{ center: timeFilter.date + ' ' + timeFilter.time, halfDuration: timeFilter.windowSize, unit: units[timeFilter.timeWindowUnits] }}
+                                setFilter={handleSetFilter} showQuickSelect={true} timeZone={timeZone}
+                                dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                         </li>
                         <EventSearchTypeFilters Height={height} />
                     <li className="nav-item" style={{ width: '45%', paddingRight: 10 }}>
