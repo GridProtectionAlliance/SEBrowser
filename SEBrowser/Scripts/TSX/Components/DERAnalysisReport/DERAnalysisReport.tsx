@@ -236,7 +236,7 @@ function DERAnalysisReport() {
                             <TimeFilter filter={{ center: date + ' ' + time, halfDuration: windowSize, unit: units[timeWindowUnits] }}
                                 setFilter={(center: string, start: string, end: string, unit: TimeUnit, duration: number) => {
                                 setDate(center.split(' ')[0]);
-                                setTime(center.split(' ')[0]);
+                                setTime(center.split(' ')[1]);
                                 setTimeWindowUnits(units.findIndex(u => u == unit));
                                 setWindowSize(duration / 2.0);
                                 }} showQuickSelect={false} timeZone={timeZone}
