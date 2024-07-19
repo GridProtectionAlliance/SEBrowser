@@ -194,7 +194,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
 
     function setWindowSize(windowSize: number) {
 
-        const object = _.clone(this.props) as RelayReportNavBarProps;
+        const object = _.clone(props) as RelayReportNavBarProps;
         object.windowSize = windowSize;
         props.stateSetter({ searchBarProps: object });
     }
@@ -243,7 +243,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                             <TimeFilter filter={{ center: props.date + ' ' + props.time, halfDuration: props.windowSize, unit: units[props.timeWindowUnits] }}
                                 setFilter={(center: string, start: string, end: string, unit: TimeUnit, duration: number) => {
                                 setDate(center.split(' ')[0]);
-                                setTime(center.split(' ')[0]);
+                                setTime(center.split(' ')[1]);
                                     setTimeWindowUnits(units.findIndex(u => u == unit));
                                 setWindowSize(duration / 2.0);
                                 }} showQuickSelect={false} timeZone={timeZone}
