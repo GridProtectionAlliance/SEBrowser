@@ -28,15 +28,16 @@ import { AssetSlice, MeterSlice, PhaseSlice, ChannelGroupSlice } from '../../Sto
 import { SEBrowser, TrendSearch, IMultiCheckboxOption } from '../../Global';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
-import { DefaultSelects } from '@gpa-gemstone/common-pages';
+import { DefaultSelects, TimeFilter } from '@gpa-gemstone/common-pages';
 import { Search, ToolTip } from '@gpa-gemstone/react-interactive';
 import { CrossMark, SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { CreateGuid } from '@gpa-gemstone/helper-functions';
-import ReportTimeFilter from '../ReportTimeFilter';
 import NavbarFilterButton from '../Common/NavbarFilterButton';
 import TrendChannelTable from './Components/TrendChannelTable';
 import html2canvas from 'html2canvas';
 import jspdf from 'jspdf';
+import { useSelector } from 'react-redux';
+import { SelectTimeZone, SelectDateTimeSetting } from '../SettingsSlice';
 
 interface IProps {
     ToggleVis: () => void,
@@ -72,6 +73,9 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
 
     const phaseStatus = useAppSelector(PhaseSlice.SearchStatus);
     const allPhases = useAppSelector(PhaseSlice.SearchResults);
+
+    const timeZone = useSelector(SelectTimeZone);
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
 
     const channelGroupStatus = useAppSelector(ChannelGroupSlice.SearchStatus);
     const allChannelGroups = useAppSelector(ChannelGroupSlice.SearchResults);
@@ -256,6 +260,17 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         };
     }
 
+    type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
+    const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
+    const handleSetFilter = (center: string, start: string, end: string, unit: TimeUnit, duration: number) => {
+            setTimeFilter({
+                time: center.split(' ')[1],
+                date: center.split(' ')[0],
+                windowSize: duration / 2.0,
+                timeWindowUnits: units.findIndex(u => u == unit)
+            })
+    };
+
     function getAdditionalAssetFields(setFields) {
         const handle = $.ajax({
             type: "GET",
@@ -310,7 +325,9 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             <>
                 <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                     <li className="nav-item" style={{ width: '30%', paddingRight: 10 }} ref={timeRef}>
-                        <ReportTimeFilter filter={timeFilter} setFilter={setTimeFilter} showQuickSelect={true} />
+                        <TimeFilter filter={{ center: timeFilter.date + ' ' + timeFilter.time, halfDuration: timeFilter.windowSize, unit: units[timeFilter.timeWindowUnits] }}
+                            setFilter={handleSetFilter} showQuickSelect={true} timeZone={timeZone}
+                            dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                     </li>
                     <li className="nav-item" style={{ width: '15%', paddingRight: 10 }} ref={filtRef}>
                         <fieldset className="border" style={{ padding: '10px' }}>

@@ -33,11 +33,12 @@ import { SEBrowser, TrendSearch } from '../../../global';
 import { SelectTrendDataSettings, SelectGeneralSettings } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
-import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
 import { SettingsModal, SeriesSettings } from '../Settings/SettingsModal';
 import { CyclicHistogram, ICyclicSeries } from './CyclicHistogram';
 
 type customSelects = "drag" | "symbol" | "horizontal" | "vertical";
+const momentDateFormat = "MM/DD/YYYY";
+const momentTimeFormat = "HH:mm:ss.SSS"; // Also is the gemstone format
 const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
 const defaultSelect = "drag";
 const defaultHighlight = "vertical";

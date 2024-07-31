@@ -41,8 +41,8 @@ const RelayReport = () => {
     const [BreakerID, setBreakerID] = React.useState<number>(0);
     const [ChannelID, setChannelID] = React.useState<number>(0);
     const [StationId, setStationId] = React.useState<number>(0);
-    const [date, setDate] = React.useState<string>('');
-    const [time, setTime] = React.useState<string>('');
+    const [date, setDate] = React.useState<string>('01/01/2000');
+    const [time, setTime] = React.useState<string>('12:00:00.000');
     const [windowSize, setWindowSize] = React.useState<number>(0);
     const [timeWindowUnits, setTimeWindowUnits] = React.useState<number>(0);
 

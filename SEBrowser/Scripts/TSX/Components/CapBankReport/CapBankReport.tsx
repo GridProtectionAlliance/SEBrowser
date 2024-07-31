@@ -27,6 +27,8 @@ import * as queryString from 'querystring';
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SEBrowser } from '../../global';
+import { useSelector } from 'react-redux';
+import { SelectTimeZone, SelectDateTimeSetting } from '../SettingsSlice';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -40,8 +42,8 @@ const CapBankReport = () => {
     const history = useLocation();
     const [CapBankID, setCapBankID] = React.useState<number>(0);
     const [time, setTime] = React.useState<SEBrowser.IReportTimeFilter>({
-        date: '1/1/2000',
-        time: '12:00:00',
+        date: '01/01/2000',
+        time: '12:00:00.000',
         windowSize: 1,
         timeWindowUnits: 1
         });
@@ -56,6 +58,9 @@ const CapBankReport = () => {
     const [PISFilt, setPISFilt] = React.useState<number[]>([]);
     const [HealthFilt, setHealthFilt] = React.useState<number[]>([]);
     const [PhaseFilter, setPhaseFilter] = React.useState<number[]>([]);
+
+    const timeZone = useSelector(SelectTimeZone);
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
@@ -115,7 +120,7 @@ const CapBankReport = () => {
         CapBankID, TimeFilter: time, 
         selectedBank, StationId, numBanks, ResFilt, StatFilt,
         OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter,
-        stateSetter: setState
+        timeZone, dateTimeSetting, stateSetter: setState
     }
 
     return (
