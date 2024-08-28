@@ -27,7 +27,7 @@ import { LoadingIcon, OverlayDrawer } from '@gpa-gemstone/react-interactive';
 import { ConfigTable } from '@gpa-gemstone/react-interactive';
 import { ReactTable } from '@gpa-gemstone/react-table'
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import {  Redux } from '../../global';
+import { Redux } from '../../global';
 import { SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
 import { SelectEventSearchSettings } from '../SettingsSlice';
 
@@ -45,15 +45,18 @@ interface IColumn {
 
 export default function EventSearchList(props: IProps) {
     const ref = React.useRef();
-    const closureHandler = React.useRef<((o: boolean) => void)>(() => {/*Do Nothing*/ })
+    const closureHandler = React.useRef<((o: boolean) => void)>(() => {/*Do Nothing*/ });
     const count = React.useRef(null);
+
     const dispatch = useAppDispatch();
+
     const status = useAppSelector(SelectEventSearchsStatus);
     const sortField = useAppSelector(SelectEventSearchsSortField);
     const ascending = useAppSelector(SelectEventSearchsAscending);
     const data = useAppSelector((state: Redux.StoreState) => SelectEventSearchs(state));
+    const numberResults = useAppSelector((state: Redux.StoreState) => SelectEventSearchSettings(state).NumberResults);
+
     const [cols, setCols] = React.useState<IColumn[]>([]);
-    const numberResults = useAppSelector((state: Redux.StoreState) => SelectEventSearchSettings(state).NumberResults)
     const [hCounter, setHCounter] = React.useState<number>(0);
 
     React.useEffect(() => {
@@ -124,7 +127,6 @@ export default function EventSearchList(props: IProps) {
     }
 
     function setScrollBar() {
-
         const rowHeight = $(ReactDOM.findDOMNode(ref.current)).find('tbody').children()[0].clientHeight;
         const index = data.map(a => a.EventID.toString()).indexOf(props.eventid.toString());
         const tableHeight = data.length * rowHeight;
@@ -141,80 +143,86 @@ export default function EventSearchList(props: IProps) {
 
     function ProcessWhitespace(txt: string | number): React.ReactNode {
         if (txt == null)
-            return <>N/A</>
+            return <>N/A</>;
         const lines = txt.toString().split("<br>");
-        return lines.map((item, index) => {
-            if (index == 0)
-                return <> {item} </>
-        return <> <br/> {item} </> 
+        return lines.map((item, i) => {
+            if (i == 0)
+                return <div key={i}> {item} </div>;
+        return <> <br/> {item} </>;
         })
     }
     return (
         <>
-        <div ref={ref} style={{
-            width: '100%', maxHeight: props.height, overflowY: "hidden", overflowX: "hidden", opacity: (status == 'loading' ? 0.5 : undefined),
-            backgroundColor: (status == 'loading' ? '#00000' : undefined)
-        }}>
-            {status == 'loading' ? <div style={{ height: '40px', width: '40px', margin: 'auto' }}>
-                <LoadingIcon Show={true} Size={40} />
-                </div> : null}
-                {cols.length > 0 ? < ConfigTable.Table<any>
-                    LocalStorageKey="SEbrowser.EventSearch.TableCols"
-                    TableClass="table table-hover"
-                    Data={data}
-                    SortKey={sortField}
-                    Ascending={ascending}
-                    TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 60 }}
-                    TbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - hCounter - 60 }}
-                    RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
-                    TableStyle={{ marginBottom: 0 }}
-                    Selected={(item) => {
-                        if (item.EventID == props.eventid) return true;
-                        else return false;
-                    }}
-                    KeySelector={(item) => (item.EventID.toString() + '-' + item.DisturbanceID)}
-                    OnSort={(d) => {
-                        if (d.colKey == sortField) dispatch(Sort({ Ascending: ascending, SortField: sortField }));
-                        else dispatch(Sort({ Ascending: true, SortField: d.colKey }));
-                    }}
-                    OnClick={(item) => props.selectEvent(item.row.EventID)}
-                    SettingsPortal={'TableSettings'}
-                    OnSettingsChange={closeSettings}
-                >
-                    <ReactTable.Column<any>
-                        Key={'Time'}
-                        AllowSort={true}
-                        Content={({ item, field }) => ProcessWhitespace(item[field])}
-                        Field={'Time'}
+            <div ref={ref} style={{
+                width: '100%',
+                maxHeight: props.height,
+                overflowY: "hidden",
+                overflowX: "hidden",
+                opacity: (status == 'loading' ? 0.5 : undefined),
+                backgroundColor: (status == 'loading' ? '#00000' : undefined)
+            }}>
+                {status == 'loading' ?
+                    <div style={{ height: '40px', width: '40px', margin: 'auto' }}>
+                        <LoadingIcon Show={true} Size={40} />
+                    </div>
+                : null}
+                {cols.length > 0 ? 
+                    <ConfigTable.Table<any>
+                        LocalStorageKey="SEbrowser.EventSearch.TableCols"
+                        TableClass="table table-hover"
+                        Data={data}
+                        SortKey={sortField}
+                        Ascending={ascending}
+                        TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%', height: 60 }}
+                        TbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.height - hCounter - 60 }}
+                        RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
+                        TableStyle={{ marginBottom: 0 }}
+                        KeySelector={(item) => (item.EventID.toString() + '-' + item.DisturbanceID)}
+                        OnClick={(item) => props.selectEvent(item.row.EventID)}
+                        SettingsPortal={'TableSettings'}
+                        OnSettingsChange={closeSettings}
+                        Selected={(item) => {
+                            if (item.EventID == props.eventid) return true;
+                            else return false;
+                        }}
+                        OnSort={(d) => {
+                            if (d.colKey == sortField) dispatch(Sort({ Ascending: ascending, SortField: sortField }));
+                            else dispatch(Sort({ Ascending: true, SortField: d.colKey }));
+                        }}
                     >
-                        Time
-                    </ReactTable.Column>
-                    {...cols.map(c => (
-                        <ConfigTable.Configurable Key={c.label} Label={c.label} Default={c.key === 'Event Type'}>
-                            <ReactTable.Column<any>
-                                Key={c.key}
-                                AllowSort={true}
-                                Field={c.label}
-                                Content={({ item, field }) => ProcessWhitespace(item[field])}
-                            >
-                                {c.label}
-                            </ReactTable.Column>
-                        </ConfigTable.Configurable>
-                    ))}
-                </ConfigTable.Table> : null}
-            {status == 'loading' ? null :
-                data.length == numberResults ?
+                        <ReactTable.Column<any>
+                            Key={'Time'}
+                            AllowSort={true}
+                            Content={({ item, field }) => ProcessWhitespace(item[field])}
+                            Field={'Time'}
+                        >
+                            Time
+                        </ReactTable.Column>
+                        {...cols.map((c, i) => (
+                            <ConfigTable.Configurable key={i} Key={c.label} Label={c.label} Default={c.key === 'Event Type'}>
+                                <ReactTable.Column<any>
+                                    Key={c.key}
+                                    AllowSort={true}
+                                    Field={c.label}
+                                    Content={({ item, field }) => ProcessWhitespace(item[field])}
+                                >
+                                    {c.label}
+                                </ReactTable.Column>
+                            </ConfigTable.Configurable>
+                        ))}
+                    </ConfigTable.Table>
+                : null}
+                {status == 'loading' ?
+                    null
+                    : data.length == numberResults ?
                         <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
                             Only the first {data.length} results are shown (sorted {(ascending? 'ascending' : 'descending')} by {sortField}) - please narrow your search or increase the number of results in the application settings.
-                    </div> :
-                    <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
-                        {data.length} results
-                    </div>}
+                        </div>
+                    : <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>{data.length} results</div>
+                }
             </div>
             <OverlayDrawer Title={''} Open={false} Location={'right'} Target={'eventPreviewPane'} GetOverride={(s) => { closureHandler.current = s; }} HideHandle={true}>
-                <div id={'TableSettings'} style={{ height: 500, width: 800, opacity: 1, background: undefined, color: 'black' }}>
-
-                </div>
+                <div id={'TableSettings'} style={{ height: 500, width: 800, opacity: 1, background: undefined, color: 'black' }}></div>
             </OverlayDrawer>
         </>
     );

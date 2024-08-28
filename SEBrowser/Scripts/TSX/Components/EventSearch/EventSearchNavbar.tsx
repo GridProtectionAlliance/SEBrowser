@@ -224,7 +224,6 @@ const EventSearchNavbar = (props: IProps) => {
     return (
         <>
             <nav className="navbar navbar-expand-xl navbar-light bg-light" ref={navRef}>
-
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                         <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
