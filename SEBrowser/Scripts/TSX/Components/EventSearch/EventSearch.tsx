@@ -113,15 +113,13 @@ const EventSearch = () => {
                                 View As {showMagDur ? 'List' : 'Mag/Dur'}
                             </button>
                             </div>
-                            {showMagDur ?
-                                <EventSearchMagDur
-                                Height={window.innerHeight - ((showNav ? navHeight : 52) + 120)}
-                                    EventID={eventId}
-                                SelectEvent={setEventId}
-                                /> :
-                            <EventSearchList eventid={eventId}
-                                selectEvent={setEventId}
-                                height={window.innerHeight - ((showNav ? navHeight : 52) + 120)} />
+                            {showMagDur
+                            ? <EventSearchMagDur
+                                    Height={window.innerHeight - ((showNav ? navHeight : 52) + 120)} EventID={eventId} SelectEvent={setEventId}
+                                />
+                            : <EventSearchList
+                                    eventid={eventId} selectEvent={setEventId} height={window.innerHeight - ((showNav ? navHeight : 52) + 120)} 
+                                />
                             }
                         </div>
                     </SplitSection>
@@ -136,7 +134,7 @@ const EventSearch = () => {
                             WindowSize={windowSize}
                             TimeWindowUnits={timeWindowUnits}
                         />
-                        </div>
+                    </div>
                 </SplitSection>
             </VerticalSplit>
         </div>
