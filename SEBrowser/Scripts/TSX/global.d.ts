@@ -115,7 +115,7 @@ export namespace Redux {
 }
 export namespace SEBrowser {
     type Status = 'loading' | 'idle' | 'error' | 'changed' | 'unitiated';
-    type TimeWindowMode = 'center' | 'startWindow' | 'endWindow' | 'startEnd';
+    type TimeWindowMode = 'startWindow' | 'endWindow' | 'startEnd';
 
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
     interface EventPreviewPaneSetting { ID: number, Name: string, Show: boolean, OrderBy: number }
