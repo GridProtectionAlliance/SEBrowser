@@ -97,7 +97,7 @@ const EventSearchNavbar = (props: IProps) => {
         if (dateTimeSetting == 'startWindow')
             r = `${start.format(momentDateTimeFormat)} (${timeZone})`;
         else if (dateTimeSetting == 'endWindow')
-            r = `${end.format(momentDateTimeFormat)} (${timeZone})`;
+            r = `${end.format(momentDateTimeFormat)} (${timeZone})`
         else if (dateTimeSetting == 'center')
             r = `${center.format(momentDateTimeFormat)} (${timeZone})`;
 
@@ -210,12 +210,12 @@ const EventSearchNavbar = (props: IProps) => {
         );
 
     // Wrapper function to match the expected type for setFilter
-    const handleSetFilter = (center: string, start: string, end: string, unit: TimeUnit, duration: number) => {
+    const handleSetFilter = (start: string, end: string, unit: TimeUnit, duration: number) => {
         dispatch(SetFilters({
             time: {
-                time: center.split(' ')[1],
-                date: center.split(' ')[0],
-                windowSize: duration / 2.0,
+                time: start.split(' ')[1],
+                date: start.split(' ')[0],
+                windowSize: duration,
                 timeWindowUnits: units.findIndex(u => u == unit)
             }
         }))
@@ -227,7 +227,8 @@ const EventSearchNavbar = (props: IProps) => {
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                         <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
-                            <TimeFilter filter={{ center: timeFilter.date + ' ' + timeFilter.time, halfDuration: timeFilter.windowSize, unit: units[timeFilter.timeWindowUnits] }}
+                            {/*! Notice were probably passing the wrong stuff as `start` cause it was `center` */}
+                            <TimeFilter filter={{ start: timeFilter.date + ' ' + timeFilter.time, duration: timeFilter.windowSize * 2, unit: units[timeFilter.timeWindowUnits] }}
                                 setFilter={handleSetFilter} showQuickSelect={true} timeZone={timeZone}
                                 dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                         </li>
@@ -236,7 +237,7 @@ const EventSearchNavbar = (props: IProps) => {
                         </li>
                         <li className="nav-item" style={{ width: '45%', paddingRight: 10 }}>
                             <EventCharacteristicFilter eventTypes={eventTypes} eventCharacteristicFilter={eventCharacteristicFilter} magDurCurves={magDurCurves}
-                                eventTypeFilter={eventTypeFilter} setEventFilters={ (characteristics, types) => { dispatch(SetFilters( {characteristics, types} ))} } />
+                                eventTypeFilter={eventTypeFilter} setEventFilters={(characteristics, types) => { dispatch(SetFilters({ characteristics, types })) }} />
                         </li>
                         <li className="nav-item" style={{ width: '15%', paddingRight: 10 }}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
