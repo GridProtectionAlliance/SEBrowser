@@ -30,10 +30,6 @@ import { FetchEventSearches } from './Components/EventSearch/EventSearchSlice';
 
 const searchSettingsOptions = [
     {
-        Value: 'center',
-        Label: 'Center Date/Time and Window',
-    },
-    {
         Value: 'startWindow',
         Label: 'Start Date/Time and Window',
     },
@@ -108,15 +104,15 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
             >
                 <div className="row">
                     <div className="col-6">
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Event Search Settings:</legend>
-                                <div className={"row"}>
-                                    <div className={'col'}>
+                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>Event Search Settings:</legend>
+                            <div className={"row"}>
+                                <div className={'col'}>
                                     <Input<Redux.IEventSearchSettings>
                                         Record={evtSearch} Field='NumberResults'
                                         Setter={setEvtSearch} Valid={() => true}
                                         Label='Number of Results' Type='integer' />
-                                    </div>
+                                </div>
                             </div>
                             <div className={"row"}>
                                 <div className={'col'}>
@@ -149,7 +145,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={trendData}
                                         Field='BorderPlots'
                                         Setter={setTrendData}
-                                        Label='Enable Plot Borders'/>
+                                        Label='Enable Plot Borders' />
                                 </div>
                             </div>
                             <div className={"row"}>
@@ -158,7 +154,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={trendData}
                                         Field='InsertAtStart'
                                         Setter={setTrendData}
-                                        Label='Add New Plots to Top'/>
+                                        Label='Add New Plots to Top' />
                                 </div>
                             </div>
                             <div className={"row"}>
@@ -167,7 +163,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={trendData}
                                         Field='StartWithOptionsClosed'
                                         Setter={setTrendData}
-                                        Label='Toolbar Closed by Default'/>
+                                        Label='Toolbar Closed by Default' />
                                 </div>
                             </div>
                             <div className={"row"}>
@@ -176,7 +172,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={trendData}
                                         Field='MarkerSnapping'
                                         Setter={setTrendData}
-                                        Label='Snap Markers to Nearest Data Point'/>
+                                        Label='Snap Markers to Nearest Data Point' />
                                 </div>
                             </div>
                         </fieldset>
@@ -218,7 +214,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                         </fieldset>
                     </div>
                 </div>
-        </Modal>
+            </Modal>
         </>
     );
 }

@@ -97,14 +97,10 @@ const EventSearchNavbar = (props: IProps) => {
         if (dateTimeSetting == 'startWindow')
             r = `${start.format(momentDateTimeFormat)} (${timeZone})`;
         else if (dateTimeSetting == 'endWindow')
-            r = `${end.format(momentDateTimeFormat)} (${timeZone})`
-        else if (dateTimeSetting == 'center')
             r = `${center.format(momentDateTimeFormat)} (${timeZone})`;
 
         if (dateTimeSetting == 'startEnd')
             r += ` to ${end.format(momentDateTimeFormat)} (${timeZone})`;
-        else if (dateTimeSetting == 'center')
-            r += ` +/- ${timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
         else if (dateTimeSetting == 'startWindow')
             r += ` + ${2 * timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
         else if (dateTimeSetting == 'endWindow')
