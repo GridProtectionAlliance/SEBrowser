@@ -115,21 +115,21 @@ export namespace Redux {
 }
 export namespace SEBrowser {
     type Status = 'loading' | 'idle' | 'error' | 'changed' | 'unitiated';
-    type TimeWindowMode =   'center' | 'startWindow' | 'endWindow' | 'startEnd';
-      
+    type TimeWindowMode = 'center' | 'startWindow' | 'endWindow' | 'startEnd';
+
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
     interface EventPreviewPaneSetting { ID: number, Name: string, Show: boolean, OrderBy: number }
     interface IReportTimeFilter { date: string, time: string, windowSize: number, timeWindowUnits: number }
     interface IPhaseFilters { AN: boolean, BN: boolean, CN: boolean, AB: boolean, BC: boolean, CA: boolean, ABG: boolean, BCG: boolean, ABC: boolean, ABCG: boolean }
     interface IEventCharacteristicFilters {
-        durationMin: number, durationMax: number,
+        durationMin?: number, durationMax?: number,
         phases: IPhaseFilters,
-        transientMin?: number, transientMax?: number, transientType: ('LL'|'LN'|'both'),
+        transientMin?: number, transientMax?: number, transientType: ('LL' | 'LN' | 'both'),
         sagMin?: number, sagMax?: number, sagType: ('LL' | 'LN' | 'both'),
         swellMin?: number, swellMax?: number, swellType: ('LL' | 'LN' | 'both'),
         curveID: number, curveInside: boolean, curveOutside: boolean
     }
-    
+
     interface EventNote extends XDA.Types.Note {
         EventIDs: number[],
         IDs: number[],
@@ -223,7 +223,7 @@ export namespace TrendSearch {
         Value: number
     }
 
-    type IPlotTypes = 'Line'|'Cyclic';
+    type IPlotTypes = 'Line' | 'Cyclic';
 
     interface ITrendPlot {
         // Represents Data Needed by Outer
