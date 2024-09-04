@@ -25,7 +25,7 @@ import React from 'react';
 import _ from 'lodash';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { AssetSlice, MeterSlice, PhaseSlice, ChannelGroupSlice } from '../../Store';
-import { SEBrowser, TrendSearch, IMultiCheckboxOption } from '../../Global';
+import { SEBrowser, TrendSearch, IMultiCheckboxOption } from '../../global';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { DefaultSelects, TimeFilter } from '@gpa-gemstone/common-pages';
@@ -94,7 +94,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
     // Button Consts
-    const [hover, setHover] = React.useState < 'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Group-Line' | 'Cyclic' | 'Move' | 'Trash' | 'Select' | 'Capture' >('None');
+    const [hover, setHover] = React.useState<'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Group-Line' | 'Cyclic' | 'Move' | 'Trash' | 'Select' | 'Capture'>('None');
 
     // Page effects
     React.useLayoutEffect(() => {
@@ -262,13 +262,13 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
 
     type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
     const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
-    const handleSetFilter = (center: string, start: string, end: string, unit: TimeUnit, duration: number) => {
-            setTimeFilter({
-                time: center.split(' ')[1],
-                date: center.split(' ')[0],
-                windowSize: duration / 2.0,
-                timeWindowUnits: units.findIndex(u => u == unit)
-            })
+    const handleSetFilter = (start: string, end: string, unit: TimeUnit, duration: number) => {
+        setTimeFilter({
+            time: start.split(' ')[1],
+            date: start.split(' ')[0],
+            windowSize: duration,
+            timeWindowUnits: units.findIndex(u => u == unit)
+        })
     };
 
     function getAdditionalAssetFields(setFields) {
@@ -325,7 +325,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             <>
                 <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                     <li className="nav-item" style={{ width: '30%', paddingRight: 10 }} ref={timeRef}>
-                        <TimeFilter filter={{ center: timeFilter.date + ' ' + timeFilter.time, halfDuration: timeFilter.windowSize, unit: units[timeFilter.timeWindowUnits] }}
+                        <TimeFilter filter={{ start: timeFilter.date + ' ' + timeFilter.time, duration: timeFilter.windowSize, unit: units[timeFilter.timeWindowUnits] }}
                             setFilter={handleSetFilter} showQuickSelect={true} timeZone={timeZone}
                             dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                     </li>
@@ -389,7 +389,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             Type='multi' SelectedSet={selectedSet} SetSelectedSet={setSelectedSet} EnableDragDrop={!props.Movable} />
                     </li>
                 </ul>
-                <div className="btn-group-vertical float-right" style={{paddingRight: '6px'}}>
+                <div className="btn-group-vertical float-right" style={{ paddingRight: '6px' }}>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}
                         data-tooltip='Hide' onMouseEnter={() => setHover('Hide')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.ArrowDropUp}</span>
@@ -398,7 +398,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         Hides Navbar
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`}
-                        onClick={() => { props.SetShowAllSettings(true); } }
+                        onClick={() => { props.SetShowAllSettings(true); }}
                         data-tooltip='Cog' onMouseEnter={() => setHover('Cog')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.Settings}</span>
                     </button>

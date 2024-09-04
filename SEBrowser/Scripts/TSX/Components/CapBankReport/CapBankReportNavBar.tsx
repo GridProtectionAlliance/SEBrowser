@@ -67,7 +67,7 @@ interface Istate {
     showFilter: boolean,
 }
 
-export default class CapBankReportNavBar extends React.Component<CapBankReportNavBarProps, Istate>{
+export default class CapBankReportNavBar extends React.Component<CapBankReportNavBarProps, Istate> {
     seBrowserService: SEBrowserService;
 
     constructor(props: CapBankReportNavBarProps, context) {
@@ -168,11 +168,11 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
 
         // Wrapper function to match the expected type for setFilter
-        const handleSetFilter = (center: string, start: string, end: string, unit: TimeUnit, duration: number) => {
+        const handleSetFilter = (start: string, end: string, unit: TimeUnit, duration: number) => {
             this.setDate({
-                time: center.split(' ')[1],
-                date: center.split(' ')[0],
-                windowSize: duration / 2.0,
+                time: start.split(' ')[1],
+                date: start.split(' ')[0],
+                windowSize: duration,
                 timeWindowUnits: units.findIndex(u => u == unit)
             });
         };
@@ -216,8 +216,8 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                             </li>
                             <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
                                 <TimeFilter filter={{
-                                    center: this.props.TimeFilter.date + ' ' + this.props.TimeFilter.time,
-                                    halfDuration: this.props.TimeFilter.windowSize,
+                                    start: this.props.TimeFilter.date + ' ' + this.props.TimeFilter.time,
+                                    duration: this.props.TimeFilter.windowSize,
                                     unit: units[this.props.TimeFilter.timeWindowUnits]
                                 }} setFilter={handleSetFilter} showQuickSelect={true} timeZone={this.props.timeZone}
                                     dateTimeSetting={this.props.dateTimeSetting} isHorizontal={false} />

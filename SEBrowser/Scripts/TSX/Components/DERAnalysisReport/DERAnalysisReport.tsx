@@ -103,7 +103,7 @@ function DERAnalysisReport() {
             async: true
         }) as JQuery.jqXHR<string[]>;
 
-        handle1.done(d => setRegulations(d.map((reg, i) => ({Value: i, Text: reg, Selected: true}))) )
+        handle1.done(d => setRegulations(d.map((reg, i) => ({ Value: i, Text: reg, Selected: true }))))
 
         const handle2 = $.ajax({
             type: "GET",
@@ -112,7 +112,7 @@ function DERAnalysisReport() {
             dataType: 'json',
             cache: false,
             async: true
-        }) as JQuery.jqXHR<{LocationID: number, LocationKey: string, Name: string}[]>;
+        }) as JQuery.jqXHR<{ LocationID: number, LocationKey: string, Name: string }[]>;
 
         handle2.done(d => setStations(d.map((reg) => ({ Value: reg.LocationID, Text: reg.Name, Selected: true }))))
 
@@ -140,7 +140,7 @@ function DERAnalysisReport() {
             url: `${homePath}api/DERReport/DER`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            data: JSON.stringify({ SubstationIDs: stations.filter(s=> s.Selected).map(s => s.Value)}),
+            data: JSON.stringify({ SubstationIDs: stations.filter(s => s.Selected).map(s => s.Value) }),
             cache: false,
             async: true
         }) as JQuery.jqXHR<OpenXDA.Types.Asset[]>;
@@ -233,13 +233,14 @@ function DERAnalysisReport() {
                         </li>
 
                         <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
-                            <TimeFilter filter={{ center: date + ' ' + time, halfDuration: windowSize, unit: units[timeWindowUnits] }}
-                                setFilter={(center: string, start: string, end: string, unit: TimeUnit, duration: number) => {
-                                setDate(center.split(' ')[0]);
-                                setTime(center.split(' ')[1]);
-                                setTimeWindowUnits(units.findIndex(u => u == unit));
-                                setWindowSize(duration / 2.0);
-                                }} showQuickSelect={false} timeZone={timeZone}
+                            <TimeFilter filter={{ start: date + ' ' + time, duration: windowSize, unit: units[timeWindowUnits] }}
+                                setFilter={(start: string, end: string, unit: TimeUnit, duration: number) => {
+                                    setDate(start.split(' ')[0]);
+                                    setTime(start.split(' ')[1]);
+                                    setTimeWindowUnits(units.findIndex(u => u == unit));
+                                    setWindowSize(duration);
+                                }}
+                                showQuickSelect={false} timeZone={timeZone}
                                 dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                             <button style={{ position: 'absolute', top: 30, right: 30 }} data-toggle="modal" data-target="#epriModal">⚠</button>
                         </li>
@@ -267,7 +268,7 @@ function DERAnalysisReport() {
                         ascending={ascending}
                         sortKey={sortKey}
                         onSort={(data) => {
-                            if(data.colField == sortKey)
+                            if (data.colField == sortKey)
                                 setAscending(!ascending);
                             else
                                 setSortKey(data.colField);
@@ -313,12 +314,12 @@ function DERAnalysisReport() {
                             <button type="button" className="close" data-dismiss="modal">&times;</button>
                         </div>
                         <div className="modal-body">
-                            <img src={`${homePath}Images/EPRILogo.jpeg` }/>
+                            <img src={`${homePath}Images/EPRILogo.jpeg`} />
                             <div>Software Title DER Operation Version #0</div>
                             <div>Electric Power Research Institute (EPRI)</div>
                             <div>3420 Hillview Ave.</div>
                             <div>Palo Alto, CA 94304</div>
-                            <br/>
+                            <br />
                             <div>Copyright © 2021 Electric Power Research Institute, Inc. All rights reserved.</div>
                             <br />
                             <div>As a user of this EPRI preproduction software, you accept and acknowledge that:</div>
@@ -345,7 +346,7 @@ function DERAnalysisReport() {
 }
 
 const Graph = (props: DERAnalyticResult) => {
-    const [data, setData] = React.useState<[number,number][]>([]);
+    const [data, setData] = React.useState<[number, number][]>([]);
 
     React.useEffect(() => {
         if (props.ID == undefined) return;

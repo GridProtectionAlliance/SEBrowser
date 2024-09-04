@@ -21,7 +21,6 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import _ from 'lodash';
 import { IMultiCheckboxOption, TrendSearch } from '../../../../global';
 import { TimeFilter } from '@gpa-gemstone/common-pages'
 import { CheckBox, Input, MultiCheckBoxSelect, Select } from '@gpa-gemstone/react-forms';
@@ -83,7 +82,7 @@ const PlotSettingsTab = React.memo((props: IProps) => {
         }
         return true;
     }
-        
+
     function isValid(): boolean {
         return validateTrendPlot('Height') && validateTrendPlot('Width') && validateLimit("LeftUpper") && validateLimit("RightUpper");
     }
@@ -91,19 +90,19 @@ const PlotSettingsTab = React.memo((props: IProps) => {
     type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
     const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
 
-    // converts the SEBrowser filter to ICenterDuration filter
+    // converts the SEBrowser filter to IStartDuration filter
     const convertTimeFilter = (flt) => ({
-        center: flt.date + ' ' + flt.time,
-        halfDuration: flt.windowSize,
+        start: flt.date + ' ' + flt.time,
+        duration: flt.windowSize,
         unit: units[flt.timeWindowUnits]
     });
 
     // Wrapper function to match the expected type for setFilter
-    const handleSetFilter = (center: string, start: string, end: string, unit: TimeUnit, duration: number) => {
+    const handleSetFilter = (start: string, end: string, unit: TimeUnit, duration: number) => {
         const newFilter = {
-            time: center.split(' ')[1],
-            date: center.split(' ')[0],
-            windowSize: duration / 2.0,
+            time: start.split(' ')[1],
+            date: start.split(' ')[0],
+            windowSize: duration,
             timeWindowUnits: units.findIndex(u => u == unit)
         }
         props.SetPlot({ ...props.Plot, TimeFilter: newFilter })
@@ -114,7 +113,7 @@ const PlotSettingsTab = React.memo((props: IProps) => {
             <div className="col" style={{ width: '50%', height: "100%" }}>
                 <legend className="w-auto" style={{ fontSize: 'large' }}>Plot Settings:</legend>
                 <div className="row">
-                    <div className="col" style={{ width: '50%'}}>
+                    <div className="col" style={{ width: '50%' }}>
                         <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Plot Title'} Field={'Title'} Setter={props.SetPlot} Valid={() => true} />
                     </div>
                     <div className="col" style={{ width: '50%' }}>
@@ -178,17 +177,17 @@ const PlotSettingsTab = React.memo((props: IProps) => {
                         </div>
                         <div className="col" style={{ width: '50%' }}>
                             <Input<AxisLimits> Record={limits} Setter={setPlotLimits} Valid={validateLimit} Feedback={limitFeedback}
-                                Label='Left Axis Upper' Field='LeftUpper' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'}/>
+                                Label='Left Axis Upper' Field='LeftUpper' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'} />
                         </div>
                     </div>
                     <div className="row">
                         <div className="col" style={{ width: '50%' }}>
                             <Input<AxisLimits> Record={limits} Setter={setPlotLimits} Valid={validateLimit} Feedback={limitFeedback}
-                                Label='Right Axis Lower' Field='RightLower' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'}/>
+                                Label='Right Axis Lower' Field='RightLower' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'} />
                         </div>
                         <div className="col" style={{ width: '50%' }}>
                             <Input<AxisLimits> Record={limits} Setter={setPlotLimits} Valid={validateLimit} Feedback={limitFeedback}
-                                Label='Right Axis Upper' Field='RightUpper' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'}/>
+                                Label='Right Axis Upper' Field='RightUpper' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'} />
                         </div>
                     </div>
                 </fieldset>
