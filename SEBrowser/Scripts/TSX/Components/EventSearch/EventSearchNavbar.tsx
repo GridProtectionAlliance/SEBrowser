@@ -224,7 +224,7 @@ const EventSearchNavbar = (props: IProps) => {
                     <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                         <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
                             {/*! Notice were probably passing the wrong stuff as `start` cause it was `center` */}
-                            <TimeFilter filter={{ start: timeFilter.date + ' ' + timeFilter.time, duration: timeFilter.windowSize * 2, unit: units[timeFilter.timeWindowUnits] }}
+                            <TimeFilter filter={{ start: timeFilter.date + ' ' + timeFilter.time, duration: timeFilter.windowSize, unit: units[timeFilter.timeWindowUnits] }}
                                 setFilter={handleSetFilter} showQuickSelect={true} timeZone={timeZone}
                                 dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                         </li>
