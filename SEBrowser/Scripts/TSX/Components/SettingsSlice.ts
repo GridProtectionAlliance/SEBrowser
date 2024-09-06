@@ -1,4 +1,4 @@
-﻿//******************************************************************************************************
+//******************************************************************************************************
 //  SettingsSlice.tsx - Gbtc
 //
 //  Copyright © 2023, Grid Protection Alliance.  All Rights Reserved.
@@ -106,7 +106,7 @@ function readSettings() {
     let preserved: Redux.SettingsState;
     try {
         const serializedState = localStorage.getItem('SEBrowser.Settings');
-        if (serializedState === null) throw new Error("No setting state found")
+        if (serializedState === null) throw new Error("No setting state found");
         preserved = JSON.parse(serializedState);
         return preserved;
     } catch (err) {

@@ -88,25 +88,25 @@ const EventSearchNavbar = (props: IProps) => {
     }, [evtTypeStatus]);
 
     React.useEffect(() => {
-        let r = "";
+        let range = "";
         const center = getMoment(timeFilter.date, timeFilter.time);
         const [start, end] = getStartEndTime(center, timeFilter.windowSize, timeFilter.timeWindowUnits);
 
         if (dateTimeSetting == 'startEnd')
-            r = `${start.format(momentDateTimeFormat)}`;
+            range = `${start.format(momentDateTimeFormat)}`;
         if (dateTimeSetting == 'startWindow')
-            r = `${start.format(momentDateTimeFormat)} (${timeZone})`;
+            range = `${start.format(momentDateTimeFormat)} (${timeZone})`;
         else if (dateTimeSetting == 'endWindow')
-            r = `${center.format(momentDateTimeFormat)} (${timeZone})`;
+            range = `${center.format(momentDateTimeFormat)} (${timeZone})`;
 
         if (dateTimeSetting == 'startEnd')
-            r += ` to ${end.format(momentDateTimeFormat)} (${timeZone})`;
+            range += ` to ${end.format(momentDateTimeFormat)} (${timeZone})`;
         else if (dateTimeSetting == 'startWindow')
-            r += ` + ${2 * timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
+            range += ` + ${2 * timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
         else if (dateTimeSetting == 'endWindow')
-            r += ` - ${2 * timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
+            range += ` - ${2 * timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
 
-        setTimeRange(r);
+        setTimeRange(range);
     }, [timeFilter, dateTimeSetting, timeZone])
 
     function getEnum(setOptions, field) {

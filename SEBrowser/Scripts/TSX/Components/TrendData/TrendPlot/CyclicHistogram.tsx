@@ -23,7 +23,7 @@
 import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
-import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../Global';
+import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../global';
 import { SelectTrendDataSettings, SelectGeneralSettings } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import GraphError from './GraphError';
@@ -54,7 +54,7 @@ interface IProps {
     children?: React.ReactNode
 }
 
-interface ICyclicSeries{
+interface ICyclicSeries {
     Channel: TrendSearch.ITrendChannel,
     Color: string
 }
@@ -159,7 +159,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
     React.useEffect(() => {
         if (props.ChannelInfo?.Color == null) return;
         const color = HexToHsv(props.ChannelInfo.Color);
-        setBarColor({ Hue: color.h, Saturation: color.s})
+        setBarColor({ Hue: color.h, Saturation: color.s })
     }, [props.ChannelInfo?.Color]);
 
     React.useEffect(() => {
@@ -242,10 +242,10 @@ const CyclicHistogram = React.memo((props: IProps) => {
                 <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={29} />
                 <h4 ref={titleRef} style={{ textAlign: "center", width: `${props.Width}px`, marginBottom: '0px' }}>
                     {props?.Title ?? ''}
-                        {(chartData?.Series?.length == null || chartData.Series.length === 0) ?
-                            <span data-tooltip={props.ID} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>{Warning}</span>
-                            : null
-                        }
+                    {(chartData?.Series?.length == null || chartData.Series.length === 0) ?
+                        <span data-tooltip={props.ID} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>{Warning}</span>
+                        : null
+                    }
                 </h4>
                 <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2} menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
