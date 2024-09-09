@@ -88,7 +88,7 @@ const EventSearchNavbar = (props: IProps) => {
 
     React.useEffect(() => {
         let range = "";
-        const startMoment = moment(timeFilter.start);
+        const startMoment = moment(timeFilter.start); // These default to the date+time format
         const endMoment = moment(timeFilter.end);
         const unit = findAppropriateUnit(startMoment, endMoment);
         const startEndDifference = startMoment.diff(endMoment, unit);
