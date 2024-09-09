@@ -37,7 +37,7 @@ import DERAnalysisReport from './Components/DERAnalysisReport/DERAnalysisReport'
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { Application, Page, Section } from '@gpa-gemstone/react-interactive';
 import Settings from './Settings';
-import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
+import ReactIcons from '@gpa-gemstone/gpa-symbols';
 import { useAppDispatch } from './hooks';
 import { LoadSettings } from './Components/SettingsSlice';
 
@@ -59,7 +59,7 @@ const SEBrowserMainPage = () => {
 
 
         handle.done(data => setLinks(data));
-        return () => { if(handle.abort != undefined) handle.abort()}
+        return () => { if (handle.abort != undefined) handle.abort() }
     }, []);
 
     React.useEffect(() => {
@@ -91,23 +91,23 @@ const SEBrowserMainPage = () => {
                             paddingRight: 6, paddingTop: 2
                         }}
                             onClick={() => setShowSettings(true)}>
-                            {SVGIcons.Settings}
-                    </button>
-                </li> </ul>}
-                OnSignOut={() => { window.location.href = `${homePath}/Logout`;}}
+                            <ReactIcons.Settings />
+                        </button>
+                    </li> </ul>}
+                OnSignOut={() => { window.location.href = `${homePath}/Logout`; }}
             >
-            <Page Name={'eventsearch'} Label={'Event Search'}>
-                <EventSearch />
-            </Page>
-            <Page Name={'meteractivity'} Label={'Meter Activity'}>
-                <MeterActivity />
-            </Page>
-            <Page Name={'trenddata'} Label={'Trend Data'}>
-                <TrendData />
-            </Page>
-            <Section Label={"Custom Reports"}>
-                {links.map((item, i) => <Page key={i} Name={item.AltValue ?? item.Value} Label={item.Value}>{createWidget(item.AltValue ?? item.Value)}</Page>)}
-            </Section>
+                <Page Name={'eventsearch'} Label={'Event Search'}>
+                    <EventSearch />
+                </Page>
+                <Page Name={'meteractivity'} Label={'Meter Activity'}>
+                    <MeterActivity />
+                </Page>
+                <Page Name={'trenddata'} Label={'Trend Data'}>
+                    <TrendData />
+                </Page>
+                <Section Label={"Custom Reports"}>
+                    {links.map((item, i) => <Page key={i} Name={item.AltValue ?? item.Value} Label={item.Value}>{createWidget(item.AltValue ?? item.Value)}</Page>)}
+                </Section>
             </Application>
             <Settings Show={showSettings} Close={() => setShowSettings(false)} />
         </>
