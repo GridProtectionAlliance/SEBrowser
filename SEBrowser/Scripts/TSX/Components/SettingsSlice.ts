@@ -49,7 +49,7 @@ const defaultState = {
     general: {
         MoveOptionsLeft: false,
         ShowDataPoints: true,
-        DateTime: 'startWindow'
+        DateTime: 'startEnd'
     }
 } as Redux.SettingsState;
 
