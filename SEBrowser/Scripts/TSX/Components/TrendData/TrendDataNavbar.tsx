@@ -40,6 +40,7 @@ import jspdf from 'jspdf';
 import queryString from 'querystring';
 import { useSelector } from 'react-redux';
 import { SelectTimeZone, SelectDateTimeSetting } from '../SettingsSlice';
+import moment from 'moment';
 
 interface IProps {
     ToggleVis: () => void,
@@ -65,6 +66,9 @@ interface ITrendDataFilter {
     MeterList: SystemCenter.Types.DetailedMeter[],
     AssetList: SystemCenter.Types.DetailedAsset[]
 }
+
+type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
+const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
 
 const TrendSearchNavbar = React.memo((props: IProps) => {
     const navRef = React.useRef(null);
@@ -92,6 +96,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [showFilter, setShowFilter] = React.useState<('None' | 'Meter' | 'Asset')>('None');
 
     const [timeFilter, setTimeFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.TimeFilter);
+    const [timeRange, setTimeRange] = React.useState<string>('');
 
     const [trendFilter, setTrendFilter] = React.useState<ITrendDataFilter>(null);
     const [phaseOptions, setPhaseOptions] = React.useState<IMultiCheckboxOption[]>([]);
@@ -240,6 +245,43 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             AssetList: queryRef.current.assetIds == null ? [] : allAssets?.filter(asset => queryRef.current.assetIds.has(asset.ID)) ?? []
         });
     }, [channelGroupStatus, phaseStatus, meterStatus, assetStatus, queryReady]);
+    React.useEffect(() => {
+        let range = "";
+        const startMoment = moment(timeFilter.start); // These default to the date+time format
+        const endMoment = moment(timeFilter.end);
+        const unit = findAppropriateUnit(startMoment, endMoment);
+        const startEndDifference = startMoment.diff(endMoment, unit);
+
+        if (dateTimeSetting == 'startEnd')
+            range = `${timeFilter.start} to ${timeFilter.end} (${timeZone})`;
+        if (dateTimeSetting == 'startWindow')
+            range = `${timeFilter.start} (${timeZone}) +${startEndDifference}`;
+        else if (dateTimeSetting == 'endWindow')
+            range = `${timeFilter.end} (${timeZone}) -${startEndDifference}`;
+
+        setTimeRange(range);
+    }, [timeFilter, dateTimeSetting, timeZone])
+
+    function findAppropriateUnit(startTime: moment.Moment, endTime: moment.Moment): TimeUnit {
+        const unitIndex = 7;
+        let diff = endTime.diff(startTime, units[unitIndex], true);
+
+        for (let i = unitIndex; i >= 1; i--) {
+            if (Number.isInteger(diff)) {
+                return units[i];
+            }
+            const nextI = i - 1;
+
+            diff = endTime.diff(startTime, units[nextI], true);
+
+            if (diff > 65000) {
+                diff = endTime.diff(startTime, units[i], true);
+                return units[i];
+            }
+        }
+
+        return units[0];
+    }
 
     function makeMultiCheckboxOptions(keyValues: IKeyValuePair[], setOptions: (options: IMultiCheckboxOption[]) => void, allKeys: { ID: number, Name: string, Description: string }[]) {
         if (allKeys == null || keyValues == null) return;
@@ -344,14 +386,10 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         };
     }
 
-    type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
-    const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
-    const handleSetFilter = (start: string, end: string, unit: TimeUnit, duration: number) => {
+    const handleSetFilter = (start: string, end: string) => {
         setTimeFilter({
-            time: start.split(' ')[1],
-            date: start.split(' ')[0],
-            windowSize: duration,
-            timeWindowUnits: units.findIndex(u => u == unit)
+            start: start,
+            end: end,
         })
     };
 
@@ -391,7 +429,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             <>
                 <div className="navbar-nav mr-auto">
                     <span className="navbar-text">
-                        {timeFilter.date} {timeFilter.time} +/- {timeFilter.windowSize} {formatWindowUnit(timeFilter.timeWindowUnits)}
+                        {timeRange}
                     </span>
                 </div>
                 <div className="navbar-nav ml-auto" >
@@ -409,7 +447,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             <>
                 <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                     <li className="nav-item" style={{ width: '30%', paddingRight: 10 }} ref={timeRef}>
-                        <TimeFilter filter={{ start: timeFilter.date + ' ' + timeFilter.time, duration: timeFilter.windowSize, unit: units[timeFilter.timeWindowUnits] }}
+                        <TimeFilter filter={{ start: timeFilter.start, end: timeFilter.end }}
                             setFilter={handleSetFilter} showQuickSelect={true} timeZone={timeZone}
                             dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                     </li>
