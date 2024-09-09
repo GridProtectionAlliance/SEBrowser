@@ -119,7 +119,8 @@ export namespace SEBrowser {
 
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
     interface EventPreviewPaneSetting { ID: number, Name: string, Show: boolean, OrderBy: number }
-    interface IReportTimeFilter { date: string, time: string, windowSize: number, timeWindowUnits: number }
+    /** @param start format: MM/DD/YYYYHH:mm:ss.SSS @param end format MM/DD/YYYY:mm:ss.SSS */
+    interface IReportTimeFilter { start: string, end: string } // MM/DD/YYYYHH:mm:ss.SSS
     interface IPhaseFilters { AN: boolean, BN: boolean, CN: boolean, AB: boolean, BC: boolean, CA: boolean, ABG: boolean, BCG: boolean, ABC: boolean, ABCG: boolean }
     interface IEventCharacteristicFilters {
         durationMin?: number, durationMax?: number,
