@@ -61,25 +61,6 @@ interface IChartData {
     AvgSeries: [number, number][]
 }
 
-// TODO: These can be in a shared place with eventSearchBar
-function formatWindowUnit(i: number) {
-    if (i == 7)
-        return "years";
-    if (i == 6)
-        return "months";
-    if (i == 5)
-        return "weeks";
-    if (i == 4)
-        return "days";
-    if (i == 3)
-        return "hours";
-    if (i == 2)
-        return "minutes";
-    if (i == 1)
-        return "seconds";
-    return "milliseconds";
-}
-
 // Formats that will be used for dateBoxes
 const timeFilterFormat = "MM/DD/YYYYHH:mm:ss.SSS";
 const serverFormat = "YYYY-MM-DD[T]HH:mm:ss.SSSZ";
@@ -106,10 +87,10 @@ const LineGraph = React.memo((props: IProps) => {
 
     React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
-        const centerTime: moment.Moment = moment(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
-        const startTime: string = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
-        // Need to move back in the other direction, so entire window
-        const endTime: string = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
+        const startMoment: moment.Moment = moment(props.TimeFilter.start, timeFilterFormat);
+        const endMoment: moment.Moment = moment(props.TimeFilter.end, timeFilterFormat);
+        const startTime: string = startMoment.format(serverFormat);
+        const endTime: string = endMoment.format(serverFormat);
 
         let newChannels: number[] = props.ChannelInfo.map(chan => chan.Channel.ID);
         let keptOldData: Map<string, IChartData> = new Map<string, IChartData>();
@@ -143,10 +124,11 @@ const LineGraph = React.memo((props: IProps) => {
     }, [props.PlotFilter]);
 
     React.useEffect(() => {
-        const centerTime: moment.Moment = moment.utc(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
-        const startTime: number = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
-        // Need to move back in the other direction, so entire window
-        const endTime: number = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
+        const startMoment: moment.Moment = moment.utc(props.TimeFilter.start, timeFilterFormat);
+        const endMoment: moment.Moment = moment.utc(props.TimeFilter.end, timeFilterFormat);
+
+        const startTime: number = startMoment.valueOf();
+        const endTime: number = endMoment.valueOf();
         setTimeLimits([startTime, endTime]);
     }, [props.TimeFilter]);
 

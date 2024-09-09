@@ -65,25 +65,6 @@ interface IChartData {
     Series: [number, number, number][]
 }
 
-// TODO: These can be in a shared place with eventSearchBar
-function formatWindowUnit(i: number) {
-    if (i == 7)
-        return "years";
-    if (i == 6)
-        return "months";
-    if (i == 5)
-        return "weeks";
-    if (i == 4)
-        return "days";
-    if (i == 3)
-        return "hours";
-    if (i == 2)
-        return "minutes";
-    if (i == 1)
-        return "seconds";
-    return "milliseconds";
-}
-
 // Formats that will be used for dateBoxes
 const timeFilterFormat = "MM/DD/YYYYHH:mm:ss.SSS";
 const serverFormat = "YYYY-MM-DD[T]HH:mm:ss.SSSZ";
@@ -111,10 +92,10 @@ const CyclicHistogram = React.memo((props: IProps) => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
         if (_.isEqual(props.TimeFilter, oldValues.current.TimeFilter) && props.ChannelInfo.Channel.ID === oldValues.current.ChannelInfo.Channel.ID) return;
 
-        const centerTime: moment.Moment = moment(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
-        const startTime: string = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
-        // Need to move back in the other direction, so entire window
-        const endTime: string = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
+        const startMoment: moment.Moment = moment(props.TimeFilter.start, timeFilterFormat);
+        const endMoment: moment.Moment = moment(props.TimeFilter.end, timeFilterFormat);
+        const startTime: string = startMoment.format(serverFormat);
+        const endTime: string = endMoment.format(serverFormat);
 
         const handle = GetMetaData(props.ChannelInfo.Channel.ID, startTime, endTime);
         return () => {
@@ -149,10 +130,10 @@ const CyclicHistogram = React.memo((props: IProps) => {
     }, [metaData]);
 
     React.useEffect(() => {
-        const centerTime: moment.Moment = moment.utc(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
-        const startTime: number = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
-        // Need to move back in the other direction, so entire window
-        const endTime: number = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
+        const startMoment: moment.Moment = moment.utc(props.TimeFilter.start, timeFilterFormat);
+        const endMoment: moment.Moment = moment.utc(props.TimeFilter.end, timeFilterFormat);
+        const startTime: number = startMoment.valueOf();
+        const endTime: number = endMoment.valueOf();
         setTimeLimits([startTime, endTime]);
     }, [props.TimeFilter]);
 
@@ -247,12 +228,16 @@ const CyclicHistogram = React.memo((props: IProps) => {
                         : null
                     }
                 </h4>
-                <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2} menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
-                    defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
-                    legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric ?? false} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={false} limitZoom={true}
-                    Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={props.MouseHighlight} yDomain={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
+                <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2}
+                    menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
+                    defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)}
+                    cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping} legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric ?? false}
+                    holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={false} limitZoom={true}
+                    Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={props.MouseHighlight}
+                    yDomain={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {(chartData?.Series?.length == null || chartData.Series.length === 0 || barColor === null) ? null :
-                        <HeatMapChart data={chartData.Series} sampleMs={chartData.TimeSpan} binSize={chartData.BinSize} hue={barColor.Hue} saturation={barColor.Saturation} fillStyle={'fill'} axis={'left'} legendUnit={'%'} />
+                        <HeatMapChart data={chartData.Series} sampleMs={chartData.TimeSpan} binSize={chartData.BinSize}
+                            hue={barColor.Hue} saturation={barColor.Saturation} fillStyle={'fill'} axis={'left'} legendUnit={'%'} />
                     }
                     {props.children}
                     {props.AlwaysRender}
