@@ -33,7 +33,7 @@ import NavbarFilterButton from '../Common/NavbarFilterButton';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { SelectDateTimeSetting, SelectTimeZone } from '../SettingsSlice';
-import { getMoment, getStartEndTime, readableUnit } from './TimeWindowUtils';
+import moment from 'moment';
 
 interface IProps {
     toggleVis: () => void,
@@ -41,7 +41,6 @@ interface IProps {
     setHeight: (h: number) => void
 }
 
-const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
 const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
 
@@ -89,25 +88,41 @@ const EventSearchNavbar = (props: IProps) => {
 
     React.useEffect(() => {
         let range = "";
-        const center = getMoment(timeFilter.date, timeFilter.time);
-        const [start, end] = getStartEndTime(center, timeFilter.windowSize, timeFilter.timeWindowUnits);
+        const startMoment = moment(timeFilter.start);
+        const endMoment = moment(timeFilter.end);
+        const unit = findAppropriateUnit(startMoment, endMoment);
+        const startEndDifference = startMoment.diff(endMoment, unit);
 
         if (dateTimeSetting == 'startEnd')
-            range = `${start.format(momentDateTimeFormat)}`;
+            range = `${timeFilter.start} to ${timeFilter.end} (${timeZone})`;
         if (dateTimeSetting == 'startWindow')
-            range = `${start.format(momentDateTimeFormat)} (${timeZone})`;
+            range = `${timeFilter.start} (${timeZone}) +${startEndDifference}`;
         else if (dateTimeSetting == 'endWindow')
-            range = `${center.format(momentDateTimeFormat)} (${timeZone})`;
-
-        if (dateTimeSetting == 'startEnd')
-            range += ` to ${end.format(momentDateTimeFormat)} (${timeZone})`;
-        else if (dateTimeSetting == 'startWindow')
-            range += ` + ${2 * timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
-        else if (dateTimeSetting == 'endWindow')
-            range += ` - ${2 * timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
+            range = `${timeFilter.end} (${timeZone}) -${startEndDifference}`;
 
         setTimeRange(range);
     }, [timeFilter, dateTimeSetting, timeZone])
+
+    function findAppropriateUnit(startTime: moment.Moment, endTime: moment.Moment): TimeUnit {
+        const unitIndex = 7;
+        let diff = endTime.diff(startTime, units[unitIndex], true);
+
+        for (let i = unitIndex; i >= 1; i--) {
+            if (Number.isInteger(diff)) {
+                return units[i];
+            }
+            const nextI = i - 1;
+
+            diff = endTime.diff(startTime, units[nextI], true);
+
+            if (diff > 65000) {
+                diff = endTime.diff(startTime, units[i], true);
+                return units[i];
+            }
+        }
+
+        return units[0];
+    }
 
     function getEnum(setOptions, field) {
         let handle = null;
@@ -206,13 +221,11 @@ const EventSearchNavbar = (props: IProps) => {
         );
 
     // Wrapper function to match the expected type for setFilter
-    const handleSetFilter = (start: string, end: string, unit: TimeUnit, duration: number) => {
+    const handleSetFilter = (start: string, end: string) => {
         dispatch(SetFilters({
             time: {
-                time: start.split(' ')[1],
-                date: start.split(' ')[0],
-                windowSize: duration,
-                timeWindowUnits: units.findIndex(u => u == unit)
+                start: start,
+                end: end
             }
         }))
     };
@@ -223,7 +236,7 @@ const EventSearchNavbar = (props: IProps) => {
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                         <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
-                            <TimeFilter filter={{ start: timeFilter.date + ' ' + timeFilter.time, duration: timeFilter.windowSize, unit: units[timeFilter.timeWindowUnits] }}
+                            <TimeFilter filter={{ start: timeFilter.start, end: timeFilter.end }}
                                 setFilter={handleSetFilter} showQuickSelect={true} timeZone={timeZone}
                                 dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                         </li>
