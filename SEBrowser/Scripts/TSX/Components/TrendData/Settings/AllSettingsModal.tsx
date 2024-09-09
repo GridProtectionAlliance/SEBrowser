@@ -28,7 +28,7 @@ import { PlotSettingsTab } from './OverlayTabs/PlotSettingsTab';
 import { MarkerTab } from './OverlayTabs/MarkerTab';
 import { LineStylesTab } from './OverlayTabs/LineStylesTab';
 import { ColorTab } from './OverlayTabs/ColorTab';
-import { TrendSearch } from '../../../Global';
+import { TrendSearch } from '../../../global';
 
 interface IProps {
     Show: boolean,
@@ -67,7 +67,7 @@ const AllSettingsModal = React.memo((props: IProps) => {
                 if (!_.isEqual(allPlot[field], props.Defaults[field]))
                     props.ApplyFieldToAll(allPlot, field as keyof (TrendSearch.ITrendPlot));
             });
-        } 
+        }
         // Settings defaults
         if (confirmed || futureOnly) {
             // Handling Markers
