@@ -119,6 +119,7 @@ export default function EventPreviewPane(props: IProps) {
                     />
                 })}
             </div>
-        </>)
+        </>
+    )
 }
 
