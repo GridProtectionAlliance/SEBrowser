@@ -37,15 +37,21 @@ declare let homePath: string;
 //    }, updateInterval);
 
 const MeterActivity: React.FunctionComponent = () => {
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
+
+    React.useEffect(() => {
+        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
+    }, [dateTimeSetting]);
 
     return (
         <div id="meterActivityContainer" style={{ width: '100%', height: '100%', textAlign: 'center', backgroundColor: '#064e1b', padding: 20 }}>
             <div style={{ width: 'calc(50% - 10px)', height: 'calc(100% - 57px)', position: 'relative', float: 'left' }}>
                 <div style={{ backgroundColor: 'white', borderColor: 'black', color: 'black', textAlign: 'left', marginBottom: 0, height: 'calc(50% - 15px)', padding: 15 }} className="well well-sm">
-                    <MostActiveMeters />
+                    <MostActiveMeters dateTimeFormat={dateTimeFormat} sortField={'24Hours'} rowsPerPage={7} meterTable={[]} />
                 </div>
                 <div style={{ marginTop: 20, backgroundColor: 'white', borderColor: 'black', color: 'black', textAlign: 'left', marginBottom: 0, height: 'calc(50% - 10px)', padding: 15 }} className="well well-sm">
-                    <LeastActiveMeters />
+                    <LeastActiveMeters dateTimeFormat={dateTimeFormat} sortField={'30Days'} rowsPerPage={7} meterTable={[]} />
                 </div>
             </div>
             <div style={{ backgroundColor: 'white', borderColor: 'black', color: 'black', textAlign: 'left', marginBottom: 0, height: 'calc(100% - 57px)', width: 'calc(50% - 11px)', position: 'relative', float: 'right', padding: 15 }} className="well well-sm">
@@ -65,24 +71,21 @@ interface MostActiveMeterActivityRow {
     '30Days': number
 }
 
-const dateTimeSetting = useSelector(SelectDateTimeSetting);
-const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
-
-React.useEffect(() => {
-    setDateTimeFormat(dateTimeSetting.DateTimeFormat);
-}, [dateTimeSetting]);
-
-class MostActiveMeters extends React.Component<unknown, { meterTable: Array<MostActiveMeterActivityRow>, sortField: string, rowsPerPage: number }> {
+interface IProps {
+    meterTable: Array<MostActiveMeterActivityRow>,
+    sortField: string,
+    rowsPerPage: number,
+    dateTimeFormat: string
+}
+class MostActiveMeters extends React.Component<IProps, { meterTable: Array<MostActiveMeterActivityRow>, sortField: string, rowsPerPage: number }> {
     seBrowserService: SEBrowserService;
-    constructor(props) {
+    constructor(props: IProps) {
         super(props);
-
         this.seBrowserService = new SEBrowserService();
-
         this.state = {
-            meterTable: [],
-            sortField: '24Hours',
-            rowsPerPage: 7
+            meterTable: props.meterTable,
+            sortField: props.sortField,
+            rowsPerPage: props.rowsPerPage
         }
     }
 
@@ -132,7 +135,7 @@ class MostActiveMeters extends React.Component<unknown, { meterTable: Array<Most
         }
 
         if (item[key] != '0 ( 0 )') {
-            return <a onClick={() => this.openWindowToMeterEventsByLine(item.FirstEventID, context, moment().format(dateTimeFormat))} style={{ color: 'blue' }}>{item[key]}</a>
+            return <a onClick={() => this.openWindowToMeterEventsByLine(item.FirstEventID, context, moment().format(this.props.dateTimeFormat))} style={{ color: 'blue' }}>{item[key]}</a>
         }
         else {
             return <span>{item[key]}</span>;
@@ -181,18 +184,22 @@ interface LeastActiveMeterActivityRow {
     '30Days': number,
     FirstEventID: number
 }
+interface ILeastProps {
+    meterTable: Array<LeastActiveMeterActivityRow>,
+    sortField: keyof (LeastActiveMeterActivityRow),
+    rowsPerPage: number,
+    dateTimeFormat: string
+}
 
-class LeastActiveMeters extends React.Component<unknown, { meterTable: Array<LeastActiveMeterActivityRow>, sortField: keyof (LeastActiveMeterActivityRow), rowsPerPage: number }> {
+class LeastActiveMeters extends React.Component<ILeastProps, { meterTable: Array<LeastActiveMeterActivityRow>, sortField: keyof (LeastActiveMeterActivityRow), rowsPerPage: number }> {
     seBrowserService: SEBrowserService;
-    constructor(props) {
+    constructor(props: ILeastProps) {
         super(props);
-
         this.seBrowserService = new SEBrowserService();
-
         this.state = {
             meterTable: [],
-            sortField: '30Days',
-            rowsPerPage: 7
+            sortField: this.props.sortField,
+            rowsPerPage: this.props.rowsPerPage
         }
     }
 
@@ -240,7 +247,7 @@ class LeastActiveMeters extends React.Component<unknown, { meterTable: Array<Lea
         }
 
         if (item[key] != '0 ( 0 )') {
-            return <a onClick={() => this.openWindowToMeterEventsByLine(item.FirstEventID, context, moment().format(dateTimeFormat))} style={{ color: 'blue' }}>{item[key]}</a>
+            return <a onClick={() => this.openWindowToMeterEventsByLine(item.FirstEventID, context, moment().format(this.props.dateTimeFormat))} style={{ color: 'blue' }}>{item[key]}</a>
         }
         else {
             return <span>{item[key]}</span>;
