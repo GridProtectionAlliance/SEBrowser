@@ -68,10 +68,8 @@ const EventSearchNavbar = (props: IProps) => {
     const [height, setHeight] = React.useState<number>(0);
     const [showFilter, setFilter] = React.useState<('None' | 'Meter' | 'Asset' | 'AssetGroup' | 'Station')>('None');
     const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
-    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
 
     React.useEffect(() => {
-        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
         setDateTimeMode(dateTimeMode);
     }, [dateTimeSetting])
 
