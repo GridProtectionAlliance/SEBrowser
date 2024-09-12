@@ -37,8 +37,7 @@ import { SettingsModal, SeriesSettings } from '../Settings/SettingsModal';
 import { CyclicHistogram, ICyclicSeries } from './CyclicHistogram';
 
 type customSelects = "drag" | "symbol" | "horizontal" | "vertical";
-const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS"; // Also is the gemstone format
+const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS"; // Also is the gemstone format
 const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
 const defaultSelect = "drag";
 const defaultHighlight = "vertical";
@@ -393,8 +392,8 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         }
         const time = moment.utc(marker.value, "x");
         const timeFilter: SEBrowser.IReportTimeFilter = {
-            start: time.format(momentDateFormat),
-            end: time.format(momentDateFormat),
+            start: time.format(momentDateTimeFormat),
+            end: time.format(momentDateTimeFormat),
         }
         const queryParams = GenerateQueryParams(null, [], timeFilter, [], [], [meter], [], marker.eventID);
         const queryUrl = queryString.stringify(queryParams, "&", "=", { encodeURIComponent: queryString.escape });

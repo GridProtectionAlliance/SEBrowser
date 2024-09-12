@@ -26,6 +26,7 @@ import { TimeFilter } from '@gpa-gemstone/common-pages'
 import { CheckBox, Input, MultiCheckBoxSelect, Select } from '@gpa-gemstone/react-forms';
 import { useSelector } from 'react-redux';
 import { SelectTimeZone, SelectDateTimeSetting } from '../../../SettingsSlice';
+import { property } from 'lodash';
 
 interface IProps {
     Plot: TrendSearch.ITrendPlot,
@@ -90,20 +91,18 @@ const PlotSettingsTab = React.memo((props: IProps) => {
     type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
     const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
 
-    // converts the SEBrowser filter to IStartDuration filter
+    // converts the SEBrowser filter to IStartEnd filter
     const convertTimeFilter = (flt) => ({
         start: flt.date + ' ' + flt.time,
-        duration: flt.windowSize,
+        end: flt.date + flt.windowSize,
         unit: units[flt.timeWindowUnits]
     });
 
     // Wrapper function to match the expected type for setFilter
-    const handleSetFilter = (start: string, end: string, unit: TimeUnit, duration: number) => {
+    const handleSetFilter = (start: string, end: string) => {
         const newFilter = {
-            time: start.split(' ')[1],
-            date: start.split(' ')[0],
-            windowSize: duration,
-            timeWindowUnits: units.findIndex(u => u == unit)
+            start: start,
+            end: end,
         }
         props.SetPlot({ ...props.Plot, TimeFilter: newFilter })
     };
@@ -158,7 +157,7 @@ const PlotSettingsTab = React.memo((props: IProps) => {
                         props.SetPlot({ ...props.Plot, PlotFilter: options });
                     }}
                 />
-                <TimeFilter filter={convertTimeFilter(props.Plot.TimeFilter)} showQuickSelect={false}
+                <TimeFilter filter={props.Plot.TimeFilter/* convertTimeFilter(props.Plot.TimeFilter) */} showQuickSelect={false}
                     setFilter={handleSetFilter} timeZone={timeZone}
                     dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                 <fieldset className="border" style={{ padding: '10px', height: '100%' }}>

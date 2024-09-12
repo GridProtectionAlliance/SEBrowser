@@ -46,11 +46,8 @@ export interface RelayReportNavBarProps {
     BreakerID: number,
     ChannelID: number,
     StationId: number,
-    date: string,
-    time: string,
-    windowSize: number,
-    timeWindowUnits: number,
-
+    start: string,
+    end: string,
 }
 
 const RelayReportNavBar = (props: RelayReportNavBarProps) => {
@@ -171,35 +168,17 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
         props.stateSetter({ searchBarProps: object });
     }
 
-    function setDate(date: string) {
-
+    function setStart(start: string) {
         const object = _.clone(props) as RelayReportNavBarProps;
-        object.date = date;
+        object.start = start;
         props.stateSetter({ searchBarProps: object });
     }
 
-    function setTime(time: string) {
-
+    function setEnd(time: string) {
         const object = _.clone(props) as RelayReportNavBarProps;
-        object.time = time;
+        object.end = time;
         props.stateSetter({ searchBarProps: object });
     }
-
-    function setTimeWindowUnits(timeWindowUnits: number) {
-
-        const object = _.clone(props) as RelayReportNavBarProps;
-        object.timeWindowUnits = timeWindowUnits;
-        props.stateSetter({ searchBarProps: object });
-    }
-
-    function setWindowSize(windowSize: number) {
-        const object = _.clone(props) as RelayReportNavBarProps;
-        object.windowSize = windowSize;
-        props.stateSetter({ searchBarProps: object });
-    }
-
-    type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
-    const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
 
     return (
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -239,12 +218,10 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                     </li>
 
                     <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
-                        <TimeFilter filter={{ start: props.date + ' ' + props.time, duration: props.windowSize, unit: units[props.timeWindowUnits] }}
-                            setFilter={(start: string, end: string, unit: TimeUnit, duration: number) => {
-                                setDate(start.split(' ')[0]);
-                                setTime(start.split(' ')[1]);
-                                setTimeWindowUnits(units.findIndex(u => u == unit));
-                                setWindowSize(duration);
+                        <TimeFilter filter={{ start: props.start, end: props.end }}
+                            setFilter={(start: string, end: string) => {
+                                setStart(start);
+                                setEnd(end);
                             }}
                             showQuickSelect={false} timeZone={timeZone}
                             dateTimeSetting={dateTimeSetting} isHorizontal={false} />

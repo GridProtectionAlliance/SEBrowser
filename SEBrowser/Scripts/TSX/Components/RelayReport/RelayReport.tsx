@@ -27,8 +27,7 @@ import * as queryString from 'querystring';
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS";
+const momentTimeDateFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 
 interface IState {
     searchBarProps: RelayReportNavBarProps,
@@ -41,50 +40,35 @@ const RelayReport = () => {
     const [BreakerID, setBreakerID] = React.useState<number>(0);
     const [ChannelID, setChannelID] = React.useState<number>(0);
     const [StationId, setStationId] = React.useState<number>(0);
-    const [date, setDate] = React.useState<string>('01/01/2000');
-    const [time, setTime] = React.useState<string>('12:00:00.000');
-    const [windowSize, setWindowSize] = React.useState<number>(0);
-    const [timeWindowUnits, setTimeWindowUnits] = React.useState<number>(0);
+    const [start, setStart] = React.useState<string>('01/01/2000 12:00:00.000');
+    const [end, setEnd] = React.useState<string>('01/02/2000 12:00:00.000');
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
         setBreakerID(query['breakerid'] != undefined ? parseInt(query['breakerid'] as string) : -1);
         setChannelID(query['channelid'] != undefined ? parseInt(query['channelid'] as string) : -1);
-        setDate(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat));
-        setTime(query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat));
-        setWindowSize(query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10);
-        setTimeWindowUnits(query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2);
         setStationId(query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1);
-
+        setStart(query['start'] != undefined ? query['start'] as string : moment().format(momentTimeDateFormat));
+        setEnd(query['end'] != undefined ? query['end'] as string : moment().format(momentTimeDateFormat));
     }, []);
 
     React.useEffect(() => {
-        const state = {
-            BreakerID, ChannelID, StationId, date, time,
-            windowSize, timeWindowUnits
-        };
-
+        const state = { BreakerID, ChannelID, StationId, start, end };
         const q = queryString.stringify(state, "&", "=");
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
-        return (() => { clearTimeout(handle); })
 
-    }, [BreakerID, ChannelID, StationId, date, time,
-        windowSize, timeWindowUnits])
+        return (() => { clearTimeout(handle); })
+    }, [BreakerID, ChannelID, StationId, start, end])
 
     function setState(obj: IState) {
         setBreakerID(obj.searchBarProps.BreakerID);
         setChannelID(obj.searchBarProps.ChannelID);
-        setDate(obj.searchBarProps.date);
-        setTime(obj.searchBarProps.time);
-        setWindowSize(obj.searchBarProps.windowSize);
-        setTimeWindowUnits(obj.searchBarProps.timeWindowUnits);
+        setStart(obj.searchBarProps.start);
+        setEnd(obj.searchBarProps.end);
         setStationId(obj.searchBarProps.StationId);
     }
 
-    const searchBarProps: RelayReportNavBarProps = {
-        BreakerID, ChannelID, StationId, date, time,
-        windowSize, timeWindowUnits, stateSetter: setState
-    };
+    const searchBarProps: RelayReportNavBarProps = { BreakerID, ChannelID, StationId, start, end, stateSetter: setState };
 
     return (
         <div style={{ width: '100%', height: '100%' }}>

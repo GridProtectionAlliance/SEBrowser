@@ -28,10 +28,7 @@ import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SEBrowser } from '../../global';
 import { useSelector } from 'react-redux';
-import { SelectTimeZone, SelectDateTimeSetting } from '../SettingsSlice';
-
-const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS";
+import { SelectTimeZone, SelectDateTimeSetting, SelectGeneralSettings } from '../SettingsSlice';
 
 interface IState {
     searchBarProps: CapBankReportNavBarProps,
@@ -42,11 +39,9 @@ const CapBankReport = () => {
     const history = useLocation();
     const [CapBankID, setCapBankID] = React.useState<number>(0);
     const [time, setTime] = React.useState<SEBrowser.IReportTimeFilter>({
-        date: '01/01/2000',
-        time: '12:00:00.000',
-        windowSize: 1,
-        timeWindowUnits: 1
-        });
+        start: '01/01/2000 12:00:00.000',
+        end: '01/02/2000 12:00:00.000',
+    });
     const [selectedBank, setSelectedBank] = React.useState<number>(0);
     const [StationId, setStationID] = React.useState<number>(0);
     const [numBanks, setNumBanks] = React.useState<number>(0);
@@ -61,14 +56,15 @@ const CapBankReport = () => {
 
     const timeZone = useSelector(SelectTimeZone);
     const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const dateTimeFormat = useSelector(SelectGeneralSettings);
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
 
         setCapBankID(query['capBankId'] != undefined ? parseInt(query['capBankId'] as string) : -1);
         const time = {
-            date: query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat),
-            time: query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat),
+            start: query['start'] != undefined ? query['start'] as string : moment().format(),
+            end: query['end'] != undefined ? query['end'] as string : moment().format(momentDateTimeFormat),
             windowSize: query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10,
             timeWindowUnits: query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2
         }
@@ -83,15 +79,16 @@ const CapBankReport = () => {
         setPISFilt([999]);
         setHealthFilt([999]);
         setPhaseFilter([999]);
-        
+
     }, []);
 
     React.useEffect(() => {
         const state = {
             CapBankID,
-            date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,
+            start: time.start, end: time.end,
             selectedBank, StationId, numBanks, ResFilt, StatFilt,
-            OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter };
+            OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter
+        };
 
         const q = queryString.stringify(state, "&", "=");
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
@@ -117,7 +114,7 @@ const CapBankReport = () => {
     }
 
     const searchBarProps: CapBankReportNavBarProps = {
-        CapBankID, TimeFilter: time, 
+        CapBankID, TimeFilter: time,
         selectedBank, StationId, numBanks, ResFilt, StatFilt,
         OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter,
         timeZone, dateTimeSetting, stateSetter: setState
