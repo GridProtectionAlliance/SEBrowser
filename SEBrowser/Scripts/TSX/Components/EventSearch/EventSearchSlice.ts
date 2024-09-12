@@ -30,7 +30,7 @@ import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, EventTypeSlice, LocationSlice, MeterSlice } from '../../Store';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 
-const momentDateTimeFormat = "MM/DD/YYYYHH:mm:ss.SSS";
+const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 
 let fetchHandle: JQuery.jqXHR<any> | null = null;
 
