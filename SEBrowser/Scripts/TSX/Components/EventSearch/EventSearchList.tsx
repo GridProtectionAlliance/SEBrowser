@@ -81,9 +81,7 @@ export default function EventSearchList(props: IProps) {
         flds = Object.keys(data[0]).filter(item => item != "Time" && item != "DisturbanceID" && item != "EventID" && item != "EventID1" && item != 'MagDurDuration' && item != 'MagDurMagnitude').sort();
 
         if (flds.length != cols.length)
-            setCols(flds.map(item => ({
-                field: item, key: item, label: item })))
-
+            setCols(flds.map(item => ({ field: item, key: item, label: item })))
     }, [data])
 
     React.useLayoutEffect(() => {
@@ -108,7 +106,7 @@ export default function EventSearchList(props: IProps) {
             else if (index == data.length - 1)
                 props.selectEvent(data[0].EventID);
             else
-                props.selectEvent( data[index + 1].EventID);
+                props.selectEvent(data[index + 1].EventID);
 
         }
         else if (event.keyCode == 38)  // arrow up key
@@ -137,7 +135,7 @@ export default function EventSearchList(props: IProps) {
         const sectionIndex = Math.floor(index / rowsPerSection);
         const scrollTop = $(ReactDOM.findDOMNode(ref.current)).find('tbody').scrollTop();
 
-        if(scrollTop <= sectionIndex * tableSectionHeight || scrollTop >= (sectionIndex + 1) * tableSectionHeight - tableSectionHeight/2)
+        if (scrollTop <= sectionIndex * tableSectionHeight || scrollTop >= (sectionIndex + 1) * tableSectionHeight - tableSectionHeight / 2)
             $(ReactDOM.findDOMNode(ref.current)).find('tbody').scrollTop(sectionIndex * tableSectionHeight);
     }
 
@@ -148,7 +146,7 @@ export default function EventSearchList(props: IProps) {
         return lines.map((item, i) => {
             if (i == 0)
                 return <div key={i}> {item} </div>;
-        return <> <br/> {item} </>;
+            return <> <br /> {item} </>;
         })
     }
     return (
@@ -165,8 +163,8 @@ export default function EventSearchList(props: IProps) {
                     <div style={{ height: '40px', width: '40px', margin: 'auto' }}>
                         <LoadingIcon Show={true} Size={40} />
                     </div>
-                : null}
-                {cols.length > 0 ? 
+                    : null}
+                {cols.length > 0 ?
                     <ConfigTable.Table<any>
                         LocalStorageKey="SEbrowser.EventSearch.TableCols"
                         TableClass="table table-hover"
@@ -211,14 +209,14 @@ export default function EventSearchList(props: IProps) {
                             </ConfigTable.Configurable>
                         ))}
                     </ConfigTable.Table>
-                : null}
+                    : null}
                 {status == 'loading' ?
                     null
                     : data.length == numberResults ?
                         <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>
-                            Only the first {data.length} results are shown (sorted {(ascending? 'ascending' : 'descending')} by {sortField}) - please narrow your search or increase the number of results in the application settings.
+                            Only the first {data.length} results are shown (sorted {(ascending ? 'ascending' : 'descending')} by {sortField}) - please narrow your search or increase the number of results in the application settings.
                         </div>
-                    : <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>{data.length} results</div>
+                        : <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>{data.length} results</div>
                 }
             </div>
             <OverlayDrawer Title={''} Open={false} Location={'right'} Target={'eventPreviewPane'} GetOverride={(s) => { closureHandler.current = s; }} HideHandle={true}>

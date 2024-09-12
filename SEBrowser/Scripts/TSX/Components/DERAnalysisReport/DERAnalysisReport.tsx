@@ -33,6 +33,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { TimeFilter } from '@gpa-gemstone/common-pages'
 import { useSelector } from 'react-redux';
 import { SelectTimeZone, SelectDateTimeSetting } from '../SettingsSlice';
+import { SEBrowser } from 'Scripts/TSX/global';
 
 interface DERAnalyticResult {
     ID: number,
@@ -54,9 +55,8 @@ function DERAnalysisReport() {
 
     const timeZone = useSelector(SelectTimeZone);
     const dateTimeSetting = useSelector(SelectDateTimeSetting);
-    const dateTimeMode = dateTimeSetting.Mode;
-    const dateTimeFormat = dateTimeSetting.DateTimeFormat;
-
+    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
+    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
     const [start, setStart] = React.useState<string>(moment().format(dateTimeFormat));
     const [end, setEnd] = React.useState<string>(moment().format(dateTimeFormat));
     const [regulations, setRegulations] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([])
@@ -66,6 +66,11 @@ function DERAnalysisReport() {
     const [ascending, setAscending] = React.useState<boolean>(true);
     const [sortKey, setSortKey] = React.useState<keyof DERAnalyticResult>('Time');
     const [selectedData, setSelectedData] = React.useState<DERAnalyticResult>(null);
+
+    React.useEffect(() => {
+        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
+        setDateTimeMode(dateTimeMode);
+    }, [dateTimeSetting])
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });

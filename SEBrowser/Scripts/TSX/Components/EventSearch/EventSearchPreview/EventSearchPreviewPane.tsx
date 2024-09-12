@@ -35,10 +35,6 @@ interface IProps {
     EventID: number,
     InitialTab?: string,
     Height: number,
-    Date?: string,
-    Time?: string,
-    TimeWindowUnits?: number,
-    WindowSize?: number
 }
 
 const widgetStore = {

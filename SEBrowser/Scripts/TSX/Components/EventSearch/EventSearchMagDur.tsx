@@ -41,25 +41,28 @@ interface IProps {
 const MagDurChart = (props: IProps) => {
     const chart = React.useRef(null);
     const count = React.useRef(null);
+
     const empty = React.useCallback(() => {/*Do Nothing*/ }, []);
-    const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
-    const magDurCurves = useAppSelector(MagDurCurveSlice.Data) as OpenXDA.Types.MagDurCurve[];
-    const [currentCurve, setCurrentCurve] = React.useState<OpenXDA.Types.MagDurCurve>(null)
-    const numberResults = useAppSelector((state: Redux.StoreState) => SelectEventSearchSettings(state).NumberResults)
-    const generalSettings: Redux.IGeneralSettings = useAppSelector(SelectGeneralSettings);
-    const [width, setWidth] = React.useState<number>(0);
-    const [x, setX] = React.useState<boolean>(false);
-    const [hCounter, setHCounter] = React.useState<number>(0);
+
     const dispatch = useAppDispatch();
+
     const status = useAppSelector(SelectEventSearchsStatus);
     const points: any[] = useAppSelector(SelectEventSearchs);
-    const [data, setData] = React.useState<any[]>([]);
-    const [selectedMag, setSelectedMag] = React.useState<number>(0);
-    const [selectedDur, setSelectedDur] = React.useState<number>(0);
     const settings = useAppSelector(SelectEventSearchSettings);
+    const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
+    const magDurCurves = useAppSelector(MagDurCurveSlice.Data) as OpenXDA.Types.MagDurCurve[];
+    const numberResults = useAppSelector((state: Redux.StoreState) => SelectEventSearchSettings(state).NumberResults)
     const selectedCurve = useAppSelector((state: Redux.StoreState) => SelectCharacteristicFilter(state).curveID);
+    const generalSettings: Redux.IGeneralSettings = useAppSelector(SelectGeneralSettings);
     const showSelectedCurve = useAppSelector((state: Redux.StoreState) => SelectCharacteristicFilter(state).curveInside != SelectCharacteristicFilter(state).curveOutside);
 
+    const [x, setX] = React.useState<boolean>(false);
+    const [data, setData] = React.useState<any[]>([]);
+    const [width, setWidth] = React.useState<number>(0);
+    const [hCounter, setHCounter] = React.useState<number>(0);
+    const [selectedMag, setSelectedMag] = React.useState<number>(0);
+    const [selectedDur, setSelectedDur] = React.useState<number>(0);
+    const [currentCurve, setCurrentCurve] = React.useState<OpenXDA.Types.MagDurCurve>(null)
     // This needs to be used instead of a Layout effect since a Layout Effect would not get triggered since nothing is redrawn when
     // size of the parent div changes.
     React.useEffect(() => {

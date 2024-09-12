@@ -28,7 +28,7 @@ import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SEBrowser } from '../../global';
 import { useSelector } from 'react-redux';
-import { SelectTimeZone, SelectDateTimeSetting, SelectGeneralSettings } from '../SettingsSlice';
+import { SelectTimeZone, SelectDateTimeSetting } from '../SettingsSlice';
 
 interface IState {
     searchBarProps: CapBankReportNavBarProps,
@@ -56,8 +56,13 @@ const CapBankReport = () => {
 
     const timeZone = useSelector(SelectTimeZone);
     const dateTimeSetting = useSelector(SelectDateTimeSetting);
-    const dateTimeMode = dateTimeSetting.Mode;
-    const dateTimeFormat = dateTimeSetting.DateTimeFormat;
+    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
+    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
+
+    React.useEffect(() => {
+        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
+        setDateTimeMode(dateTimeMode);
+    }, [dateTimeSetting])
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
