@@ -24,13 +24,14 @@ import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../global';
-import { SelectTrendDataSettings, SelectGeneralSettings } from './../../SettingsSlice';
+import { SelectTrendDataSettings, SelectGeneralSettings, SelectDateTimeSetting } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
 import { LoadingIcon, ToolTip } from '@gpa-gemstone/react-interactive';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
 import { Warning } from '@gpa-gemstone/gpa-symbols';
+import { useSelector } from 'react-redux';
 
 interface IProps {
     ID: string,
@@ -61,11 +62,8 @@ interface IChartData {
     AvgSeries: [number, number][]
 }
 
-// Formats that will be used for dateBoxes
-const timeFilterFormat = "MM/DD/YYYYHH:mm:ss.SSS";
-const serverFormat = "YYYY-MM-DD[T]HH:mm:ss.SSSZ";
-
 const LineGraph = React.memo((props: IProps) => {
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
     // Graph Consts
     const [timeLimits, setTimeLimits] = React.useState<[number, number]>([0, 1]);
     const [displayMin, setDisplayMin] = React.useState<boolean>(true);
@@ -74,6 +72,7 @@ const LineGraph = React.memo((props: IProps) => {
     const [hover, setHover] = React.useState<boolean>(false);
     const [allChartData, setAllChartData] = React.useState<Map<string, IChartData>>(new Map<string, IChartData>());
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
+    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
     // Height mangement
     const [titleHeight, setTitleHeight] = React.useState<number>(0);
     const [plotHeight, setPlotHeight] = React.useState<number>(props.Height);
@@ -86,11 +85,15 @@ const LineGraph = React.memo((props: IProps) => {
     React.useLayoutEffect(() => setTitleHeight(titleRef?.current?.offsetHeight ?? 0));
 
     React.useEffect(() => {
+        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
+    }, [dateTimeSetting]);
+
+    React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
-        const startMoment: moment.Moment = moment(props.TimeFilter.start, timeFilterFormat);
-        const endMoment: moment.Moment = moment(props.TimeFilter.end, timeFilterFormat);
-        const startTime: string = startMoment.format(serverFormat);
-        const endTime: string = endMoment.format(serverFormat);
+        const startMoment: moment.Moment = moment(props.TimeFilter.start, dateTimeFormat);
+        const endMoment: moment.Moment = moment(props.TimeFilter.end, dateTimeFormat);
+        const startTime: string = startMoment.format(dateTimeFormat);
+        const endTime: string = endMoment.format(dateTimeFormat);
 
         let newChannels: number[] = props.ChannelInfo.map(chan => chan.Channel.ID);
         let keptOldData: Map<string, IChartData> = new Map<string, IChartData>();
@@ -124,8 +127,8 @@ const LineGraph = React.memo((props: IProps) => {
     }, [props.PlotFilter]);
 
     React.useEffect(() => {
-        const startMoment: moment.Moment = moment.utc(props.TimeFilter.start, timeFilterFormat);
-        const endMoment: moment.Moment = moment.utc(props.TimeFilter.end, timeFilterFormat);
+        const startMoment: moment.Moment = moment.utc(props.TimeFilter.start, dateTimeFormat);
+        const endMoment: moment.Moment = moment.utc(props.TimeFilter.end, dateTimeFormat);
 
         const startTime: number = startMoment.valueOf();
         const endTime: number = endMoment.valueOf();
@@ -167,7 +170,7 @@ const LineGraph = React.memo((props: IProps) => {
                     console.error("Failed to parse point: " + jsonPoint);
                 }
                 if (point !== undefined) {
-                    const timeStamp = moment.utc(point.Timestamp, serverFormat).valueOf();
+                    const timeStamp = moment.utc(point.Timestamp, dateTimeFormat).valueOf();
                     if (cachedData.has(point.Tag)) {
                         const chartData = cachedData.get(point.Tag);
                         chartData.MinSeries.push([timeStamp, point.Minimum]);

@@ -23,6 +23,7 @@
 import React from 'react';
 import _ from 'lodash';
 import queryString from 'querystring';
+import { useSelector } from 'react-redux';
 import moment from 'moment';
 import { CreateGuid, SpacedColor } from '@gpa-gemstone/helper-functions';
 import { TrashCan, Pencil, Plus } from '@gpa-gemstone/gpa-symbols';
@@ -30,15 +31,13 @@ import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, Axis
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { LineGraph } from './LineGraph';
 import { SEBrowser, TrendSearch } from '../../../global';
-import { SelectTrendDataSettings, SelectGeneralSettings } from './../../SettingsSlice';
+import { SelectTrendDataSettings, SelectGeneralSettings, SelectDateTimeSetting } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
 import { SettingsModal, SeriesSettings } from '../Settings/SettingsModal';
 import { CyclicHistogram, ICyclicSeries } from './CyclicHistogram';
 
 type customSelects = "drag" | "symbol" | "horizontal" | "vertical";
-const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS"; // Also is the gemstone format
-const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
 const defaultSelect = "drag";
 const defaultHighlight = "vertical";
 const defaultCursor = undefined;
@@ -80,6 +79,8 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
 
     // Plot Saved Settings
     const generalSettings = useAppSelector(SelectGeneralSettings);
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const [plotAllSeriesSettings, setPlotAllSeriesSettings] = React.useState<SeriesSettings[]>(null);
     const colorIndex = React.useRef<{ ind: number, assetMap: Map<string, number> }>({ ind: -1, assetMap: new Map<string, number>() });
@@ -99,6 +100,10 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
     const [customSelect, setCustomSelect] = React.useState<customSelects>(defaultSelect);
     const [customCursor, setCustomCursor] = React.useState<string>(defaultCursor);
     const [lineHighlight, setLineHighlight] = React.useState<'none' | 'horizontal' | 'vertical'>(defaultHighlight);
+
+    React.useEffect(() => {
+        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
+    }, [dateTimeSetting]);
 
     // Determine color to use
     const getColor = React.useCallback((colorSetting: TrendSearch.IColorSettings, channel?: TrendSearch.ITrendChannel) => {
@@ -375,7 +380,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         }).done((data: any[]) => {
             setEventMarkers(data.map(datum => {
                 const meterID = props.Plot.Channels.find(channel => channel.MeterKey === datum["Meter Key"]).MeterID;
-                return { value: moment.utc(datum.Time, eventFormat).valueOf(), meterID: meterID, eventID: datum["EventID"] }
+                return { value: moment.utc(datum.Time, dateTimeFormat).valueOf(), meterID: meterID, eventID: datum["EventID"] }
             }));
         });
     }
@@ -392,8 +397,8 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         }
         const time = moment.utc(marker.value, "x");
         const timeFilter: SEBrowser.IReportTimeFilter = {
-            start: time.format(momentDateTimeFormat),
-            end: time.format(momentDateTimeFormat),
+            start: time.format(dateTimeFormat),
+            end: time.format(dateTimeFormat),
         }
         const queryParams = GenerateQueryParams(null, [], timeFilter, [], [], [meter], [], marker.eventID);
         const queryUrl = queryString.stringify(queryParams, "&", "=", { encodeURIComponent: queryString.escape });
