@@ -49,7 +49,7 @@ export interface CapBankReportNavBarProps extends EventFilter {
     StationId: number,
     numBanks: number,
     timeZone: string,
-    dateTimeSetting: SEBrowser.TimeWindowMode
+    dateTimeMode: SEBrowser.TimeWindowMode
 }
 
 interface CapBank {
@@ -214,7 +214,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                     start: this.props.TimeFilter.start,
                                     end: this.props.TimeFilter.end,
                                 }} setFilter={handleSetFilter} showQuickSelect={true} timeZone={this.props.timeZone}
-                                    dateTimeSetting={this.props.dateTimeSetting} isHorizontal={false} />
+                                    dateTimeSetting={this.props.dateTimeMode} isHorizontal={false} />
                             </li>
                             <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
                                 <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
