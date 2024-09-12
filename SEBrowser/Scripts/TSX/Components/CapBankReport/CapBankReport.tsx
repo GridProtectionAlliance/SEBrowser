@@ -56,7 +56,8 @@ const CapBankReport = () => {
 
     const timeZone = useSelector(SelectTimeZone);
     const dateTimeSetting = useSelector(SelectDateTimeSetting);
-    const dateTimeFormat = useSelector(SelectGeneralSettings);
+    const dateTimeMode = dateTimeSetting.Mode;
+    const dateTimeFormat = dateTimeSetting.DateTimeFormat;
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
@@ -64,7 +65,7 @@ const CapBankReport = () => {
         setCapBankID(query['capBankId'] != undefined ? parseInt(query['capBankId'] as string) : -1);
         const time = {
             start: query['start'] != undefined ? query['start'] as string : moment().format(),
-            end: query['end'] != undefined ? query['end'] as string : moment().format(momentDateTimeFormat),
+            end: query['end'] != undefined ? query['end'] as string : moment().format(dateTimeFormat),
             windowSize: query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10,
             timeWindowUnits: query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2
         }
@@ -117,7 +118,7 @@ const CapBankReport = () => {
         CapBankID, TimeFilter: time,
         selectedBank, StationId, numBanks, ResFilt, StatFilt,
         OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter,
-        timeZone, dateTimeSetting, stateSetter: setState
+        timeZone, dateTimeMode, stateSetter: setState
     }
 
     return (

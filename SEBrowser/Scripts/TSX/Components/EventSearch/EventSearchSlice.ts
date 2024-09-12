@@ -48,7 +48,6 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     const ascending = (getState() as Redux.StoreState).EventSearch.Ascending;
 
     const filter = {
-        // start and end are in date+time format
         start: time.start, end: time.end,
         typeIDs: types,
         durationMin: characteristics.durationMin ?? 0,
