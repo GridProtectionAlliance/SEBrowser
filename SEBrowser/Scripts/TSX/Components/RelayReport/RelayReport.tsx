@@ -26,8 +26,9 @@ import RelayReportPane from './RelayReportPane';
 import * as queryString from 'querystring';
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
-
-const momentTimeDateFormat = "MM/DD/YYYY HH:mm:ss.SSS";
+import { SelectDateTimeSetting } from '../SettingsSlice';
+import { SEBrowser } from 'Scripts/TSX/global';
+import { useSelector } from 'react-redux';
 
 interface IState {
     searchBarProps: RelayReportNavBarProps,
@@ -36,20 +37,29 @@ interface IState {
 const RelayReport = () => {
     const navigate = useNavigate();
     const history = useLocation();
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
 
     const [BreakerID, setBreakerID] = React.useState<number>(0);
     const [ChannelID, setChannelID] = React.useState<number>(0);
     const [StationId, setStationId] = React.useState<number>(0);
     const [start, setStart] = React.useState<string>('01/01/2000 12:00:00.000');
     const [end, setEnd] = React.useState<string>('01/02/2000 12:00:00.000');
+    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
+    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
+
+    React.useEffect(() => {
+        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
+        setDateTimeMode(dateTimeMode);
+    }, [dateTimeSetting])
+
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
         setBreakerID(query['breakerid'] != undefined ? parseInt(query['breakerid'] as string) : -1);
         setChannelID(query['channelid'] != undefined ? parseInt(query['channelid'] as string) : -1);
         setStationId(query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1);
-        setStart(query['start'] != undefined ? query['start'] as string : moment().format(momentTimeDateFormat));
-        setEnd(query['end'] != undefined ? query['end'] as string : moment().format(momentTimeDateFormat));
+        setStart(query['start'] != undefined ? query['start'] as string : moment().format(dateTimeFormat));
+        setEnd(query['end'] != undefined ? query['end'] as string : moment().format(dateTimeFormat));
     }, []);
 
     React.useEffect(() => {

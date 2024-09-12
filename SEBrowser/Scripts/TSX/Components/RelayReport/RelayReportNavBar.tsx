@@ -25,6 +25,7 @@ import _ from 'lodash';
 import { TimeFilter } from '@gpa-gemstone/common-pages'
 import { useSelector } from 'react-redux';
 import { SelectTimeZone, SelectDateTimeSetting } from '../SettingsSlice';
+import { SEBrowser } from 'Scripts/TSX/global';
 
 interface Substation {
     LocationID: number, AssetKey: string, AssetName: string
@@ -51,11 +52,17 @@ export interface RelayReportNavBarProps {
 }
 
 const RelayReportNavBar = (props: RelayReportNavBarProps) => {
+    const timeZone = useSelector(SelectTimeZone);
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+
     const [breakers, setBreakers] = React.useState<Breaker[]>([]);
     const [substations, setSubstations] = React.useState<Substation[]>([]);
     const [channels, setChannels] = React.useState<Channel[]>([]);
-    const timeZone = useSelector(SelectTimeZone);
-    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
+
+    React.useEffect(() => {
+        setDateTimeMode(dateTimeMode);
+    }, [dateTimeSetting])
 
     React.useEffect(() => {
         const handle = getSubstationData();
@@ -224,7 +231,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                                 setEnd(end);
                             }}
                             showQuickSelect={false} timeZone={timeZone}
-                            dateTimeSetting={dateTimeSetting} isHorizontal={false} />
+                            dateTimeSetting={dateTimeMode} isHorizontal={false} />
                     </li>
 
 

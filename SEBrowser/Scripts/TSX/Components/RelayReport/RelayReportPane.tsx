@@ -26,9 +26,9 @@ import { RelayReportNavBarProps } from './RelayReportNavBar';
 import { Line, LineWithThreshold, Plot } from '@gpa-gemstone/react-graph';
 import { RandomColor } from '@gpa-gemstone/helper-functions';
 import { TimeWindowUtils } from '@gpa-gemstone/common-pages';
-import { getMoment, getStartEndTime } from '@gpa-gemstone/common-pages/lib/TimeFilter/TimeWindowUtils';
+import { SelectDateTimeSetting } from '../SettingsSlice';
+import { useSelector } from 'react-redux';
 
-const serverFormat = "MM DD YYYY HH:mm:ss.SSS";
 interface IRelayPerformance {
     EventID: number,
     Tmax1: number,
@@ -59,9 +59,16 @@ interface IRelayPerformance {
 }
 
 const RelayReportPane = (props: RelayReportNavBarProps) => {
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+
     const [realyPerformance, setRelayPerformance] = React.useState<IRelayPerformance[]>([]);
+    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
     const [Tstart, setTstart] = React.useState<number>(0);
     const [Tend, setTend] = React.useState<number>(0);
+
+    React.useEffect(() => {
+        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
+    }, [dateTimeSetting]);
 
     React.useEffect(() => {
         const h = getRelayPerformance()
@@ -81,8 +88,8 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
     }
 
     function getRelayPerformance(): JQuery.jqXHR<IRelayPerformance[]> {
-        const startMoment: moment.Moment = moment(props.start, serverFormat);
-        const endMoment: moment.Moment = moment(props.end, serverFormat);
+        const startMoment: moment.Moment = moment(props.start, dateTimeFormat);
+        const endMoment: moment.Moment = moment(props.end, dateTimeFormat);
 
         const units = TimeWindowUtils.findAppropriateUnit(startMoment, endMoment)[1];
 
