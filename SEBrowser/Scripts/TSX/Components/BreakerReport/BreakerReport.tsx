@@ -79,7 +79,7 @@ const BreakerReport = () => {
     const link = `${homePath}api/BreakerReport/${(breaker == '0' ? `AllBreakersReport?` : `IndividualBreakerReport?breakerId=${breaker}&`)}startDate=${fromDate}&endDate=${toDate}`;
     return (
         <div style={{ width: '100%', height: '100%' }}>
-            <BreakerReportNavbar toDate={toDate} fromDate={fromDate} breaker={breaker} stateSetter={setState} />
+            <BreakerReportNavbar dateTimeFormat={dateTimeFormat} toDate={toDate} fromDate={fromDate} breaker={breaker} stateSetter={setState} />
             <div style={{ width: '100%', height: 'calc( 100% - 163px)' }}>
                 <embed style={{ width: 'inherit', height: 'inherit', position: 'absolute' }} id="pdfContent" src={link} key={link} type="application/pdf" />
             </div>
