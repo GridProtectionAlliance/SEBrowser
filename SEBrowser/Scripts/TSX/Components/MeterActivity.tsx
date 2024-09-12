@@ -24,7 +24,9 @@
 import React from 'react';
 import Table from './Table';
 import SEBrowserService from './../../TS/Services/SEBrowser';
+import { useSelector } from 'react-redux';
 import moment from 'moment';
+import { SelectDateTimeSetting } from './SettingsSlice';
 
 declare let xdaInstance: string;
 declare let homePath: string;
@@ -34,7 +36,6 @@ declare let homePath: string;
 //        //buildMeterActivityTables();
 //    }, updateInterval);
 
-const momentFormat = "YYYY/MM/DD HH:mm:ss";
 const MeterActivity: React.FunctionComponent = () => {
 
     return (
@@ -47,7 +48,7 @@ const MeterActivity: React.FunctionComponent = () => {
                     <LeastActiveMeters />
                 </div>
             </div>
-            <div style={{  backgroundColor: 'white', borderColor: 'black', color: 'black', textAlign: 'left', marginBottom: 0, height: 'calc(100% - 57px)', width: 'calc(50% - 11px)', position: 'relative', float: 'right', padding: 15 }} className="well well-sm">
+            <div style={{ backgroundColor: 'white', borderColor: 'black', color: 'black', textAlign: 'left', marginBottom: 0, height: 'calc(100% - 57px)', width: 'calc(50% - 11px)', position: 'relative', float: 'right', padding: 15 }} className="well well-sm">
                 <FilesProcessed />
             </div>
         </div>
@@ -64,7 +65,14 @@ interface MostActiveMeterActivityRow {
     '30Days': number
 }
 
-class MostActiveMeters extends React.Component<unknown, { meterTable: Array<MostActiveMeterActivityRow>, sortField: string, rowsPerPage: number }>{
+const dateTimeSetting = useSelector(SelectDateTimeSetting);
+const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
+
+React.useEffect(() => {
+    setDateTimeFormat(dateTimeSetting.DateTimeFormat);
+}, [dateTimeSetting]);
+
+class MostActiveMeters extends React.Component<unknown, { meterTable: Array<MostActiveMeterActivityRow>, sortField: string, rowsPerPage: number }> {
     seBrowserService: SEBrowserService;
     constructor(props) {
         super(props);
@@ -124,7 +132,7 @@ class MostActiveMeters extends React.Component<unknown, { meterTable: Array<Most
         }
 
         if (item[key] != '0 ( 0 )') {
-            return <a onClick={() => this.openWindowToMeterEventsByLine(item.FirstEventID, context, moment().format(momentFormat))} style={{ color: 'blue' }}>{item[key]}</a>
+            return <a onClick={() => this.openWindowToMeterEventsByLine(item.FirstEventID, context, moment().format(dateTimeFormat))} style={{ color: 'blue' }}>{item[key]}</a>
         }
         else {
             return <span>{item[key]}</span>;
@@ -142,7 +150,7 @@ class MostActiveMeters extends React.Component<unknown, { meterTable: Array<Most
                 <h3 style={{ display: 'inline' }}>Most Active Meters</h3>
                 <span style={{ float: 'right', color: 'silver' }}>{/*Click on event count to view events*/}</span>
                 <div style={{ height: '2px', width: '100%', display: 'inline-block', backgroundColor: 'black' }}></div>
-                <div style={{ backgroundColor: 'white', borderColor: 'black', height: 'calc(100% - 60px)', overflowY: 'auto'}} ref='divElement'>
+                <div style={{ backgroundColor: 'white', borderColor: 'black', height: 'calc(100% - 60px)', overflowY: 'auto' }} ref='divElement'>
                     <Table<MostActiveMeterActivityRow>
                         cols={[
                             { key: 'AssetKey', label: 'Name', headerStyle: { width: 'calc(40%)' } },
@@ -154,18 +162,18 @@ class MostActiveMeters extends React.Component<unknown, { meterTable: Array<Most
                         data={this.state.meterTable}
                         sortField={this.state.sortField}
                         ascending={true}
-                        selected={() => false }
+                        selected={() => false}
                         onSort={(data) => { this.setState({ sortField: data.col }, () => this.createTableRows()) }}
-                        onClick={() => {/*Do Nothing*/}}
+                        onClick={() => {/*Do Nothing*/ }}
                         theadStyle={{ fontSize: 'smaller' }}
                     />
                 </div>
             </div>
         );
     }
-        
+
 }
-    
+
 interface LeastActiveMeterActivityRow {
     AssetKey: string,
     '180Days': number,
@@ -173,8 +181,8 @@ interface LeastActiveMeterActivityRow {
     '30Days': number,
     FirstEventID: number
 }
-        
-class LeastActiveMeters extends React.Component<unknown, { meterTable: Array<LeastActiveMeterActivityRow>, sortField: keyof(LeastActiveMeterActivityRow), rowsPerPage: number }>{
+
+class LeastActiveMeters extends React.Component<unknown, { meterTable: Array<LeastActiveMeterActivityRow>, sortField: keyof (LeastActiveMeterActivityRow), rowsPerPage: number }> {
     seBrowserService: SEBrowserService;
     constructor(props) {
         super(props);
@@ -219,7 +227,7 @@ class LeastActiveMeters extends React.Component<unknown, { meterTable: Array<Lea
         });
     }
 
-    createContent(item: LeastActiveMeterActivityRow, key: keyof(LeastActiveMeterActivityRow)) {
+    createContent(item: LeastActiveMeterActivityRow, key: keyof (LeastActiveMeterActivityRow)) {
         let context = '';
         if (key == '180Days') {
             context = '180d';
@@ -232,7 +240,7 @@ class LeastActiveMeters extends React.Component<unknown, { meterTable: Array<Lea
         }
 
         if (item[key] != '0 ( 0 )') {
-            return <a onClick={() => this.openWindowToMeterEventsByLine(item.FirstEventID, context, moment().format(momentFormat))} style={{ color: 'blue' }}>{item[key]}</a>
+            return <a onClick={() => this.openWindowToMeterEventsByLine(item.FirstEventID, context, moment().format(dateTimeFormat))} style={{ color: 'blue' }}>{item[key]}</a>
         }
         else {
             return <span>{item[key]}</span>;
@@ -254,9 +262,9 @@ class LeastActiveMeters extends React.Component<unknown, { meterTable: Array<Lea
                     <Table<LeastActiveMeterActivityRow>
                         cols={[
                             { key: 'AssetKey', label: 'Name', headerStyle: { width: 'calc(40%)' } },
-                            { key: '30Days', label: 'Files(Events) 30D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key)  },
-                            { key: '90Days', label: 'Files(Events) 90D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key)  },
-                            { key: '180Days', label: 'Files(Events) 180D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key)  },
+                            { key: '30Days', label: 'Files(Events) 30D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key) },
+                            { key: '90Days', label: 'Files(Events) 90D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key) },
+                            { key: '180Days', label: 'Files(Events) 180D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key) },
                         ]}
                         tableClass="table"
                         data={this.state.meterTable}
@@ -274,7 +282,7 @@ class LeastActiveMeters extends React.Component<unknown, { meterTable: Array<Lea
 
 }
 
-class FilesProcessed extends React.Component<unknown, { meterTable: Array<JSX.Element>, sortField: string}>{
+class FilesProcessed extends React.Component<unknown, { meterTable: Array<JSX.Element>, sortField: string }> {
     seBrowserService: SEBrowserService;
     constructor(props) {
         super(props);
@@ -295,7 +303,8 @@ class FilesProcessed extends React.Component<unknown, { meterTable: Array<JSX.El
     createTableRows() {
         this.seBrowserService.getFilesProcessedMeterActivityData(this.state.sortField).done(data => {
             this.setState({
-                meterTable: data.map((x) => <ListItem key={x.FilePath} CreationTime={x.CreationTime} FilePath={x.FilePath} FileGroupID={x.FileGroupID}/>) });
+                meterTable: data.map((x) => <ListItem key={x.FilePath} CreationTime={x.CreationTime} FilePath={x.FilePath} FileGroupID={x.FileGroupID} />)
+            });
         });
     }
 
@@ -308,7 +317,7 @@ class FilesProcessed extends React.Component<unknown, { meterTable: Array<JSX.El
                 <div style={{ height: 2, width: '100%', display: 'inline-block', backgroundColor: 'black' }}></div>
                 <div id="meter-activity-files" style={{ backgroundColor: 'white', borderColor: 'black' }}></div>
                 <ul style={{ listStyleType: 'none', padding: 0 }}>
-                    <li key='header' style={{ width: '100%', borderTop: '1px solid #dee2e6'}}><div style={{ display: 'table-cell', verticalAlign: 'inherit', fontWeight: 'bold', textAlign: 'inherit', padding: '.75em', width: 50, fontSize: 'smaller' }}></div><div style={{ display: 'table-cell', verticalAlign: 'inherit', fontWeight: 'bold', textAlign: 'inherit', padding: '.75em', width: 'calc(30% - 50px)', fontSize: 'smaller' }}>Time Processed</div><div style={{ display: 'table-cell', verticalAlign: 'inherit', fontWeight: 'bold', textAlign: 'inherit', padding: '.75em', width: 'calc(70%)', fontSize: 'smaller'  }}>File</div></li>
+                    <li key='header' style={{ width: '100%', borderTop: '1px solid #dee2e6' }}><div style={{ display: 'table-cell', verticalAlign: 'inherit', fontWeight: 'bold', textAlign: 'inherit', padding: '.75em', width: 50, fontSize: 'smaller' }}></div><div style={{ display: 'table-cell', verticalAlign: 'inherit', fontWeight: 'bold', textAlign: 'inherit', padding: '.75em', width: 'calc(30% - 50px)', fontSize: 'smaller' }}>Time Processed</div><div style={{ display: 'table-cell', verticalAlign: 'inherit', fontWeight: 'bold', textAlign: 'inherit', padding: '.75em', width: 'calc(70%)', fontSize: 'smaller' }}>File</div></li>
                     {this.state.meterTable}
                 </ul>
             </div>
@@ -364,17 +373,17 @@ const ListItem = (props: { CreationTime: string, FilePath: string, FileGroupID: 
     return (
         <li style={{ width: '100%', borderTop: '1px solid #dee2e6' }}>
             <div className="row">
-            <div style={{ display: 'table-cell', verticalAlign: 'inherit', textAlign: 'inherit', padding: '.75em', width: 50 }}>
-                    <button className="btn" onClick={() => setOpen(!isOpen)}><span className={'fa fa-arrow-circle-' + (isOpen? 'down':'right')}></span></button>
-            </div>
-            <div style={{ display: 'table-cell', verticalAlign: 'inherit', fontWeight: 'bold', textAlign: 'inherit', padding: '.75em', width: 'calc(30% - 50px)', fontSize: 'smaller' }}>
-                <span>{moment(props.CreationTime).format('MM/DD/YYYY')}<br />{moment(props.CreationTime).format('HH:mm:ss.SSSSSSS')}</span>
-            </div>
-            <div style={{ display: 'table-cell', verticalAlign: 'inherit', textAlign: 'inherit', padding: '.75em', width: 'calc(70%)' }}>
-                {buildFileGroupContent(props)}
+                <div style={{ display: 'table-cell', verticalAlign: 'inherit', textAlign: 'inherit', padding: '.75em', width: 50 }}>
+                    <button className="btn" onClick={() => setOpen(!isOpen)}><span className={'fa fa-arrow-circle-' + (isOpen ? 'down' : 'right')}></span></button>
+                </div>
+                <div style={{ display: 'table-cell', verticalAlign: 'inherit', fontWeight: 'bold', textAlign: 'inherit', padding: '.75em', width: 'calc(30% - 50px)', fontSize: 'smaller' }}>
+                    <span>{moment(props.CreationTime).format('MM/DD/YYYY')}<br />{moment(props.CreationTime).format('HH:mm:ss.SSSSSSS')}</span>
+                </div>
+                <div style={{ display: 'table-cell', verticalAlign: 'inherit', textAlign: 'inherit', padding: '.75em', width: 'calc(70%)' }}>
+                    {buildFileGroupContent(props)}
                 </div>
             </div>
-            <div className="row" style={{display: (isOpen ? 'block' : 'none'), padding: '5px 20px'}}>
+            <div className="row" style={{ display: (isOpen ? 'block' : 'none'), padding: '5px 20px' }}>
                 <table className='table'>
                     <thead>
                         <tr><th>Line</th><th>Start Time</th><th>Type</th></tr>
