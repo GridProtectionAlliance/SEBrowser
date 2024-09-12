@@ -116,10 +116,8 @@ namespace SEBrowser.Controllers
 
         public class EventSearchPostData
         {
-            public string date { get; set; }
-            public string time { get; set; }
-            public double windowSize { get; set; }
-            public int timeWindowUnits { get; set; }
+            public string start { get; set; }
+            public string end { get; set; }
             public double durationMin { get; set; }
             public double durationMax { get; set; }
             public Phase phases { get; set; }
@@ -176,7 +174,8 @@ namespace SEBrowser.Controllers
         {
             using (AdoDataConnection connection = new(SettingsCategory))
             {
-                DateTime dateTime = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+                DateTime startTime = DateTime.ParseExact(postData.start, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+                DateTime endTime = DateTime.ParseExact(postData.end, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
 
                 string eventType = (postData.typeIDs is null) ? null : getEventTypeFilter(postData);
                 string phase = (postData.phases is null) ? null : getPhaseFilter(postData);
@@ -240,7 +239,7 @@ namespace SEBrowser.Controllers
                                 (COALESCE([SEBrowser.EventSearchDetailsView].DisturbanceID, Main.DisturbanceID) IS NULL AND COALESCE([SEBrowser.EventSearchDetailsView].FaultID, Main.FaultID) IS NULL) 
                             ) {sortBy}";
 
-                DataTable table = connection.RetrieveData(query, dateTime);
+                DataTable table = connection.RetrieveData(query, startTime, endTime);
 
                 return table;
             }
@@ -249,9 +248,7 @@ namespace SEBrowser.Controllers
 
         private string getTimeFilter(EventSearchPostData postData)
         {
-            string timeWindowUnits = ((TimeWindowUnits)postData.timeWindowUnits).GetDescription();
-
-            return $"Event.StartTime BETWEEN DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}})";
+            return $"Event.StartTime BETWEEN '{postData.start}' AND '{postData.end}'";
         }
 
         private string getEventTypeFilter(EventSearchPostData postData)
