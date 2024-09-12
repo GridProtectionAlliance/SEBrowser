@@ -26,8 +26,8 @@ import moment from 'moment';
 import { CapBankReportNavBarProps } from './CapBankReportNavBar';
 import _, { cloneDeep } from 'lodash';
 import { Warning, Modal } from '@gpa-gemstone/react-interactive';
-import { Plot, Line } from '@gpa-gemstone/react-graph'
-import { findAppropriateUnit, getMoment, getStartEndTime } from '../EventSearch/TimeWindowUtils';
+import { Plot, Line } from '@gpa-gemstone/react-graph';
+import { getStartEndTime } from '@gpa-gemstone/common-pages/lib/TimeFilter/TimeWindowUtils';
 
 interface ITrendSeries {
 
@@ -102,7 +102,7 @@ interface ICBEvent {
 
 
 export default class CapBankReportPane extends React.Component<CapBankReportNavBarProps, ICapBankReportPaneState> {
-   
+
     eventTableHandle: JQuery.jqXHR;
     trendHandle: JQuery.jqXHR;
 
@@ -155,7 +155,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
             TableTitle: ''
         };
 
-        
+
     }
 
 
@@ -170,7 +170,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
             this.getData();
             this.getTimeLimits()
         }
-            
+
     }
 
     getFilterString() {
@@ -203,7 +203,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         //Next Filter is Phase Filter
         if ((this.props.PhaseFilter.length > 0) && (!this.props.PhaseFilter.includes(999)))
             filter = filter + `&phaseFilt=${this.props.PhaseFilter.join(',')}`
-        
+
         return filter;
     }
 
@@ -211,15 +211,10 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         if (this.eventTableHandle !== undefined)
             this.eventTableHandle.abort();
 
-        const adjustedTimeFrame = findAppropriateUnit(getMoment(this.props.TimeFilter.date),
-            getStartEndTime(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time), this.props.TimeFilter.windowSize, this.props.TimeFilter.timeWindowUnits)[1],
-            this.props.TimeFilter.timeWindowUnits);
-
         this.eventTableHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${this.props.CapBankID}&date=${this.props.TimeFilter.date}` +
-                `&time=${this.props.TimeFilter.time}&timeWindowunits=${adjustedTimeFrame[0]}&windowSize=${adjustedTimeFrame[1]}` +
-                `&bankNum=${this.props.selectedBank}` + this.getFilterString(),
+            url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${this.props.CapBankID}&start=${this.props.TimeFilter.start}` +
+                `&end=${this.props.TimeFilter.end}` + `&bankNum=${this.props.selectedBank}` + this.getFilterString(),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,
@@ -229,18 +224,16 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         return this.eventTableHandle;
     }
 
-   
+
     getData() {
         this.getEventTableData().then(data => {
-            
+
             if (data == null) {
-                this.setState({EventData: []})
+                this.setState({ EventData: [] })
                 return;
             }
             this.setState({ EventData: data })
         });
-
-        
 
         this.getTrendData().then(data => {
 
@@ -249,8 +242,6 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
             }
             this.setState({ TrendData: data });
         });
-
-       
     }
 
     updateCapBank() {
@@ -327,7 +318,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                     {this.state.TableContent}
                 </Modal>
                 <Warning Show={this.state.ShowWarning} Title={'Confirm Capacitor Bank Assignment'} Message={'The Capacitor Bank manually assigned to this event can not be changed in the future. Are you sure you want to continue?'}
-                    CallBack={(confirmed) => { this.setState({ ShowWarning: false }); if (confirmed) this.updateCapBank(); else this.setState({ ShowCapBankEdit: true });}} />
+                    CallBack={(confirmed) => { this.setState({ ShowWarning: false }); if (confirmed) this.updateCapBank(); else this.setState({ ShowCapBankEdit: true }); }} />
                 <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
                     {(this.state.TrendData.Q.length > 0 ?
                         <div className="card">
@@ -340,12 +331,12 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             </div>
                         </div> : null)}
 
-                    {(this.state.TrendData.DeltaQ.length > 0?
-                    <div className="card">
-                        <div className="card-header">Change in Q</div>
+                    {(this.state.TrendData.DeltaQ.length > 0 ?
+                        <div className="card">
+                            <div className="card-header">Change in Q</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'Delta Q (kVAR)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaQ, 'Change in Q','(MVA)')}>
+                                    Tlabel={'Time'} Ylabel={'Delta Q (kVAR)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaQ, 'Change in Q', '(MVA)')}>
                                     {this.state.TrendData.DeltaQ.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -357,7 +348,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">RMS Current</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'I RMS (A)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.Irms, 'RMS Current','(A)')}>
+                                    Tlabel={'Time'} Ylabel={'I RMS (A)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.Irms, 'RMS Current', '(A)')}>
                                     {this.state.TrendData.Irms.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -367,7 +358,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Change in RMS Current</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'Delta I RMS (A)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaIrms, 'Change in RMS Current','(A)')}>
+                                    Tlabel={'Time'} Ylabel={'Delta I RMS (A)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaIrms, 'Change in RMS Current', '(A)')}>
                                     {this.state.TrendData.DeltaIrms.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -377,7 +368,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">RMS Voltage</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'V RMS (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.Vrms, 'RMS Voltage','(%)')}>
+                                    Tlabel={'Time'} Ylabel={'V RMS (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.Vrms, 'RMS Voltage', '(%)')}>
                                     {this.state.TrendData.Vrms.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -387,7 +378,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Change in RMS Voltage</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Delta V RMS (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaVrms, 'Change in RMS Voltage','(%)')}>
+                                    Ylabel={'Delta V RMS (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaVrms, 'Change in RMS Voltage', '(%)')}>
                                     {this.state.TrendData.DeltaVrms.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -397,7 +388,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Resonance Frequency</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Res. Freq. (Hz)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.Freq, 'Resonance Frequency','(Hz)')}>
+                                    Ylabel={'Res. Freq. (Hz)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.Freq, 'Resonance Frequency', '(Hz)')}>
                                     {this.state.TrendData.Freq.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -408,7 +399,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Peak Voltage</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'Voltage peak (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.PeakV, 'Peak Voltage','(%)')}>
+                                    Tlabel={'Time'} Ylabel={'Voltage peak (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.PeakV, 'Peak Voltage', '(%)')}>
                                     {this.state.TrendData.PeakV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -418,7 +409,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Voltage THD</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'THD (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.THDV, 'Voltage THD','(%)')}>
+                                    Ylabel={'THD (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.THDV, 'Voltage THD', '(%)')}>
                                     {this.state.TrendData.THDV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -429,7 +420,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Change in Voltage THD</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'Delta THD (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaTHDV, 'Change in Voltage THD','(%)')}>
+                                    Tlabel={'Time'} Ylabel={'Delta THD (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaTHDV, 'Change in Voltage THD', '(%)')}>
                                     {this.state.TrendData.DeltaTHDV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -439,7 +430,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Current THD</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'THD (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.THDI, 'Current THD','(%)')}>
+                                    Ylabel={'THD (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.THDI, 'Current THD', '(%)')}>
                                     {this.state.TrendData.THDI.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -450,7 +441,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Change in Current THD</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Delta THD (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.THDI, 'Change in Current THD','(%)')}>
+                                    Ylabel={'Delta THD (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.THDI, 'Change in Current THD', '(%)')}>
                                     {this.state.TrendData.DeltaTHDI.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -460,7 +451,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Switching Frequency</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Switching Freq. (Hz)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.SwitchingFreq, 'Switching Frequency','(Hz)')}>
+                                    Ylabel={'Switching Freq. (Hz)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.SwitchingFreq, 'Switching Frequency', '(Hz)')}>
                                     {this.state.TrendData.SwitchingFreq.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -470,7 +461,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank Impedance</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Impedance (Ohm)'}
-                                    showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.Xcap, 'Capacitor Bank Impedance','(Ohm)')}>
+                                    showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.Xcap, 'Capacitor Bank Impedance', '(Ohm)')}>
                                     {this.state.TrendData.Xcap.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -480,7 +471,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank Impedance Change</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Impedance (Ohm)'}
-                                    showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaXcap, 'Capacitor Bank Impedance Change','(Ohm)')}>
+                                    showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaXcap, 'Capacitor Bank Impedance Change', '(Ohm)')}>
                                     {this.state.TrendData.DeltaXcap.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -489,9 +480,9 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                     {(this.state.TrendData.RestrikeDuration.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Restrike Duration</div>
-                                <div className="card-body">
+                            <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Duration (cycles)'}
-                                    onDataInspect={() => this.createPointTable(this.state.TrendData.RestrikeDuration, 'Capacitor Bank Restrike Duration','(cycles)')} showMouse={true}>
+                                    onDataInspect={() => this.createPointTable(this.state.TrendData.RestrikeDuration, 'Capacitor Bank Restrike Duration', '(cycles)')} showMouse={true}>
                                     {this.state.TrendData.RestrikeDuration.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -501,7 +492,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank Restrike Current Peak</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Current Peak (kA)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RestrikeI, 'Capacitor Bank Restrike Current Peak','(kA)')}>
+                                    Ylabel={'Current Peak (kA)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RestrikeI, 'Capacitor Bank Restrike Current Peak', '(kA)')}>
                                     {this.state.TrendData.RestrikeI.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -511,10 +502,10 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank Restrike Voltage Peak</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Voltage Peak (kV)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RestrikeV, 'Capacitor Bank Restrike Voltage Peak','(kV)')}>
+                                    Ylabel={'Voltage Peak (kV)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RestrikeV, 'Capacitor Bank Restrike Voltage Peak', '(kV)')}>
                                     {this.state.TrendData.RestrikeV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
-                          </div>
+                            </div>
                         </div> : null)}
 
                     {(this.state.TrendData.PISDuration.length > 0 ?
@@ -522,7 +513,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank Pre-Insertion Switching Duration</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Duration (cycles)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.PISDuration, 'Capacitor Bank Pre-Insertion Switching Duration','(cycles)')}>
+                                    Ylabel={'Duration (cycles)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.PISDuration, 'Capacitor Bank Pre-Insertion Switching Duration', '(cycles)')}>
                                     {this.state.TrendData.PISDuration.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -532,7 +523,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank Pre-Insertion Switching Impedance</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Impedance (Ohm)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.PISZ, 'Capacitor Bank Pre-Insertion Switching Impedance','(Ohm)')}>
+                                    Ylabel={'Impedance (Ohm)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.PISZ, 'Capacitor Bank Pre-Insertion Switching Impedance', '(Ohm)')}>
                                     {this.state.TrendData.PISZ.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -542,7 +533,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank Pre-Insertion Switching Current</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Current (kA)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.PISI, 'Capacitor Bank Pre-Insertion Switching Current','(kA)')}>
+                                    Ylabel={'Current (kA)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.PISI, 'Capacitor Bank Pre-Insertion Switching Current', '(kA)')}>
                                     {this.state.TrendData.PISI.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -553,7 +544,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank K Factor</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'K Factor'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.KFactor, 'Capacitor Bank k Factor','')}>
+                                    Ylabel={'K Factor'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.KFactor, 'Capacitor Bank k Factor', '')}>
                                     {this.state.TrendData.KFactor.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -563,7 +554,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank Relay Differential Voltage</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Diff. Voltage (V)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RelaydV, 'Capacitor Bank Relay Differential Voltage','(V)')}>
+                                    Ylabel={'Diff. Voltage (V)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RelaydV, 'Capacitor Bank Relay Differential Voltage', '(V)')}>
                                     {this.state.TrendData.RelaydV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -573,7 +564,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank Relay Voltage</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Voltage (V)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RelayV, 'Capacitor Bank Relay Voltage','(V)')}>
+                                    Ylabel={'Voltage (V)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RelayV, 'Capacitor Bank Relay Voltage', '(V)')}>
                                     {this.state.TrendData.RelayV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -583,7 +574,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank Voltage-Impedance Ratio Missmatch</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'ratio missmatch (%)'} showMouse={true} useMetricFactors={false}>  onDataInspect={() => this.createPointTable(this.state.TrendData.RelayXV, 'Capacitor Bank Voltage-Impedance Ratio Missmatch','(%)')}
+                                    Ylabel={'ratio missmatch (%)'} showMouse={true} useMetricFactors={false}>  onDataInspect={() => this.createPointTable(this.state.TrendData.RelayXV, 'Capacitor Bank Voltage-Impedance Ratio Missmatch', '(%)')}
                                     {this.state.TrendData.RelayXV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -593,7 +584,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank LV Cap Reactance or Midstack Reactances</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'Reactance (Ohm)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RelayXLV, 'Capacitor Bank LV Cap Reactance or Midstack Reactances','(Ohm)')}>
+                                    Tlabel={'Time'} Ylabel={'Reactance (Ohm)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RelayXLV, 'Capacitor Bank LV Cap Reactance or Midstack Reactances', '(Ohm)')}>
                                     {this.state.TrendData.RelayXLV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -603,7 +594,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank Neutral Current</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Current (A)'}
-                                    showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.Ineutral, 'Capacitor Bank Neutral Current','(A)')}>
+                                    showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.Ineutral, 'Capacitor Bank Neutral Current', '(A)')}>
                                     {this.state.TrendData.Ineutral.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -613,7 +604,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank Unbalance Factors</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Unbalance (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.Unbalance, 'Capacitor Bank Unbalance Factors','(%)')}>
+                                    Ylabel={'Unbalance (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.Unbalance, 'Capacitor Bank Unbalance Factors', '(%)')}>
                                     {this.state.TrendData.Unbalance.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -623,7 +614,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank Zero Sequence Voltage</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Voltage (V)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.BusV, 'Capacitor Bank Zero Sequence Voltage','(V)')} >
+                                    Ylabel={'Voltage (V)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.BusV, 'Capacitor Bank Zero Sequence Voltage', '(V)')} >
                                     {this.state.TrendData.BusV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -633,7 +624,7 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                             <div className="card-header">Capacitor Bank Zero Sequence Impedance</div>
                             <div className="card-body">
                                 <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Impedance (Ohm)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.BusZ, 'Capacitor Bank Zero Sequence Impedance','(Ohm)')}>
+                                    Ylabel={'Impedance (Ohm)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.BusZ, 'Capacitor Bank Zero Sequence Impedance', '(Ohm)')}>
                                     {this.state.TrendData.BusZ.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
                                 </Plot>
                             </div>
@@ -656,28 +647,23 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                 </div>
             </>
         )
-        
     }
 
     getTimeLimits() {
-        const [Tstart, Tend] = getStartEndTime(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time),
-            this.props.TimeFilter.windowSize, this.props.TimeFilter.timeWindowUnits);
-        this.setState({ Tstart: Tstart.valueOf(), Tend: Tend.valueOf()})
+        const startMoment = moment(this.props.TimeFilter.start);
+        const endMoment = moment(this.props.TimeFilter.end);
+        const [Tstart, Tend] = [startMoment, endMoment];
+        this.setState({ Tstart: Tstart.valueOf(), Tend: Tend.valueOf() })
     }
 
     getTrendData() {
         if (this.trendHandle !== undefined)
             this.trendHandle.abort();
 
-        const adjustedTimeFrame = findAppropriateUnit(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time),
-            getStartEndTime(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time), this.props.TimeFilter.windowSize, this.props.TimeFilter.timeWindowUnits)[0],
-            this.props.TimeFilter.timeWindowUnits);
-
         this.trendHandle = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/GetTrend?capBankId=${this.props.CapBankID}&date=${this.props.TimeFilter.date}` +
-                `&time=${this.props.TimeFilter.time}&timeWindowunits=${adjustedTimeFrame[0]}&windowSize=${adjustedTimeFrame[1]}` +
-                `&bankNum=${this.props.selectedBank}` + this.getFilterString(),
+            url: `${homePath}api/PQDashboard/CapBankReport/GetTrend?capBankId=${this.props.CapBankID}&start=${this.props.TimeFilter.start}` +
+                `&end=${this.props.TimeFilter.end}&bankNum=${this.props.selectedBank}` + this.getFilterString(),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,
@@ -686,14 +672,12 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
 
         return this.trendHandle;
     }
-
-    
 }
 
 const EventRow = (row: ICBEvent, showEdit: boolean, stateSetter: (obj: any) => void) => {
     return (
         <tr key={row.ID}>
-            {showEdit ? <td key={'Edit' + row.ID}> <i className='fa fa-edit fa-2x' onClick={() => stateSetter({ ShowCapBankEdit: true, SelectedEvent: row.ID, SelectedCapBank: 1})}></i></td> : null}
+            {showEdit ? <td key={'Edit' + row.ID}> <i className='fa fa-edit fa-2x' onClick={() => stateSetter({ ShowCapBankEdit: true, SelectedEvent: row.ID, SelectedCapBank: 1 })}></i></td> : null}
             <td key={'Time' + row.ID}><a target="_blank"
                 href={'./eventsearch?line=true&date=' + moment.utc(row.Time).format('MM/DD/YYYY') + '&time=' + moment.utc(row.Time).format('HH:mm:ss.SSS') + '&windowSize=10&timeWindowUnits=2&tab=All&eventid=' + row.EventId}
             > {moment.utc(row.Time).format('MM/DD/YY HH:mm:ss.SSS')}</a></td>
@@ -711,7 +695,7 @@ const EventRow = (row: ICBEvent, showEdit: boolean, stateSetter: (obj: any) => v
 const EventHeader = (props: { showEdit: boolean }) => {
     return (
         <tr key='Header'>
-            {props.showEdit? <th key="Edit"> </th> : null}
+            {props.showEdit ? <th key="Edit"> </th> : null}
             <th key='Time'>Time</th>
             <th key='Phase'>Phase</th>
             <th key='Status'>Analysis Status</th>

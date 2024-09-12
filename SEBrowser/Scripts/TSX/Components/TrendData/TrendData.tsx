@@ -32,7 +32,7 @@ import { SelectTrendDataSettings } from './../SettingsSlice';
 import { useAppSelector } from './../../hooks';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 
-const momentDateTimeFormat = "MM/DD/YYYYHH:mm:ss.SSS";
+const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 const trendSearchId = "TrendDataChartAll";
 const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFilter"]);
 

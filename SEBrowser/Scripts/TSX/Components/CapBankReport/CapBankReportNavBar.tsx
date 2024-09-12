@@ -164,16 +164,11 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
 
         bankOptions.push(<option key={-2} value={-2}> {'Unknown'} </option>);
 
-        type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
-        const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
-
         // Wrapper function to match the expected type for setFilter
-        const handleSetFilter = (start: string, end: string, unit: TimeUnit, duration: number) => {
+        const handleSetFilter = (start: string, end: string) => {
             this.setDate({
-                time: start.split(' ')[1],
-                date: start.split(' ')[0],
-                windowSize: duration,
-                timeWindowUnits: units.findIndex(u => u == unit)
+                start: start,
+                end: end,
             });
         };
 
@@ -216,9 +211,8 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                             </li>
                             <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
                                 <TimeFilter filter={{
-                                    start: this.props.TimeFilter.date + ' ' + this.props.TimeFilter.time,
-                                    duration: this.props.TimeFilter.windowSize,
-                                    unit: units[this.props.TimeFilter.timeWindowUnits]
+                                    start: this.props.TimeFilter.start,
+                                    end: this.props.TimeFilter.end,
                                 }} setFilter={handleSetFilter} showQuickSelect={true} timeZone={this.props.timeZone}
                                     dateTimeSetting={this.props.dateTimeSetting} isHorizontal={false} />
                             </li>

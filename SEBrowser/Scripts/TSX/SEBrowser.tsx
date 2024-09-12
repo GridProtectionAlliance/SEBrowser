@@ -37,7 +37,7 @@ import DERAnalysisReport from './Components/DERAnalysisReport/DERAnalysisReport'
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { Application, Page, Section } from '@gpa-gemstone/react-interactive';
 import Settings from './Settings';
-import ReactIcons from '@gpa-gemstone/gpa-symbols';
+import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { useAppDispatch } from './hooks';
 import { LoadSettings } from './Components/SettingsSlice';
 
@@ -91,7 +91,7 @@ const SEBrowserMainPage = () => {
                             paddingRight: 6, paddingTop: 2
                         }}
                             onClick={() => setShowSettings(true)}>
-                            <ReactIcons.Settings />
+                            {SVGIcons.Settings}
                         </button>
                     </li> </ul>}
                 OnSignOut={() => { window.location.href = `${homePath}/Logout`; }}
