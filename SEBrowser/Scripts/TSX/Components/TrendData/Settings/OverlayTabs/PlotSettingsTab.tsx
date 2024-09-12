@@ -21,12 +21,11 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import { IMultiCheckboxOption, TrendSearch } from '../../../../global';
+import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../../global';
 import { TimeFilter } from '@gpa-gemstone/common-pages'
 import { CheckBox, Input, MultiCheckBoxSelect, Select } from '@gpa-gemstone/react-forms';
 import { useSelector } from 'react-redux';
 import { SelectTimeZone, SelectDateTimeSetting } from '../../../SettingsSlice';
-import { property } from 'lodash';
 
 interface IProps {
     Plot: TrendSearch.ITrendPlot,
@@ -49,6 +48,8 @@ const PlotSettingsTab = React.memo((props: IProps) => {
     const timeZone = useSelector(SelectTimeZone);
     const dateTimeSetting = useSelector(SelectDateTimeSetting);
 
+    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
+
     const setPlotLimits = React.useCallback((limits: AxisLimits) => {
         const newPlot = { ...props.Plot };
         newPlot.DefaultZoom = [[limits.LeftLower, limits.LeftUpper], [limits.RightLower, limits.RightUpper]];
@@ -61,6 +62,10 @@ const PlotSettingsTab = React.memo((props: IProps) => {
         else
             return limits.LeftUpper > limits.LeftLower;
     }, [limits]);
+
+    React.useEffect(() => {
+        setDateTimeMode(dateTimeSetting.Mode);
+    }, [dateTimeSetting]);
 
     React.useEffect(() => {
         props.SetConfirmDisabled(!isValid());
@@ -159,7 +164,7 @@ const PlotSettingsTab = React.memo((props: IProps) => {
                 />
                 <TimeFilter filter={props.Plot.TimeFilter/* convertTimeFilter(props.Plot.TimeFilter) */} showQuickSelect={false}
                     setFilter={handleSetFilter} timeZone={timeZone}
-                    dateTimeSetting={dateTimeSetting} isHorizontal={false} />
+                    dateTimeSetting={dateTimeMode} isHorizontal={false} />
                 <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                     <legend className="w-auto" style={{ fontSize: 'large' }}>Axis Limits:</legend>
                     <div className="row">

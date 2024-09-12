@@ -22,10 +22,8 @@
 //******************************************************************************************************
 import { Input, Select } from '@gpa-gemstone/react-forms';
 import { ReactTable } from '@gpa-gemstone/react-table';
-import { Column } from '@gpa-gemstone/react-table';
 import React from 'react';
-import { TrendSearch } from '../../../../Global';
-import { LineStyles } from '../TabProperties/LineStyles';
+import { TrendSearch } from '../../../../global';
 import { TrashCan, UpArrow, DownArrow } from '@gpa-gemstone/gpa-symbols';
 import { BlockPicker } from 'react-color';
 import _ from 'lodash';
@@ -69,7 +67,7 @@ const ColorTab = React.memo((props: IColorTabProps) => {
 
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
-            <div className="col" style={{ width: '40%', height: 'calc(100vh - 264px)'}}>
+            <div className="col" style={{ width: '40%', height: 'calc(100vh - 264px)' }}>
                 <br />
                 <div className="alert alert-primary">These settings will only apply to line plots.</div>
                 <div className="row">

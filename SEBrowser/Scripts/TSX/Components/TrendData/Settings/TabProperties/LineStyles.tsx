@@ -23,7 +23,7 @@
 import React from 'react';
 import { Input, Select } from '@gpa-gemstone/react-forms';
 import { LineTypeOptions } from '../SettingsModal';
-import { TrendSearch } from '../../../../Global';
+import { TrendSearch } from '../../../../global';
 
 interface IChannelTabProps {
     DefaultStyle: TrendSearch.ILineStyleSettings,
@@ -42,7 +42,7 @@ const LineStyles = React.memo((props: IChannelTabProps) => {
                 }} />
             <Select<TrendSearch.ILineStyleSettings> Record={props.DefaultStyle} Label={'Line Style'}
                 Field={'Type'} Setter={props.SetDefaultStyle} Options={LineTypeOptions} />
-       </div>
+        </div>
     );
 });
 
