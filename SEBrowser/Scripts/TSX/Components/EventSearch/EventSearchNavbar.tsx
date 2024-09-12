@@ -34,6 +34,7 @@ import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { SelectDateTimeSetting, SelectTimeZone } from '../SettingsSlice';
 import moment from 'moment';
+import { SEBrowser } from 'Scripts/TSX/global';
 
 interface IProps {
     toggleVis: () => void,
@@ -48,28 +49,31 @@ const EventSearchNavbar = (props: IProps) => {
     const navRef = React.useRef(null);
 
     const dispatch = useAppDispatch();
-    const eventCharacteristicFilter = useAppSelector(SelectCharacteristicFilter);
-    const timeFilter = useAppSelector(SelectTimeFilter);
-    const eventTypeFilter = useAppSelector(SelectTypeFilter);
-    const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
-    const magDurCurves = useAppSelector(MagDurCurveSlice.Data);
-    const timeZone = useAppSelector(SelectTimeZone);
-
-    const assetGroupList = useAppSelector(SelectAssetGroupList);
-
-    const meterList = useAppSelector(SelectMeterList);
-    const assetList = useAppSelector(SelectAssetList);
-    const locationList = useAppSelector(SelectStationList);
-
-    const eventTypes = useAppSelector(EventTypeSlice.Data);
-    const evtTypeStatus = useAppSelector(EventTypeSlice.Status);
 
     const reset = useAppSelector(SelectReset);
+    const timeZone = useAppSelector(SelectTimeZone);
+    const meterList = useAppSelector(SelectMeterList);
+    const assetList = useAppSelector(SelectAssetList);
+    const timeFilter = useAppSelector(SelectTimeFilter);
+    const eventTypes = useAppSelector(EventTypeSlice.Data);
+    const magDurStatus = useAppSelector(MagDurCurveSlice.Status);
+    const magDurCurves = useAppSelector(MagDurCurveSlice.Data);
+    const locationList = useAppSelector(SelectStationList);
+    const evtTypeStatus = useAppSelector(EventTypeSlice.Status);
+    const assetGroupList = useAppSelector(SelectAssetGroupList);
+    const eventTypeFilter = useAppSelector(SelectTypeFilter);
+    const dateTimeSetting = useAppSelector(SelectDateTimeSetting);
+    const eventCharacteristicFilter = useAppSelector(SelectCharacteristicFilter);
 
     const [height, setHeight] = React.useState<number>(0);
-
     const [showFilter, setFilter] = React.useState<('None' | 'Meter' | 'Asset' | 'AssetGroup' | 'Station')>('None');
-    const dateTimeSetting = useAppSelector(SelectDateTimeSetting)
+    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
+    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
+
+    React.useEffect(() => {
+        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
+        setDateTimeMode(dateTimeMode);
+    }, [dateTimeSetting])
 
     React.useLayoutEffect(() => setHeight(navRef?.current?.offsetHeight ?? 0))
     React.useEffect(() => props.setHeight(height), [height])
@@ -93,11 +97,11 @@ const EventSearchNavbar = (props: IProps) => {
         const unit = findAppropriateUnit(startMoment, endMoment);
         const startEndDifference = startMoment.diff(endMoment, unit);
 
-        if (dateTimeSetting == 'startEnd')
+        if (dateTimeMode == 'startEnd')
             range = `${timeFilter.start} to ${timeFilter.end} (${timeZone})`;
-        if (dateTimeSetting == 'startWindow')
+        if (dateTimeMode == 'startWindow')
             range = `${timeFilter.start} (${timeZone}) +${startEndDifference}`;
-        else if (dateTimeSetting == 'endWindow')
+        else if (dateTimeMode == 'endWindow')
             range = `${timeFilter.end} (${timeZone}) -${startEndDifference}`;
 
         setTimeRange(range);
@@ -238,7 +242,7 @@ const EventSearchNavbar = (props: IProps) => {
                         <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
                             <TimeFilter filter={{ start: timeFilter.start, end: timeFilter.end }}
                                 setFilter={handleSetFilter} showQuickSelect={true} timeZone={timeZone}
-                                dateTimeSetting={dateTimeSetting} isHorizontal={false} />
+                                dateTimeSetting={dateTimeMode} isHorizontal={false} />
                         </li>
                         <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
                             <EventTypeFilter SetSelectedTypeIDs={(types: number[]) => { dispatch(SetFilters({ types })) }} EventTypes={eventTypes} SelectedTypeID={eventTypeFilter} Height={height} />

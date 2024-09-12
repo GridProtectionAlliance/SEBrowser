@@ -27,6 +27,7 @@ import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { SelectDateTimeSetting } from '../SettingsSlice';
+import { SEBrowser } from 'Scripts/TSX/global';
 
 declare let homePath: string;
 
@@ -37,13 +38,19 @@ interface State {
 }
 
 const BreakerReport = () => {
-    const [fromDate, setFromDate] = React.useState<string>('');
-    const [toDate, setToDate] = React.useState<string>('');
-    const [breaker, setBreaker] = React.useState<string>('');
-    const dateTimeSetting = useSelector(SelectDateTimeSetting);
-    const dateTimeFormat = dateTimeSetting.DateTimeFormat;
     const navigate = useNavigate();
     const history = useLocation();
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const [toDate, setToDate] = React.useState<string>('');
+    const [breaker, setBreaker] = React.useState<string>('');
+    const [fromDate, setFromDate] = React.useState<string>('');
+    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
+    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
+
+    React.useEffect(() => {
+        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
+        setDateTimeMode(dateTimeMode);
+    }, [dateTimeSetting])
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");

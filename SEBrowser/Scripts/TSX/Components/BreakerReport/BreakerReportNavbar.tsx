@@ -39,7 +39,11 @@ interface State {
 }
 
 const dateTimeSetting = useSelector(SelectDateTimeSetting);
-const dateTimeFormat = dateTimeSetting.DateTimeFormat;
+const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
+
+React.useEffect(() => {
+    setDateTimeFormat(dateTimeSetting.DateTimeFormat);
+}, [dateTimeSetting])
 
 export default class BreakerReportNavbar extends React.Component<BreakerReportNavbarProps, State> {
     breakerReportService: BreakerReportService;
