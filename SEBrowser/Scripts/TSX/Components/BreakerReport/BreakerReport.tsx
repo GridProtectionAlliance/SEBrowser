@@ -23,9 +23,10 @@
 import * as React from 'react';
 import BreakerReportNavbar from './BreakerReportNavbar';
 import * as queryString from 'querystring';
-const momentDateFormat = "MM/DD/YYYY";
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { SelectDateTimeSetting } from '../SettingsSlice';
 
 declare let homePath: string;
 
@@ -39,14 +40,16 @@ const BreakerReport = () => {
     const [fromDate, setFromDate] = React.useState<string>('');
     const [toDate, setToDate] = React.useState<string>('');
     const [breaker, setBreaker] = React.useState<string>('');
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const dateTimeFormat = dateTimeSetting.DateTimeFormat;
     const navigate = useNavigate();
     const history = useLocation();
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
 
-        setFromDate(query['fromDate'] != undefined ? query['fromDate'].toString() : moment().subtract(30, 'days').format(momentDateFormat));
-        setToDate(query['toDate'] != undefined ? query['toDate'].toString() : moment().format(momentDateFormat));
+        setFromDate(query['fromDate'] != undefined ? query['fromDate'].toString() : moment().subtract(30, 'days').format(dateTimeFormat));
+        setToDate(query['toDate'] != undefined ? query['toDate'].toString() : moment().format(dateTimeFormat));
         setBreaker(query['breaker'] != undefined ? query['breaker'].toString() : '0');
 
     }, []);
@@ -58,7 +61,7 @@ const BreakerReport = () => {
         const q = queryString.stringify(state, "&", "=");
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
-    }, [fromDate,toDate,breaker])
+    }, [fromDate, toDate, breaker])
 
     function setState(a: State) {
         setFromDate(a.fromDate);
