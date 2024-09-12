@@ -24,7 +24,7 @@ import React from 'react';
 import { BlockPicker } from 'react-color';
 import { Input, Select } from '@gpa-gemstone/react-forms';
 import { LineTypeOptions, AxisOptions } from '../SettingsModal';
-import { TrendSearch } from '../../../../Global';
+import { TrendSearch } from '../../../../global';
 
 interface ILineProps {
     // Assumption that this doesnt change outside of this overlay
