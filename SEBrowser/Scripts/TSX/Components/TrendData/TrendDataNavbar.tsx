@@ -93,6 +93,8 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const assetStatus = useAppSelector(AssetSlice.Status);
     const allAssets = useAppSelector(AssetSlice.Data);
 
+    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
+    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
     const [showFilter, setShowFilter] = React.useState<('None' | 'Meter' | 'Asset')>('None');
 
     const [timeFilter, setTimeFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.TimeFilter);
@@ -162,7 +164,12 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     }, [props.LinePlot]);
 
     React.useEffect(() => {
-        if (queryReady) setTimeFilter(props.TimeFilter);
+        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
+        setDateTimeMode(dateTimeSetting.Mode);
+    }, [dateTimeSetting]);
+
+    React.useEffect(() => {
+        setTimeFilter(props.TimeFilter);
     }, [props.TimeFilter]);
 
     // Slice dispatches
@@ -252,11 +259,11 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         const unit = findAppropriateUnit(startMoment, endMoment);
         const startEndDifference = startMoment.diff(endMoment, unit);
 
-        if (dateTimeSetting == 'startEnd')
+        if (dateTimeMode == 'startEnd')
             range = `${timeFilter.start} to ${timeFilter.end} (${timeZone})`;
-        if (dateTimeSetting == 'startWindow')
+        if (dateTimeMode == 'startWindow')
             range = `${timeFilter.start} (${timeZone}) +${startEndDifference}`;
-        else if (dateTimeSetting == 'endWindow')
+        else if (dateTimeMode == 'endWindow')
             range = `${timeFilter.end} (${timeZone}) -${startEndDifference}`;
 
         setTimeRange(range);
@@ -316,8 +323,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             setSelectedSet(new Set<number>());
         });
     }
-
-    // TODO: These can be in a shared place with eventSearchBar
 
     function formatWindowUnit(i: number) {
         if (i == 7)
@@ -449,7 +454,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     <li className="nav-item" style={{ width: '30%', paddingRight: 10 }} ref={timeRef}>
                         <TimeFilter filter={{ start: timeFilter.start, end: timeFilter.end }}
                             setFilter={handleSetFilter} showQuickSelect={true} timeZone={timeZone}
-                            dateTimeSetting={dateTimeSetting} isHorizontal={false} />
+                            dateTimeSetting={dateTimeMode} isHorizontal={false} />
                     </li>
                     <li className="nav-item" style={{ width: '15%', paddingRight: 10 }} ref={filtRef}>
                         <fieldset className="border" style={{ padding: '10px' }}>
