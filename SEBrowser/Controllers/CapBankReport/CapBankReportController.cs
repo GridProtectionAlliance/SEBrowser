@@ -134,8 +134,6 @@ namespace PQDashboard.Controllers.CapBankReport
         {
             using (AdoDataConnection connection = new("systemSettings"))
             {
-
-
                 DataTable table = new();
 
                 using (IDbCommand sc = connection.Connection.CreateCommand())
@@ -205,13 +203,12 @@ namespace PQDashboard.Controllers.CapBankReport
         {
             Dictionary<string, string> query = Request.QueryParameters();
             int capBankId = int.Parse(query["capBankId"]);
-            DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
-            string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
-            int windowSize = int.Parse(query["windowSize"]);
+            DateTime start = DateTime.ParseExact(query["start"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+            DateTime end = DateTime.ParseExact(query["end"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
             int selectedBank = int.Parse(query["bankNum"]);
 
 
-            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD({ timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}'))";
+            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD('{start}') AND DATEADD('{end}'))";
             string capBankRestriction = $"((SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId})";
             string bankNumRestriction = $"(CBAnalyticResult.EnergizedBanks = {selectedBank} OR CBAnalyticResult.DeEnergizedBanks = {selectedBank})";
             string otherFilter = ProcessFilter(query);
@@ -293,13 +290,12 @@ namespace PQDashboard.Controllers.CapBankReport
         {
             Dictionary<string, string> query = Request.QueryParameters();
             int capBankId = int.Parse(query["capBankId"]);
-            DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
-            string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
-            int windowSize = int.Parse(query["windowSize"]);
+            DateTime start = DateTime.ParseExact(query["start"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+            DateTime end = DateTime.ParseExact(query["end"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
             int selectedBank = int.Parse(query["bankNum"]);
             
 
-            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD({ timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}'))";
+            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD('{start}') AND DATEADD('{end}'))";
             string capBankRestriction = $"((SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId})";
             string bankNumRestriction = $"(CBAnalyticResult.EnergizedBanks = {selectedBank} OR CBAnalyticResult.DeEnergizedBanks = {selectedBank})";
             string bankNumAfterRestriction = $"(CBAnalyticResult.StepPost = {selectedBank})";
