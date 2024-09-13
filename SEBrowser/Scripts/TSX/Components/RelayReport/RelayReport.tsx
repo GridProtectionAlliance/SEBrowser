@@ -44,22 +44,14 @@ const RelayReport = () => {
     const [StationId, setStationId] = React.useState<number>(0);
     const [start, setStart] = React.useState<string>('01/01/2000 12:00:00.000');
     const [end, setEnd] = React.useState<string>('01/02/2000 12:00:00.000');
-    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
-    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
-
-    React.useEffect(() => {
-        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
-        setDateTimeMode(dateTimeMode);
-    }, [dateTimeSetting])
-
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
         setBreakerID(query['breakerid'] != undefined ? parseInt(query['breakerid'] as string) : -1);
         setChannelID(query['channelid'] != undefined ? parseInt(query['channelid'] as string) : -1);
         setStationId(query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1);
-        setStart(query['start'] != undefined ? query['start'] as string : moment().format(dateTimeFormat));
-        setEnd(query['end'] != undefined ? query['end'] as string : moment().format(dateTimeFormat));
+        setStart(query['start'] != undefined ? query['start'] as string : moment().format(dateTimeSetting.DateTimeFormat));
+        setEnd(query['end'] != undefined ? query['end'] as string : moment().format(dateTimeSetting.DateTimeFormat));
     }, []);
 
     React.useEffect(() => {

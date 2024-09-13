@@ -27,7 +27,6 @@ import { CapBankReportNavBarProps } from './CapBankReportNavBar';
 import _, { cloneDeep } from 'lodash';
 import { Warning, Modal } from '@gpa-gemstone/react-interactive';
 import { Plot, Line } from '@gpa-gemstone/react-graph';
-import { getStartEndTime } from '@gpa-gemstone/common-pages/lib/TimeFilter/TimeWindowUtils';
 
 interface ITrendSeries {
 

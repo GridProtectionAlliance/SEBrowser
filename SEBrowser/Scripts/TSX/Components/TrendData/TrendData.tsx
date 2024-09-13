@@ -39,12 +39,11 @@ const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFi
 const TrendData = () => {
     const dateTimeSetting = useSelector(SelectDateTimeSetting);
 
-    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
     const closureHandler = React.useRef<((o: boolean) => void)>(() => { return; });
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
     const [plotList, setPlotList] = React.useState<TrendSearch.ITrendPlot[]>([]);
     const [defaultPlotSettings, setDefaultPlotSettings] = React.useState<TrendSearch.ITrendPlot>({
-        TimeFilter: { start: moment.utc().format(dateTimeFormat), end: moment.utc().add(12, 'hours').format(dateTimeFormat) },
+        TimeFilter: { start: moment.utc().format(dateTimeSetting.DateTimeFormat), end: moment.utc().add(12, 'hours').format(dateTimeSetting.DateTimeFormat) },
         Type: 'Line',
         Channels: [],
         PlotFilter: [{ Text: "Minimum", Value: "min", Selected: true }, { Text: "Maximum", Value: "max", Selected: true }, { Text: "Average/Values", Value: "avg", Selected: true }],
@@ -183,10 +182,6 @@ const TrendData = () => {
         else
             return true;
     }
-
-    React.useEffect(() => {
-        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
-    }, [dateTimeSetting]);
 
     const removePlot = React.useCallback(((ID: string) => {
         const index = plotList.findIndex(item => item.ID === ID);

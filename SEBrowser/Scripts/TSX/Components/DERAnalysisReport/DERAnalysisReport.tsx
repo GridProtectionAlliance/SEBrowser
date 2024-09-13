@@ -55,10 +55,8 @@ function DERAnalysisReport() {
 
     const timeZone = useSelector(SelectTimeZone);
     const dateTimeSetting = useSelector(SelectDateTimeSetting);
-    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
-    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
-    const [start, setStart] = React.useState<string>(moment().format(dateTimeFormat));
-    const [end, setEnd] = React.useState<string>(moment().format(dateTimeFormat));
+    const [start, setStart] = React.useState<string>(moment().format(dateTimeSetting.DateTimeFormat));
+    const [end, setEnd] = React.useState<string>(moment().format(dateTimeSetting.DateTimeFormat));
     const [regulations, setRegulations] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([])
     const [stations, setStations] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([]);
     const [ders, setDERs] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([]);
@@ -68,14 +66,9 @@ function DERAnalysisReport() {
     const [selectedData, setSelectedData] = React.useState<DERAnalyticResult>(null);
 
     React.useEffect(() => {
-        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
-        setDateTimeMode(dateTimeMode);
-    }, [dateTimeSetting])
-
-    React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
-        setStart(query['start'] != undefined ? query['start'] as string : moment().format(dateTimeFormat))
-        setEnd(query['end'] != undefined ? query['end'] as string : moment().format(dateTimeFormat))
+        setStart(query['start'] != undefined ? query['start'] as string : moment().format(dateTimeSetting.DateTimeFormat))
+        setEnd(query['end'] != undefined ? query['end'] as string : moment().format(dateTimeSetting.DateTimeFormat))
     }, []);
 
 
@@ -222,7 +215,7 @@ function DERAnalysisReport() {
                                     setEnd(end);
                                 }}
                                 showQuickSelect={false} timeZone={timeZone}
-                                dateTimeSetting={dateTimeMode} isHorizontal={false} />
+                                dateTimeSetting={dateTimeSetting.Mode} isHorizontal={false} />
                             <button style={{ position: 'absolute', top: 30, right: 30 }} data-toggle="modal" data-target="#epriModal">⚠</button>
                         </li>
 
@@ -234,7 +227,7 @@ function DERAnalysisReport() {
                 <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
                     <Table<DERAnalyticResult>
                         cols={[
-                            { key: 'Time', label: 'Time', field: 'Time', content: (item) => moment(item.Time).format(dateTimeFormat) },
+                            { key: 'Time', label: 'Time', field: 'Time', content: (item) => moment(item.Time).format(dateTimeSetting.DateTimeFormat) },
                             { key: 'Meter', label: 'Meter', field: 'Meter' },
                             { key: 'Asset', label: 'Asset', field: 'Asset' },
                             { key: 'Channel', label: 'Channel', field: 'Channel' },

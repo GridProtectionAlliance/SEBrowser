@@ -164,11 +164,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     }, [props.LinePlot]);
 
     React.useEffect(() => {
-        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
-        setDateTimeMode(dateTimeSetting.Mode);
-    }, [dateTimeSetting]);
-
-    React.useEffect(() => {
         setTimeFilter(props.TimeFilter);
     }, [props.TimeFilter]);
 
@@ -259,11 +254,11 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         const unit = findAppropriateUnit(startMoment, endMoment);
         const startEndDifference = startMoment.diff(endMoment, unit);
 
-        if (dateTimeMode == 'startEnd')
+        if (dateTimeSetting.Mode == 'startEnd')
             range = `${timeFilter.start} to ${timeFilter.end} (${timeZone})`;
-        if (dateTimeMode == 'startWindow')
+        if (dateTimeSetting.Mode == 'startWindow')
             range = `${timeFilter.start} (${timeZone}) +${startEndDifference}`;
-        else if (dateTimeMode == 'endWindow')
+        else if (dateTimeSetting.Mode == 'endWindow')
             range = `${timeFilter.end} (${timeZone}) -${startEndDifference}`;
 
         setTimeRange(range);
@@ -454,7 +449,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     <li className="nav-item" style={{ width: '30%', paddingRight: 10 }} ref={timeRef}>
                         <TimeFilter filter={{ start: timeFilter.start, end: timeFilter.end }}
                             setFilter={handleSetFilter} showQuickSelect={true} timeZone={timeZone}
-                            dateTimeSetting={dateTimeMode} isHorizontal={false} />
+                            dateTimeSetting={dateTimeSetting.Mode} isHorizontal={false} />
                     </li>
                     <li className="nav-item" style={{ width: '15%', paddingRight: 10 }} ref={filtRef}>
                         <fieldset className="border" style={{ padding: '10px' }}>

@@ -44,19 +44,12 @@ const BreakerReport = () => {
     const [toDate, setToDate] = React.useState<string>('');
     const [breaker, setBreaker] = React.useState<string>('');
     const [fromDate, setFromDate] = React.useState<string>('');
-    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
-    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
-
-    React.useEffect(() => {
-        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
-        setDateTimeMode(dateTimeMode);
-    }, [dateTimeSetting])
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
 
-        setFromDate(query['fromDate'] != undefined ? query['fromDate'].toString() : moment().subtract(30, 'days').format(dateTimeFormat));
-        setToDate(query['toDate'] != undefined ? query['toDate'].toString() : moment().format(dateTimeFormat));
+        setFromDate(query['fromDate'] != undefined ? query['fromDate'].toString() : moment().subtract(30, 'days').format(dateTimeSetting.DateTimeFormat));
+        setToDate(query['toDate'] != undefined ? query['toDate'].toString() : moment().format(dateTimeSetting.DateTimeFormat));
         setBreaker(query['breaker'] != undefined ? query['breaker'].toString() : '0');
 
     }, []);
@@ -79,7 +72,7 @@ const BreakerReport = () => {
     const link = `${homePath}api/BreakerReport/${(breaker == '0' ? `AllBreakersReport?` : `IndividualBreakerReport?breakerId=${breaker}&`)}startDate=${fromDate}&endDate=${toDate}`;
     return (
         <div style={{ width: '100%', height: '100%' }}>
-            <BreakerReportNavbar dateTimeFormat={dateTimeFormat} toDate={toDate} fromDate={fromDate} breaker={breaker} stateSetter={setState} />
+            <BreakerReportNavbar dateTimeFormat={dateTimeSetting.DateTimeFormat} toDate={toDate} fromDate={fromDate} breaker={breaker} stateSetter={setState} />
             <div style={{ width: '100%', height: 'calc( 100% - 163px)' }}>
                 <embed style={{ width: 'inherit', height: 'inherit', position: 'absolute' }} id="pdfContent" src={link} key={link} type="application/pdf" />
             </div>

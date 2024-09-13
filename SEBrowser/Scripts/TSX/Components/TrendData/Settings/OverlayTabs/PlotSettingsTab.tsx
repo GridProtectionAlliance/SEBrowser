@@ -48,8 +48,6 @@ const PlotSettingsTab = React.memo((props: IProps) => {
     const timeZone = useSelector(SelectTimeZone);
     const dateTimeSetting = useSelector(SelectDateTimeSetting);
 
-    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
-
     const setPlotLimits = React.useCallback((limits: AxisLimits) => {
         const newPlot = { ...props.Plot };
         newPlot.DefaultZoom = [[limits.LeftLower, limits.LeftUpper], [limits.RightLower, limits.RightUpper]];
@@ -62,10 +60,6 @@ const PlotSettingsTab = React.memo((props: IProps) => {
         else
             return limits.LeftUpper > limits.LeftLower;
     }, [limits]);
-
-    React.useEffect(() => {
-        setDateTimeMode(dateTimeSetting.Mode);
-    }, [dateTimeSetting]);
 
     React.useEffect(() => {
         props.SetConfirmDisabled(!isValid());
@@ -92,16 +86,6 @@ const PlotSettingsTab = React.memo((props: IProps) => {
     function isValid(): boolean {
         return validateTrendPlot('Height') && validateTrendPlot('Width') && validateLimit("LeftUpper") && validateLimit("RightUpper");
     }
-
-    type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
-    const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
-
-    // converts the SEBrowser filter to IStartEnd filter
-    const convertTimeFilter = (flt) => ({
-        start: flt.date + ' ' + flt.time,
-        end: flt.date + flt.windowSize,
-        unit: units[flt.timeWindowUnits]
-    });
 
     // Wrapper function to match the expected type for setFilter
     const handleSetFilter = (start: string, end: string) => {
@@ -164,7 +148,7 @@ const PlotSettingsTab = React.memo((props: IProps) => {
                 />
                 <TimeFilter filter={props.Plot.TimeFilter/* convertTimeFilter(props.Plot.TimeFilter) */} showQuickSelect={false}
                     setFilter={handleSetFilter} timeZone={timeZone}
-                    dateTimeSetting={dateTimeMode} isHorizontal={false} />
+                    dateTimeSetting={dateTimeSetting.Mode} isHorizontal={false} />
                 <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                     <legend className="w-auto" style={{ fontSize: 'large' }}>Axis Limits:</legend>
                     <div className="row">

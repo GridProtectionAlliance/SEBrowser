@@ -72,7 +72,6 @@ const LineGraph = React.memo((props: IProps) => {
     const [hover, setHover] = React.useState<boolean>(false);
     const [allChartData, setAllChartData] = React.useState<Map<string, IChartData>>(new Map<string, IChartData>());
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
-    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
     // Height mangement
     const [titleHeight, setTitleHeight] = React.useState<number>(0);
     const [plotHeight, setPlotHeight] = React.useState<number>(props.Height);
@@ -83,17 +82,12 @@ const LineGraph = React.memo((props: IProps) => {
     const generalSettings = useAppSelector(SelectGeneralSettings);
 
     React.useLayoutEffect(() => setTitleHeight(titleRef?.current?.offsetHeight ?? 0));
-
-    React.useEffect(() => {
-        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
-    }, [dateTimeSetting]);
-
     React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
-        const startMoment: moment.Moment = moment(props.TimeFilter.start, dateTimeFormat);
-        const endMoment: moment.Moment = moment(props.TimeFilter.end, dateTimeFormat);
-        const startTime: string = startMoment.format(dateTimeFormat);
-        const endTime: string = endMoment.format(dateTimeFormat);
+        const startMoment: moment.Moment = moment(props.TimeFilter.start, dateTimeSetting.DateTimeFormat);
+        const endMoment: moment.Moment = moment(props.TimeFilter.end, dateTimeSetting.DateTimeFormat);
+        const startTime: string = startMoment.format(dateTimeSetting.DateTimeFormat);
+        const endTime: string = endMoment.format(dateTimeSetting.DateTimeFormat);
 
         let newChannels: number[] = props.ChannelInfo.map(chan => chan.Channel.ID);
         let keptOldData: Map<string, IChartData> = new Map<string, IChartData>();
@@ -127,8 +121,8 @@ const LineGraph = React.memo((props: IProps) => {
     }, [props.PlotFilter]);
 
     React.useEffect(() => {
-        const startMoment: moment.Moment = moment.utc(props.TimeFilter.start, dateTimeFormat);
-        const endMoment: moment.Moment = moment.utc(props.TimeFilter.end, dateTimeFormat);
+        const startMoment: moment.Moment = moment.utc(props.TimeFilter.start, dateTimeSetting.DateTimeFormat);
+        const endMoment: moment.Moment = moment.utc(props.TimeFilter.end, dateTimeSetting.DateTimeFormat);
 
         const startTime: number = startMoment.valueOf();
         const endTime: number = endMoment.valueOf();
@@ -170,7 +164,7 @@ const LineGraph = React.memo((props: IProps) => {
                     console.error("Failed to parse point: " + jsonPoint);
                 }
                 if (point !== undefined) {
-                    const timeStamp = moment.utc(point.Timestamp, dateTimeFormat).valueOf();
+                    const timeStamp = moment.utc(point.Timestamp, dateTimeSetting.DateTimeFormat).valueOf();
                     if (cachedData.has(point.Tag)) {
                         const chartData = cachedData.get(point.Tag);
                         chartData.MinSeries.push([timeStamp, point.Minimum]);

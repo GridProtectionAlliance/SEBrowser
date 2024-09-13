@@ -80,7 +80,6 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
     // Plot Saved Settings
     const generalSettings = useAppSelector(SelectGeneralSettings);
     const dateTimeSetting = useSelector(SelectDateTimeSetting);
-    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const [plotAllSeriesSettings, setPlotAllSeriesSettings] = React.useState<SeriesSettings[]>(null);
     const colorIndex = React.useRef<{ ind: number, assetMap: Map<string, number> }>({ ind: -1, assetMap: new Map<string, number>() });
@@ -100,10 +99,6 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
     const [customSelect, setCustomSelect] = React.useState<customSelects>(defaultSelect);
     const [customCursor, setCustomCursor] = React.useState<string>(defaultCursor);
     const [lineHighlight, setLineHighlight] = React.useState<'none' | 'horizontal' | 'vertical'>(defaultHighlight);
-
-    React.useEffect(() => {
-        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
-    }, [dateTimeSetting]);
 
     // Determine color to use
     const getColor = React.useCallback((colorSetting: TrendSearch.IColorSettings, channel?: TrendSearch.ITrendChannel) => {
@@ -380,7 +375,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         }).done((data: any[]) => {
             setEventMarkers(data.map(datum => {
                 const meterID = props.Plot.Channels.find(channel => channel.MeterKey === datum["Meter Key"]).MeterID;
-                return { value: moment.utc(datum.Time, dateTimeFormat).valueOf(), meterID: meterID, eventID: datum["EventID"] }
+                return { value: moment.utc(datum.Time, dateTimeSetting.DateTimeFormat).valueOf(), meterID: meterID, eventID: datum["EventID"] }
             }));
         });
     }
@@ -397,8 +392,8 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         }
         const time = moment.utc(marker.value, "x");
         const timeFilter: SEBrowser.IReportTimeFilter = {
-            start: time.format(dateTimeFormat),
-            end: time.format(dateTimeFormat),
+            start: time.format(dateTimeSetting.DateTimeFormat),
+            end: time.format(dateTimeSetting.DateTimeFormat),
         }
         const queryParams = GenerateQueryParams(null, [], timeFilter, [], [], [meter], [], marker.eventID);
         const queryUrl = queryString.stringify(queryParams, "&", "=", { encodeURIComponent: queryString.escape });
