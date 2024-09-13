@@ -30,7 +30,7 @@ import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, EventTypeSlice, LocationSlice, MeterSlice } from '../../Store';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 
-const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
+const dateTimeFormat = 'MM/DD/yyyy HH:mm:ss.SSS';
 
 let fetchHandle: JQuery.jqXHR<any> | null = null;
 
@@ -167,8 +167,8 @@ export const EventSearchsSlice = createSlice({
             curveID: 1, curveInside: true, curveOutside: true
         },
         TimeRange: {
-            start: moment.utc().subtract(84, 'h').format(momentDateTimeFormat),
-            end: moment.utc().format(momentDateTimeFormat),
+            start: moment.utc().subtract(84, 'hours').format(dateTimeFormat),
+            end: moment.utc().format(dateTimeFormat),
         },
         EventType: [],
         isReset: true,
