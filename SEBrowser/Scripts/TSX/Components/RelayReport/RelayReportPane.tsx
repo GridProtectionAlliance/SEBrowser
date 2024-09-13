@@ -62,13 +62,8 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
     const dateTimeSetting = useSelector(SelectDateTimeSetting);
 
     const [realyPerformance, setRelayPerformance] = React.useState<IRelayPerformance[]>([]);
-    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
     const [Tstart, setTstart] = React.useState<number>(0);
     const [Tend, setTend] = React.useState<number>(0);
-
-    React.useEffect(() => {
-        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
-    }, [dateTimeSetting]);
 
     React.useEffect(() => {
         const h = getRelayPerformance()
@@ -88,8 +83,8 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
     }
 
     function getRelayPerformance(): JQuery.jqXHR<IRelayPerformance[]> {
-        const startMoment: moment.Moment = moment(props.start, dateTimeFormat);
-        const endMoment: moment.Moment = moment(props.end, dateTimeFormat);
+        const startMoment: moment.Moment = moment(props.start, dateTimeSetting.DateTimeFormat);
+        const endMoment: moment.Moment = moment(props.end, dateTimeSetting.DateTimeFormat);
 
         const units = TimeWindowUtils.findAppropriateUnit(startMoment, endMoment)[1];
 

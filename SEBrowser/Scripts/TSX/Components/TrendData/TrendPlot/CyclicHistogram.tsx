@@ -75,7 +75,6 @@ const CyclicHistogram = React.memo((props: IProps) => {
     const [hover, setHover] = React.useState<boolean>(false);
     const [barColor, setBarColor] = React.useState<{ Hue: number, Saturation: number }>(null);
     const [metaData, setMetaData] = React.useState<TrendSearch.IMetaData[]>(null);
-    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
     // Height mangement
     const [titleHeight, setTitleHeight] = React.useState<number>(0);
     const [plotHeight, setPlotHeight] = React.useState<number>(props.Height);
@@ -88,17 +87,13 @@ const CyclicHistogram = React.memo((props: IProps) => {
     React.useLayoutEffect(() => setTitleHeight(titleRef?.current?.offsetHeight ?? 0));
 
     React.useEffect(() => {
-        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
-    }, [dateTimeSetting]);
-
-    React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
         if (_.isEqual(props.TimeFilter, oldValues.current.TimeFilter) && props.ChannelInfo.Channel.ID === oldValues.current.ChannelInfo.Channel.ID) return;
 
-        const startMoment: moment.Moment = moment(props.TimeFilter.start, dateTimeFormat);
-        const endMoment: moment.Moment = moment(props.TimeFilter.end, dateTimeFormat);
-        const startTime: string = startMoment.format(dateTimeFormat);
-        const endTime: string = endMoment.format(dateTimeFormat);
+        const startMoment: moment.Moment = moment(props.TimeFilter.start, dateTimeSetting.DateTimeFormat);
+        const endMoment: moment.Moment = moment(props.TimeFilter.end, dateTimeSetting.DateTimeFormat);
+        const startTime: string = startMoment.format(dateTimeSetting.DateTimeFormat);
+        const endTime: string = endMoment.format(dateTimeSetting.DateTimeFormat);
 
         const handle = GetMetaData(props.ChannelInfo.Channel.ID, startTime, endTime);
         return () => {
@@ -133,8 +128,8 @@ const CyclicHistogram = React.memo((props: IProps) => {
     }, [metaData]);
 
     React.useEffect(() => {
-        const startMoment: moment.Moment = moment.utc(props.TimeFilter.start, dateTimeFormat);
-        const endMoment: moment.Moment = moment.utc(props.TimeFilter.end, dateTimeFormat);
+        const startMoment: moment.Moment = moment.utc(props.TimeFilter.start, dateTimeSetting.DateTimeFormat);
+        const endMoment: moment.Moment = moment.utc(props.TimeFilter.end, dateTimeSetting.DateTimeFormat);
         const startTime: number = startMoment.valueOf();
         const endTime: number = endMoment.valueOf();
         setTimeLimits([startTime, endTime]);
@@ -196,8 +191,8 @@ const CyclicHistogram = React.memo((props: IProps) => {
             cache: false,
             async: true
         }).done((data: TrendSearch.ICyclicData[]) => {
-            const startTicks = moment.utc(metaData.StartTime, dateTimeFormat).valueOf();
-            const ticksPerIndex = (moment.utc(metaData.EndTime, dateTimeFormat).valueOf() - startTicks) /
+            const startTicks = moment.utc(metaData.StartTime, dateTimeSetting.DateTimeFormat).valueOf();
+            const ticksPerIndex = (moment.utc(metaData.EndTime, dateTimeSetting.DateTimeFormat).valueOf() - startTicks) /
                 ((metaData.SamplingRate / metaData.FundamentalFrequency) + 1);
             const binSize = (metaData.CyclesMax - metaData.CyclesMin) / metaData.CyclicHistogramBins;
             const newChartData: IChartData = {

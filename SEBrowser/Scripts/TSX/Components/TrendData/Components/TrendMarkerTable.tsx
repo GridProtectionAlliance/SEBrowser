@@ -26,8 +26,8 @@ import { TrashCan } from '@gpa-gemstone/gpa-symbols';
 import Table from '@gpa-gemstone/react-table';
 import { TrendSearch } from '../../../global';
 import moment from 'moment';
-import { SelectDateTimeSetting } from '../../SettingsSlice';
 import { useSelector } from 'react-redux';
+import { SelectDateTimeSetting } from '../../SettingsSlice';
 
 interface IProps {
     Markers: TrendSearch.IMarker[],
@@ -41,14 +41,9 @@ interface IProps {
 const TrendMarkerTable = (props: IProps) => {
     const dateTimeSetting = useSelector(SelectDateTimeSetting);
 
-    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
     const [trendMarkers, setTrendMarkers] = React.useState<TrendSearch.IMarker[]>([]);
     const [sortField, setSortField] = React.useState<string>('MeterName');
     const [ascending, setAscending] = React.useState<boolean>(true);
-
-    React.useEffect(() => {
-        setDateTimeFormat(dateTimeSetting.DateTimeFormat);
-    }, [dateTimeFormat]);
 
     React.useEffect(() => {
         setTrendMarkers(_.orderBy(props.Markers, sortField, (ascending ? 'asc' : 'desc')));
@@ -102,9 +97,9 @@ const TrendMarkerTable = (props: IProps) => {
                         } else {
                             switch (item.type) {
                                 case "VeHo":
-                                    return (item["isHori"] ?? true) ? item["value"].toFixed(2) : moment.utc(item["value"]).format(dateTimeFormat);
+                                    return (item["isHori"] ?? true) ? item["value"].toFixed(2) : moment.utc(item["value"]).format(dateTimeSetting.DateTimeFormat);
                                 case "Symb":
-                                    return `${moment.utc(item["xPos"]).format(dateTimeFormat)} | ${item["yPos"].toFixed(2)}`;
+                                    return `${moment.utc(item["xPos"]).format(dateTimeSetting.DateTimeFormat)} | ${item["yPos"].toFixed(2)}`;
                                 default:
                                     return "All Events";
                             }

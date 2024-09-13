@@ -58,11 +58,6 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
     const [breakers, setBreakers] = React.useState<Breaker[]>([]);
     const [substations, setSubstations] = React.useState<Substation[]>([]);
     const [channels, setChannels] = React.useState<Channel[]>([]);
-    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
-
-    React.useEffect(() => {
-        setDateTimeMode(dateTimeMode);
-    }, [dateTimeSetting])
 
     React.useEffect(() => {
         const handle = getSubstationData();
@@ -231,7 +226,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                                 setEnd(end);
                             }}
                             showQuickSelect={false} timeZone={timeZone}
-                            dateTimeSetting={dateTimeMode} isHorizontal={false} />
+                            dateTimeSetting={dateTimeSetting.Mode} isHorizontal={false} />
                     </li>
 
 

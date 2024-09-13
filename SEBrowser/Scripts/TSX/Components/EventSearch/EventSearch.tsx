@@ -33,8 +33,6 @@ import { ProcessQuery, SelectEventList, SelectQueryParam } from './EventSearchSl
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SplitSection, VerticalSplit } from '@gpa-gemstone/react-interactive';
-import { SelectDateTimeSetting } from '../SettingsSlice';
-import { useSelector } from 'react-redux';
 
 type tab = 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All' | undefined;
 
