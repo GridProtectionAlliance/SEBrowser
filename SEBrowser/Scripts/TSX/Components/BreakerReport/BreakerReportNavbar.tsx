@@ -23,27 +23,18 @@
 
 import React from 'react';
 import BreakerReportService from './../../../TS/Services/BreakerReport'
-import { useSelector } from 'react-redux';
-import { SelectDateTimeSetting } from '../SettingsSlice';
-
 
 export interface BreakerReportNavbarProps {
     fromDate: string,
     toDate: string,
     breaker: string,
-    stateSetter(state): void
+    stateSetter(state): void,
+    dateTimeFormat: string
 }
 
 interface State {
     breakers: Array<any>
 }
-
-const dateTimeSetting = useSelector(SelectDateTimeSetting);
-const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
-
-React.useEffect(() => {
-    setDateTimeFormat(dateTimeSetting.DateTimeFormat);
-}, [dateTimeSetting])
 
 export default class BreakerReportNavbar extends React.Component<BreakerReportNavbarProps, State> {
     breakerReportService: BreakerReportService;
@@ -57,9 +48,9 @@ export default class BreakerReportNavbar extends React.Component<BreakerReportNa
     }
 
     componentDidMount() {
-        $('#toDatePicker').datetimepicker({ format: dateTimeFormat });
+        $('#toDatePicker').datetimepicker({ format: this.props.dateTimeFormat });
         $('#toDatePicker').on('dp.change', (e) => this.props.stateSetter({ toDate: (e.target as any).value }));
-        $('#fromDatePicker').datetimepicker({ format: dateTimeFormat });
+        $('#fromDatePicker').datetimepicker({ format: this.props.dateTimeFormat });
         $('#fromDatePicker').on('dp.change', (e) => this.props.stateSetter({ fromDate: (e.target as any).value }));
 
         this.breakerReportService.getMaximoBreakers().done(data => {
