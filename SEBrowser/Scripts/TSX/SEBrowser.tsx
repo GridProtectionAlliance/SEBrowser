@@ -59,6 +59,10 @@ const SEBrowserMainPage = () => {
 
 
         handle.done(data => setLinks(data));
+        handle.fail((jqXHR, textStatus, errorThrown) => {
+            console.error('Failed to load data:', textStatus, errorThrown);
+            setLinks([]);  // Set default empty array to prevent rendering issues
+        });
         return () => { if (handle.abort != undefined) handle.abort() }
     }, []);
 
