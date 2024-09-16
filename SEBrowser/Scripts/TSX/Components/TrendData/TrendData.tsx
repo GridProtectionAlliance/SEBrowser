@@ -28,7 +28,7 @@ import TrendSearchNavbar from './TrendDataNavbar';
 import TrendPlot from './TrendPlot/TrendPlot';
 import { TrendSearch } from '../../global';
 import AllSettingsModal from './Settings/AllSettingsModal';
-import { SelectDateTimeSetting, SelectTrendDataSettings } from './../SettingsSlice';
+import { SelectDateTimeFormat, SelectTrendDataSettings } from './../SettingsSlice';
 import { useAppSelector } from './../../hooks';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { useSelector } from 'react-redux';
@@ -37,13 +37,13 @@ const trendSearchId = "TrendDataChartAll";
 const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFilter"]);
 
 const TrendData = () => {
-    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const dateTimeFormat = useSelector(SelectDateTimeFormat);
 
     const closureHandler = React.useRef<((o: boolean) => void)>(() => { return; });
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
     const [plotList, setPlotList] = React.useState<TrendSearch.ITrendPlot[]>([]);
     const [defaultPlotSettings, setDefaultPlotSettings] = React.useState<TrendSearch.ITrendPlot>({
-        TimeFilter: { start: moment.utc().format(dateTimeSetting.DateTimeFormat), end: moment.utc().add(12, 'hours').format(dateTimeSetting.DateTimeFormat) },
+        TimeFilter: { start: moment.utc().format(dateTimeFormat), end: moment.utc().add(12, 'hours').format(dateTimeFormat) },
         Type: 'Line',
         Channels: [],
         PlotFilter: [{ Text: "Minimum", Value: "min", Selected: true }, { Text: "Maximum", Value: "max", Selected: true }, { Text: "Average/Values", Value: "avg", Selected: true }],

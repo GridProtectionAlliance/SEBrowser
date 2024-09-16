@@ -49,7 +49,8 @@ const defaultState = {
     general: {
         MoveOptionsLeft: false,
         ShowDataPoints: true,
-        DateTime: { Mode: 'startEnd', DateTimeFormat: 'DD MMM YYYY HH:mm:ss.SSS' }
+        DateTimeMode: 'startEnd',
+        DateTimeFormat: 'DD MMM YYYY HH:mm:ss.SSS'
     }
 } as Redux.SettingsState;
 
@@ -154,4 +155,5 @@ export const SelectTrendDataSettings = (state: Redux.StoreState) => state.Settin
 export const SelectGeneralSettings = (state: Redux.StoreState) => state.Settings.general
 export const SelectTimeZone = (state: Redux.StoreState) => state.Settings.timeZone
 export const SelectWidgetCategories = (state: Redux.StoreState) => state.Settings.eventSearch.WidgetCategories
-export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.general.DateTime
+export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.general.DateTimeMode
+export const SelectDateTimeFormat = (state: Redux.StoreState) => state.Settings.general.DateTimeFormat
