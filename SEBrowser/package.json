@@ -58,7 +58,7 @@
     "react-router-dom": "6.2.1"
   },
   "scripts": {
-    "build": "npm prune && webpack --mode=development",
+    "build": "npm prune && npm ci && webpack --mode=development",
     "watch": "webpack --watch --color --mode=development",
     "update": "npx npm-check-updates",
     "lint": "eslint ./Scripts --ext .ts,.tsx"
