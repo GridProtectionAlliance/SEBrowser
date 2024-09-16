@@ -24,7 +24,7 @@ import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../global';
-import { SelectTrendDataSettings, SelectGeneralSettings, SelectDateTimeSetting } from './../../SettingsSlice';
+import { SelectTrendDataSettings, SelectGeneralSettings, SelectDateTimeFormat } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
@@ -63,7 +63,7 @@ interface IChartData {
 }
 
 const LineGraph = React.memo((props: IProps) => {
-    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const dateTimeFormat = useSelector(SelectDateTimeFormat);
     // Graph Consts
     const [timeLimits, setTimeLimits] = React.useState<[number, number]>([0, 1]);
     const [displayMin, setDisplayMin] = React.useState<boolean>(true);
@@ -78,16 +78,16 @@ const LineGraph = React.memo((props: IProps) => {
     const [extraLegendHeight, setExtraLegendHeight] = React.useState<number>(0);
     const titleRef = React.useRef(null);
     const oldValues = React.useRef<{ ChannelInfo: TrendSearch.ILineSeries[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
-    const trendDatasettings = useAppSelector(SelectTrendDataSettings);
+    const trendDataSettings = useAppSelector(SelectTrendDataSettings);
     const generalSettings = useAppSelector(SelectGeneralSettings);
 
     React.useLayoutEffect(() => setTitleHeight(titleRef?.current?.offsetHeight ?? 0));
     React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
-        const startMoment: moment.Moment = moment(props.TimeFilter.start, dateTimeSetting.DateTimeFormat);
-        const endMoment: moment.Moment = moment(props.TimeFilter.end, dateTimeSetting.DateTimeFormat);
-        const startTime: string = startMoment.format(dateTimeSetting.DateTimeFormat);
-        const endTime: string = endMoment.format(dateTimeSetting.DateTimeFormat);
+        const startMoment: moment.Moment = moment(props.TimeFilter.start, dateTimeFormat);
+        const endMoment: moment.Moment = moment(props.TimeFilter.end, dateTimeFormat);
+        const startTime: string = startMoment.format(dateTimeFormat);
+        const endTime: string = endMoment.format(dateTimeFormat);
 
         let newChannels: number[] = props.ChannelInfo.map(chan => chan.Channel.ID);
         let keptOldData: Map<string, IChartData> = new Map<string, IChartData>();
@@ -121,8 +121,8 @@ const LineGraph = React.memo((props: IProps) => {
     }, [props.PlotFilter]);
 
     React.useEffect(() => {
-        const startMoment: moment.Moment = moment.utc(props.TimeFilter.start, dateTimeSetting.DateTimeFormat);
-        const endMoment: moment.Moment = moment.utc(props.TimeFilter.end, dateTimeSetting.DateTimeFormat);
+        const startMoment: moment.Moment = moment.utc(props.TimeFilter.start, dateTimeFormat);
+        const endMoment: moment.Moment = moment.utc(props.TimeFilter.end, dateTimeFormat);
 
         const startTime: number = startMoment.valueOf();
         const endTime: number = endMoment.valueOf();
@@ -164,7 +164,7 @@ const LineGraph = React.memo((props: IProps) => {
                     console.error("Failed to parse point: " + jsonPoint);
                 }
                 if (point !== undefined) {
-                    const timeStamp = moment.utc(point.Timestamp, dateTimeSetting.DateTimeFormat).valueOf();
+                    const timeStamp = moment.utc(point.Timestamp, dateTimeFormat).valueOf();
                     if (cachedData.has(point.Tag)) {
                         const chartData = cachedData.get(point.Tag);
                         chartData.MinSeries.push([timeStamp, point.Minimum]);
@@ -227,8 +227,8 @@ const LineGraph = React.memo((props: IProps) => {
                     }
                 </h4>
                 <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2} menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
-                    defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
-                    legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric ?? false} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={false} limitZoom={true}
+                    defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDataSettings.MarkerSnapping}
+                    legend={trendDataSettings.LegendDisplay} useMetricFactors={props.Metric ?? false} holdMenuOpen={!trendDataSettings.StartWithOptionsClosed} showDateOnTimeAxis={false} limitZoom={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={props.MouseHighlight} yDomain={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {props?.ChannelInfo == null ? null : props.ChannelInfo.map((series, index) => {
                         const lineArray: JSX.Element[] = [];

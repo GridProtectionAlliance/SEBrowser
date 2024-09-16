@@ -26,7 +26,7 @@ import * as queryString from 'querystring';
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { SelectDateTimeSetting } from '../SettingsSlice';
+import { SelectDateTimeFormat } from '../SettingsSlice';
 import { SEBrowser } from 'Scripts/TSX/global';
 
 declare let homePath: string;
@@ -40,7 +40,7 @@ interface State {
 const BreakerReport = () => {
     const navigate = useNavigate();
     const history = useLocation();
-    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const dateTimeFormat = useSelector(SelectDateTimeFormat);
     const [toDate, setToDate] = React.useState<string>('');
     const [breaker, setBreaker] = React.useState<string>('');
     const [fromDate, setFromDate] = React.useState<string>('');
@@ -48,8 +48,8 @@ const BreakerReport = () => {
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
 
-        setFromDate(query['fromDate'] != undefined ? query['fromDate'].toString() : moment().subtract(30, 'days').format(dateTimeSetting.DateTimeFormat));
-        setToDate(query['toDate'] != undefined ? query['toDate'].toString() : moment().format(dateTimeSetting.DateTimeFormat));
+        setFromDate(query['fromDate'] != undefined ? query['fromDate'].toString() : moment().subtract(30, 'days').format(dateTimeFormat));
+        setToDate(query['toDate'] != undefined ? query['toDate'].toString() : moment().format(dateTimeFormat));
         setBreaker(query['breaker'] != undefined ? query['breaker'].toString() : '0');
 
     }, []);
@@ -72,7 +72,7 @@ const BreakerReport = () => {
     const link = `${homePath}api/BreakerReport/${(breaker == '0' ? `AllBreakersReport?` : `IndividualBreakerReport?breakerId=${breaker}&`)}startDate=${fromDate}&endDate=${toDate}`;
     return (
         <div style={{ width: '100%', height: '100%' }}>
-            <BreakerReportNavbar dateTimeFormat={dateTimeSetting.DateTimeFormat} toDate={toDate} fromDate={fromDate} breaker={breaker} stateSetter={setState} />
+            <BreakerReportNavbar dateTimeFormat={dateTimeFormat} toDate={toDate} fromDate={fromDate} breaker={breaker} stateSetter={setState} />
             <div style={{ width: '100%', height: 'calc( 100% - 163px)' }}>
                 <embed style={{ width: 'inherit', height: 'inherit', position: 'absolute' }} id="pdfContent" src={link} key={link} type="application/pdf" />
             </div>

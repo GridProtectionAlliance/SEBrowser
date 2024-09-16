@@ -27,7 +27,7 @@ import Table from '@gpa-gemstone/react-table';
 import { TrendSearch } from '../../../global';
 import moment from 'moment';
 import { useSelector } from 'react-redux';
-import { SelectDateTimeSetting } from '../../SettingsSlice';
+import { SelectDateTimeFormat } from '../../SettingsSlice';
 
 interface IProps {
     Markers: TrendSearch.IMarker[],
@@ -39,7 +39,7 @@ interface IProps {
 }
 
 const TrendMarkerTable = (props: IProps) => {
-    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const dateTimeFormat = useSelector(SelectDateTimeFormat);
 
     const [trendMarkers, setTrendMarkers] = React.useState<TrendSearch.IMarker[]>([]);
     const [sortField, setSortField] = React.useState<string>('MeterName');
@@ -97,9 +97,9 @@ const TrendMarkerTable = (props: IProps) => {
                         } else {
                             switch (item.type) {
                                 case "VeHo":
-                                    return (item["isHori"] ?? true) ? item["value"].toFixed(2) : moment.utc(item["value"]).format(dateTimeSetting.DateTimeFormat);
+                                    return (item["isHori"] ?? true) ? item["value"].toFixed(2) : moment.utc(item["value"]).format(dateTimeFormat);
                                 case "Symb":
-                                    return `${moment.utc(item["xPos"]).format(dateTimeSetting.DateTimeFormat)} | ${item["yPos"].toFixed(2)}`;
+                                    return `${moment.utc(item["xPos"]).format(dateTimeFormat)} | ${item["yPos"].toFixed(2)}`;
                                 default:
                                     return "All Events";
                             }

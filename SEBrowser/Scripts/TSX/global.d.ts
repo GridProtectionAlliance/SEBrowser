@@ -96,10 +96,8 @@ export namespace Redux {
     interface IGeneralSettings {
         MoveOptionsLeft: boolean,
         ShowDataPoints: boolean,
-        DateTime: {
-            Mode: SEBrowser.TimeWindowMode,
-            DateTimeFormat: string
-        }
+        DateTimeMode: SEBrowser.TimeWindowMode,
+        DateTimeFormat: string
     }
 
     interface IEventSearchSettings {

@@ -77,6 +77,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
     }, [trendDatasettings]);
 
     React.useEffect(() => {
+        console.log(generalSettings)
         setGeneral(generalSettings);
     }, [generalSettings]);
 
@@ -187,7 +188,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                     <Select<Redux.IGeneralSettings>
                                         Options={searchSettingsOptions}
                                         Record={general}
-                                        Field='DateTime'
+                                        Field='DateTimeMode'
                                         Setter={(g) => setGeneral(g)}
                                         Label='Date/Time Filter Mode'
                                     />

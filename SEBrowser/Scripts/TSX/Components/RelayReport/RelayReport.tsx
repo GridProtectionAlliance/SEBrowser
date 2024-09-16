@@ -26,7 +26,7 @@ import RelayReportPane from './RelayReportPane';
 import * as queryString from 'querystring';
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { SelectDateTimeSetting } from '../SettingsSlice';
+import { SelectDateTimeFormat, SelectDateTimeSetting } from '../SettingsSlice';
 import { SEBrowser } from 'Scripts/TSX/global';
 import { useSelector } from 'react-redux';
 
@@ -37,7 +37,7 @@ interface IState {
 const RelayReport = () => {
     const navigate = useNavigate();
     const history = useLocation();
-    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const dateTimeFormat = useSelector(SelectDateTimeFormat);
 
     const [BreakerID, setBreakerID] = React.useState<number>(0);
     const [ChannelID, setChannelID] = React.useState<number>(0);
@@ -50,8 +50,8 @@ const RelayReport = () => {
         setBreakerID(query['breakerid'] != undefined ? parseInt(query['breakerid'] as string) : -1);
         setChannelID(query['channelid'] != undefined ? parseInt(query['channelid'] as string) : -1);
         setStationId(query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1);
-        setStart(query['start'] != undefined ? query['start'] as string : moment().format(dateTimeSetting.DateTimeFormat));
-        setEnd(query['end'] != undefined ? query['end'] as string : moment().format(dateTimeSetting.DateTimeFormat));
+        setStart(query['start'] != undefined ? query['start'] as string : moment().format(dateTimeFormat));
+        setEnd(query['end'] != undefined ? query['end'] as string : moment().format(dateTimeFormat));
     }, []);
 
     React.useEffect(() => {

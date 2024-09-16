@@ -148,7 +148,7 @@ const PlotSettingsTab = React.memo((props: IProps) => {
                 />
                 <TimeFilter filter={props.Plot.TimeFilter/* convertTimeFilter(props.Plot.TimeFilter) */} showQuickSelect={false}
                     setFilter={handleSetFilter} timeZone={timeZone}
-                    dateTimeSetting={dateTimeSetting.Mode} isHorizontal={false} />
+                    dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                 <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                     <legend className="w-auto" style={{ fontSize: 'large' }}>Axis Limits:</legend>
                     <div className="row">

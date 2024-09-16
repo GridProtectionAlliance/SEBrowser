@@ -32,7 +32,7 @@ import { DefaultSelects, TimeFilter, EventTypeFilter, EventCharacteristicFilter 
 import NavbarFilterButton from '../Common/NavbarFilterButton';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { Search } from '@gpa-gemstone/react-interactive';
-import { SelectDateTimeSetting, SelectTimeZone } from '../SettingsSlice';
+import { SelectDateTimeFormat, SelectDateTimeSetting, SelectTimeZone } from '../SettingsSlice';
 import moment from 'moment';
 import { SEBrowser } from 'Scripts/TSX/global';
 
@@ -67,16 +67,10 @@ const EventSearchNavbar = (props: IProps) => {
 
     const [height, setHeight] = React.useState<number>(0);
     const [showFilter, setFilter] = React.useState<('None' | 'Meter' | 'Asset' | 'AssetGroup' | 'Station')>('None');
-    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
-
-    React.useEffect(() => {
-        setDateTimeMode(dateTimeMode);
-    }, [dateTimeSetting])
-
-    React.useLayoutEffect(() => setHeight(navRef?.current?.offsetHeight ?? 0))
-    React.useEffect(() => props.setHeight(height), [height])
-
     const [timeRange, setTimeRange] = React.useState<string>('');
+
+    React.useLayoutEffect(() => setHeight(navRef?.current?.offsetHeight ?? 0));
+    React.useEffect(() => props.setHeight(height), [height]);
 
     React.useEffect(() => {
         if (magDurStatus == 'changed' || magDurStatus == 'unintiated')
@@ -95,11 +89,11 @@ const EventSearchNavbar = (props: IProps) => {
         const unit = findAppropriateUnit(startMoment, endMoment);
         const startEndDifference = startMoment.diff(endMoment, unit);
 
-        if (dateTimeMode == 'startEnd')
+        if (dateTimeSetting == 'startEnd')
             range = `${timeFilter.start} to ${timeFilter.end} (${timeZone})`;
-        if (dateTimeMode == 'startWindow')
+        if (dateTimeSetting == 'startWindow')
             range = `${timeFilter.start} (${timeZone}) +${startEndDifference}`;
-        else if (dateTimeMode == 'endWindow')
+        else if (dateTimeSetting == 'endWindow')
             range = `${timeFilter.end} (${timeZone}) -${startEndDifference}`;
 
         setTimeRange(range);
@@ -240,7 +234,7 @@ const EventSearchNavbar = (props: IProps) => {
                         <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
                             <TimeFilter filter={{ start: timeFilter.start, end: timeFilter.end }}
                                 setFilter={handleSetFilter} showQuickSelect={true} timeZone={timeZone}
-                                dateTimeSetting={dateTimeMode} isHorizontal={false} />
+                                dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                         </li>
                         <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
                             <EventTypeFilter SetSelectedTypeIDs={(types: number[]) => { dispatch(SetFilters({ types })) }} EventTypes={eventTypes} SelectedTypeID={eventTypeFilter} Height={height} />

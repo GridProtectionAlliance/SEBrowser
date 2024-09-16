@@ -26,7 +26,7 @@ import Table from './Table';
 import SEBrowserService from './../../TS/Services/SEBrowser';
 import { useSelector } from 'react-redux';
 import moment from 'moment';
-import { SelectDateTimeSetting } from './SettingsSlice';
+import { SelectDateTimeFormat } from './SettingsSlice';
 
 declare let xdaInstance: string;
 declare let homePath: string;
@@ -37,15 +37,15 @@ declare let homePath: string;
 //    }, updateInterval);
 
 const MeterActivity: React.FunctionComponent = () => {
-    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const dateTimeFormat = useSelector(SelectDateTimeFormat);
     return (
         <div id="meterActivityContainer" style={{ width: '100%', height: '100%', textAlign: 'center', backgroundColor: '#064e1b', padding: 20 }}>
             <div style={{ width: 'calc(50% - 10px)', height: 'calc(100% - 57px)', position: 'relative', float: 'left' }}>
                 <div style={{ backgroundColor: 'white', borderColor: 'black', color: 'black', textAlign: 'left', marginBottom: 0, height: 'calc(50% - 15px)', padding: 15 }} className="well well-sm">
-                    <MostActiveMeters dateTimeFormat={dateTimeSetting.DateTimeFormat} sortField={'24Hours'} rowsPerPage={7} meterTable={[]} />
+                    <MostActiveMeters dateTimeFormat={dateTimeFormat} sortField={'24Hours'} rowsPerPage={7} meterTable={[]} />
                 </div>
                 <div style={{ marginTop: 20, backgroundColor: 'white', borderColor: 'black', color: 'black', textAlign: 'left', marginBottom: 0, height: 'calc(50% - 10px)', padding: 15 }} className="well well-sm">
-                    <LeastActiveMeters dateTimeFormat={dateTimeSetting.DateTimeFormat} sortField={'30Days'} rowsPerPage={7} meterTable={[]} />
+                    <LeastActiveMeters dateTimeFormat={dateTimeFormat} sortField={'30Days'} rowsPerPage={7} meterTable={[]} />
                 </div>
             </div>
             <div style={{ backgroundColor: 'white', borderColor: 'black', color: 'black', textAlign: 'left', marginBottom: 0, height: 'calc(100% - 57px)', width: 'calc(50% - 11px)', position: 'relative', float: 'right', padding: 15 }} className="well well-sm">
