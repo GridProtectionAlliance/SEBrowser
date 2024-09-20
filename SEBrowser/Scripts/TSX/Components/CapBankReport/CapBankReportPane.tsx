@@ -24,7 +24,7 @@ import * as React from 'react';
 import moment from 'moment';
 
 import { CapBankReportNavBarProps } from './CapBankReportNavBar';
-import _, { cloneDeep } from 'lodash';
+import _ from 'lodash';
 import { Warning, Modal } from '@gpa-gemstone/react-interactive';
 import { Plot, Line } from '@gpa-gemstone/react-graph';
 

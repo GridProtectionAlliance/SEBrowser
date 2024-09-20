@@ -31,7 +31,7 @@ import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, Axis
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { LineGraph } from './LineGraph';
 import { SEBrowser, TrendSearch } from '../../../global';
-import { SelectTrendDataSettings, SelectGeneralSettings, SelectDateTimeSetting, SelectDateTimeFormat } from './../../SettingsSlice';
+import { SelectTrendDataSettings, SelectGeneralSettings, SelectDateTimeFormat } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
 import { SettingsModal, SeriesSettings } from '../Settings/SettingsModal';

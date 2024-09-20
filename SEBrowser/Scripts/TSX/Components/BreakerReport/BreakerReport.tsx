@@ -27,7 +27,6 @@ import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { SelectDateTimeFormat } from '../SettingsSlice';
-import { SEBrowser } from 'Scripts/TSX/global';
 
 declare let homePath: string;
 
