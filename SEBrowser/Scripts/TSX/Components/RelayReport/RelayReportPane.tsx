@@ -25,8 +25,7 @@ import moment from 'moment';
 import { RelayReportNavBarProps } from './RelayReportNavBar';
 import { Line, LineWithThreshold, Plot } from '@gpa-gemstone/react-graph';
 import { RandomColor } from '@gpa-gemstone/helper-functions';
-import { TimeWindowUtils } from '@gpa-gemstone/common-pages';
-import { SelectDateTimeFormat, SelectDateTimeSetting } from '../SettingsSlice';
+import { SelectDateTimeFormat } from '../SettingsSlice';
 import { useSelector } from 'react-redux';
 
 interface IRelayPerformance {

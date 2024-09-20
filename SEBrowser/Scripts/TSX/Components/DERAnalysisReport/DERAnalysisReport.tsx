@@ -33,7 +33,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { TimeFilter } from '@gpa-gemstone/common-pages'
 import { useSelector } from 'react-redux';
 import { SelectTimeZone, SelectDateTimeSetting, SelectDateTimeFormat } from '../SettingsSlice';
-import { SEBrowser } from 'Scripts/TSX/global';
 
 interface DERAnalyticResult {
     ID: number,
