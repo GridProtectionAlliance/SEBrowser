@@ -77,7 +77,6 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
     }, [trendDatasettings]);
 
     React.useEffect(() => {
-        console.log(generalSettings)
         setGeneral(generalSettings);
     }, [generalSettings]);
 
