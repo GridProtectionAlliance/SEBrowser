@@ -34,7 +34,6 @@ import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { SelectDateTimeFormat, SelectDateTimeSetting, SelectTimeZone } from '../SettingsSlice';
 import moment from 'moment';
-import { SEBrowser } from 'Scripts/TSX/global';
 
 interface IProps {
     toggleVis: () => void,
@@ -63,6 +62,7 @@ const EventSearchNavbar = (props: IProps) => {
     const assetGroupList = useAppSelector(SelectAssetGroupList);
     const eventTypeFilter = useAppSelector(SelectTypeFilter);
     const dateTimeSetting = useAppSelector(SelectDateTimeSetting);
+    const dateTimeFormat = useAppSelector(SelectDateTimeFormat);
     const eventCharacteristicFilter = useAppSelector(SelectCharacteristicFilter);
 
     const [height, setHeight] = React.useState<number>(0);
@@ -84,17 +84,21 @@ const EventSearchNavbar = (props: IProps) => {
 
     React.useEffect(() => {
         let range = "";
-        const startMoment = moment(timeFilter.start); // These default to the date+time format
-        const endMoment = moment(timeFilter.end);
+        const startMoment = moment(timeFilter.start, dateTimeFormat);
+        const endMoment = moment(timeFilter.end, dateTimeFormat);
         const unit = findAppropriateUnit(startMoment, endMoment);
-        const startEndDifference = startMoment.diff(endMoment, unit);
 
-        if (dateTimeSetting == 'startEnd')
+        if (dateTimeSetting == 'startEnd') {
             range = `${timeFilter.start} to ${timeFilter.end} (${timeZone})`;
-        if (dateTimeSetting == 'startWindow')
-            range = `${timeFilter.start} (${timeZone}) +${startEndDifference}`;
-        else if (dateTimeSetting == 'endWindow')
-            range = `${timeFilter.end} (${timeZone}) -${startEndDifference}`;
+        }
+        else if (dateTimeSetting == 'startWindow') {
+            const startEndDifference = endMoment.diff(startMoment, unit);
+            range = `${timeFilter.start} (${timeZone}) ${startEndDifference} ${findDisplayUnit(unit)}`;
+        }
+        else if (dateTimeSetting == 'endWindow') {
+            const startEndDifference = startMoment.diff(endMoment, unit);
+            range = `${timeFilter.end} (${timeZone}) ${startEndDifference} ${findDisplayUnit(unit)}`;
+        }
 
         setTimeRange(range);
     }, [timeFilter, dateTimeSetting, timeZone])
@@ -118,6 +122,27 @@ const EventSearchNavbar = (props: IProps) => {
         }
 
         return units[0];
+    }
+
+    function findDisplayUnit(unit): string {
+        switch (unit) {
+            case 'ms':
+                return 'miliseconds';
+            case 's':
+                return 'seconds';
+            case 'm':
+                return 'minutes';
+            case 'h':
+                return 'hours';
+            case 'd':
+                return 'days';
+            case 'w':
+                return 'weeks';
+            case 'M':
+                return 'months';
+            case 'y':
+                return 'years';
+        }
     }
 
     function getEnum(setOptions, field) {
@@ -198,7 +223,7 @@ const EventSearchNavbar = (props: IProps) => {
         };
     }
 
-    if (timeFilter === null) return null;
+    if (timeFilter === null) { return null; }
 
     if (!props.showNav)
         return (
