@@ -155,7 +155,43 @@ class MostActiveMeters extends React.Component<unknown, {
                         OnSort={(col) => { this.setState({ sortField: col.colKey }, this.createTableRows) }}
                         OnClick={() => {/*Do Nothing*/}}
                         TheadStyle={{ fontSize: 'smaller' }}
-                    />
+                    >
+                        <ReactTable.Column<MostActiveMeterActivityRow>
+                            Key={'AssetKey'}
+                            AllowSort={true}
+                            Field={'AssetKey'}
+                            HeaderStyle={{ width: 'auto' }}
+                            RowStyle={{ width: 'auto' }}
+                        > Name
+                        </ReactTable.Column>
+                        <ReactTable.Column<MostActiveMeterActivityRow>
+                            Key={'24Hours'}
+                            AllowSort={true}
+                            Field={'24Hours'}
+                            HeaderStyle={{ width: '20%' }}
+                            RowStyle={{ width: '20%' }}
+                            Content={row => this.createContent(row.item, row.field)}
+                        > Files(Evts) 24H
+                        </ReactTable.Column>
+                        <ReactTable.Column<MostActiveMeterActivityRow>
+                            Key={'7Days'}
+                            AllowSort={true}
+                            Field={'7Days'}
+                            HeaderStyle={{ width: '20%' }}
+                            RowStyle={{ width: '20%' }}
+                            Content={row => this.createContent(row.item, row.field)}
+                        > Files(Evts) 7D
+                        </ReactTable.Column>
+                        <ReactTable.Column<MostActiveMeterActivityRow>
+                            Key={'30Days'}
+                            AllowSort={true}
+                            Field={'30Days'}
+                            HeaderStyle={{ width: '20%' }}
+                            RowStyle={{ width: '20%' }}
+                            Content={row => this.createContent(row.item, row.field)}
+                        > Files(Evts) 30D
+                        </ReactTable.Column>
+                    </ReactTable.Table>
                 </div>
             </div>
         );
@@ -262,12 +298,47 @@ class LeastActiveMeters extends React.Component<unknown, {
                         OnSort={(col) => { this.setState({ sortField: col.colKey }, this.createTableRows) }}
                         OnClick={() => { /*Do Nothing*/ }}
                         TheadStyle={{ fontSize: 'smaller' }}
-                    />
+                    >
+                        <ReactTable.Column<LeastActiveMeterActivityRow>
+                            Key={'AssetKey'}
+                            AllowSort={true}
+                            Field={'AssetKey'}
+                            HeaderStyle={{ width: 'auto' }}
+                            RowStyle={{ width: 'auto' }}
+                        > Name
+                        </ReactTable.Column>
+                        <ReactTable.Column<LeastActiveMeterActivityRow>
+                            Key={'30Days'}
+                            AllowSort={true}
+                            Field={'30Days'}
+                            HeaderStyle={{ width: '20%' }}
+                            RowStyle={{ width: '20%' }}
+                            Content={row => this.createContent(row.item, row.field)}
+                        > Files(Evts) 30D
+                        </ReactTable.Column>
+                        <ReactTable.Column<LeastActiveMeterActivityRow>
+                            Key={'90Days'}
+                            AllowSort={true}
+                            Field={'90Days'}
+                            HeaderStyle={{ width: '20%' }}
+                            RowStyle={{ width: '20%' }}
+                            Content={row => this.createContent(row.item, row.field)}
+                        > Files(Evts) 90D
+                        </ReactTable.Column>
+                        <ReactTable.Column<LeastActiveMeterActivityRow>
+                            Key={'180Days'}
+                            AllowSort={true}
+                            Field={'180Days'}
+                            HeaderStyle={{ width: '20%' }}
+                            RowStyle={{ width: '20%' }}
+                            Content={row => this.createContent(row.item, row.field)}
+                        > Files(Evts) 180D
+                        </ReactTable.Column>
+                    </ReactTable.Table>
                 </div>
             </div>
         );
     }
-
 }
 
 class FilesProcessed extends React.Component<unknown, { meterTable: Array<JSX.Element>, sortField: string}>{

@@ -47,10 +47,10 @@ const TrendMarkerTable = (props: IProps) => {
     }, [props.Markers, sortField, ascending]);
 
     const removeButton = React.useCallback(
-        (marker: TrendSearch.IMarker) => (
+        (row: { item: TrendSearch.IMarker }) => (
             <button type="button"
                 className={'btn float-left'}
-                onClick={(event) => { event.preventDefault(); event.stopPropagation(); props.RemoveMarker(marker) }}>
+                onClick={(event) => { event.preventDefault(); event.stopPropagation(); props.RemoveMarker(row.item) }}>
                 {TrashCan}
             </button>
         ), [props.RemoveMarker]);
@@ -80,7 +80,64 @@ const TrendMarkerTable = (props: IProps) => {
             TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
             TbodyStyle={{ display: 'block', overflowY: 'scroll', height: props.Height - 30, userSelect: 'none' }}
             RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
-        />);
+        >
+            <ReactTable.Column<TrendSearch.IMarker>
+                Key={'symbol'}
+                AllowSort={false}
+                Field={'ID'}
+                RowStyle={{ width: "auto" }}
+                HeaderStyle={{ width: "auto" }}
+                Content={row => {
+                    switch (row.item.type) {
+                        case "VeHo":
+                            if (props.DisplayDescription ?? false) return "+"
+                            return row.item["isHori"] ? "-" : "|"
+                        case "Symb": return row.item["symbol"];
+                        default:
+                            return "Event";
+                    }
+                }}
+            > {" "}
+            </ReactTable.Column>
+            <ReactTable.Column<TrendSearch.IMarker>
+                Key={'type'}
+                AllowSort={true}
+                Field={'type'}
+                RowStyle={{ width: "auto" }}
+                HeaderStyle={{ width: "auto" }}
+                Content={row => {
+                    if (props.DisplayDescription ?? false) {
+                        switch (row.item.type) {
+                            case "VeHo":
+                                return "Vertical and Horizontal Line Marker(s)";
+                            case "Symb":
+                                return "Icon Marker(s) and Infobox(es)";
+                            default:
+                                return "Event Marker(s)";
+                        }
+                    } else {
+                        switch (row.item.type) {
+                            case "VeHo":
+                                return (row.item["isHori"] ?? true) ? row.item["value"].toFixed(2) : moment.utc(row.item["value"]).format(momentFormat);
+                            case "Symb":
+                                return `${moment.utc(row.item["xPos"]).format(momentFormat)} | ${row.item["yPos"].toFixed(2)}`;
+                            default:
+                                return "All Events";
+                        }
+                    }
+                }}
+            > {(props.DisplayDescription ?? false) ? "" : "Value"}
+            </ReactTable.Column>
+            <ReactTable.Column<TrendSearch.IMarker>
+                Key={'RemoveChannel'}
+                AllowSort={false}
+                RowStyle={{ width: "75px" }}
+                HeaderStyle={{ width: "75px" }}
+                Content={removeButton}
+            > {" "}
+            </ReactTable.Column>
+        </ReactTable.Table>
+    );
 }
 
 export default TrendMarkerTable;

@@ -242,18 +242,6 @@ function DERAnalysisReport() {
                 <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
                     <ReactTable.Table<DERAnalyticResult>
                         Data={data}
-                            /*[
-                            { key: 'Time', label: 'Time', field: 'Time', content: (item) => moment(item.Time).format(momentDateFormat + ' ' + momentTimeFormat) },
-                            { key: 'Meter', label: 'Meter', field: 'Meter' },
-                            { key: 'Asset', label: 'Asset', field: 'Asset' },
-                            { key: 'Channel', label: 'Channel', field: 'Channel' },
-                            { key: 'Regulation', label: 'Regulation', field: 'Regulation' },
-                            { key: 'Parameter', label: 'Parameter', field: 'Parameter' },
-                            { key: 'Threshold', label: 'Threshold', field: 'Threshold' },
-                            { key: 'Value', label: 'Value', field: 'Value', content: (item) => item.Value.toFixed(2) },
-                            { key: 'Scroll', label: '', headerStyle: { width: 19, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
-
-                        ]}*/
                         TableClass='table table-hover'
                         Ascending={ascending}
                         SortKey={sortKey}
@@ -270,7 +258,74 @@ function DERAnalysisReport() {
                         TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                         TbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 343, width: '100%' }}
                         RowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                    />
+                    >
+                        <ReactTable.Column<DERAnalyticResult>
+                            Key={'Time'}
+                            AllowSort={true}
+                            Field={'Time'}
+                            HeaderStyle={{ width: 'auto' }}
+                            RowStyle={{ width: 'auto' }}
+                            Content={row => moment(row.item.Time).format(momentDateFormat + ' ' + momentTimeFormat)}
+                        > Time
+                        </ReactTable.Column>
+                        <ReactTable.Column<DERAnalyticResult>
+                            Key={'Meter'}
+                            AllowSort={true}
+                            Field={'Meter'}
+                            HeaderStyle={{ width: 'auto' }}
+                            RowStyle={{ width: 'auto' }}
+                        > Meter
+                        </ReactTable.Column>
+                        <ReactTable.Column<DERAnalyticResult>
+                            Key={'Asset'}
+                            AllowSort={true}
+                            Field={'Asset'}
+                            HeaderStyle={{ width: 'auto' }}
+                            RowStyle={{ width: 'auto' }}
+                        > Asset
+                        </ReactTable.Column>
+                        <ReactTable.Column<DERAnalyticResult>
+                            Key={'Channel'}
+                            AllowSort={true}
+                            Field={'Channel'}
+                            HeaderStyle={{ width: 'auto' }}
+                            RowStyle={{ width: 'auto' }}
+                        > Channel
+                        </ReactTable.Column>
+                        <ReactTable.Column<DERAnalyticResult>
+                            Key={'Regulation'}
+                            AllowSort={true}
+                            Field={'Regulation'}
+                            HeaderStyle={{ width: 'auto' }}
+                            RowStyle={{ width: 'auto' }}
+                        > Regulation
+                        </ReactTable.Column>
+                        <ReactTable.Column<DERAnalyticResult>
+                            Key={'Parameter'}
+                            AllowSort={true}
+                            Field={'Parameter'}
+                            HeaderStyle={{ width: 'auto' }}
+                            RowStyle={{ width: 'auto' }}
+                        > Parameter
+                        </ReactTable.Column>
+                        <ReactTable.Column<DERAnalyticResult>
+                            Key={'Threshold'}
+                            AllowSort={true}
+                            Field={'Threshold'}
+                            HeaderStyle={{ width: 'auto' }}
+                            RowStyle={{ width: 'auto' }}
+                        > Threshold
+                        </ReactTable.Column>
+                        <ReactTable.Column<DERAnalyticResult>
+                            Key={'Value'}
+                            AllowSort={true}
+                            Field={'Value'}
+                            HeaderStyle={{ width: 'auto' }}
+                            RowStyle={{ width: 'auto' }}
+                            Content={row => row.item.Value.toFixed(2)}
+                        > Value
+                        </ReactTable.Column>
+                    </ReactTable.Table>
                 </div>
 
             </div>

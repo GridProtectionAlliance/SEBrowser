@@ -29,7 +29,8 @@ import { MagDurCurveSlice } from '../../Store';
 import { Line, Plot, Circle, AggregatingCircles } from '@gpa-gemstone/react-graph';
 import { SelectEventSearchSettings, SelectGeneralSettings } from '../SettingsSlice';
 import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
-import { Column, ReactTable } from '@gpa-gemstone/react-table';
+import { ReactTable } from '@gpa-gemstone/react-table';
+import { ConfigTable } from '@gpa-gemstone/react-interactive';
 import { OpenXDA } from '@gpa-gemstone/application-typings'
 
 interface IProps {
@@ -226,6 +227,12 @@ interface IEventListProps {
     Width: number;
 }
 
+interface IColumn {
+    key: string,
+    label: string,
+    field: keyof any,
+}
+
 const EventList = (props: IEventListProps) => {
     const closureHandler = React.useRef<((o: boolean) => void)>(() => {/*Do Nothing*/ });
 
@@ -237,7 +244,7 @@ const EventList = (props: IEventListProps) => {
     const sortField = useAppSelector(SelectEventSearchsSortField);
     const ascending = useAppSelector(SelectEventSearchsAscending);
     const data = useAppSelector(dataFilter);
-    const [columns, setColumns] = React.useState<Column<any>[]>([]);
+    const [columns, setColumns] = React.useState<IColumn[]>([]);
 
     React.useEffect(() => {
         if (props.Magnitude !== 0 && props.Duration !== 0) {
@@ -261,14 +268,14 @@ const EventList = (props: IEventListProps) => {
     }
 
     function LoadColumns() {
-        let c = [{ field: "Time", key: "Time", label: "Time", content: (item, key, fld) => ProcessWhitespace(item[fld]) }];
+        let c = [{ field: "Time", key: "Time", label: "Time" }];
         const flds = Object.keys(data[0]).filter(item => item != "Time" && item != "DisturbanceID" && item != "EventID" && item != "EventID1" && item != 'MagDurDuration' && item != 'MagDurMagnitude').sort();
         let keys = [];
         const currentState = localStorage.getItem('SEbrowser.EventSearch.TableCols');
         if (currentState !== null)
             keys = currentState.split(",");
 
-        c = c.concat(flds.filter(f => keys.includes(f)).map(f => ({ field: f, key: f, label: f, content: (item, key, fld) => ProcessWhitespace(item[fld]) })));
+        c = c.concat(flds.filter(f => keys.includes(f)).map(f => ({ field: f, key: f, label: f })));
 
         setColumns(c);
     }
@@ -280,23 +287,49 @@ const EventList = (props: IEventListProps) => {
                     Close
                 </button>
             </div>
-            <ReactTable.Table<any>
-                TableClass="table table-hover"
-                Data={data}
-                SortKey={sortField as string}
-                KeySelector={item => item.ID}
-                Ascending={ascending}
-                OnSort={(d) => {
-                    if (d.colKey == sortField) dispatch(Sort({ Ascending: ascending, SortField: sortField }));
-                    else dispatch(Sort({ Ascending: true, SortField: d.colKey }));
-                }}
-                OnClick={(item) => { closureHandler.current(false); props.Select(item.row.EventID) }}
-                TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '250px', height: 60 }}
-                TbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.Height - 60 - 160 }}
-                RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
-                TableStyle={{ marginBottom: 0 }}
-                Selected={() => false}
-            />
+            {columns.length > 0 ?
+                <ConfigTable.Table<any>
+                    TableClass="table table-hover"
+                    Data={data}
+                    SortKey={sortField as string}
+                    KeySelector={(item) => (item.EventID.toString() + '-' + item.DisturbanceID)}
+                    Ascending={ascending}
+                    OnSort={(d) => {
+                        if (d.colKey == sortField) dispatch(Sort({ Ascending: ascending, SortField: sortField }));
+                        else dispatch(Sort({ Ascending: true, SortField: d.colKey }));
+                    }}
+                    OnClick={(item) => { closureHandler.current(false); props.Select(item.row.EventID) }}
+                    TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '250px', height: 60 }}
+                    TbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: props.Height - 60 - 160 }}
+                    RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
+                    TableStyle={{ marginBottom: 0 }}
+                    Selected={() => false}
+                >
+                    <ReactTable.AdjustableColumn<any>
+                        Key={'Time'}
+                        AllowSort={true}
+                        Content={({ item, field }) => ProcessWhitespace(item[field])}
+                        RowStyle={{ minWidth: '100px' }}
+                        Field={'Time'}
+                    >
+                        Time
+                    </ReactTable.AdjustableColumn>
+                    {...columns.map(c => (
+                        <ConfigTable.Configurable Key={c.label} Label={c.label} Default={c.key === 'Event Type'}>
+                            <ReactTable.AdjustableColumn<any>
+                                Key={c.key}
+                                AllowSort={true}
+                                Field={c.label}
+                                RowStyle={{ minWidth: '100px' }}
+                                Content={({ item, field }) => ProcessWhitespace(item[field])}
+                            >
+                                {c.label}
+                            </ReactTable.AdjustableColumn>
+                        </ConfigTable.Configurable>
+                    ))}
+                </ConfigTable.Table> :
+                <></>
+            }
         </div>
     </OverlayDrawer>
 }

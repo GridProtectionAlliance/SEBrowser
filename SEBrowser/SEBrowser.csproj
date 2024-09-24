@@ -514,7 +514,6 @@
     <None Include="Scripts\TSX\Components\RelayReport\RelayReport.tsx" />
     <None Include="Scripts\TSX\Components\RelayReport\RelayReportNavBar.tsx" />
     <None Include="Scripts\TSX\Components\RelayReport\RelayReportPane.tsx" />
-    <None Include="Scripts\TSX\Components\Table.tsx" />
     <None Include="Scripts\TSX\global.d.ts" />
     <None Include="Scripts\TSX\SEBrowser.tsx" />
     <None Include="Scripts\TS\Services\BreakerReport.ts" />
