@@ -167,7 +167,7 @@ export const EventSearchsSlice = createSlice({
             curveID: 1, curveInside: true, curveOutside: true
         },
         TimeRange: {
-            start: moment.utc().subtract(84, 'hours').format(dateTimeFormat),
+            start: moment.utc().subtract(8, 'hours').format(dateTimeFormat),
             end: moment.utc().format(dateTimeFormat),
         },
         EventType: [],
@@ -187,8 +187,8 @@ export const EventSearchsSlice = createSlice({
             groups: OpenXDA.Types.AssetGroup[], locations: SystemCenter.Types.DetailedLocation[],
             meters: SystemCenter.Types.DetailedMeter[], typeIDs: OpenXDA.Types.EventType[]
         }>) => {
-            state.TimeRange.start = action.payload.query['start'].toString() ?? state.TimeRange.start;
-            state.TimeRange.end = action.payload.query['end'].toString() ?? state.TimeRange.end;
+            state.TimeRange.start = action.payload.query['start']?.toString() ?? state.TimeRange.start;
+            state.TimeRange.end = action.payload.query['end']?.toString() ?? state.TimeRange.end;
 
             state.EventType = parseList('types', action.payload.query)?.map(id => action.payload.typeIDs.find(item => item.ID == parseInt(id))).filter(item => item != null).map(t => t.ID) ?? action.payload.typeIDs.filter(item => item.ShowInFilter).map(t => t.ID);
 

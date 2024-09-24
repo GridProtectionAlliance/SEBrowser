@@ -236,7 +236,7 @@ namespace PQDashboard.Controllers.BreakerReport
             int lineID;
             int channelID;
 
-            DateTime start = DateTime.ParseExact(query["start"], "MM dd yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+            DateTime start = DateTime.ParseExact(query["start"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
             DateTime end = DateTime.ParseExact(query["end"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
 
             try { channelID = int.Parse(query["channelID"]); }

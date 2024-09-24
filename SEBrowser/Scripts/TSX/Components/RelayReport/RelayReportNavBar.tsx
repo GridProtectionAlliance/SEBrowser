@@ -25,6 +25,7 @@ import _ from 'lodash';
 import { TimeFilter } from '@gpa-gemstone/common-pages'
 import { useSelector } from 'react-redux';
 import { SelectTimeZone, SelectDateTimeSetting } from '../SettingsSlice';
+import { SEBrowser } from 'Scripts/TSX/global';
 
 interface Substation {
     LocationID: number, AssetKey: string, AssetName: string
@@ -46,8 +47,7 @@ export interface RelayReportNavBarProps {
     BreakerID: number,
     ChannelID: number,
     StationId: number,
-    start: string,
-    end: string,
+    TimeFilter: SEBrowser.IReportTimeFilter
 }
 
 const RelayReportNavBar = (props: RelayReportNavBarProps) => {
@@ -131,7 +131,6 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
 
     }
 
-
     function getCoilData(): JQuery.jqXHR<Channel[]> {
         const h = $.ajax({
             type: "GET",
@@ -169,16 +168,10 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
         props.stateSetter({ searchBarProps: object });
     }
 
-    function setStart(start: string) {
-        const object = _.clone(props) as RelayReportNavBarProps;
-        object.start = start;
-        props.stateSetter({ searchBarProps: object });
-    }
-
-    function setEnd(time: string) {
-        const object = _.clone(props) as RelayReportNavBarProps;
-        object.end = time;
-        props.stateSetter({ searchBarProps: object });
+    function setTime(filter: SEBrowser.IReportTimeFilter) {
+        const object = _.clone(this.props) as RelayReportNavBarProps;
+        object.TimeFilter = filter;
+        this.props.stateSetter({ searchBarProps: object });
     }
 
     return (
@@ -219,12 +212,11 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                     </li>
 
                     <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
-                        <TimeFilter filter={{ start: props.start, end: props.end }}
-                            setFilter={(start: string, end: string) => {
-                                setStart(start);
-                                setEnd(end);
-                            }}
-                            showQuickSelect={false} timeZone={timeZone}
+                        <TimeFilter filter={{
+                            start: props.TimeFilter.start, end: props.TimeFilter.end
+                        }} setFilter={(start: string, end: string) => {
+                            setTime({ start: start, end: end })
+                        }} showQuickSelect={false} timeZone={timeZone}
                             dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                     </li>
 

@@ -208,7 +208,7 @@ namespace PQDashboard.Controllers.CapBankReport
             int selectedBank = int.Parse(query["bankNum"]);
 
 
-            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD('{start}') AND DATEADD('{end}'))";
+            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN '{start}' AND '{end}')";
             string capBankRestriction = $"((SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId})";
             string bankNumRestriction = $"(CBAnalyticResult.EnergizedBanks = {selectedBank} OR CBAnalyticResult.DeEnergizedBanks = {selectedBank})";
             string otherFilter = ProcessFilter(query);
@@ -295,7 +295,7 @@ namespace PQDashboard.Controllers.CapBankReport
             int selectedBank = int.Parse(query["bankNum"]);
             
 
-            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD('{start}') AND DATEADD('{end}'))";
+            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN '{start}' AND '{end}')";
             string capBankRestriction = $"((SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId})";
             string bankNumRestriction = $"(CBAnalyticResult.EnergizedBanks = {selectedBank} OR CBAnalyticResult.DeEnergizedBanks = {selectedBank})";
             string bankNumAfterRestriction = $"(CBAnalyticResult.StepPost = {selectedBank})";
