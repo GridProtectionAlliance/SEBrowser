@@ -27,8 +27,8 @@ import * as queryString from 'querystring';
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SelectDateTimeFormat, SelectDateTimeSetting } from '../SettingsSlice';
-import { SEBrowser } from 'Scripts/TSX/global';
 import { useSelector } from 'react-redux';
+import { SEBrowser } from 'Scripts/TSX/global';
 
 interface IState {
     searchBarProps: RelayReportNavBarProps,
@@ -42,35 +42,39 @@ const RelayReport = () => {
     const [BreakerID, setBreakerID] = React.useState<number>(0);
     const [ChannelID, setChannelID] = React.useState<number>(0);
     const [StationId, setStationId] = React.useState<number>(0);
-    const [start, setStart] = React.useState<string>('01/01/2000 12:00:00.000');
-    const [end, setEnd] = React.useState<string>('01/02/2000 12:00:00.000');
+    const [time, setTime] = React.useState<SEBrowser.IReportTimeFilter>({
+        start: '01/01/2000 12:00:00.000',
+        end: '01/02/2000 12:00:00.000',
+    });
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
         setBreakerID(query['breakerid'] != undefined ? parseInt(query['breakerid'] as string) : -1);
         setChannelID(query['channelid'] != undefined ? parseInt(query['channelid'] as string) : -1);
         setStationId(query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1);
-        setStart(query['start'] != undefined ? query['start'] as string : moment().format(dateTimeFormat));
-        setEnd(query['end'] != undefined ? query['end'] as string : moment().format(dateTimeFormat));
+
+        const newTime = {
+            start: query['start']?.toString() ?? moment().utc().subtract(8, 'hours').format(dateTimeFormat),
+            end: query['end']?.toString() ?? moment().utc().format(dateTimeFormat)
+        }
+        setTime(newTime);
     }, []);
 
     React.useEffect(() => {
-        const state = { BreakerID, ChannelID, StationId, start, end };
+        const state = { BreakerID, ChannelID, StationId, start: time.start, end: time.end };
         const q = queryString.stringify(state, "&", "=");
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
-
         return (() => { clearTimeout(handle); })
-    }, [BreakerID, ChannelID, StationId, start, end])
+    }, [BreakerID, ChannelID, StationId, time])
 
     function setState(obj: IState) {
         setBreakerID(obj.searchBarProps.BreakerID);
         setChannelID(obj.searchBarProps.ChannelID);
-        setStart(obj.searchBarProps.start);
-        setEnd(obj.searchBarProps.end);
+        setTime(obj.searchBarProps.TimeFilter);
         setStationId(obj.searchBarProps.StationId);
     }
 
-    const searchBarProps: RelayReportNavBarProps = { BreakerID, ChannelID, StationId, start, end, stateSetter: setState };
+    const searchBarProps: RelayReportNavBarProps = { BreakerID, ChannelID, StationId, TimeFilter: time, stateSetter: setState };
 
     return (
         <div style={{ width: '100%', height: '100%' }}>

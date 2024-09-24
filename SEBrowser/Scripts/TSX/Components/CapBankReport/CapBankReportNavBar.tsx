@@ -87,7 +87,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
             this.getCapBankData(this.props.StationId);
     }
 
-    componentWillReceiveProps(nextProps: CapBankReportNavBarProps) {
+    UNSAFE_componentWillReceiveProps(nextProps: CapBankReportNavBarProps) {
 
         if (this.state.capBanks.length == 0)
             this.getCapBankData(nextProps.StationId);
@@ -122,7 +122,6 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
     }
 
     setDate(filter: SEBrowser.IReportTimeFilter) {
-
         const object = _.clone(this.props) as CapBankReportNavBarProps;
         object.TimeFilter = filter;
         this.props.stateSetter({ searchBarProps: object });

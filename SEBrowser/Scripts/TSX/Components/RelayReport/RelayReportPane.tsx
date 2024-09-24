@@ -72,22 +72,19 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
 
     React.useEffect(() => {
         getTimeLimits()
-    }, [props.end, props.start])
+    }, [props.TimeFilter])
 
 
     function getTimeLimits() {
-        const [startMoment, endMoment] = [moment.utc(props.start), moment.utc(props.end)]
+        const [startMoment, endMoment] = [moment.utc(props.TimeFilter.start), moment.utc(props.TimeFilter.end)]
         setTend(endMoment.valueOf());
         setTstart(startMoment.valueOf())
     }
 
     function getRelayPerformance(): JQuery.jqXHR<IRelayPerformance[]> {
-        const startMoment: moment.Moment = moment(props.start, dateTimeFormat);
-        const endMoment: moment.Moment = moment(props.end, dateTimeFormat);
-
         const h = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/RelayReport/getRelayPerformance?lineID=${props.BreakerID}&channelID=${props.ChannelID}}&start=${startMoment}&end=${endMoment}`,
+            url: `${homePath}api/PQDashboard/RelayReport/getRelayPerformance?lineID=${props.BreakerID}&channelID=${props.ChannelID}}&start=${props.TimeFilter.end}&end=${props.TimeFilter.end}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,

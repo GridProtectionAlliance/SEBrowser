@@ -62,13 +62,11 @@ const CapBankReport = () => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
 
         setCapBankID(query['capBankId'] != undefined ? parseInt(query['capBankId'] as string) : -1);
-        const time = {
-            start: query['start'] != undefined ? query['start'] as string : moment().format(),
-            end: query['end'] != undefined ? query['end'] as string : moment().format(dateTimeFormat),
-            windowSize: query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10,
-            timeWindowUnits: query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2
+        const newTime = {
+            start: query['start']?.toString() ?? moment().utc().subtract(8, 'hours').format(dateTimeFormat),
+            end: query['end']?.toString() ?? moment().utc().format(dateTimeFormat)
         }
-        setTime(time);
+        setTime(newTime);
         setSelectedBank(query['selectedBank'] != undefined ? parseInt(query['selectedBank'].toString()) : -1);
         setStationID(query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1);
         setNumBanks(0);

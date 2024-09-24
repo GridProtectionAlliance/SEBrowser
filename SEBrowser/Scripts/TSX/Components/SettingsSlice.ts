@@ -50,7 +50,7 @@ const defaultState = {
         MoveOptionsLeft: false,
         ShowDataPoints: true,
         DateTimeMode: 'startEnd',
-        DateTimeFormat: 'DD MMM YYYY HH:mm:ss.SSS'
+        DateTimeFormat: 'MM/DD/YYYY HH:mm:ss.SSS'
     }
 } as Redux.SettingsState;
 
