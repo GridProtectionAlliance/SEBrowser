@@ -26,7 +26,7 @@ import RelayReportPane from './RelayReportPane';
 import * as queryString from 'querystring';
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { SelectDateTimeFormat, SelectDateTimeSetting } from '../SettingsSlice';
+import { SelectDateTimeFormat } from '../SettingsSlice';
 import { useSelector } from 'react-redux';
 import { SEBrowser } from 'Scripts/TSX/global';
 
