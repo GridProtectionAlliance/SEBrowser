@@ -58,7 +58,6 @@ interface IRelayPerformance {
 }
 
 const RelayReportPane = (props: RelayReportNavBarProps) => {
-    const dateTimeFormat = useSelector(SelectDateTimeFormat);
 
     const [realyPerformance, setRelayPerformance] = React.useState<IRelayPerformance[]>([]);
     const [Tstart, setTstart] = React.useState<number>(0);
