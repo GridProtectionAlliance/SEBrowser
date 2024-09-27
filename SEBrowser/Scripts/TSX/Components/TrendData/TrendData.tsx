@@ -48,8 +48,6 @@ const TrendData = () => {
 
     const [screen, setScreen] = React.useState<string>('screen1');
     const defaultPlots = plotScreen(screen as IScreenType, dateTimeFormat);
-    console.log(defaultPlots);
-    console.log(...defaultPlots);
     const [plotList, setPlotList] = React.useState<TrendSearch.ITrendPlot[]>([...defaultPlots]);
 
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
@@ -189,7 +187,7 @@ const TrendData = () => {
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
-        setScreen(query['screen'] != undefined ? query['screen'].toString() : undefined);
+        setScreen(query['screen'] != undefined ? query['screen'].toString() : 'screen1 ');
     }, []);
 
     React.useEffect(() => {
