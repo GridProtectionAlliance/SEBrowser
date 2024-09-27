@@ -79,6 +79,102 @@ function plotScreen(screenType: IScreenType, dateTimeFormat: string): TrendSearc
                 AxisZoom: 'AutoValue',
                 ShowEvents: false
             }]
+        case 'screen2':
+            return [{
+                TimeFilter: { start: moment.utc().format(dateTimeFormat), end: moment.utc().add(12, 'hours').format(dateTimeFormat) },
+                Type: 'Line',
+                Channels: [
+                    {
+                        "ID": 142,
+                        "Name": "V RMS A",
+                        "Description": null,
+                        "AssetID": 48,
+                        "AssetKey": "XFR-1",
+                        "AssetName": "Bludhaven Transformer",
+                        "MeterID": 1,
+                        "MeterKey": "Bludhaven 13-T2",
+                        "MeterName": "Bludhaven 13-T2",
+                        "MeterShortName": null,
+                        "Phase": "AN",
+                        "ChannelGroup": "Voltage",
+                        "ChannelGroupType": "V RMS",
+                        "Unit": "V"
+                    },
+                    {
+                        "ID": 143,
+                        "Name": "V RMS B",
+                        "Description": null,
+                        "AssetID": 48,
+                        "AssetKey": "XFR-1",
+                        "AssetName": "Bludhaven Transformer",
+                        "MeterID": 1,
+                        "MeterKey": "Bludhaven 13-T2",
+                        "MeterName": "Bludhaven 13-T2",
+                        "MeterShortName": null,
+                        "Phase": "BN",
+                        "ChannelGroup": "Voltage",
+                        "ChannelGroupType": "V RMS",
+                        "Unit": "V"
+                    }
+                ],
+                PlotFilter: [
+                    { Text: "Minimum", Value: "min", Selected: true },
+                    { Text: "Maximum", Value: "max", Selected: true },
+                    { Text: "Average/Values", Value: "avg", Selected: true }
+                ],
+                ID: "blank",
+                Width: 50,
+                Height: 100,
+                AxisZoom: 'AutoValue',
+                ShowEvents: false
+            }, {
+                TimeFilter: { start: moment.utc().format(dateTimeFormat), end: moment.utc().add(12, 'hours').format(dateTimeFormat) },
+                Type: 'Line',
+                Channels: [
+                    {
+                        "ID": 142,
+                        "Name": "V RMS A",
+                        "Description": null,
+                        "AssetID": 48,
+                        "AssetKey": "XFR-1",
+                        "AssetName": "Bludhaven Transformer",
+                        "MeterID": 1,
+                        "MeterKey": "Bludhaven 13-T2",
+                        "MeterName": "Bludhaven 13-T2",
+                        "MeterShortName": null,
+                        "Phase": "AN",
+                        "ChannelGroup": "Voltage",
+                        "ChannelGroupType": "V RMS",
+                        "Unit": "V"
+                    },
+                    {
+                        "ID": 143,
+                        "Name": "V RMS B",
+                        "Description": null,
+                        "AssetID": 48,
+                        "AssetKey": "XFR-1",
+                        "AssetName": "Bludhaven Transformer",
+                        "MeterID": 1,
+                        "MeterKey": "Bludhaven 13-T2",
+                        "MeterName": "Bludhaven 13-T2",
+                        "MeterShortName": null,
+                        "Phase": "BN",
+                        "ChannelGroup": "Voltage",
+                        "ChannelGroupType": "V RMS",
+                        "Unit": "V"
+                    }
+                ],
+                PlotFilter: [
+                    { Text: "Minimum", Value: "min", Selected: true },
+                    { Text: "Maximum", Value: "max", Selected: true },
+                    { Text: "Average/Values", Value: "avg", Selected: true }
+                ],
+                ID: "blank",
+                Width: 50,
+                Height: 100,
+                AxisZoom: 'AutoValue',
+                ShowEvents: false
+            }]
     }
 }
 

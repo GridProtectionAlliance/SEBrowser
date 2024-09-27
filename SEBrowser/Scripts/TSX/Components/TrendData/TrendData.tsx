@@ -187,13 +187,13 @@ const TrendData = () => {
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
-        setScreen(query['screen'] != undefined ? query['screen'].toString() : 'screen1 ');
+        setScreen(query['screen'] != undefined ? query['screen'].toString() : 'screen1');
     }, []);
 
     React.useEffect(() => {
         const q = queryString.stringify({ screen: screen }, "&", "=", { encodeURIComponent: queryString.escape });
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
-        setPlotList((prev) => [...prev, ...plotScreen(screen as IScreenType, dateTimeFormat)]);
+        setPlotList([...plotScreen(screen as IScreenType, dateTimeFormat)]);
         return () => {
             clearTimeout(handle);
         }
