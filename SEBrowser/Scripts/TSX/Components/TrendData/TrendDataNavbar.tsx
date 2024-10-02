@@ -63,7 +63,8 @@ interface ITrendDataFilter {
     Phases: IKeyValuePair[],
     ChannelGroups: IKeyValuePair[],
     MeterList: SystemCenter.Types.DetailedMeter[],
-    AssetList: SystemCenter.Types.DetailedAsset[]
+    AssetList: SystemCenter.Types.DetailedAsset[],
+    ChannelIDs: number[]
 }
 
 type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
@@ -153,7 +154,8 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             Phases: makeKeyValuePairs(allPhases, new Set(["AB", "BC", "CA"])),
             ChannelGroups: makeKeyValuePairs(allChannelGroups, new Set(["Voltage"])),
             MeterList: [],
-            AssetList: []
+            AssetList: [],
+            ChannelIDs: []
         });
     }, [channelGroupStatus, phaseStatus]);
 

@@ -106,8 +106,8 @@ const SEBrowserMainPage = () => {
                 <Page Name={'meteractivity'} Label={'Meter Activity'}>
                     <MeterActivity />
                 </Page>
-                <Page Name={'trenddata'} Label={'Trend Data'}>
-                    <TrendData />
+                <Page Name={'trenddata'} Label={'Trend Data'} Paths={["/:screen"]} >
+                    <TrendData useParams={{ screen: '' }} />
                 </Page>
                 <Section Label={"Custom Reports"}>
                     {links.map((item, i) => <Page key={i} Name={item.AltValue ?? item.Value} Label={item.Value}>{createWidget(item.AltValue ?? item.Value)}</Page>)}

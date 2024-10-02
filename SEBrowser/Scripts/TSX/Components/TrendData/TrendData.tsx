@@ -26,29 +26,26 @@ import moment from 'moment';
 import _ from 'lodash';
 import TrendSearchNavbar from './TrendDataNavbar';
 import TrendPlot from './TrendPlot/TrendPlot';
-import queryString from 'querystring';
 import { TrendSearch } from '../../global';
 import AllSettingsModal from './Settings/AllSettingsModal';
 import { SelectDateTimeFormat, SelectTrendDataSettings } from './../SettingsSlice';
 import { useAppSelector } from './../../hooks';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
-import { useSelector } from 'react-redux';
-import plotScreen, { IScreenType } from './TrendPlot/DefaultTrendScreen';
-import { useLocation, useNavigate } from 'react-router-dom';
+import defaultPlotScreen from './TrendPlot/DefaultTrendScreen';
 
 const trendSearchId = "TrendDataChartAll";
 const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFilter"]);
 
-const TrendData = () => {
-    const history = useLocation();
-    const navigate = useNavigate();
+interface IProps {
+    useParams: { screen: string }
+}
 
-    const dateTimeFormat = useSelector(SelectDateTimeFormat);
+const TrendData = (props: IProps) => {
+    const dateTimeFormat = useAppSelector(SelectDateTimeFormat);
     const closureHandler = React.useRef<((o: boolean) => void)>(() => { return; });
 
-    const [screen, setScreen] = React.useState<string>('screen1');
-    const defaultPlots = plotScreen(screen as IScreenType, dateTimeFormat);
-    const [plotList, setPlotList] = React.useState<TrendSearch.ITrendPlot[]>([...defaultPlots]);
+    const plotChannels: number[] = [202];
+    const [plotList, setPlotList] = React.useState<TrendSearch.ITrendPlot[]>([]);
 
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
     const [defaultPlotSettings, setDefaultPlotSettings] = React.useState<TrendSearch.ITrendPlot>({
@@ -186,18 +183,11 @@ const TrendData = () => {
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
 
     React.useEffect(() => {
-        const query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
-        setScreen(query['screen'] != undefined ? query['screen'].toString() : 'screen1');
-    }, []);
-
-    React.useEffect(() => {
-        const q = queryString.stringify({ screen: screen }, "&", "=", { encodeURIComponent: queryString.escape });
-        const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
-        setPlotList([...plotScreen(screen as IScreenType, dateTimeFormat)]);
-        return () => {
-            clearTimeout(handle);
-        }
-    }, [screen])
+        defaultPlotScreen(plotChannels, props.useParams.screen).then((defaults) => {
+            console.log('defaults set to plotChannels', defaults);
+            setPlotList(defaults);
+        })
+    }, [])
 
     function getShowNav(): boolean {
         if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.TrendData.ShowNav'))

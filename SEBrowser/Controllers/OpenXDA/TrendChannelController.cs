@@ -35,6 +35,7 @@ using openXDA.APIAuthentication;
 using System.Text;
 using System.IO;
 using System.Net.Http.Headers;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace SEBrowser.Controllers.OpenXDA
 {
@@ -55,15 +56,17 @@ namespace SEBrowser.Controllers.OpenXDA
                 string channelGroupFilter = GetKeyValueFilter(postData["ChannelGroups"], "ChannelGroup.Name");
                 string assetFilter = GetIDFilter(postData["AssetList"], "Asset.ID");
                 string meterFilter = GetIDFilter(postData["MeterList"], "Meter.ID");
+                string channelFilter = GetIDFilter(postData["ChannelIDs"], "Channel.ID");
                 // Meters must be selected
-                if (string.IsNullOrEmpty(meterFilter)) return new DataTable();
+                if (string.IsNullOrEmpty(meterFilter) && string.IsNullOrEmpty(channelFilter)) return new DataTable();
 
                 string filters =
                     $@"Channel.Trend = 1
                     {(string.IsNullOrEmpty(phaseFilter) ? "" : $"AND ({phaseFilter})")}
                     {(string.IsNullOrEmpty(channelGroupFilter) ? "" : $"AND ({channelGroupFilter})")}
                     {(string.IsNullOrEmpty(meterFilter) ? "" : $"AND {meterFilter}")}
-                    {(string.IsNullOrEmpty(assetFilter) ? "" : $"AND {assetFilter}")}";
+                    {(string.IsNullOrEmpty(assetFilter) ? "" : $"AND {assetFilter}")}
+                    {(string.IsNullOrEmpty(channelFilter) ? "" : $"AND {channelFilter}")}";
 
                 string query =
                     $@"SELECT
@@ -147,7 +150,18 @@ namespace SEBrowser.Controllers.OpenXDA
         private string GetIDFilter(JToken idObjectList, string fieldName)
         {
             if (idObjectList.Count() == 0) return null;
-            return $"{fieldName} IN ({string.Join(", ", idObjectList.Select(idObject => idObject["ID"].ToObject<int>()))})";
+            return $"{fieldName} IN ({string.Join(", ", idObjectList.Select(idObject =>
+            {
+                int i = 0;
+                if (int.TryParse(idObject.ToString(), out i))
+                {
+                    return idObject;
+                }
+                else
+                {
+                    return idObject["ID"].ToObject<int>();
+                }
+            }))})";
         }
         #endregion
 

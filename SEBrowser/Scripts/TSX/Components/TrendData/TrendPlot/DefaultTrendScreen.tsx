@@ -23,159 +23,117 @@
 
 import moment from 'moment';
 import { TrendSearch } from 'Scripts/TSX/global';
+const dateTimeFormat = 'MM/DD/YYYY HH:mm:ss.SSS'
 
-export type IScreenType = 'screen1' | 'screen2';
-
-// take from url which layout to have - given its there
-
-function plotScreen(screenType: IScreenType, dateTimeFormat: string): TrendSearch.ITrendPlot[] {
-    switch (screenType) {
-        case 'screen1':
-            return [{
-                TimeFilter: { start: moment.utc().format(dateTimeFormat), end: moment.utc().add(12, 'hours').format(dateTimeFormat) },
-                Type: 'Line',
-                Channels: [
-                    {
-                        "ID": 142,
-                        "Name": "V RMS A",
-                        "Description": null,
-                        "AssetID": 48,
-                        "AssetKey": "XFR-1",
-                        "AssetName": "Bludhaven Transformer",
-                        "MeterID": 1,
-                        "MeterKey": "Bludhaven 13-T2",
-                        "MeterName": "Bludhaven 13-T2",
-                        "MeterShortName": null,
-                        "Phase": "AN",
-                        "ChannelGroup": "Voltage",
-                        "ChannelGroupType": "V RMS",
-                        "Unit": "V"
-                    },
-                    {
-                        "ID": 143,
-                        "Name": "V RMS B",
-                        "Description": null,
-                        "AssetID": 48,
-                        "AssetKey": "XFR-1",
-                        "AssetName": "Bludhaven Transformer",
-                        "MeterID": 1,
-                        "MeterKey": "Bludhaven 13-T2",
-                        "MeterName": "Bludhaven 13-T2",
-                        "MeterShortName": null,
-                        "Phase": "BN",
-                        "ChannelGroup": "Voltage",
-                        "ChannelGroupType": "V RMS",
-                        "Unit": "V"
-                    }
-                ],
-                PlotFilter: [
-                    { Text: "Minimum", Value: "min", Selected: true },
-                    { Text: "Maximum", Value: "max", Selected: true },
-                    { Text: "Average/Values", Value: "avg", Selected: true }
-                ],
-                ID: "blank",
-                Width: 100,
-                Height: 100,
-                AxisZoom: 'AutoValue',
-                ShowEvents: false
-            }]
-        case 'screen2':
-            return [{
-                TimeFilter: { start: moment.utc().format(dateTimeFormat), end: moment.utc().add(12, 'hours').format(dateTimeFormat) },
-                Type: 'Line',
-                Channels: [
-                    {
-                        "ID": 142,
-                        "Name": "V RMS A",
-                        "Description": null,
-                        "AssetID": 48,
-                        "AssetKey": "XFR-1",
-                        "AssetName": "Bludhaven Transformer",
-                        "MeterID": 1,
-                        "MeterKey": "Bludhaven 13-T2",
-                        "MeterName": "Bludhaven 13-T2",
-                        "MeterShortName": null,
-                        "Phase": "AN",
-                        "ChannelGroup": "Voltage",
-                        "ChannelGroupType": "V RMS",
-                        "Unit": "V"
-                    },
-                    {
-                        "ID": 143,
-                        "Name": "V RMS B",
-                        "Description": null,
-                        "AssetID": 48,
-                        "AssetKey": "XFR-1",
-                        "AssetName": "Bludhaven Transformer",
-                        "MeterID": 1,
-                        "MeterKey": "Bludhaven 13-T2",
-                        "MeterName": "Bludhaven 13-T2",
-                        "MeterShortName": null,
-                        "Phase": "BN",
-                        "ChannelGroup": "Voltage",
-                        "ChannelGroupType": "V RMS",
-                        "Unit": "V"
-                    }
-                ],
-                PlotFilter: [
-                    { Text: "Minimum", Value: "min", Selected: true },
-                    { Text: "Maximum", Value: "max", Selected: true },
-                    { Text: "Average/Values", Value: "avg", Selected: true }
-                ],
-                ID: "blank",
-                Width: 50,
-                Height: 100,
-                AxisZoom: 'AutoValue',
-                ShowEvents: false
-            }, {
-                TimeFilter: { start: moment.utc().format(dateTimeFormat), end: moment.utc().add(12, 'hours').format(dateTimeFormat) },
-                Type: 'Line',
-                Channels: [
-                    {
-                        "ID": 142,
-                        "Name": "V RMS A",
-                        "Description": null,
-                        "AssetID": 48,
-                        "AssetKey": "XFR-1",
-                        "AssetName": "Bludhaven Transformer",
-                        "MeterID": 1,
-                        "MeterKey": "Bludhaven 13-T2",
-                        "MeterName": "Bludhaven 13-T2",
-                        "MeterShortName": null,
-                        "Phase": "AN",
-                        "ChannelGroup": "Voltage",
-                        "ChannelGroupType": "V RMS",
-                        "Unit": "V"
-                    },
-                    {
-                        "ID": 143,
-                        "Name": "V RMS B",
-                        "Description": null,
-                        "AssetID": 48,
-                        "AssetKey": "XFR-1",
-                        "AssetName": "Bludhaven Transformer",
-                        "MeterID": 1,
-                        "MeterKey": "Bludhaven 13-T2",
-                        "MeterName": "Bludhaven 13-T2",
-                        "MeterShortName": null,
-                        "Phase": "BN",
-                        "ChannelGroup": "Voltage",
-                        "ChannelGroupType": "V RMS",
-                        "Unit": "V"
-                    }
-                ],
-                PlotFilter: [
-                    { Text: "Minimum", Value: "min", Selected: true },
-                    { Text: "Maximum", Value: "max", Selected: true },
-                    { Text: "Average/Values", Value: "avg", Selected: true }
-                ],
-                ID: "blank",
-                Width: 50,
-                Height: 100,
-                AxisZoom: 'AutoValue',
-                ShowEvents: false
-            }]
+/**
+ * @param channels Default value of channel IDs
+ * @param screen Default number of plots to show
+ * @returns Promise of an Array of trend plots to pass as default screen
+ */
+export default function defaultPlotScreen(channels: number[], screen: string): Promise<Array<TrendSearch.ITrendPlot>> {
+    const trendFilter = {
+        Phases: [],
+        ChannelGroups: [],
+        MeterList: [],
+        AssetList: [],
+        ChannelIDs: channels
     }
-}
+    function GetTrendChannels(): JQuery.jqXHR<TrendSearch.ITrendChannel[]> {
+        return $.ajax({
+            type: "POST",
+            url: `${homePath}api/OpenXDA/GetTrendSearchData`,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(trendFilter),
+            dataType: 'json',
+            cache: true,
+            async: true
+        });
+    }
 
-export default plotScreen;
+    return new Promise((resolve, reject) => {
+        GetTrendChannels().done((data: TrendSearch.ITrendChannel[]) => {
+            switch (screen) {
+                case 'screen1':
+                    resolve([{
+                        TimeFilter: { start: moment.utc().format(dateTimeFormat), end: moment.utc().add(12, 'hours').format(dateTimeFormat) },
+                        Type: 'Line',
+                        Channels: [{
+                            AssetID: 6,
+                            AssetKey: "BLUDHAVEN_13-T1",
+                            AssetName: "Bludhaven 13 T1",
+                            ChannelGroup: "Voltage",
+                            ChannelGroupType: "V RMS",
+                            Description: null,
+                            ID: 202,
+                            MeterID: 5,
+                            MeterKey: "Bludhaven 13-T1",
+                            MeterName: "Bludhaven 13-T1",
+                            MeterShortName: null,
+                            Name: "V RMS A",
+                            Phase: "AN",
+                            Unit: "V"
+                        }, {
+                            AssetID: 6,
+                            AssetKey: "BLUDHAVEN_13-T1",
+                            AssetName: "Bludhaven 13 T1",
+                            ChannelGroup: "Voltage",
+                            ChannelGroupType: "V RMS",
+                            Description: null,
+                            ID: 202,
+                            MeterID: 5,
+                            MeterKey: "Bludhaven 13-T1",
+                            MeterName: "Bludhaven 13-T1",
+                            MeterShortName: null,
+                            Name: "V RMS A",
+                            Phase: "AN",
+                            Unit: "V"
+                        }],
+                        PlotFilter: [
+                            { Text: "Minimum", Value: "min", Selected: true },
+                            { Text: "Maximum", Value: "max", Selected: true },
+                            { Text: "Average/Values", Value: "avg", Selected: true }
+                        ],
+                        ID: "blank",
+                        Width: 100,
+                        Height: 100,
+                        AxisZoom: 'AutoValue',
+                        ShowEvents: false
+                    }]);
+                    break;
+                case 'screen2':
+                    resolve([{
+                        TimeFilter: { start: moment.utc().format(dateTimeFormat), end: moment.utc().add(12, 'hours').format(dateTimeFormat) },
+                        Type: 'Line',
+                        Channels: data,
+                        PlotFilter: [
+                            { Text: "Minimum", Value: "min", Selected: true },
+                            { Text: "Maximum", Value: "max", Selected: true },
+                            { Text: "Average/Values", Value: "avg", Selected: true }
+                        ],
+                        ID: "blank",
+                        Width: 50,
+                        Height: 100,
+                        AxisZoom: 'AutoValue',
+                        ShowEvents: false
+                    }, {
+                        TimeFilter: { start: moment.utc().format(dateTimeFormat), end: moment.utc().add(12, 'hours').format(dateTimeFormat) },
+                        Type: 'Line',
+                        Channels: data,
+                        PlotFilter: [
+                            { Text: "Minimum", Value: "min", Selected: true },
+                            { Text: "Maximum", Value: "max", Selected: true },
+                            { Text: "Average/Values", Value: "avg", Selected: true }
+                        ],
+                        ID: "blank",
+                        Width: 50,
+                        Height: 100,
+                        AxisZoom: 'AutoValue',
+                        ShowEvents: false
+                    }]);
+                    break;
+                default:
+                    resolve([]);
+            }
+        }) // when we get to status stuff have a .fail(error) status
+    })
+}
