@@ -22,8 +22,7 @@
 
 import * as React from 'react';
 import { MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
-import Table from '@gpa-gemstone/react-table';
-
+import { Table, Column } from '@gpa-gemstone/react-table';
 import { OpenXDA } from '@gpa-gemstone/application-typings';
 import queryString from 'querystring';
 import moment from 'moment';
@@ -241,35 +240,51 @@ function DERAnalysisReport() {
             <div style={{ width: '100%', height: 'calc( 100% - 250px)' }}>
                 <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
                     <Table<DERAnalyticResult>
-                        cols={[
-                            { key: 'Time', label: 'Time', field: 'Time', content: (item) => moment(item.Time).format(momentDateFormat + ' ' + momentTimeFormat) },
-                            { key: 'Meter', label: 'Meter', field: 'Meter' },
-                            { key: 'Asset', label: 'Asset', field: 'Asset' },
-                            { key: 'Channel', label: 'Channel', field: 'Channel' },
-                            { key: 'Regulation', label: 'Regulation', field: 'Regulation' },
-                            { key: 'Parameter', label: 'Parameter', field: 'Parameter' },
-                            { key: 'Threshold', label: 'Threshold', field: 'Threshold' },
-                            { key: 'Value', label: 'Value', field: 'Value', content: (item) => item.Value.toFixed(2) },
-                            { key: 'Scroll', label: '', headerStyle: { width: 19, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
-
-                        ]}
-                        tableClass='table table-hover'
-                        ascending={ascending}
-                        sortKey={sortKey}
-                        onSort={(data) => {
-                            if(data.colField == sortKey)
+                        TableClass='table table-hover'
+                        Ascending={ascending}
+                        SortKey={sortKey}
+                        OnSort={(data) => {
+                            if (data.colField == sortKey)
                                 setAscending(!ascending);
                             else
                                 setSortKey(data.colField);
                         }}
-                        data={data}
-                        onClick={(d) => {
+                        Data={data}
+                        OnClick={(d) => {
                             setSelectedData(d.row);
                         }}
-                        theadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                        tbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 343, width: '100%' }}
-                        rowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                    />
+                        TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                        TbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 343, width: '100%' }}
+                        RowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+                        KeySelector={item => item.ID}
+                    >
+                        <Column<DERAnalyticResult>
+                            Key="Time" Field="Time"
+                            Content={row => moment(row.item.Time).format(momentDateFormat + ' ' + momentTimeFormat) }
+                        >Time</Column>
+                        <Column<DERAnalyticResult>
+                            Key="Meter" Field="Meter"
+                        >Meter</Column>
+                        <Column<DERAnalyticResult>
+                            Key="Asset" Field="Asset"
+                        >Asset</Column>
+                        <Column<DERAnalyticResult>
+                            Key="Channel" Field="Channel"
+                        >Channel</Column>
+                        <Column<DERAnalyticResult>
+                            Key="Regulation" Field="Regulation"
+                        >Regulation</Column>
+                        <Column<DERAnalyticResult>
+                            Key="Parameter" Field="Parameter"
+                        >Parameter</Column>
+                        <Column<DERAnalyticResult>
+                            Key="Threshold" Field="Threshold"
+                        >Threshold</Column>
+                        <Column<DERAnalyticResult>
+                            Key="Value" Field="Value"
+                            Content={row => row.item.Value.toFixed(2)}
+                        >Value</Column>
+                    </Table>
                 </div>
 
             </div>

@@ -32,6 +32,7 @@ import { MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { DefaultSelects } from '@gpa-gemstone/common-pages';
 import { Search, ToolTip } from '@gpa-gemstone/react-interactive';
 import { CrossMark, SVGIcons } from '@gpa-gemstone/gpa-symbols';
+import { Column } from '@gpa-gemstone/react-table';
 import { CreateGuid } from '@gpa-gemstone/helper-functions';
 import ReportTimeFilter from '../ReportTimeFilter';
 import NavbarFilterButton from '../Common/NavbarFilterButton';
@@ -384,7 +385,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         data-tooltip='Show' onMouseEnter={() => setHover('Show')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.ArrowDropDown}</span>
                     </button>
-                    <ToolTip Show={hover === 'Show'} Position={'left'} Theme={'dark'} Target={"Show"}>
+                    <ToolTip Show={hover === 'Show'} Position={'left'} Target={"Show"}>
                         Shows Navbar
                     </ToolTip>
                 </div>
@@ -461,7 +462,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         data-tooltip='Hide' onMouseEnter={() => setHover('Hide')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.ArrowDropUp}</span>
                     </button>
-                    <ToolTip Show={hover === 'Hide'} Position={'left'} Theme={'dark'} Target={"Hide"}>
+                    <ToolTip Show={hover === 'Hide'} Position={'left'} Target={"Hide"}>
                         Hides Navbar
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`}
@@ -469,7 +470,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         data-tooltip='Cog' onMouseEnter={() => setHover('Cog')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.Settings}</span>
                     </button>
-                    <ToolTip Show={hover === 'Cog'} Position={'left'} Theme={'dark'} Target={"Cog"}>
+                    <ToolTip Show={hover === 'Cog'} Position={'left'} Target={"Cog"}>
                         {<p>Settings for All Current and/or Future Plots</p>}
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${props.Movable ? 'Warning' : 'primary'} btn-sm${props.PlotIds.length === 0 ? ' disabled' : ''}`}
@@ -477,7 +478,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         data-tooltip='Move' onMouseEnter={() => setHover('Move')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.DataContainer}</span>
                     </button>
-                    <ToolTip Show={hover === 'Move'} Position={'left'} Theme={'dark'} Target={"Move"}>
+                    <ToolTip Show={hover === 'Move'} Position={'left'} Target={"Move"}>
                         {<p>Drag-and-Drop Reorder Plots</p>}
                         {props.PlotIds.length === 0 ? <p>{CrossMark} {'Requires an Active Plot'}</p> : null}
                     </ToolTip>
@@ -492,7 +493,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         data-tooltip='Select' onMouseEnter={() => setHover('Select')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.Alert}</span>
                     </button>
-                    <ToolTip Show={hover === 'Select'} Position={'left'} Theme={'dark'} Target={"Select"}>
+                    <ToolTip Show={hover === 'Select'} Position={'left'} Target={"Select"}>
                         {<p>Select All Channels in Table</p>}
                         {(trendChannels.length === 0) ? <p>{CrossMark} {'Table has no Channels to Select'}</p> : null}
                     </ToolTip>
@@ -548,7 +549,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         data-tooltip='Capture' onMouseEnter={() => setHover('Capture')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.Folder}</span>
                     </button>
-                    <ToolTip Show={hover === 'Capture'} Position={'left'} Theme={'dark'} Target={"Capture"}>
+                    <ToolTip Show={hover === 'Capture'} Position={'left'} Target={"Capture"}>
                         {<p>Save All Plots to PDF</p>}
                         {props.PlotIds.length === 0 ? <p>{CrossMark} {'Requires an Active Plot'}</p> : null}
                     </ToolTip>
@@ -559,7 +560,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         data-tooltip='Trash' onMouseEnter={() => setHover('Trash')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.TrashCan}</span>
                     </button>
-                    <ToolTip Show={hover === 'Trash'} Position={'left'} Theme={'dark'} Target={"Trash"}>
+                    <ToolTip Show={hover === 'Trash'} Position={'left'} Target={"Trash"}>
                         {<p>Remove All Plots</p>}
                         {props.PlotIds.length === 0 ? <p>{CrossMark} {'Requires an Active Plot'}</p> : null}
                     </ToolTip>
@@ -575,7 +576,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         }}>
                         <span>{SVGIcons.Document}</span>
                     </button>
-                    <ToolTip Show={hover === 'Single-Line'} Position={'left'} Theme={'dark'} Target={"Single-Line"}>
+                    <ToolTip Show={hover === 'Single-Line'} Position={'left'} Target={"Single-Line"}>
                         {<p>Add All Selected Channels to Single Plot</p>}
                         {selectedSet.size === 0 ? <p>{CrossMark} {'Requires a Selected Channel'}</p> : null}
                     </ToolTip>
@@ -603,7 +604,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         }}>
                         <span>{SVGIcons.House}</span>
                     </button>
-                    <ToolTip Show={hover === 'Multi-Line'} Position={'left'} Theme={'dark'} Target={"Multi-Line"}>
+                    <ToolTip Show={hover === 'Multi-Line'} Position={'left'} Target={"Multi-Line"}>
                         {<p>Add Selected Channels to New Plots Separated by Meter</p>}
                         {selectedSet.size === 0 ? <p>{CrossMark} Requires a Selected Channel </p> : null}
                     </ToolTip>
@@ -631,7 +632,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         }}>
                         <span>{SVGIcons.Filter}</span>
                     </button>
-                    <ToolTip Show={hover === 'Group-Line'} Position={'left'} Theme={'dark'} Target={"Group-Line"}>
+                    <ToolTip Show={hover === 'Group-Line'} Position={'left'} Target={"Group-Line"}>
                         {<p>Add Selected Channels to New Plots Separated by Channel Group</p>}
                         {selectedSet.size === 0 ? <p>{CrossMark} Requires a Selected Channel</p> : null}
                     </ToolTip>
@@ -647,7 +648,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         }}>
                         <span>{SVGIcons.Cube}</span>
                     </button>
-                    <ToolTip Show={hover === 'Cyclic'} Position={'left'} Theme={'dark'} Target={"Cyclic"}>
+                    <ToolTip Show={hover === 'Cyclic'} Position={'left'} Target={"Cyclic"}>
                         {<p>Add Selected Channel to New Cyclic Histogram Plot</p>}
                         {selectedSet.size !== 1 ? <p>{CrossMark} Requires a Single Channel Selection</p> : null}
                     </ToolTip>
@@ -671,18 +672,41 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                 }}
                 Show={showFilter == 'Meter'}
                 Type={'multiple'}
-                Columns={[
-                    { key: 'AssetKey', field: 'AssetKey', label: 'Key', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Name', field: 'Name', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Location', field: 'Location', label: 'Substation', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'MappedAssets', field: 'MappedAssets', label: 'Assets', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Make', field: 'Make', label: 'Make', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Model', field: 'Model', label: 'Model', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
-                ]}
                 Title={"Select Meters to Display"}
                 GetEnum={getEnum}
-                GetAddlFields={getAdditionalMeterFields} />
+                GetAddlFields={getAdditionalMeterFields}
+            >
+                <Column<SystemCenter.Types.DetailedMeter>
+                    Key="AssetKey" Field="AssetKey"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Key</Column>
+                <Column<SystemCenter.Types.DetailedMeter>
+                    Key="Name" Field="Name"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Name</Column>
+                <Column<SystemCenter.Types.DetailedMeter>
+                    Key="Location" Field="Location"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Substation</Column>
+                <Column<SystemCenter.Types.DetailedMeter>
+                    Key="MappedAssets" Field="MappedAssets"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Assets</Column>
+                <Column<SystemCenter.Types.DetailedMeter>
+                    Key="Make" Field="Make"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Make</Column>
+                <Column<SystemCenter.Types.DetailedMeter>
+                    Key="Model" Field="Model"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Model</Column>
+            </DefaultSelects.Meter>
             <DefaultSelects.Asset
                 Slice={AssetSlice}
                 Selection={trendFilter.AssetList}
@@ -693,17 +717,41 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                 }}
                 Show={showFilter == 'Asset'}
                 Type={'multiple'}
-                Columns={[
-                    { key: 'AssetKey', field: 'AssetKey', label: 'Key', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'AssetName', field: 'AssetName', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'AssetType', field: 'AssetType', label: 'Asset Type', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'VoltageKV', field: 'VoltageKV', label: 'Voltage (kV)', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Meters', field: 'Meters', label: 'Meters', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                    { key: 'Locations', field: 'Locations', label: 'Substations', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } }
-                ]}
                 Title={"Filter by Asset"}
                 GetEnum={getEnum}
-                GetAddlFields={getAdditionalAssetFields} />
+                GetAddlFields={getAdditionalAssetFields}
+            >
+                <Column<SystemCenter.Types.DetailedAsset>
+                    Key="AssetKey" Field="AssetKey"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Key</Column>
+                <Column<SystemCenter.Types.DetailedAsset>
+                    Key="AssetName" Field="AssetName"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Name</Column>
+                <Column<SystemCenter.Types.DetailedAsset>
+                    Key="AssetType" Field="AssetType"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Asset Type</Column>
+                <Column<SystemCenter.Types.DetailedAsset>
+                    Key="VoltageKV" Field="VoltageKV"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Voltage (kV)</Column>
+                <Column<SystemCenter.Types.DetailedAsset>
+                    Key="Meters" Field="Meters"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Meters</Column>
+                <Column<SystemCenter.Types.DetailedAsset>
+                    Key="Locations" Field="Locations"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Substations</Column>
+            </DefaultSelects.Asset>
         </>
     );
 });

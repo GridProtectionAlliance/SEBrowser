@@ -257,7 +257,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
                     {props.children}
                     {props.AlwaysRender}
                 </Plot>
-                <ToolTip Show={hover} Position={'bottom'} Theme={'dark'} Target={props.ID}>
+                <ToolTip Show={hover} Position={'bottom'} Target={props.ID}>
                     Selected Channel has no Data for the selected Time Window.
                 </ToolTip>
             </div>);

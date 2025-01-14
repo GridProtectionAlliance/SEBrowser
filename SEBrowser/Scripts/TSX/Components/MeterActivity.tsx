@@ -22,7 +22,7 @@
 //******************************************************************************************************
 
 import React from 'react';
-import Table from './Table';
+import { Table, Column } from '@gpa-gemstone/react-table';
 import SEBrowserService from './../../TS/Services/SEBrowser';
 import moment from 'moment';
 
@@ -144,21 +144,32 @@ class MostActiveMeters extends React.Component<unknown, { meterTable: Array<Most
                 <div style={{ height: '2px', width: '100%', display: 'inline-block', backgroundColor: 'black' }}></div>
                 <div style={{ backgroundColor: 'white', borderColor: 'black', height: 'calc(100% - 60px)', overflowY: 'auto'}} ref='divElement'>
                     <Table<MostActiveMeterActivityRow>
-                        cols={[
-                            { key: 'AssetKey', label: 'Name', headerStyle: { width: 'calc(40%)' } },
-                            { key: '24Hours', label: 'Files(Evts) 24H', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key) },
-                            { key: '7Days', label: 'Files(Evts) 7D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key) },
-                            { key: '30Days', label: 'Files(Evts) 30D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key) },
-                        ]}
-                        tableClass="table"
-                        data={this.state.meterTable}
-                        sortField={this.state.sortField}
-                        ascending={true}
-                        selected={() => false }
-                        onSort={(data) => { this.setState({ sortField: data.col }, () => this.createTableRows()) }}
-                        onClick={() => {/*Do Nothing*/}}
-                        theadStyle={{ fontSize: 'smaller' }}
-                    />
+                        TableClass="table"
+                        Data={this.state.meterTable}
+                        SortKey={this.state.sortField}
+                        Ascending={true}
+                        Selected={() => false}
+                        OnSort={(row) => { this.setState({ sortField: row.colField }, () => this.createTableRows()) }}
+                        OnClick={() => {/*Do Nothing*/ }}
+                        TheadStyle={{ fontSize: 'smaller' }}
+                        KeySelector={item => item.AssetKey}
+                    >
+                        <Column<MostActiveMeterActivityRow>
+                            Key="AssetKey" Field="AssetKey" HeaderStyle={{ width: '40%' }} RowStyle={{ width: '40%' }}
+                        >Name</Column>
+                        <Column<MostActiveMeterActivityRow>
+                            Key="24Hours" Field="24Hours" HeaderStyle={{ width: '20%' }} RowStyle={{ width: '20%' }}
+                            Content={row => this.createContent(row.item, row.field)}
+                        >Files(Evts) 24H'</Column>
+                        <Column<MostActiveMeterActivityRow>
+                            Key="7Days" Field="7Days" HeaderStyle={{ width: '20%' }} RowStyle={{ width: '20%' }}
+                            Content={row => this.createContent(row.item, row.field)}
+                        >Files(Evts) 7D</Column>
+                        <Column<MostActiveMeterActivityRow>
+                            Key="30Days" Field="30Days" HeaderStyle={{ width: '20%' }} RowStyle={{ width: '20%' }}
+                            Content={row => this.createContent(row.item, row.field)}
+                        >Files(Evts) 30D</Column>
+                    </Table>
                 </div>
             </div>
         );
@@ -252,21 +263,32 @@ class LeastActiveMeters extends React.Component<unknown, { meterTable: Array<Lea
                 <div style={{ height: '2px', width: '100%', display: 'inline-block', backgroundColor: 'black' }}></div>
                 <div style={{ backgroundColor: 'white', borderColor: 'black', height: 'calc(100% - 60px)', overflowY: 'auto' }} ref='divElement'>
                     <Table<LeastActiveMeterActivityRow>
-                        cols={[
-                            { key: 'AssetKey', label: 'Name', headerStyle: { width: 'calc(40%)' } },
-                            { key: '30Days', label: 'Files(Events) 30D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key)  },
-                            { key: '90Days', label: 'Files(Events) 90D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key)  },
-                            { key: '180Days', label: 'Files(Events) 180D', headerStyle: { width: '20%' }, content: (item, key) => this.createContent(item, key)  },
-                        ]}
-                        tableClass="table"
-                        data={this.state.meterTable}
-                        sortField={this.state.sortField}
-                        selected={() => false}
-                        ascending={true}
-                        onSort={(data) => { this.setState({ sortField: data.col }, () => this.createTableRows()) }}
-                        onClick={() => { /*Do Nothing*/ }}
-                        theadStyle={{ fontSize: 'smaller' }}
-                    />
+                        TableClass="table"
+                        Data={this.state.meterTable}
+                        SortKey={this.state.sortField}
+                        Selected={() => false}
+                        Ascending={true}
+                        OnSort={(row) => { this.setState({ sortField: row.colField }, () => this.createTableRows()) }}
+                        OnClick={() => { /*Do Nothing*/ }}
+                        TheadStyle={{ fontSize: 'smaller' }}
+                        KeySelector={item => item.AssetKey}
+                    >
+                        <Column<LeastActiveMeterActivityRow>
+                            Key="AssetKey" Field="AssetKey" HeaderStyle={{ width: '40%' }} RowStyle={{ width: '40%' }}
+                        >Name</Column>
+                        <Column<LeastActiveMeterActivityRow>
+                            Key="30Days" Field="30Days" HeaderStyle={{ width: '20%' }} RowStyle={{ width: '20%' }}
+                            Content={row => this.createContent(row.item, row.field)}
+                        >Files(Events) 30D</Column>
+                        <Column<LeastActiveMeterActivityRow>
+                            Key="90Days" Field="90Days" HeaderStyle={{ width: '20%' }} RowStyle={{ width: '20%' }}
+                            Content={row => this.createContent(row.item, row.field)}
+                        >Files(Events) 90D</Column>
+                        <Column<LeastActiveMeterActivityRow>
+                            Key="180Days" Field="180Days" HeaderStyle={{ width: '20%' }} RowStyle={{ width: '20%' }}
+                            Content={row => this.createContent(row.item, row.field)}
+                        >Files(Events) 180D</Column>
+                    </Table>
                 </div>
             </div>
         );
