@@ -117,7 +117,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             const returnSet = new Set<number>();
             array.substring(1, array.length - 1).split(',').forEach(strId => {
                 const id = parseInt(strId);
-                if (id !== NaN) returnSet.add(id);
+                if (!isNaN(id)) returnSet.add(id);
             });
             return returnSet;
         }
