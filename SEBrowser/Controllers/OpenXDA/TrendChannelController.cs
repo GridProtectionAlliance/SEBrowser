@@ -51,8 +51,8 @@ namespace SEBrowser.Controllers.OpenXDA
         {
             using (AdoDataConnection connection = new(SettingsCategory))
             {
-                string phaseFilter = GetKeyValueFilter(postData["Phases"], "Phase.Name");
-                string channelGroupFilter = GetKeyValueFilter(postData["ChannelGroups"], "ChannelGroup.Name");
+                string phaseFilter = GetKeyValueFilter((JArray) postData["Phases"], "Phase.ID");
+                string channelGroupFilter = GetKeyValueFilter((JArray) postData["ChannelGroups"], "ChannelGroup.ID");
                 string assetFilter = GetIDFilter(postData["AssetList"], "Asset.ID");
                 string meterFilter = GetIDFilter(postData["MeterList"], "Meter.ID");
                 // Meters must be selected
@@ -137,12 +137,12 @@ namespace SEBrowser.Controllers.OpenXDA
         #endregion
 
         #region [ Private Methods ]
-        private string GetKeyValueFilter(JToken keyValuePairs, string fieldName)
+        private string GetKeyValueFilter(JArray keyValuePairs, string fieldName)
         {
             //Note: we're only gonna filter out ones that have been explicitly exluded
-            IEnumerable<JToken> validPairs = keyValuePairs.Where(pair => !pair["Value"].ToObject<bool>());
-            if (validPairs.Count() == 0) return null;
-            return $"{fieldName} NOT IN ({string.Join(", ", validPairs.Select(pair => "\'" + pair["Key"].ToObject<string>() + "\'"))})";
+            IEnumerable<string> validIds = keyValuePairs.SelectMany(pair => ((JObject) pair).Properties()).Where(pair => !pair.Value.ToObject<bool>()).Select(pair => pair.Name);
+            if (validIds.Count() == 0) return null;
+            return $"{fieldName} NOT IN ({string.Join(", ", validIds)})";
         }
         private string GetIDFilter(JToken idObjectList, string fieldName)
         {
