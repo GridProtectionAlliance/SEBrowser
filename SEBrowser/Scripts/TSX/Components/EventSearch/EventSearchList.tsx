@@ -24,8 +24,7 @@
 import * as React from 'react';
 import ReactDOM from 'react-dom';
 import { LoadingIcon, OverlayDrawer } from '@gpa-gemstone/react-interactive';
-import { ConfigTable } from '@gpa-gemstone/react-interactive';
-import { ReactTable } from '@gpa-gemstone/react-table'
+import { Column, ConfigurableTable, ConfigurableColumn } from '@gpa-gemstone/react-table';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import {  Redux } from '../../global';
 import { SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
@@ -158,7 +157,7 @@ export default function EventSearchList(props: IProps) {
             {status == 'loading' ? <div style={{ height: '40px', width: '40px', margin: 'auto' }}>
                 <LoadingIcon Show={true} Size={40} />
                 </div> : null}
-                {cols.length > 0 ? < ConfigTable.Table<any>
+                {cols.length > 0 ? < ConfigurableTable<any>
                     LocalStorageKey="SEbrowser.EventSearch.TableCols"
                     TableClass="table table-hover"
                     Data={data}
@@ -181,27 +180,27 @@ export default function EventSearchList(props: IProps) {
                     SettingsPortal={'TableSettings'}
                     OnSettingsChange={closeSettings}
                 >
-                    <ReactTable.Column<any>
+                    <Column<any>
                         Key={'Time'}
                         AllowSort={true}
                         Content={({ item, field }) => ProcessWhitespace(item[field])}
                         Field={'Time'}
                     >
                         Time
-                    </ReactTable.Column>
+                    </Column>
                     {...cols.map(c => (
-                        <ConfigTable.Configurable Key={c.label} Label={c.label} Default={c.key === 'Event Type'}>
-                            <ReactTable.Column<any>
+                        <ConfigurableColumn Key={c.label} Label={c.label} Default={c.key === 'Event Type'}>
+                            <Column<any>
                                 Key={c.key}
                                 AllowSort={true}
                                 Field={c.label}
                                 Content={({ item, field }) => ProcessWhitespace(item[field])}
                             >
                                 {c.label}
-                            </ReactTable.Column>
-                        </ConfigTable.Configurable>
+                            </Column>
+                        </ConfigurableColumn>
                     ))}
-                </ConfigTable.Table> : null}
+                </ConfigurableTable> : null}
             {status == 'loading' ? null :
                 data.length == numberResults ?
                         <div style={{ padding: 10, backgroundColor: '#458EFF', color: 'white' }} ref={count}>

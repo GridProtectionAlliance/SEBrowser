@@ -487,7 +487,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ApplicationInsights.config" />
-    <None Include="package.json" />
     <None Include="packages.config" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Web.config" />
@@ -516,7 +515,6 @@
     <None Include="Scripts\TSX\Components\RelayReport\RelayReport.tsx" />
     <None Include="Scripts\TSX\Components\RelayReport\RelayReportNavBar.tsx" />
     <None Include="Scripts\TSX\Components\RelayReport\RelayReportPane.tsx" />
-    <None Include="Scripts\TSX\Components\Table.tsx" />
     <None Include="Scripts\TSX\global.d.ts" />
     <None Include="Scripts\TSX\SEBrowser.tsx" />
     <None Include="Scripts\TS\Services\BreakerReport.ts" />
@@ -542,6 +540,7 @@
     <None Include="Scripts\TSX\Components\EventSearch\EventSearchPreview\EventSearchPreviewPane.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\EventSearchTypeFilter.tsx" />
     <Content Include="Scripts\TSX\Components\EventSearch\TimeWindowUtils.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Store.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\AssetHistoryStats.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\AssetHistoryTable.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\ESRIMap.tsx" />
@@ -552,6 +551,7 @@
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\CorrelatedSags.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\EventInfo.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\FileInfo.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\ITOA.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\MatlabAnalyticResults.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\NoteWindow.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\OpenSEE.tsx" />

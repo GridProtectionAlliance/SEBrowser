@@ -23,9 +23,8 @@
 import React from 'react';
 import _ from 'lodash';
 import { TrendSearch } from '../../../Global';
-import { ConfigTable } from '@gpa-gemstone/react-interactive';
 import { TrashCan } from '@gpa-gemstone/gpa-symbols';
-import { ReactTable } from '@gpa-gemstone/react-table';
+import { ConfigurableTable, Column, ConfigurableColumn } from '@gpa-gemstone/react-table';
 
 type IProps = ICommon & (IMultiProps | ISingleProps);
 
@@ -99,7 +98,7 @@ const TrendChannelTable = (props: IProps) => {
     }, [sortField, ascending]);
 
     return (
-        <ConfigTable.Table<TrendSearch.ITrendChannel>
+        <ConfigurableTable<TrendSearch.ITrendChannel>
             Data={props.TrendChannels}
             SortKey={sortField}
             Ascending={ascending}
@@ -141,35 +140,39 @@ const TrendChannelTable = (props: IProps) => {
             RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
             TableClass="table table-hover"
             TableStyle={{ marginBottom: 0 }}>
-            <ReactTable.AdjustableCol<TrendSearch.ITrendChannel>
+            <Column<TrendSearch.ITrendChannel>
                 Key={'Name'}
                 AllowSort={true}
+                Adjustable={true}
                 Field={'Name'}
-            >Channel Name</ReactTable.AdjustableCol>
-            <ReactTable.AdjustableCol<TrendSearch.ITrendChannel>
+            >Channel Name</Column>
+            <Column<TrendSearch.ITrendChannel>
                 Key={'Phase'}
                 AllowSort={true}
+                Adjustable={true}
                 Field={'Phase'}
             />
             {colList.map(name =>
-                <ConfigTable.Configurable key={name.replace(/\s/, "")} Key={name.replace(/\s/, "")} Label={name} Default={defaultCols.has(name)}>
-                    <ReactTable.AdjustableCol<TrendSearch.ITrendChannel>
+                <ConfigurableColumn key={name.replace(/\s/, "")} Key={name.replace(/\s/, "")} Label={name} Default={defaultCols.has(name)}>
+                    <Column<TrendSearch.ITrendChannel>
                         Key={name.replace(/\s/, "")}
                         AllowSort={true}
+                        Adjustable={true}
                         Field={name.replace(/\s/, "") as keyof TrendSearch.ITrendChannel}
-                    >{name}</ReactTable.AdjustableCol>
-                </ConfigTable.Configurable>)
+                    >{name}</Column>
+                </ConfigurableColumn>)
             }
             {props.OnChannelRemoval !== undefined ?
-                <ReactTable.Column<TrendSearch.ITrendChannel>
+                <Column<TrendSearch.ITrendChannel>
                     Key={'ID'}
                     AllowSort={false}
+                    Adjustable={false}
                     Field={'ID'}
                     RowStyle={{ width: "50px" }}
                     HeaderStyle={{ width: "50px" }}
                     Content={removeButton}
-                > </ReactTable.Column>: null}
-        </ConfigTable.Table>);
+                > </Column>: null}
+        </ConfigurableTable>);
 }
 
 export default TrendChannelTable;

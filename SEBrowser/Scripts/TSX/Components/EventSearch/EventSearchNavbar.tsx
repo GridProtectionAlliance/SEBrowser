@@ -34,6 +34,7 @@ import NavbarFilterButton from '../Common/NavbarFilterButton';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { Input, Select, MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
 import { Search } from '@gpa-gemstone/react-interactive';
+import { Column } from '@gpa-gemstone/react-table';
 import { SEBrowser } from '../../Global';
 import EventSearchTypeFilters from './EventSearchTypeFilter';
 import { SelectDateTimeSetting, SelectTimeZone } from '../SettingsSlice';
@@ -633,94 +634,173 @@ const EventSearchNavbar = (props: IProps) => {
                 </div>
             </div>
             </nav>
-
-                    <DefaultSelects.Meter
-                        Slice={MeterSlice}
-                        Selection={meterList}
-                        OnClose={(selected, conf) => {
-                            setFilter('None');
-                            if (conf)
-                                dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: selected, Stations: locationList }))
-                        }
-                        }
-                        Show={showFilter == 'Meter'}
-                        Type={'multiple'}
-                        Columns={[
-                            { key: 'AssetKey', field: 'AssetKey', label: 'Key', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                            { key: 'Name', field: 'Name', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                            { key: 'Location', field: 'Location', label: 'Substation', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                            { key: 'MappedAssets', field: 'MappedAssets', label: 'Assets', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                            { key: 'Make', field: 'Make', label: 'Make', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                            { key: 'Model', field: 'Model', label: 'Model', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                            { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
-                        ]}
-                        Title={"Filter by Meter"}
-                        GetEnum={getEnum}
-                        GetAddlFields={getAdditionalMeterFields} />
-                <DefaultSelects.Asset
-                        Slice={AssetSlice}
-                        Selection={assetList}
-                        OnClose={(selected, conf) => {
-                            setFilter('None');
-                            if (conf)
-                                dispatch(SetFilterLists({ Assets: selected, Groups: assetGroupList, Meters: meterList, Stations: locationList }))
-                        }}
-                        Show={showFilter == 'Asset'}
-                        Type={'multiple'}
-                        Columns={[
-                            { key: 'AssetKey', field: 'AssetKey', label: 'Key', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                            { key: 'AssetName', field: 'AssetName', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                            { key: 'AssetType', field: 'AssetType', label: 'Asset Type', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                            { key: 'VoltageKV', field: 'VoltageKV', label: 'Voltage (kV)', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                            { key: 'Meters', field: 'Meters', label: 'Meters', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                            { key: 'Locations', field: 'Locations', label: 'Substations', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } }
-                        ]}
-                        Title={"Filter by Asset"}
-                        GetEnum={getEnum}
-                        GetAddlFields={getAdditionalAssetFields} />
+            <DefaultSelects.Meter
+                Slice={MeterSlice}
+                Selection={meterList}
+                OnClose={(selected, conf) => {
+                    setFilter('None');
+                    if (conf)
+                        dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: selected, Stations: locationList }))
+                }
+                }
+                Show={showFilter == 'Meter'}
+                Type={'multiple'}
+                Title={"Filter by Meter"}
+                GetEnum={getEnum}
+                GetAddlFields={getAdditionalMeterFields}
+            >
+                <Column<SystemCenter.Types.DetailedMeter>
+                    Key="AssetKey" Field="AssetKey"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Key</Column>
+                <Column<SystemCenter.Types.DetailedMeter>
+                    Key="Name" Field="Name"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Name</Column>
+                <Column<SystemCenter.Types.DetailedMeter>
+                    Key="Location" Field="Location"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Substation</Column>
+                <Column<SystemCenter.Types.DetailedMeter>
+                    Key="MappedAssets" Field="MappedAssets"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Assets</Column>
+                <Column<SystemCenter.Types.DetailedMeter>
+                    Key="Make" Field="Make"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Make</Column>
+                <Column<SystemCenter.Types.DetailedMeter>
+                    Key="Model" Field="Model"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Model</Column>
+            </DefaultSelects.Meter>
+            <DefaultSelects.Asset
+                Slice={AssetSlice}
+                Selection={assetList}
+                OnClose={(selected, conf) => {
+                    setFilter('None');
+                    if (conf)
+                        dispatch(SetFilterLists({ Assets: selected, Groups: assetGroupList, Meters: meterList, Stations: locationList }))
+                }}
+                Show={showFilter == 'Asset'}
+                Type={'multiple'}
+                Title={"Filter by Asset"}
+                GetEnum={getEnum}
+                GetAddlFields={getAdditionalAssetFields}
+            >
+                <Column<SystemCenter.Types.DetailedAsset>
+                    Key="AssetKey" Field="AssetKey"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Key</Column>
+                <Column<SystemCenter.Types.DetailedAsset>
+                    Key="AssetName" Field="AssetName"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Name</Column>
+                <Column<SystemCenter.Types.DetailedAsset>
+                    Key="AssetType" Field="AssetType"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Asset Type</Column>
+                <Column<SystemCenter.Types.DetailedAsset>
+                    Key="VoltageKV" Field="VoltageKV"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Voltage (kV)</Column>
+                <Column<SystemCenter.Types.DetailedAsset>
+                    Key="Meters" Field="Meters"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Meters</Column>
+                <Column<SystemCenter.Types.DetailedAsset>
+                    Key="Locations" Field="Locations"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Substations</Column>
+            </DefaultSelects.Asset>
             <DefaultSelects.Location
                 Slice={LocationSlice}
-                        Selection={locationList}
-                        OnClose={(selected, conf) => {
-                            setFilter('None');
-                            if (conf)
-                                dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: meterList, Stations: selected }))
-                        }}
-                        Show={showFilter == 'Station'}
-                        Type={'multiple'}
-                        Columns={[
-                            { key: 'Name', field: 'Name', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                            { key: 'LocationKey', field: 'LocationKey', label: 'Key', headerStyle: { width: '30%' }, rowStyle: { width: '30%' } },
-                            //{ key: 'Type', field: 'Type', label: 'Type', headerStyle: { width: '10%' }, rowStyle: { width: '10%' } },
-                            { key: 'Meters', field: 'Meters', label: 'Meters', headerStyle: { width: '10%' }, rowStyle: { width: '10%' } },
-                            { key: 'Assets', field: 'Assets', label: 'Assets', headerStyle: { width: '10%' }, rowStyle: { width: '10%' } },
-                            { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
-                        ]}
-                        Title={"Filter by Substation"}
-                    GetEnum={getEnum}
-                    GetAddlFields={() => { return () => {/*Do Nothing*/} }} />
-                <DefaultSelects.AssetGroup
-                    Slice={AssetGroupSlice}
-                    Selection={assetGroupList}
-                    OnClose={(selected, conf) => {
-                        setFilter('None');
-                        if (conf)
-                            dispatch(SetFilterLists({ Assets: assetList, Groups: selected, Meters: meterList, Stations: locationList }))
-                    }}
-                    Show={showFilter == 'AssetGroup'}
-                    Type={'multiple'}
-                    Columns={[
-                        { key: 'Name', field: 'Name', label: 'Name', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                        { key: 'Assets', field: 'Assets', label: 'Assets', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                        { key: 'Meters', field: 'Meters', label: 'Meters', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                        { key: 'Users', field: 'Users', label: 'Users', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                        { key: 'AssetGroups', field: 'AssetGroups', label: 'SubGroups', headerStyle: { width: 'auto' }, rowStyle: { width: 'auto' } },
-                        { key: 'Scroll', label: '', headerStyle: { width: 17, padding: 0 }, rowStyle: { width: 0, padding: 0 } },
-                    ]}
-                    Title={"Filter by Asset Group"}
-                    GetEnum={getEnum}
-                    GetAddlFields={() => { return () => {/*Do Nothing*/ } }} />
-            </>
+                Selection={locationList}
+                OnClose={(selected, conf) => {
+                    setFilter('None');
+                    if (conf)
+                        dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: meterList, Stations: selected }))
+                }}
+                Show={showFilter == 'Station'}
+                Type={'multiple'}
+                Title={"Filter by Substation"}
+                GetEnum={getEnum}
+                GetAddlFields={() => { return () => {/*Do Nothing*/ } }}
+            >
+                <Column<SystemCenter.Types.DetailedLocation>
+                    Key="Name" Field="Name"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Name</Column>
+                <Column<SystemCenter.Types.DetailedLocation>
+                    Key="LocationKey" Field="LocationKey"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Key</Column>
+                <Column<SystemCenter.Types.DetailedLocation>
+                    Key="Meters" Field="Meters"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Meters</Column>
+                <Column<SystemCenter.Types.DetailedLocation>
+                    Key="Assets" Field="Assets"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Assets</Column>
+            </DefaultSelects.Location>
+            <DefaultSelects.AssetGroup
+                Slice={AssetGroupSlice}
+                Selection={assetGroupList}
+                OnClose={(selected, conf) => {
+                    setFilter('None');
+                    if (conf)
+                        dispatch(SetFilterLists({ Assets: assetList, Groups: selected, Meters: meterList, Stations: locationList }))
+                }}
+                Show={showFilter == 'AssetGroup'}
+                Type={'multiple'}
+                Title={"Filter by Asset Group"}
+                GetEnum={getEnum}
+                GetAddlFields={() => { return () => {/*Do Nothing*/ } }}
+            >
+                <Column<OpenXDA.Types.AssetGroup>
+                    Key="Name" Field="Name"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Name</Column>
+                <Column<OpenXDA.Types.AssetGroup>
+                    Key="Assets" Field="Assets"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Assets</Column>
+                <Column<OpenXDA.Types.AssetGroup>
+                    Key="Meters" Field="Meters"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Meters</Column>
+                <Column<OpenXDA.Types.AssetGroup>
+                    Key="Users" Field="Users"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Users</Column>
+                <Column<OpenXDA.Types.AssetGroup>
+                    Key="AssetGroups" Field="AssetGroups"
+                    HeaderStyle={{ width: 'auto' }}
+                    RowStyle={{ width: 'auto' }}
+                >Sub Groups</Column>
+            </DefaultSelects.AssetGroup>
+        </>
     );
 }
 

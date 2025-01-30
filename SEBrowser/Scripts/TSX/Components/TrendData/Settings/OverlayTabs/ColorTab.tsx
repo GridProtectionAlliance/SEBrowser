@@ -21,8 +21,7 @@
 //
 //******************************************************************************************************
 import { Input, Select } from '@gpa-gemstone/react-forms';
-import { ReactTable } from '@gpa-gemstone/react-table';
-import { Column } from '@gpa-gemstone/react-table';
+import { Table, Column } from '@gpa-gemstone/react-table';
 import React from 'react';
 import { TrendSearch } from '../../../../Global';
 import { LineStyles } from '../TabProperties/LineStyles';
@@ -77,7 +76,7 @@ const ColorTab = React.memo((props: IColorTabProps) => {
                 </div>
                 <div className="row">
                     {props.Colors.ApplyType === "Random" ? <></> :
-                        <ReactTable.Table<TrendSearch.IColor>
+                        <Table<TrendSearch.IColor>
                             Data={props.Colors.Colors}
                             SortKey={""}
                             Ascending={false}
@@ -90,12 +89,12 @@ const ColorTab = React.memo((props: IColorTabProps) => {
                             RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
                             TableClass="table table-hover"
                             TableStyle={{ marginBottom: 0 }}>
-                            <ReactTable.Column<TrendSearch.IColor>
+                            <Column<TrendSearch.IColor>
                                 Key={'Label'}
                                 AllowSort={false}
                                 Field={'Label'}
-                            >Label</ReactTable.Column>
-                            <ReactTable.Column<TrendSearch.IColor>
+                            >Label</Column>
+                            <Column<TrendSearch.IColor>
                                 Key={'Order'}
                                 AllowSort={false}
                                 HeaderStyle={{ width: 'auto' }}
@@ -112,8 +111,8 @@ const ColorTab = React.memo((props: IColorTabProps) => {
                                     </button>
                                 </>}
                             > <p></p>
-                            </ReactTable.Column>
-                        </ReactTable.Table>
+                            </Column>
+                        </Table>
                     }
                 </div>
             </div>
