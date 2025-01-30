@@ -25,7 +25,8 @@ import moment from 'moment';
 import { RelayReportNavBarProps } from './RelayReportNavBar';
 import { Line, LineWithThreshold, Plot } from '@gpa-gemstone/react-graph';
 import { RandomColor } from '@gpa-gemstone/helper-functions';
-import { findAppropriateUnit, getMoment, getStartEndTime } from '../EventSearch/TimeWindowUtils';
+import { SelectDateTimeFormat } from '../SettingsSlice';
+import { useSelector } from 'react-redux';
 
 interface IRelayPerformance {
     EventID: number,
@@ -57,6 +58,7 @@ interface IRelayPerformance {
 }
 
 const RelayReportPane = (props: RelayReportNavBarProps) => {
+
     const [realyPerformance, setRelayPerformance] = React.useState<IRelayPerformance[]>([]);
     const [Tstart, setTstart] = React.useState<number>(0);
     const [Tend, setTend] = React.useState<number>(0);
@@ -65,33 +67,23 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
         const h = getRelayPerformance()
 
         return () => { if (h != null && h.abort != null) h.abort(); };
-        
     }, [props]);
 
     React.useEffect(() => {
         getTimeLimits()
-    }, [props.windowSize, props.timeWindowUnits, props.time, props.date])
+    }, [props.TimeFilter])
 
 
     function getTimeLimits() {
-        const [Tstart, Tend] = getStartEndTime(getMoment(props.date, props.time), props.windowSize, props.timeWindowUnits)
-        setTend(Tend.valueOf());
-        setTstart(Tstart.valueOf())
-        
+        const [startMoment, endMoment] = [moment.utc(props.TimeFilter.start), moment.utc(props.TimeFilter.end)]
+        setTend(endMoment.valueOf());
+        setTstart(startMoment.valueOf())
     }
 
-  
-
     function getRelayPerformance(): JQuery.jqXHR<IRelayPerformance[]> {
-
-        const adjustedTime = findAppropriateUnit(getMoment(props.date, props.time),
-            getStartEndTime(getMoment(props.date, props.time), props.windowSize, props.timeWindowUnits)[1],
-            props.timeWindowUnits);
-
         const h = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/RelayReport/getRelayPerformance?lineID=${props.BreakerID}&channelID=${props.ChannelID}}&date=${props.date}` +
-                `&time=${props.time}&timeWindowunits=${adjustedTime[0]}&windowSize=${adjustedTime[1]}`,
+            url: `${homePath}api/PQDashboard/RelayReport/getRelayPerformance?lineID=${props.BreakerID}&channelID=${props.ChannelID}}&start=${props.TimeFilter.end}&end=${props.TimeFilter.end}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,
@@ -102,9 +94,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
         return h;
     }
 
-   
-
-    return ( <>
+    return (<>
         <div className="card">
             <div className="card-header">Breaker Performance:</div>
             <div className="card-body">
@@ -167,13 +157,13 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
                             <td>{item.Idrop.toFixed(3)}</td>
                             <td>{(item.TiDrop / 10).toFixed(0)}</td>
                             <td>{(item.Tend / 10).toFixed(0)}</td>
-                            <td>{item.ExtinctionTimeA == undefined ? '-' :(item.ExtinctionTimeA / 10).toFixed(0)}</td>
-                            <td>{item.ExtinctionTimeB == undefined ? '-' :(item.ExtinctionTimeB / 10).toFixed(0)}</td>
-                            <td>{item.ExtinctionTimeC == undefined? '-' :(item.ExtinctionTimeC / 10).toFixed(0)}</td>
-                            <td>{item.I2CA == undefined? '-' : item.I2CA.toFixed(3)}</td>
+                            <td>{item.ExtinctionTimeA == undefined ? '-' : (item.ExtinctionTimeA / 10).toFixed(0)}</td>
+                            <td>{item.ExtinctionTimeB == undefined ? '-' : (item.ExtinctionTimeB / 10).toFixed(0)}</td>
+                            <td>{item.ExtinctionTimeC == undefined ? '-' : (item.ExtinctionTimeC / 10).toFixed(0)}</td>
+                            <td>{item.I2CA == undefined ? '-' : item.I2CA.toFixed(3)}</td>
                             <td>{item.I2CB == undefined ? '-' : item.I2CB.toFixed(3)}</td>
                             <td>{item.I2CC == undefined ? '-' : item.I2CC.toFixed(3)}</td>
-                            </tr>)}
+                        </tr>)}
                     </tbody>
 
                 </table>
@@ -185,13 +175,13 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
             <div className="card-body">
                 <Plot height={400} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
                     Ylabel={'Trip (micros)'} showMouse={true} useMetricFactors={false}>
-                    <LineWithThreshold highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TripTime * 0.1] as [number,number]).reverse()}
-                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].TripTimeAlert != 0 && realyPerformance[0].TripTimeAlert != undefined ? [{ Value: realyPerformance[0].TripTimeAlert, Color: '#ff0000' }] : []} legend={'Trip Time'}/>
+                    <LineWithThreshold highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TripTime * 0.1] as [number, number]).reverse()}
+                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].TripTimeAlert != 0 && realyPerformance[0].TripTimeAlert != undefined ? [{ Value: realyPerformance[0].TripTimeAlert, Color: '#ff0000' }] : []} legend={'Trip Time'} />
                 </Plot>
                 <Plot height={400} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
                     Ylabel={'Pickup (micros)'} showMouse={true} useMetricFactors={false}>
                     <LineWithThreshold highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.PickupTime * 0.1] as [number, number]).reverse()}
-                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].PickupTimeAlert != 0 && realyPerformance[0].PickupTimeAlert != undefined ? [{ Value: realyPerformance[0].PickupTimeAlert, Color: '#ff0000' }] : []} legend={'Pickup Time'}/>
+                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].PickupTimeAlert != 0 && realyPerformance[0].PickupTimeAlert != undefined ? [{ Value: realyPerformance[0].PickupTimeAlert, Color: '#ff0000' }] : []} legend={'Pickup Time'} />
                 </Plot>
                 <Plot height={400} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
                     Ylabel={'TCC (A/s)'} showMouse={true} useMetricFactors={false}>
@@ -199,7 +189,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
                         threshHolds={realyPerformance.length > 0 && realyPerformance[0].TripcoilConditionAlert != 0 && realyPerformance[0].TripcoilConditionAlert != undefined ? [{ Value: realyPerformance[0].TripcoilConditionAlert, Color: '#ff0000' }] : []} legend={'Trip Coil condition'} />
                 </Plot>
 
-             
+
                 <Plot height={400} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
                     Ylabel={'TCE (A)'} showMouse={true} useMetricFactors={false}>
                     <Line highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Imax1] as [number, number]).reverse()} legend={'Plunger starts to Move'} />
@@ -212,7 +202,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
                 <Plot height={400} width={innerWidth - 345} showBorder={false} defaultTdomain={[Tstart, Tend]} legend={'bottom'} Tlabel={'Time'}
                     Ylabel={'Timing (micros)'} showMouse={true} useMetricFactors={false}>
                     <Line highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Tmax1 / 10.0] as [number, number]).reverse()} legend={'Plunger starts to Move'} />
-                    <Line highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TplungerLatch/ 10.0] as [number, number]).reverse()} legend={'Plunger hits Latch'} />
+                    <Line highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TplungerLatch / 10.0] as [number, number]).reverse()} legend={'Plunger hits Latch'} />
                     <Line highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TiDrop / 10.0] as [number, number]).reverse()} legend={'A finger opens'} />
                     <Line highlightHover={true} showPoints={true} lineStyle={'-'} color={RandomColor()} data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Tend / 10.0] as [number, number]).reverse()} legend={'TCE Extinction'} />
                 </Plot>
@@ -232,7 +222,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
                 </Plot>
             </div>
         </div> : null}
-        </>
+    </>
 
     )
 

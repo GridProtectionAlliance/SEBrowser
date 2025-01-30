@@ -208,11 +208,11 @@ namespace PQDashboard.Controllers.BreakerReport
 
         }
 
-        private DataTable RelayHistoryTable( DateTime dateTime, int windowSize, string timeWindowUnits, int relayID, int channelID = -1)
+        private DataTable RelayHistoryTable( DateTime start, DateTime end, int relayID, int channelID = -1)
         {
             DataTable dataTable;
 
-            string timeRestriction = $"TripInitiate Between DATEADD({timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}')";
+            string timeRestriction = $"TripInitiate Between DATEADD('{start}') AND DATEADD('{end}')";
 
             using (AdoDataConnection connection = new("systemSettings"))
             {
@@ -222,7 +222,8 @@ namespace PQDashboard.Controllers.BreakerReport
                 }
                 else
                 {
-                    dataTable = connection.RetrieveData($"SELECT * FROM BreakerHistory WHERE BreakerId = {{0}} AND {timeRestriction}", relayID);
+                    dataTable = connection.RetrieveData($"SELECT * FROM BreakerHistory WHERE BreakerId = {{0}}" +
+                        $" AND {timeRestriction}", relayID);
                 }
             }
             return dataTable;
@@ -235,21 +236,18 @@ namespace PQDashboard.Controllers.BreakerReport
             int lineID;
             int channelID;
 
-            DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
-            string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
-            int windowSize = int.Parse(query["windowSize"]);
-
+            DateTime start = DateTime.ParseExact(query["start"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+            DateTime end = DateTime.ParseExact(query["end"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
 
             try { channelID = int.Parse(query["channelID"]); }
             catch { channelID = -1; }
 
             try { lineID = int.Parse(query["lineID"]); }
             catch { lineID = -1; }
-            
+
             if (lineID <= 0) return new DataTable();
-            
-            return RelayHistoryTable(dateTime,windowSize,timeWindowUnits,lineID, channelID);
-            
+
+            return RelayHistoryTable(start, end, lineID, channelID); // change this to start end too
         }
 
         #endregion

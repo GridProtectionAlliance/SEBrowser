@@ -33,7 +33,6 @@ import { ProcessQuery, SelectEventList, SelectQueryParam } from './EventSearchSl
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SplitSection, VerticalSplit } from '@gpa-gemstone/react-interactive';
-import moment from 'moment'
 
 type tab = 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All' | undefined;
 
@@ -43,10 +42,6 @@ const EventSearch = () => {
     const dispatch = useAppDispatch();
 
     const [eventId, setEventId] = React.useState<number>(-1);
-    const [date, setDate] = React.useState<string>('');
-    const [time, setTime] = React.useState<string>('');
-    const [windowSize, setWindowSize] = React.useState<number>(0);
-    const [timeWindowUnits, setTimeWindowUnits] = React.useState<number>(0);
     const [initialTab, setInitialTab] = React.useState<tab>(undefined);
     const [showMagDur, setShowMagDur] = React.useState<boolean>(false);
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
@@ -55,25 +50,16 @@ const EventSearch = () => {
     const queryParam = useAppSelector(SelectQueryParam);
     const evtList = useAppSelector(SelectEventList);
 
-    const momentDateFormat = "MM/DD/YYYY";
-    const momentTimeFormat = "HH:mm:ss.SSS";
-
     React.useEffect(() => {
-        const query = queryString.parse(history.search.replace("?",""), "&", "=", { decodeURIComponent: queryString.unescape });
-
+        const query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
         dispatch(ProcessQuery(query));
-
 
         setInitialTab(query['tab'] != undefined ? query['tab'].toString() as any : undefined);
         setShowMagDur(query['magDur'] != undefined ? query['magDur'] == 'true' : false);
         setEventId(query['eventid'] != undefined ? parseInt(query['eventid'].toString()) : -1);
-        setDate(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat));
-        setTime(query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat));
-        setWindowSize(query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10);
-        setTimeWindowUnits(query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2);
     }, []);
 
-   
+
     React.useEffect(() => {
         const q = queryString.stringify(queryParam, "&", "=", { encodeURIComponent: queryString.escape });
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
@@ -91,9 +77,8 @@ const EventSearch = () => {
 
     function getShowNav(): boolean {
         if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.EventSearch.ShowNav'))
-            return JSON.parse(localStorage.getItem('SEbrowser.EventSearch.ShowNav'))
-        else
-            return true;
+            return JSON.parse(localStorage.getItem('SEbrowser.EventSearch.ShowNav'));
+        else return true;
     }
 
     return (
@@ -103,40 +88,34 @@ const EventSearch = () => {
                 showNav={showNav}
                 setHeight={setNavHeight}
             />
-            <VerticalSplit style={{ width: '100%', height: (showNav ? 'calc(100% - ' + navHeight + 'px)': 'calc( 100% - 52px)') }}>
-                    <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
-                        <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
-                            <div style={{ width: 'calc(100% - 300px)', padding: 10, float: 'left' }}>
-                            </div>
-                            <div style={{ width: 160, float: 'right', padding: 10 }}>
+            <VerticalSplit style={{ width: '100%', height: (showNav ? 'calc(100% - ' + navHeight + 'px)' : 'calc( 100% - 52px)') }}>
+                <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
+                    <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
+                        <div style={{ width: 'calc(100% - 300px)', padding: 10, float: 'left' }}>
+                        </div>
+                        <div style={{ width: 160, float: 'right', padding: 10 }}>
                             <button className='btn btn-danger' onClick={() => setShowMagDur((c) => !c)} >
                                 View As {showMagDur ? 'List' : 'Mag/Dur'}
                             </button>
-                            </div>
-                            {showMagDur ?
-                                <EventSearchMagDur
-                                Height={window.innerHeight - ((showNav ? navHeight : 52) + 120)}
-                                    EventID={eventId}
-                                SelectEvent={setEventId}
-                                /> :
-                            <EventSearchList eventid={eventId}
-                                selectEvent={setEventId}
-                                height={window.innerHeight - ((showNav ? navHeight : 52) + 120)} />
-                            }
                         </div>
-                    </SplitSection>
-                    <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
+                        {showMagDur
+                            ? <EventSearchMagDur
+                                Height={window.innerHeight - ((showNav ? navHeight : 52) + 120)} EventID={eventId} SelectEvent={setEventId}
+                            />
+                            : <EventSearchList
+                                eventid={eventId} selectEvent={setEventId} height={window.innerHeight - ((showNav ? navHeight : 52) + 120)}
+                            />
+                        }
+                    </div>
+                </SplitSection>
+                <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
                     <div style={{ width: '100%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
                         <EventPreviewPane
                             EventID={eventId}
                             InitialTab={initialTab}
                             Height={window.innerHeight - ((showNav ? navHeight : 52) + 62)}
-                            Date={date}
-                            Time={time}
-                            WindowSize={windowSize}
-                            TimeWindowUnits={timeWindowUnits}
                         />
-                        </div>
+                    </div>
                 </SplitSection>
             </VerticalSplit>
         </div>

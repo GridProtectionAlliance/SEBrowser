@@ -27,14 +27,12 @@ import Table from '@gpa-gemstone/react-table';
 import { OpenXDA } from '@gpa-gemstone/application-typings';
 import queryString from 'querystring';
 import moment from 'moment';
-import ReportTimeFilter from '../ReportTimeFilter';
 import { orderBy } from 'lodash';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { findAppropriateUnit, getMoment, getStartEndTime } from '../EventSearch/TimeWindowUtils';
-
-const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS";
+import { TimeFilter } from '@gpa-gemstone/common-pages'
+import { useSelector } from 'react-redux';
+import { SelectTimeZone, SelectDateTimeSetting, SelectDateTimeFormat } from '../SettingsSlice';
 
 interface DERAnalyticResult {
     ID: number,
@@ -54,10 +52,11 @@ function DERAnalysisReport() {
     const history = useLocation();
     const navigate = useNavigate();
 
-    const [date, setDate] = React.useState<string>(moment().format(momentDateFormat));
-    const [time, setTime] = React.useState<string>(moment().format(momentTimeFormat));
-    const [windowSize, setWindowSize] = React.useState<number>(1);
-    const [timeWindowUnits, setTimeWindowUnits] = React.useState<number>(4);
+    const timeZone = useSelector(SelectTimeZone);
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+    const dateTimeFormat = useSelector(SelectDateTimeFormat);
+    const [start, setStart] = React.useState<string>(moment().format(dateTimeFormat));
+    const [end, setEnd] = React.useState<string>(moment().format(dateTimeFormat));
     const [regulations, setRegulations] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([])
     const [stations, setStations] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([]);
     const [ders, setDERs] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([]);
@@ -68,25 +67,17 @@ function DERAnalysisReport() {
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
-
-        setTime(query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat))
-        setDate(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat))
-        setWindowSize(query['windowSize'] != undefined ? parseInt(query['windowSize'] as string) : 1);
-        setTimeWindowUnits(query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'] as string) : 4);
+        setStart(query['start'] != undefined ? query['start'] as string : moment().format(dateTimeFormat))
+        setEnd(query['end'] != undefined ? query['end'] as string : moment().format(dateTimeFormat))
     }, []);
 
 
     React.useEffect(() => {
-        const queryParam = {
-            time,
-            date,
-            windowSize,
-            timeWindowUnits
-        };
+        const queryParam = { start, end };
         const q = queryString.stringify(queryParam, "&", "=", { encodeURIComponent: queryString.escape });
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
-    }, [time, date, windowSize, timeWindowUnits])
+    }, [start, end])
 
     React.useEffect(() => {
         const handle1 = $.ajax({
@@ -98,7 +89,7 @@ function DERAnalysisReport() {
             async: true
         }) as JQuery.jqXHR<string[]>;
 
-        handle1.done(d => setRegulations(d.map((reg, i) => ({Value: i, Text: reg, Selected: true}))) )
+        handle1.done(d => setRegulations(d.map((reg, i) => ({ Value: i, Text: reg, Selected: true }))))
 
         const handle2 = $.ajax({
             type: "GET",
@@ -107,14 +98,13 @@ function DERAnalysisReport() {
             dataType: 'json',
             cache: false,
             async: true
-        }) as JQuery.jqXHR<{LocationID: number, LocationKey: string, Name: string}[]>;
+        }) as JQuery.jqXHR<{ LocationID: number, LocationKey: string, Name: string }[]>;
 
         handle2.done(d => setStations(d.map((reg) => ({ Value: reg.LocationID, Text: reg.Name, Selected: true }))))
 
         return () => {
             if (handle1.abort != undefined) handle1.abort();
             if (handle2.abort != undefined) handle2.abort();
-
         };
     }, []);
 
@@ -135,7 +125,7 @@ function DERAnalysisReport() {
             url: `${homePath}api/DERReport/DER`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            data: JSON.stringify({ SubstationIDs: stations.filter(s=> s.Selected).map(s => s.Value)}),
+            data: JSON.stringify({ SubstationIDs: stations.filter(s => s.Selected).map(s => s.Value) }),
             cache: false,
             async: true
         }) as JQuery.jqXHR<OpenXDA.Types.Asset[]>;
@@ -150,11 +140,6 @@ function DERAnalysisReport() {
 
 
     React.useEffect(() => {
-
-        const adjustedTime = findAppropriateUnit(getMoment(date, time),
-            getStartEndTime(getMoment(date, time), windowSize, timeWindowUnits)[1],
-            timeWindowUnits);
-
         const handle1 = $.ajax({
             type: "POST",
             url: `${homePath}api/DERReport`,
@@ -162,9 +147,8 @@ function DERAnalysisReport() {
             dataType: 'json',
             data: JSON.stringify({
                 DERIDs: ders.filter(s => s.Selected).map(s => s.Value),
-                Time: date + ' ' + time,
-                Window: adjustedTime[1],
-                TimeWindowUnit: adjustedTime[0],
+                StartTime: start,
+                EndTime: end,
                 Regulations: regulations.filter(s => s.Selected).map(s => s.Text)
             }),
             cache: false,
@@ -177,7 +161,7 @@ function DERAnalysisReport() {
             if (handle1.abort != undefined) handle1.abort();
 
         };
-    }, [ders, date,  time, windowSize, timeWindowUnits, regulations]);
+    }, [ders, start, end, regulations]);
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
@@ -225,12 +209,13 @@ function DERAnalysisReport() {
                         </li>
 
                         <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
-                            <ReportTimeFilter filter={{ date: date, time: time, windowSize: windowSize, timeWindowUnits: timeWindowUnits }} setFilter={(f) => {
-                                setDate(f.date);
-                                setTime(f.time);
-                                setTimeWindowUnits(f.timeWindowUnits);
-                                setWindowSize(f.windowSize);
-                            }} showQuickSelect={false} />
+                            <TimeFilter filter={{ start: start, end: end }}
+                                setFilter={(start: string, end: string) => {
+                                    setStart(start);
+                                    setEnd(end);
+                                }}
+                                showQuickSelect={false} timeZone={timeZone}
+                                dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                             <button style={{ position: 'absolute', top: 30, right: 30 }} data-toggle="modal" data-target="#epriModal">⚠</button>
                         </li>
 
@@ -242,7 +227,7 @@ function DERAnalysisReport() {
                 <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
                     <Table<DERAnalyticResult>
                         cols={[
-                            { key: 'Time', label: 'Time', field: 'Time', content: (item) => moment(item.Time).format(momentDateFormat + ' ' + momentTimeFormat) },
+                            { key: 'Time', label: 'Time', field: 'Time', content: (item) => moment(item.Time).format(dateTimeFormat) },
                             { key: 'Meter', label: 'Meter', field: 'Meter' },
                             { key: 'Asset', label: 'Asset', field: 'Asset' },
                             { key: 'Channel', label: 'Channel', field: 'Channel' },
@@ -257,7 +242,7 @@ function DERAnalysisReport() {
                         ascending={ascending}
                         sortKey={sortKey}
                         onSort={(data) => {
-                            if(data.colField == sortKey)
+                            if (data.colField == sortKey)
                                 setAscending(!ascending);
                             else
                                 setSortKey(data.colField);
@@ -303,12 +288,12 @@ function DERAnalysisReport() {
                             <button type="button" className="close" data-dismiss="modal">&times;</button>
                         </div>
                         <div className="modal-body">
-                            <img src={`${homePath}Images/EPRILogo.jpeg` }/>
+                            <img src={`${homePath}Images/EPRILogo.jpeg`} />
                             <div>Software Title DER Operation Version #0</div>
                             <div>Electric Power Research Institute (EPRI)</div>
                             <div>3420 Hillview Ave.</div>
                             <div>Palo Alto, CA 94304</div>
-                            <br/>
+                            <br />
                             <div>Copyright © 2021 Electric Power Research Institute, Inc. All rights reserved.</div>
                             <br />
                             <div>As a user of this EPRI preproduction software, you accept and acknowledge that:</div>
@@ -335,7 +320,7 @@ function DERAnalysisReport() {
 }
 
 const Graph = (props: DERAnalyticResult) => {
-    const [data, setData] = React.useState<[number,number][]>([]);
+    const [data, setData] = React.useState<[number, number][]>([]);
 
     React.useEffect(() => {
         if (props.ID == undefined) return;

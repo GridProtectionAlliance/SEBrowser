@@ -1,4 +1,4 @@
-﻿//******************************************************************************************************
+//******************************************************************************************************
 //  SettingsSlice.tsx - Gbtc
 //
 //  Copyright © 2023, Grid Protection Alliance.  All Rights Reserved.
@@ -49,7 +49,8 @@ const defaultState = {
     general: {
         MoveOptionsLeft: false,
         ShowDataPoints: true,
-        DateTime: 'center'
+        DateTimeMode: 'startEnd',
+        DateTimeFormat: 'MM/DD/YYYY HH:mm:ss.SSS'
     }
 } as Redux.SettingsState;
 
@@ -106,7 +107,7 @@ function readSettings() {
     let preserved: Redux.SettingsState;
     try {
         const serializedState = localStorage.getItem('SEBrowser.Settings');
-        if (serializedState === null) throw new Error("No setting state found")
+        if (serializedState === null) throw new Error("No setting state found");
         preserved = JSON.parse(serializedState);
         return preserved;
     } catch (err) {
@@ -154,4 +155,5 @@ export const SelectTrendDataSettings = (state: Redux.StoreState) => state.Settin
 export const SelectGeneralSettings = (state: Redux.StoreState) => state.Settings.general
 export const SelectTimeZone = (state: Redux.StoreState) => state.Settings.timeZone
 export const SelectWidgetCategories = (state: Redux.StoreState) => state.Settings.eventSearch.WidgetCategories
-export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.general.DateTime
+export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.general.DateTimeMode
+export const SelectDateTimeFormat = (state: Redux.StoreState) => state.Settings.general.DateTimeFormat

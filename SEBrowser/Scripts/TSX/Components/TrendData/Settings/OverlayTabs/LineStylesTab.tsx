@@ -21,7 +21,7 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import { TrendSearch } from '../../../../Global';
+import { TrendSearch } from '../../../../global';
 import { LineStyles } from '../TabProperties/LineStyles'
 
 interface IChannelTabProps {
@@ -36,7 +36,7 @@ interface IChannelTabProps {
 const LineStylesTab = React.memo((props: IChannelTabProps) => {
     return (
         <div className="col" style={{ paddingLeft: 20, paddingRight: 20 }}>
-            <br/>
+            <br />
             <div className="alert alert-primary">These settings will only apply to line plots.</div>
             <div className="row" style={{ overflowY: 'scroll', maxHeight: 'calc(100vh - 264px)' }}>
                 <LineStyles DefaultStyle={props.MinStyle} SetDefaultStyle={props.SetMinStyle} Series='Min' />

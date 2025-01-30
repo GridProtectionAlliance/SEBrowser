@@ -235,9 +235,8 @@ namespace SEBrowser.Controllers
         public class DERReportPostRequest
         {
             public List<int> DERIDs { get; set; }
-            public DateTime Time { get; set; }
-            public int Window { get; set; }
-            public TimeWindowUnits TimeWindowUnit { get; set; }
+            public DateTime StartTime { get; set; }
+            public DateTime EndTime { get; set; }
             public List<string> Regulations { get; set; }
 
         }
@@ -264,7 +263,7 @@ namespace SEBrowser.Controllers
 	                        ChannelDetail ON DERAnalyticResult.ChannelID = ChannelDetail.ID 
                         WHERE 
                             Asset.ID IN ({(content.DERIDs.Any() ? string.Join(",", content.DERIDs) : "-1")}) AND 
-                            (DERAnalyticResult.Time BETWEEN DATEADD({ content.TimeWindowUnit}, { (-1 * content.Window)}, '{content.Time}') AND DATEADD({ content.TimeWindowUnit}, { (content.Window)},  '{content.Time}')) AND
+                            (DERAnalyticResult.Time BETWEEN DATEADD('{content.StartTime}') AND DATEADD('{content.EndTime}')) AND
                             DERAnalyticResult.Regulation IN ({(content.Regulations.Any() ? string.Join(",", content.Regulations.Select(s => "'" +s + "'")) : "-1")})
 
                         ORDER BY DERAnalyticResult.Time";

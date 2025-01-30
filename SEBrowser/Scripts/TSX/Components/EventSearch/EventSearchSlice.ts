@@ -29,9 +29,8 @@ import moment from 'moment';
 import queryString from 'querystring';
 import { AssetGroupSlice, AssetSlice, EventTypeSlice, LocationSlice, MeterSlice } from '../../Store';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
-import { findAppropriateUnit, getStartEndTime, getMoment } from './TimeWindowUtils';
 
-const momentDateFormat = "MM/DD/YYYY";
+const dateTimeFormat = 'MM/DD/yyyy HH:mm:ss.SSS';
 
 let fetchHandle: JQuery.jqXHR<any> | null = null;
 
@@ -48,15 +47,11 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
     const sortKey = (getState() as Redux.StoreState).EventSearch.SortField;
     const ascending = (getState() as Redux.StoreState).EventSearch.Ascending;
 
-    const adjustedTime = findAppropriateUnit(getMoment(time.date, time.time),
-        getStartEndTime(getMoment(time.date, time.time), time.windowSize, time.timeWindowUnits)[1],
-        time.timeWindowUnits);
-
-
     const filter = {
-        date: time.date, time: time.time, windowSize: adjustedTime[1], timeWindowUnits: adjustedTime[0],
+        start: time.start, end: time.end,
         typeIDs: types,
-        durationMin: characteristics.durationMin ?? 0, durationMax: characteristics.durationMax ?? 0,
+        durationMin: characteristics.durationMin ?? 0,
+        durationMax: characteristics.durationMax ?? 0,
         phases: {
             AN: characteristics.phases.AN, BN: characteristics.phases.BN, CN: characteristics.phases.CN, AB: characteristics.phases.AB, BC: characteristics.phases.BC,
             CA: characteristics.phases.CA, ABG: characteristics.phases.ABG, BCG: characteristics.phases.BCG, ABC: characteristics.phases.ABC, ABCG: characteristics.phases.ABCG,
@@ -68,7 +63,7 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
         meterIDs: meterList.map(item => item.ID), assetIDs: assetList.map(item => item.ID),
         groupIDs: groupList.map(item => item.ID), locationIDs: locationList.map(item => item.ID),
         numberResults: settings.NumberResults,
-    } 
+    }
 
     const additionalArguments = {
         numberResults: settings.NumberResults,
@@ -95,7 +90,7 @@ export const Sort = createAsyncThunk('EventSearchs/Sort', async (arg: { SortFiel
     return dispatch(FetchEventSearches());
 })
 
-export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async (query: queryString.ParsedUrlQuery , { dispatch, getState }) => {
+export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async (query: queryString.ParsedUrlQuery, { dispatch, getState }) => {
     let state = getState() as Redux.StoreState;
     if (state.Asset.Status == 'unintiated')
         await dispatch(AssetSlice.Fetch());
@@ -119,7 +114,7 @@ export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async 
 
 export const ResetFilters = createAsyncThunk('EventSearchs/ResetFilterThunk', async (_: void, { dispatch, getState }) => {
     let state = getState() as Redux.StoreState;
-    
+
     if (state.EventType.Status == 'unintiated')
         await dispatch(EventTypeSlice.Fetch());
     state = getState() as Redux.StoreState;
@@ -172,10 +167,8 @@ export const EventSearchsSlice = createSlice({
             curveID: 1, curveInside: true, curveOutside: true
         },
         TimeRange: {
-            date: moment.utc().subtract(84,'h').format(momentDateFormat),
-            time: '12:00:00.000',
-            windowSize: 84,
-            timeWindowUnits: 3
+            start: moment.utc().subtract(8, 'hours').format(dateTimeFormat),
+            end: moment.utc().format(dateTimeFormat),
         },
         EventType: [],
         isReset: true,
@@ -194,12 +187,8 @@ export const EventSearchsSlice = createSlice({
             groups: OpenXDA.Types.AssetGroup[], locations: SystemCenter.Types.DetailedLocation[],
             meters: SystemCenter.Types.DetailedMeter[], typeIDs: OpenXDA.Types.EventType[]
         }>) => {
-
-
-            state.TimeRange.date = action.payload.query['date']?.toString() ?? state.TimeRange.date;
-            state.TimeRange.time = action.payload.query['time']?.toString() ?? state.TimeRange.time;
-            state.TimeRange.windowSize = parseFloat(action.payload.query['windowSize']?.toString() ?? state.TimeRange.windowSize.toString());
-            state.TimeRange.timeWindowUnits = parseInt(action.payload.query['timeWindowUnits']?.toString() ?? state.TimeRange.timeWindowUnits.toString());
+            state.TimeRange.start = action.payload.query['start']?.toString() ?? state.TimeRange.start;
+            state.TimeRange.end = action.payload.query['end']?.toString() ?? state.TimeRange.end;
 
             state.EventType = parseList('types', action.payload.query)?.map(id => action.payload.typeIDs.find(item => item.ID == parseInt(id))).filter(item => item != null).map(t => t.ID) ?? action.payload.typeIDs.filter(item => item.ShowInFilter).map(t => t.ID);
 
@@ -267,7 +256,7 @@ export const EventSearchsSlice = createSlice({
         ResetFilters: (state, action: PayloadAction<{ types: OpenXDA.Types.EventType[] }>) => {
             state.EventCharacteristic = {
                 durationMax: null, durationMin: null,
-                phases: { AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true }, 
+                phases: { AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true },
                 transientMin: null, transientMax: null, sagMin: null, sagMax: null, swellMin: null, swellMax: null, sagType: 'both', swellType: 'both', transientType: 'both',
                 curveID: 1, curveInside: true, curveOutside: true
             };
@@ -321,7 +310,7 @@ export const EventSearchsSlice = createSlice({
                 state.Ascending = !action.meta.arg.Ascending;
             else
                 state.SortField = action.meta.arg.SortField;
-           
+
         });
 
     }
@@ -387,44 +376,33 @@ function computeReset(state: Redux.EventSearchState, eventTypes: OpenXDA.Types.E
     return event && types && state.SelectedAssets.length == 0 && state.SelectedStations.length == 0 && state.SelectedMeters.length == 0 && state.SelectedGroups.length == 0;
 }
 
-export function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: number[],
+export function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: number[],                               // ! TODO: not sure this was updated fully
     time: SEBrowser.IReportTimeFilter, assets: SystemCenter.Types.DetailedAsset[], groups: OpenXDA.Types.AssetGroup[],
     meters: SystemCenter.Types.DetailedMeter[], stations: SystemCenter.Types.DetailedLocation[], eventID: number = null): any {
     const result: any = {};
     if (assets.length > 0 && assets.length < 100) {
-        let i = 0;
-        assets.forEach(a => {
+        assets.forEach((a, i) => {
             result["assets" + i] = a.ID;
-            i = i + 1;
         })
     }
     if (meters.length > 0 && meters.length < 100) {
-        let i = 0;
-        meters.forEach(m => {
+        meters.forEach((m, i) => {
             result["meters" + i] = m.ID;
-            i = i + 1;
         })
     }
     if (stations.length > 0 && stations.length < 100) {
-        let i = 0;
-        stations.forEach(s => {
+        stations.forEach((s, i) => {
             result["stations" + i] = s.ID;
-            i = i + 1;
         })
     }
     if (groups.length > 0 && groups.length < 100) {
-        let i = 0;
-        groups.forEach(ag => {
+        groups.forEach((ag, i) => {
             result["groups" + i] = ag.ID;
-            i = i + 1;
         })
     }
-
     if (type.length > 0 && type.length < 100) {
-        let i = 0;
-        type.forEach(ag => {
+        type.forEach((ag, i) => {
             result["types" + i] = ag;
-            i = i + 1;
         })
     }
 
@@ -486,12 +464,8 @@ export function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters
     }
 
     if (time != null) {
-        result["date"] = time.date;
-        result["time"] = time.time;
-        console.log(time.date);
-        console.log(time.time);
-        result["windowSize"] = time.windowSize;
-        result["timeWindowUnits"] = time.timeWindowUnits;
+        result['start'] = time.start;
+        result['end'] = time.end;
     }
 
     if (eventID != null) {

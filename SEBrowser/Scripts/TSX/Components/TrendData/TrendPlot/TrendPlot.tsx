@@ -23,6 +23,7 @@
 import React from 'react';
 import _ from 'lodash';
 import queryString from 'querystring';
+import { useSelector } from 'react-redux';
 import moment from 'moment';
 import { CreateGuid, SpacedColor } from '@gpa-gemstone/helper-functions';
 import { TrashCan, Pencil, Plus } from '@gpa-gemstone/gpa-symbols';
@@ -30,15 +31,13 @@ import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, Axis
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { LineGraph } from './LineGraph';
 import { SEBrowser, TrendSearch } from '../../../global';
-import { SelectTrendDataSettings, SelectGeneralSettings } from './../../SettingsSlice';
+import { SelectTrendDataSettings, SelectGeneralSettings, SelectDateTimeFormat } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
-import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
 import { SettingsModal, SeriesSettings } from '../Settings/SettingsModal';
 import { CyclicHistogram, ICyclicSeries } from './CyclicHistogram';
 
 type customSelects = "drag" | "symbol" | "horizontal" | "vertical";
-const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
 const defaultSelect = "drag";
 const defaultHighlight = "vertical";
 const defaultCursor = undefined;
@@ -80,9 +79,10 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
 
     // Plot Saved Settings
     const generalSettings = useAppSelector(SelectGeneralSettings);
+    const dateTimeFormat = useSelector(SelectDateTimeFormat);
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const [plotAllSeriesSettings, setPlotAllSeriesSettings] = React.useState<SeriesSettings[]>(null);
-    const colorIndex = React.useRef<{ ind: number, assetMap: Map<string, number> }>({ind: -1, assetMap: new Map<string, number>()});
+    const colorIndex = React.useRef<{ ind: number, assetMap: Map<string, number> }>({ ind: -1, assetMap: new Map<string, number>() });
     const changedProperties = React.useRef<Set<string>>(new Set<string>());
 
     // Plot Markers
@@ -364,8 +364,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             url: `${homePath}api/OpenXDA/GetEventSearchData`,
             contentType: "application/json; charset=utf-8",
             data: JSON.stringify({
-                date: timeFilter.date, time: timeFilter.time,
-                windowSize: timeFilter.windowSize, timeWindowUnits: timeFilter.timeWindowUnits,
+                start: timeFilter.start, end: timeFilter.end,
                 meterIDs: meters, assetIDs: assets, locationIDs: [], groupIDs: [],
                 curveOutside: true, curveInside: true,
                 numberResults: 15,
@@ -376,7 +375,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         }).done((data: any[]) => {
             setEventMarkers(data.map(datum => {
                 const meterID = props.Plot.Channels.find(channel => channel.MeterKey === datum["Meter Key"]).MeterID;
-                return { value: moment.utc(datum.Time, eventFormat).valueOf(), meterID: meterID, eventID: datum["EventID"]}
+                return { value: moment.utc(datum.Time, dateTimeFormat).valueOf(), meterID: meterID, eventID: datum["EventID"] }
             }));
         });
     }
@@ -393,10 +392,8 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         }
         const time = moment.utc(marker.value, "x");
         const timeFilter: SEBrowser.IReportTimeFilter = {
-            date: time.format(momentDateFormat),
-            time: time.format(momentTimeFormat),
-            windowSize: 1,
-            timeWindowUnits: 3,
+            start: time.format(dateTimeFormat),
+            end: time.format(dateTimeFormat),
         }
         const queryParams = GenerateQueryParams(null, [], timeFilter, [], [], [meter], [], marker.eventID);
         const queryUrl = queryString.stringify(queryParams, "&", "=", { encodeURIComponent: queryString.escape });
@@ -484,7 +481,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             }
             case "horizontal":
                 isHori = true;
-                // falls through
+            // falls through
             case "vertical": {
                 const currentMarkers = [...horiVertMarkers];
                 const newMarker = _.cloneDeep(props.MarkerDefaults.VeHo.Default);
@@ -513,9 +510,9 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         newList[index]["value"] = value;
         setHoriVertMarkers(newList);
     }, [horiVertMarkers, setHoriVertMarkers]);
-    
+
     const setHoverPosition = React.useCallback((xArg: number, yArg: number) => {
-        setMousePosition({x: xArg, y: yArg})
+        setMousePosition({ x: xArg, y: yArg })
     }, [setMousePosition]);
 
     let plotBody = null;
@@ -531,10 +528,21 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         switch (props.Plot.Type) {
             case 'Line':
                 plotBody = (
-                    <LineGraph ID={props.Plot.ID} ChannelInfo={plotAllSeriesSettings as TrendSearch.ILineSeries[]} SetChannelInfo={setPlotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
-                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel} MouseHighlight={lineHighlight} SetExtraSpace={setExtraHeight}
-                        Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
-                        OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
+                    <LineGraph
+                        ID={props.Plot.ID}
+                        ChannelInfo={plotAllSeriesSettings as TrendSearch.ILineSeries[]}
+                        SetChannelInfo={setPlotAllSeriesSettings}
+                        TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
+                        Title={props.Plot.Title}
+                        XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel}
+                        MouseHighlight={lineHighlight}
+                        SetExtraSpace={setExtraHeight}
+                        Height={chartHeight} Width={chartWidth}
+                        Metric={props.Plot.Metric}
+                        Cursor={customCursor}
+                        AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
+                        OnSelect={createMarker}
+                        AlwaysRender={[overlayButton, closeButton]}>
                         {props.Plot.ShowEvents ? eventMarkers.map((marker, i) => {
                             if (eventSettings.type === "Event-Vert")
                                 return (
@@ -544,7 +552,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                             else
                                 return (
                                     <SymbolicMarker key={"Marker_" + i} style={{ color: eventSettings.color }} axis={eventSettings.axis}
-                                        usePixelPositioning={{x: false, y: true}} xPos={marker.value} yPos={eventSettings.alignTop ? 11 : -11} radius={12}>
+                                        usePixelPositioning={{ x: false, y: true }} xPos={marker.value} yPos={eventSettings.alignTop ? 11 : -11} radius={12}>
                                         {eventSettings.symbol}
                                     </SymbolicMarker>);
                         }) : null}
@@ -595,10 +603,20 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                 break;
             case ('Cyclic'):
                 plotBody = (
-                    <CyclicHistogram ID={props.Plot.ID} ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] as ICyclicSeries : null} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
-                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel} MouseHighlight={lineHighlight} SetExtraSpace={setExtraHeight}
-                        Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
-                        OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}/>
+                    <CyclicHistogram
+                        ID={props.Plot.ID}
+                        ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] as ICyclicSeries : null}
+                        TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
+                        Title={props.Plot.Title}
+                        XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel}
+                        MouseHighlight={lineHighlight}
+                        SetExtraSpace={setExtraHeight}
+                        Height={chartHeight} Width={chartWidth}
+                        Metric={props.Plot.Metric}
+                        Cursor={customCursor}
+                        AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
+                        OnSelect={createMarker}
+                        AlwaysRender={[overlayButton, closeButton]} />
                 );
                 break;
         }
@@ -612,7 +630,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             ref={chartRef} onDragOver={handleDragOverChannel} onDrop={handleDropChannel}>
             {plotBody}
             <SettingsModal SetShow={setShowSettings} Show={showSettings}
-                Plot={props.Plot} SetPlot={handleSetPlot} SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings} 
+                Plot={props.Plot} SetPlot={handleSetPlot} SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings}
                 SymbolicMarkers={symbolicMarkers} SetSymbolicMarkers={setSymbolicMarkers} VertHoriMarkers={horiVertMarkers} SetVertHoriMarkers={setHoriVertMarkers}
                 EventSettings={eventSettings} SetEventSettings={setEventSettings} />
         </div>
@@ -657,7 +675,8 @@ const DragHalf: React.FunctionComponent<IDragHalf> = (props) => {
             onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDragStart={handleDragStart} onDrop={handleDrop} draggable={true}>
             <div className="col" style={{
                 backgroundColor: "grey", borderRadius: (props.isLeft ? '25px 0px 0px 25px' : '0px 25px 25px 0px'),
-                width: 'calc(100% - 40px)', height: '100%', float: (props.isLeft ? 'right' : 'left'), userSelect: 'none' }} />
+                width: 'calc(100% - 40px)', height: '100%', float: (props.isLeft ? 'right' : 'left'), userSelect: 'none'
+            }} />
             <div className="col" style={{ width: '40px', height: '100%', justifyContent: 'center', float: (props.isLeft ? 'left' : 'right'), userSelect: 'none' }}>
                 <div style={{ backgroundColor: (isHovered ? "black" : undefined), height: '100%', width: '5px' }} />
             </div>

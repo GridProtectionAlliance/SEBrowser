@@ -59,7 +59,11 @@ const SEBrowserMainPage = () => {
 
 
         handle.done(data => setLinks(data));
-        return () => { if(handle.abort != undefined) handle.abort()}
+        handle.fail((jqXHR, textStatus, errorThrown) => {
+            console.error('Failed to load data:', textStatus, errorThrown);
+            setLinks([]);  // Set default empty array to prevent rendering issues
+        });
+        return () => { if (handle.abort != undefined) handle.abort() }
     }, []);
 
     React.useEffect(() => {
@@ -92,22 +96,22 @@ const SEBrowserMainPage = () => {
                         }}
                             onClick={() => setShowSettings(true)}>
                             {SVGIcons.Settings}
-                    </button>
-                </li> </ul>}
-                OnSignOut={() => { window.location.href = `${homePath}/Logout`;}}
+                        </button>
+                    </li> </ul>}
+                OnSignOut={() => { window.location.href = `${homePath}/Logout`; }}
             >
-            <Page Name={'eventsearch'} Label={'Event Search'}>
-                <EventSearch />
-            </Page>
-            <Page Name={'meteractivity'} Label={'Meter Activity'}>
-                <MeterActivity />
-            </Page>
-            <Page Name={'trenddata'} Label={'Trend Data'}>
-                <TrendData />
-            </Page>
-            <Section Label={"Custom Reports"}>
-                {links.map((item, i) => <Page key={i} Name={item.AltValue ?? item.Value} Label={item.Value}>{createWidget(item.AltValue ?? item.Value)}</Page>)}
-            </Section>
+                <Page Name={'eventsearch'} Label={'Event Search'}>
+                    <EventSearch />
+                </Page>
+                <Page Name={'meteractivity'} Label={'Meter Activity'}>
+                    <MeterActivity />
+                </Page>
+                <Page Name={'trenddata'} Label={'Trend Data'}>
+                    <TrendData />
+                </Page>
+                <Section Label={"Custom Reports"}>
+                    {links.map((item, i) => <Page key={i} Name={item.AltValue ?? item.Value} Label={item.Value}>{createWidget(item.AltValue ?? item.Value)}</Page>)}
+                </Section>
             </Application>
             <Settings Show={showSettings} Close={() => setShowSettings(false)} />
         </>

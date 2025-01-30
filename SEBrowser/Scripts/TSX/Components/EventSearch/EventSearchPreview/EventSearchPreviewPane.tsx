@@ -23,7 +23,7 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import { Redux, SEBrowser } from '../../../global'
+import { Redux } from '../../../global'
 import { useAppSelector } from '../../../hooks';
 import { SelectEventSearchByID } from './../EventSearchSlice';
 import { SelectWidgetCategories } from '../../SettingsSlice';
@@ -35,10 +35,6 @@ interface IProps {
     EventID: number,
     InitialTab?: string,
     Height: number,
-    Date?: string,
-    Time?: string,
-    TimeWindowUnits?: number,
-    WindowSize?: number
 }
 
 const widgetStore = {
@@ -119,6 +115,7 @@ export default function EventPreviewPane(props: IProps) {
                     />
                 })}
             </div>
-        </>)
+        </>
+    )
 }
 

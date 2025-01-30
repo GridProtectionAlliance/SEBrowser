@@ -23,9 +23,10 @@
 import * as React from 'react';
 import BreakerReportNavbar from './BreakerReportNavbar';
 import * as queryString from 'querystring';
-const momentDateFormat = "MM/DD/YYYY";
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { SelectDateTimeFormat } from '../SettingsSlice';
 
 declare let homePath: string;
 
@@ -36,17 +37,18 @@ interface State {
 }
 
 const BreakerReport = () => {
-    const [fromDate, setFromDate] = React.useState<string>('');
-    const [toDate, setToDate] = React.useState<string>('');
-    const [breaker, setBreaker] = React.useState<string>('');
     const navigate = useNavigate();
     const history = useLocation();
+    const dateTimeFormat = useSelector(SelectDateTimeFormat);
+    const [toDate, setToDate] = React.useState<string>('');
+    const [breaker, setBreaker] = React.useState<string>('');
+    const [fromDate, setFromDate] = React.useState<string>('');
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
 
-        setFromDate(query['fromDate'] != undefined ? query['fromDate'].toString() : moment().subtract(30, 'days').format(momentDateFormat));
-        setToDate(query['toDate'] != undefined ? query['toDate'].toString() : moment().format(momentDateFormat));
+        setFromDate(query['fromDate'] != undefined ? query['fromDate'].toString() : moment().subtract(30, 'days').format(dateTimeFormat));
+        setToDate(query['toDate'] != undefined ? query['toDate'].toString() : moment().format(dateTimeFormat));
         setBreaker(query['breaker'] != undefined ? query['breaker'].toString() : '0');
 
     }, []);
@@ -58,7 +60,7 @@ const BreakerReport = () => {
         const q = queryString.stringify(state, "&", "=");
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
-    }, [fromDate,toDate,breaker])
+    }, [fromDate, toDate, breaker])
 
     function setState(a: State) {
         setFromDate(a.fromDate);
@@ -69,7 +71,7 @@ const BreakerReport = () => {
     const link = `${homePath}api/BreakerReport/${(breaker == '0' ? `AllBreakersReport?` : `IndividualBreakerReport?breakerId=${breaker}&`)}startDate=${fromDate}&endDate=${toDate}`;
     return (
         <div style={{ width: '100%', height: '100%' }}>
-            <BreakerReportNavbar toDate={toDate} fromDate={fromDate} breaker={breaker} stateSetter={setState} />
+            <BreakerReportNavbar dateTimeFormat={dateTimeFormat} toDate={toDate} fromDate={fromDate} breaker={breaker} stateSetter={setState} />
             <div style={{ width: '100%', height: 'calc( 100% - 163px)' }}>
                 <embed style={{ width: 'inherit', height: 'inherit', position: 'absolute' }} id="pdfContent" src={link} key={link} type="application/pdf" />
             </div>

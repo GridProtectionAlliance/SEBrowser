@@ -22,7 +22,7 @@
 //******************************************************************************************************
 import React from 'react';
 import _ from 'lodash';
-import { TrendSearch } from '../../../Global';
+import { TrendSearch } from '../../../global';
 import { ConfigTable } from '@gpa-gemstone/react-interactive';
 import { TrashCan } from '@gpa-gemstone/gpa-symbols';
 import { ReactTable } from '@gpa-gemstone/react-table';
@@ -137,7 +137,7 @@ const TrendChannelTable = (props: IProps) => {
             }}
             Selected={(item) => props.Type === 'multi' ? props.SelectedSet.has(item.ID) : props.Selected === item.ID}
             TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-            TbodyStyle={{ display: 'block', overflowY: 'scroll', height: props.Height - 45, userSelect: 'none'}}
+            TbodyStyle={{ display: 'block', overflowY: 'scroll', height: props.Height - 45, userSelect: 'none' }}
             RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
             TableClass="table table-hover"
             TableStyle={{ marginBottom: 0 }}>
@@ -168,7 +168,7 @@ const TrendChannelTable = (props: IProps) => {
                     RowStyle={{ width: "50px" }}
                     HeaderStyle={{ width: "50px" }}
                     Content={removeButton}
-                > </ReactTable.Column>: null}
+                > </ReactTable.Column> : null}
         </ConfigTable.Table>);
 }
 

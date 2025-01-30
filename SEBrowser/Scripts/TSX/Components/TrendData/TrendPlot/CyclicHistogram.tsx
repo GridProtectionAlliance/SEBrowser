@@ -23,8 +23,8 @@
 import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
-import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../Global';
-import { SelectTrendDataSettings, SelectGeneralSettings } from './../../SettingsSlice';
+import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../global';
+import { SelectTrendDataSettings, SelectGeneralSettings, SelectDateTimeFormat } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
@@ -32,6 +32,7 @@ import { LoadingIcon, ToolTip } from '@gpa-gemstone/react-interactive';
 import { HeatMapChart, Plot } from '@gpa-gemstone/react-graph';
 import { HexToHsv } from '@gpa-gemstone/helper-functions';
 import { Warning } from '@gpa-gemstone/gpa-symbols';
+import { useSelector } from 'react-redux';
 
 interface IProps {
     ID: string,
@@ -54,7 +55,7 @@ interface IProps {
     children?: React.ReactNode
 }
 
-interface ICyclicSeries{
+interface ICyclicSeries {
     Channel: TrendSearch.ITrendChannel,
     Color: string
 }
@@ -65,30 +66,8 @@ interface IChartData {
     Series: [number, number, number][]
 }
 
-// TODO: These can be in a shared place with eventSearchBar
-function formatWindowUnit(i: number) {
-    if (i == 7)
-        return "years";
-    if (i == 6)
-        return "months";
-    if (i == 5)
-        return "weeks";
-    if (i == 4)
-        return "days";
-    if (i == 3)
-        return "hours";
-    if (i == 2)
-        return "minutes";
-    if (i == 1)
-        return "seconds";
-    return "milliseconds";
-}
-
-// Formats that will be used for dateBoxes
-const timeFilterFormat = "MM/DD/YYYYHH:mm:ss.SSS";
-const serverFormat = "YYYY-MM-DD[T]HH:mm:ss.SSSZ";
-
 const CyclicHistogram = React.memo((props: IProps) => {
+    const dateTimeFormat = useSelector(SelectDateTimeFormat);
     // Graph Consts
     const [timeLimits, setTimeLimits] = React.useState<[number, number]>([0, 1]);
     const [chartData, setChartData] = React.useState<IChartData>(null);
@@ -111,10 +90,10 @@ const CyclicHistogram = React.memo((props: IProps) => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
         if (_.isEqual(props.TimeFilter, oldValues.current.TimeFilter) && props.ChannelInfo.Channel.ID === oldValues.current.ChannelInfo.Channel.ID) return;
 
-        const centerTime: moment.Moment = moment(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
-        const startTime: string = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
-        // Need to move back in the other direction, so entire window
-        const endTime: string = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
+        const startMoment: moment.Moment = moment(props.TimeFilter.start, dateTimeFormat);
+        const endMoment: moment.Moment = moment(props.TimeFilter.end, dateTimeFormat);
+        const startTime: string = startMoment.format(dateTimeFormat);
+        const endTime: string = endMoment.format(dateTimeFormat);
 
         const handle = GetMetaData(props.ChannelInfo.Channel.ID, startTime, endTime);
         return () => {
@@ -149,17 +128,17 @@ const CyclicHistogram = React.memo((props: IProps) => {
     }, [metaData]);
 
     React.useEffect(() => {
-        const centerTime: moment.Moment = moment.utc(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
-        const startTime: number = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
-        // Need to move back in the other direction, so entire window
-        const endTime: number = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
+        const startMoment: moment.Moment = moment.utc(props.TimeFilter.start, dateTimeFormat);
+        const endMoment: moment.Moment = moment.utc(props.TimeFilter.end, dateTimeFormat);
+        const startTime: number = startMoment.valueOf();
+        const endTime: number = endMoment.valueOf();
         setTimeLimits([startTime, endTime]);
     }, [props.TimeFilter]);
 
     React.useEffect(() => {
         if (props.ChannelInfo?.Color == null) return;
         const color = HexToHsv(props.ChannelInfo.Color);
-        setBarColor({ Hue: color.h, Saturation: color.s})
+        setBarColor({ Hue: color.h, Saturation: color.s })
     }, [props.ChannelInfo?.Color]);
 
     React.useEffect(() => {
@@ -212,8 +191,8 @@ const CyclicHistogram = React.memo((props: IProps) => {
             cache: false,
             async: true
         }).done((data: TrendSearch.ICyclicData[]) => {
-            const startTicks = moment.utc(metaData.StartTime, serverFormat).valueOf();
-            const ticksPerIndex = (moment.utc(metaData.EndTime, serverFormat).valueOf() - startTicks) /
+            const startTicks = moment.utc(metaData.StartTime, dateTimeFormat).valueOf();
+            const ticksPerIndex = (moment.utc(metaData.EndTime, dateTimeFormat).valueOf() - startTicks) /
                 ((metaData.SamplingRate / metaData.FundamentalFrequency) + 1);
             const binSize = (metaData.CyclesMax - metaData.CyclesMin) / metaData.CyclicHistogramBins;
             const newChartData: IChartData = {
@@ -242,17 +221,21 @@ const CyclicHistogram = React.memo((props: IProps) => {
                 <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={29} />
                 <h4 ref={titleRef} style={{ textAlign: "center", width: `${props.Width}px`, marginBottom: '0px' }}>
                     {props?.Title ?? ''}
-                        {(chartData?.Series?.length == null || chartData.Series.length === 0) ?
-                            <span data-tooltip={props.ID} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>{Warning}</span>
-                            : null
-                        }
+                    {(chartData?.Series?.length == null || chartData.Series.length === 0) ?
+                        <span data-tooltip={props.ID} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>{Warning}</span>
+                        : null
+                    }
                 </h4>
-                <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2} menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
-                    defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
-                    legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric ?? false} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={false} limitZoom={true}
-                    Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={props.MouseHighlight} yDomain={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
+                <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2}
+                    menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
+                    defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)}
+                    cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping} legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric ?? false}
+                    holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={false} limitZoom={true}
+                    Tlabel={props.XAxisLabel} Ylabel={[props.YAxisLabel]} showMouse={props.MouseHighlight}
+                    yDomain={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {(chartData?.Series?.length == null || chartData.Series.length === 0 || barColor === null) ? null :
-                        <HeatMapChart data={chartData.Series} sampleMs={chartData.TimeSpan} binSize={chartData.BinSize} hue={barColor.Hue} saturation={barColor.Saturation} fillStyle={'fill'} axis={'left'} legendUnit={'%'} />
+                        <HeatMapChart data={chartData.Series} sampleMs={chartData.TimeSpan} binSize={chartData.BinSize}
+                            hue={barColor.Hue} saturation={barColor.Saturation} fillStyle={'fill'} axis={'left'} legendUnit={'%'} />
                     }
                     {props.children}
                     {props.AlwaysRender}

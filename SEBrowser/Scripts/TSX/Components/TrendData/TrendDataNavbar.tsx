@@ -26,19 +26,21 @@ import _ from 'lodash';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AssetSlice, MeterSlice, PhaseSlice, ChannelGroupSlice } from '../../Store';
-import { SEBrowser, TrendSearch, IMultiCheckboxOption } from '../../Global';
+import { SEBrowser, TrendSearch, IMultiCheckboxOption } from '../../global';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
-import { DefaultSelects } from '@gpa-gemstone/common-pages';
+import { DefaultSelects, TimeFilter } from '@gpa-gemstone/common-pages';
 import { Search, ToolTip } from '@gpa-gemstone/react-interactive';
 import { CrossMark, SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { CreateGuid } from '@gpa-gemstone/helper-functions';
-import ReportTimeFilter from '../ReportTimeFilter';
 import NavbarFilterButton from '../Common/NavbarFilterButton';
 import TrendChannelTable from './Components/TrendChannelTable';
 import html2canvas from 'html2canvas';
 import jspdf from 'jspdf';
 import queryString from 'querystring';
+import { useSelector } from 'react-redux';
+import { SelectTimeZone, SelectDateTimeSetting } from '../SettingsSlice';
+import moment from 'moment';
 
 interface IProps {
     ToggleVis: () => void,
@@ -65,6 +67,9 @@ interface ITrendDataFilter {
     AssetList: SystemCenter.Types.DetailedAsset[]
 }
 
+type TimeUnit = 'y' | 'M' | 'w' | 'd' | 'h' | 'm' | 's' | 'ms'
+const units = ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'] as TimeUnit[]
+
 const TrendSearchNavbar = React.memo((props: IProps) => {
     const navRef = React.useRef(null);
     const timeRef = React.useRef(null);
@@ -76,6 +81,9 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const phaseStatus = useAppSelector(PhaseSlice.SearchStatus);
     const allPhases = useAppSelector(PhaseSlice.SearchResults);
 
+    const timeZone = useSelector(SelectTimeZone);
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
+
     const channelGroupStatus = useAppSelector(ChannelGroupSlice.SearchStatus);
     const allChannelGroups = useAppSelector(ChannelGroupSlice.SearchResults);
 
@@ -85,9 +93,12 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const assetStatus = useAppSelector(AssetSlice.Status);
     const allAssets = useAppSelector(AssetSlice.Data);
 
+    const [dateTimeFormat, setDateTimeFormat] = React.useState<string>(dateTimeSetting.DateTimeFormat);
+    const [dateTimeMode, setDateTimeMode] = React.useState<SEBrowser.TimeWindowMode>(dateTimeSetting.Mode);
     const [showFilter, setShowFilter] = React.useState<('None' | 'Meter' | 'Asset')>('None');
 
     const [timeFilter, setTimeFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.TimeFilter);
+    const [timeRange, setTimeRange] = React.useState<string>('');
 
     const [trendFilter, setTrendFilter] = React.useState<ITrendDataFilter>(null);
     const [phaseOptions, setPhaseOptions] = React.useState<IMultiCheckboxOption[]>([]);
@@ -102,7 +113,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [queryReady, setQueryReady] = React.useState<boolean>(false);
 
     // Button Consts
-    const [hover, setHover] = React.useState < 'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Group-Line' | 'Cyclic' | 'Move' | 'Trash' | 'Select' | 'Capture' >('None');
+    const [hover, setHover] = React.useState<'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Group-Line' | 'Cyclic' | 'Move' | 'Trash' | 'Select' | 'Capture'>('None');
 
     // Page effects
     React.useLayoutEffect(() => {
@@ -153,7 +164,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     }, [props.LinePlot]);
 
     React.useEffect(() => {
-        if (queryReady) setTimeFilter(props.TimeFilter);
+        setTimeFilter(props.TimeFilter);
     }, [props.TimeFilter]);
 
     // Slice dispatches
@@ -236,6 +247,43 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             AssetList: queryRef.current.assetIds == null ? [] : allAssets?.filter(asset => queryRef.current.assetIds.has(asset.ID)) ?? []
         });
     }, [channelGroupStatus, phaseStatus, meterStatus, assetStatus, queryReady]);
+    React.useEffect(() => {
+        let range = "";
+        const startMoment = moment(timeFilter.start); // These default to the date+time format
+        const endMoment = moment(timeFilter.end);
+        const unit = findAppropriateUnit(startMoment, endMoment);
+        const startEndDifference = startMoment.diff(endMoment, unit);
+
+        if (dateTimeSetting == 'startEnd')
+            range = `${timeFilter.start} to ${timeFilter.end} (${timeZone})`;
+        if (dateTimeSetting == 'startWindow')
+            range = `${timeFilter.start} (${timeZone}) +${startEndDifference}`;
+        else if (dateTimeSetting == 'endWindow')
+            range = `${timeFilter.end} (${timeZone}) -${startEndDifference}`;
+
+        setTimeRange(range);
+    }, [timeFilter, dateTimeSetting, timeZone])
+
+    function findAppropriateUnit(startTime: moment.Moment, endTime: moment.Moment): TimeUnit {
+        const unitIndex = 7;
+        let diff = endTime.diff(startTime, units[unitIndex], true);
+
+        for (let i = unitIndex; i >= 1; i--) {
+            if (Number.isInteger(diff)) {
+                return units[i];
+            }
+            const nextI = i - 1;
+
+            diff = endTime.diff(startTime, units[nextI], true);
+
+            if (diff > 65000) {
+                diff = endTime.diff(startTime, units[i], true);
+                return units[i];
+            }
+        }
+
+        return units[0];
+    }
 
     function makeMultiCheckboxOptions(keyValues: IKeyValuePair[], setOptions: (options: IMultiCheckboxOption[]) => void, allKeys: { ID: number, Name: string, Description: string }[]) {
         if (allKeys == null || keyValues == null) return;
@@ -270,8 +318,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             setSelectedSet(new Set<number>());
         });
     }
-
-    // TODO: These can be in a shared place with eventSearchBar
 
     function formatWindowUnit(i: number) {
         if (i == 7)
@@ -340,6 +386,13 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         };
     }
 
+    const handleSetFilter = (start: string, end: string) => {
+        setTimeFilter({
+            start: start,
+            end: end,
+        })
+    };
+
     function getAdditionalAssetFields(setFields) {
         const handle = $.ajax({
             type: "GET",
@@ -376,7 +429,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             <>
                 <div className="navbar-nav mr-auto">
                     <span className="navbar-text">
-                        {timeFilter.date} {timeFilter.time} +/- {timeFilter.windowSize} {formatWindowUnit(timeFilter.timeWindowUnits)}
+                        {timeRange}
                     </span>
                 </div>
                 <div className="navbar-nav ml-auto" >
@@ -394,7 +447,9 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             <>
                 <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                     <li className="nav-item" style={{ width: '30%', paddingRight: 10 }} ref={timeRef}>
-                        <ReportTimeFilter filter={timeFilter} setFilter={setTimeFilter} showQuickSelect={true} />
+                        <TimeFilter filter={{ start: timeFilter.start, end: timeFilter.end }}
+                            setFilter={handleSetFilter} showQuickSelect={true} timeZone={timeZone}
+                            dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                     </li>
                     <li className="nav-item" style={{ width: '15%', paddingRight: 10 }} ref={filtRef}>
                         <fieldset className="border" style={{ padding: '10px' }}>
@@ -456,7 +511,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             Type='multi' SelectedSet={selectedSet} SetSelectedSet={setSelectedSet} EnableDragDrop={!props.Movable} />
                     </li>
                 </ul>
-                <div className="btn-group-vertical float-right" style={{paddingRight: '6px'}}>
+                <div className="btn-group-vertical float-right" style={{ paddingRight: '6px' }}>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}
                         data-tooltip='Hide' onMouseEnter={() => setHover('Hide')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.ArrowDropUp}</span>
@@ -465,7 +520,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         Hides Navbar
                     </ToolTip>
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`}
-                        onClick={() => { props.SetShowAllSettings(true); } }
+                        onClick={() => { props.SetShowAllSettings(true); }}
                         data-tooltip='Cog' onMouseEnter={() => setHover('Cog')} onMouseLeave={() => setHover('None')}>
                         <span>{SVGIcons.Settings}</span>
                     </button>

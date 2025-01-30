@@ -21,10 +21,11 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import _ from 'lodash';
-import { IMultiCheckboxOption, TrendSearch } from '../../../../global';
-import ReportTimeFilter from '../../../ReportTimeFilter';
+import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../../global';
+import { TimeFilter } from '@gpa-gemstone/common-pages'
 import { CheckBox, Input, MultiCheckBoxSelect, Select } from '@gpa-gemstone/react-forms';
+import { useSelector } from 'react-redux';
+import { SelectTimeZone, SelectDateTimeSetting } from '../../../SettingsSlice';
 
 interface IProps {
     Plot: TrendSearch.ITrendPlot,
@@ -44,6 +45,8 @@ const axisOptions: { Value: string, Label: string }[] = [
 
 const PlotSettingsTab = React.memo((props: IProps) => {
     const [limits, setLimits] = React.useState<AxisLimits>({ LeftUpper: 1, LeftLower: 0, RightUpper: 1, RightLower: 0 });
+    const timeZone = useSelector(SelectTimeZone);
+    const dateTimeSetting = useSelector(SelectDateTimeSetting);
 
     const setPlotLimits = React.useCallback((limits: AxisLimits) => {
         const newPlot = { ...props.Plot };
@@ -79,17 +82,26 @@ const PlotSettingsTab = React.memo((props: IProps) => {
         }
         return true;
     }
-        
+
     function isValid(): boolean {
         return validateTrendPlot('Height') && validateTrendPlot('Width') && validateLimit("LeftUpper") && validateLimit("RightUpper");
     }
+
+    // Wrapper function to match the expected type for setFilter
+    const handleSetFilter = (start: string, end: string) => {
+        const newFilter = {
+            start: start,
+            end: end,
+        }
+        props.SetPlot({ ...props.Plot, TimeFilter: newFilter })
+    };
 
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20, paddingTop: 20, overflowY: 'scroll', maxHeight: 'calc(100vh - 284px)' }}>
             <div className="col" style={{ width: '50%', height: "100%" }}>
                 <legend className="w-auto" style={{ fontSize: 'large' }}>Plot Settings:</legend>
                 <div className="row">
-                    <div className="col" style={{ width: '50%'}}>
+                    <div className="col" style={{ width: '50%' }}>
                         <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Plot Title'} Field={'Title'} Setter={props.SetPlot} Valid={() => true} />
                     </div>
                     <div className="col" style={{ width: '50%' }}>
@@ -134,8 +146,9 @@ const PlotSettingsTab = React.memo((props: IProps) => {
                         props.SetPlot({ ...props.Plot, PlotFilter: options });
                     }}
                 />
-                <ReportTimeFilter filter={props.Plot.TimeFilter} showQuickSelect={false}
-                    setFilter={newFilter => props.SetPlot({ ...props.Plot, TimeFilter: newFilter })} />
+                <TimeFilter filter={props.Plot.TimeFilter/* convertTimeFilter(props.Plot.TimeFilter) */} showQuickSelect={false}
+                    setFilter={handleSetFilter} timeZone={timeZone}
+                    dateTimeSetting={dateTimeSetting} isHorizontal={false} />
                 <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                     <legend className="w-auto" style={{ fontSize: 'large' }}>Axis Limits:</legend>
                     <div className="row">
@@ -152,17 +165,17 @@ const PlotSettingsTab = React.memo((props: IProps) => {
                         </div>
                         <div className="col" style={{ width: '50%' }}>
                             <Input<AxisLimits> Record={limits} Setter={setPlotLimits} Valid={validateLimit} Feedback={limitFeedback}
-                                Label='Left Axis Upper' Field='LeftUpper' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'}/>
+                                Label='Left Axis Upper' Field='LeftUpper' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'} />
                         </div>
                     </div>
                     <div className="row">
                         <div className="col" style={{ width: '50%' }}>
                             <Input<AxisLimits> Record={limits} Setter={setPlotLimits} Valid={validateLimit} Feedback={limitFeedback}
-                                Label='Right Axis Lower' Field='RightLower' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'}/>
+                                Label='Right Axis Lower' Field='RightLower' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'} />
                         </div>
                         <div className="col" style={{ width: '50%' }}>
                             <Input<AxisLimits> Record={limits} Setter={setPlotLimits} Valid={validateLimit} Feedback={limitFeedback}
-                                Label='Right Axis Upper' Field='RightUpper' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'}/>
+                                Label='Right Axis Upper' Field='RightUpper' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'} />
                         </div>
                     </div>
                 </fieldset>

@@ -22,16 +22,10 @@
 //******************************************************************************************************
 import * as React from 'react';
 import _ from 'lodash';
-
 import SEBrowserService from './../../../TS/Services/SEBrowser';
 import { Modal } from '@gpa-gemstone/react-interactive';
-import ReportTimeFilter from '../ReportTimeFilter';
+import { TimeFilter } from '@gpa-gemstone/common-pages'
 import { SEBrowser } from '../../global';
-
-
-const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS";
-
 
 export interface Substation {
     LocationID: number, LocationKey: string, AssetName: string
@@ -54,7 +48,8 @@ export interface CapBankReportNavBarProps extends EventFilter {
     selectedBank: number,
     StationId: number,
     numBanks: number,
-   
+    timeZone: string,
+    dateTimeMode: SEBrowser.TimeWindowMode
 }
 
 interface CapBank {
@@ -72,7 +67,7 @@ interface Istate {
     showFilter: boolean,
 }
 
-export default class CapBankReportNavBar extends React.Component<CapBankReportNavBarProps, Istate>{
+export default class CapBankReportNavBar extends React.Component<CapBankReportNavBarProps, Istate> {
     seBrowserService: SEBrowserService;
 
     constructor(props: CapBankReportNavBarProps, context) {
@@ -92,25 +87,25 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
             this.getCapBankData(this.props.StationId);
     }
 
-    componentWillReceiveProps(nextProps: CapBankReportNavBarProps) {
-      
+    UNSAFE_componentWillReceiveProps(nextProps: CapBankReportNavBarProps) {
+
         if (this.state.capBanks.length == 0)
             this.getCapBankData(nextProps.StationId);
     }
 
     getCapBankData(LocationID: number) {
-        
+
         this.seBrowserService.GetCapBankData(LocationID).done(results => {
             this.setState({ capBanks: results })
             if (results.length > 0)
                 this.setCapBank(results[0].Id)
             this.setBankNumber(-1);
         });
-       
+
     }
 
     setCapBank(capBankId: number) {
-       
+
         const object = _.clone(this.props) as CapBankReportNavBarProps;
         object.CapBankID = capBankId;
         object.selectedBank = -1;
@@ -127,7 +122,6 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
     }
 
     setDate(filter: SEBrowser.IReportTimeFilter) {
-
         const object = _.clone(this.props) as CapBankReportNavBarProps;
         object.TimeFilter = filter;
         this.props.stateSetter({ searchBarProps: object });
@@ -141,7 +135,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
 
             if (this.props.StationId == -1 && results.length > 0)
                 this.setStation(results[0].LocationID)
-           
+
         });
     }
 
@@ -151,7 +145,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
         this.props.stateSetter({ searchBarProps: object });
         this.getCapBankData(id);
     }
-   
+
     render() {
 
         const bankOptions: Array<JSX.Element> = [];
@@ -161,63 +155,75 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
             n = this.state.capBanks.find(cB => cB.Id == this.props.CapBankID).numBanks;
 
         bankOptions.push(<option key={-1} value={-1}> {'System'} </option>)
-        
+
 
         for (i = 0; i < n; i++) {
-            bankOptions.push(<option key={i} value={i+1}> {i+1} </option>)
+            bankOptions.push(<option key={i} value={i + 1}> {i + 1} </option>)
         }
 
         bankOptions.push(<option key={-2} value={-2}> {'Unknown'} </option>);
 
+        // Wrapper function to match the expected type for setFilter
+        const handleSetFilter = (start: string, end: string) => {
+            this.setDate({
+                start: start,
+                end: end,
+            });
+        };
+
         return (
             <>
-            <nav className="navbar navbar-expand-lg navbar-light bg-light">
+                <nav className="navbar navbar-expand-lg navbar-light bg-light">
 
-                <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
-                    <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
-                        <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Capacitor Bank:</legend>
-                                <form>
-                                    <label style={{ width: '100%', position: 'relative', float: "left"  }}>Substation: </label>
-                                    <div className="form-group" style={{ height: 30 }}>
+                    <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
+                        <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
+                            <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
+                                <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                                    <legend className="w-auto" style={{ fontSize: 'large' }}>Capacitor Bank:</legend>
+                                    <form>
+                                        <label style={{ width: '100%', position: 'relative', float: "left" }}>Substation: </label>
+                                        <div className="form-group" style={{ height: 30 }}>
                                             <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
                                                 this.setStation((e.target as any).value);
                                             }} value={this.props.StationId}>
                                                 {this.state.subStations.map(item => <option key={item.LocationID} value={item.LocationID} > {item.AssetName} </option>)}
-                                        </select>
-                                    </div>
-                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Capacitor Bank Group: </label>
-                                    <div className="form-group" style={{ height: 30 }}>
+                                            </select>
+                                        </div>
+                                        <label style={{ width: '100%', position: 'relative', float: "left" }}>Capacitor Bank Group: </label>
+                                        <div className="form-group" style={{ height: 30 }}>
                                             <select ref="Breaker" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
                                                 this.setCapBank(parseInt((e.target as any).value.toString()));
                                             }} value={this.props.CapBankID}>
                                                 {this.state.capBanks.map(item => <option key={item.Id} value={item.Id} > {item.AssetName} </option>)}
-                                        </select>
-                                    </div>
-                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Bank: </label>
-                                    <div className="form-group" style={{ height: 30 }}>
+                                            </select>
+                                        </div>
+                                        <label style={{ width: '100%', position: 'relative', float: "left" }}>Bank: </label>
+                                        <div className="form-group" style={{ height: 30 }}>
                                             <select ref="CapBankId" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
                                                 this.setBankNumber(parseInt((e.target as any).value.toString()));
                                             }} value={this.props.selectedBank}>
-                                            {bankOptions}
-                                        </select>
-                                    </div>
-                                </form>
-                            </fieldset>
-                        </li>
-                        <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
-                            <ReportTimeFilter filter={this.props.TimeFilter} setFilter={(f) => this.setDate(f)} showQuickSelect={true} />
-                        </li>
-                        <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                                                {bankOptions}
+                                            </select>
+                                        </div>
+                                    </form>
+                                </fieldset>
+                            </li>
+                            <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
+                                <TimeFilter filter={{
+                                    start: this.props.TimeFilter.start,
+                                    end: this.props.TimeFilter.end,
+                                }} setFilter={handleSetFilter} showQuickSelect={true} timeZone={this.props.timeZone}
+                                    dateTimeSetting={this.props.dateTimeMode} isHorizontal={false} />
+                            </li>
+                            <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
+                                <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                                     <legend className="w-auto" style={{ fontSize: 'large' }}>Additional Filter:</legend>
                                     <button className="btn btn-primary" onClick={() => this.setState({ showFilter: true })} >Edit Filter</button>
-                            </fieldset>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+                                </fieldset>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
 
                 <Modal Show={this.state.showFilter} ShowX={true} ShowCancel={false} Size={'xlg'} Title={'Filter Capacitor Bank Events'} ConfirmText={'Close'} CallBack={() => this.setState({ showFilter: false })}>
                     <div style={{ width: '100%', display: 'inline-flex' }}>
@@ -319,7 +325,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                                     { Label: 'Unknown', Values: [3] },
                                 ]} />
                         </div>
-                    
+
                     </div>
                 </Modal>
             </>
@@ -329,7 +335,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
 
 interface IFilter {
     Label: string,
-    Values: Array<number>    
+    Values: Array<number>
 }
 
 const CBEventFilter = (props: { filters: Array<IFilter>, Label: string, showAll: boolean, setter: (filter: Array<number>) => void, activeFilter: Array<number> }) => {
@@ -342,7 +348,7 @@ const CBEventFilter = (props: { filters: Array<IFilter>, Label: string, showAll:
         let updatedStat = isSelected.map((item, i) => (i === index ? !item : item));
 
         if (index !== -1 && allSelected)
-           updatedStat = isSelected.map((item, i) => (i === index ? false : true));
+            updatedStat = isSelected.map((item, i) => (i === index ? false : true));
 
         let result = [];
         updatedStat.forEach((item, i) => {
@@ -352,7 +358,7 @@ const CBEventFilter = (props: { filters: Array<IFilter>, Label: string, showAll:
 
         if (index === -1 && !allSelected)
             result.push(999);
-        
+
         props.setter(result)
     }
 
@@ -383,5 +389,5 @@ const CBEventFilter = (props: { filters: Array<IFilter>, Label: string, showAll:
                 </form>
             </fieldset>
         </div>
-        );
+    );
 }

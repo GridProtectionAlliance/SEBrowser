@@ -23,14 +23,15 @@
 import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
-import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../Global';
-import { SelectTrendDataSettings, SelectGeneralSettings } from './../../SettingsSlice';
+import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../global';
+import { SelectTrendDataSettings, SelectGeneralSettings, SelectDateTimeFormat } from './../../SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
 import { LoadingIcon, ToolTip } from '@gpa-gemstone/react-interactive';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
 import { Warning } from '@gpa-gemstone/gpa-symbols';
+import { useSelector } from 'react-redux';
 
 interface IProps {
     ID: string,
@@ -61,37 +62,15 @@ interface IChartData {
     AvgSeries: [number, number][]
 }
 
-// TODO: These can be in a shared place with eventSearchBar
-function formatWindowUnit(i: number) {
-    if (i == 7)
-        return "years";
-    if (i == 6)
-        return "months";
-    if (i == 5)
-        return "weeks";
-    if (i == 4)
-        return "days";
-    if (i == 3)
-        return "hours";
-    if (i == 2)
-        return "minutes";
-    if (i == 1)
-        return "seconds";
-    return "milliseconds";
-}
-
-// Formats that will be used for dateBoxes
-const timeFilterFormat = "MM/DD/YYYYHH:mm:ss.SSS";
-const serverFormat = "YYYY-MM-DD[T]HH:mm:ss.SSSZ";
-
 const LineGraph = React.memo((props: IProps) => {
+    const dateTimeFormat = useSelector(SelectDateTimeFormat);
     // Graph Consts
     const [timeLimits, setTimeLimits] = React.useState<[number, number]>([0, 1]);
     const [displayMin, setDisplayMin] = React.useState<boolean>(true);
     const [displayMax, setDisplayMax] = React.useState<boolean>(true);
     const [displayAvg, setDisplayAvg] = React.useState<boolean>(true);
     const [hover, setHover] = React.useState<boolean>(false);
-    const [allChartData, setAllChartData] = React.useState<Map<string,IChartData>>(new Map<string,IChartData>());
+    const [allChartData, setAllChartData] = React.useState<Map<string, IChartData>>(new Map<string, IChartData>());
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
     // Height mangement
     const [titleHeight, setTitleHeight] = React.useState<number>(0);
@@ -99,27 +78,26 @@ const LineGraph = React.memo((props: IProps) => {
     const [extraLegendHeight, setExtraLegendHeight] = React.useState<number>(0);
     const titleRef = React.useRef(null);
     const oldValues = React.useRef<{ ChannelInfo: TrendSearch.ILineSeries[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
-    const trendDatasettings = useAppSelector(SelectTrendDataSettings);
+    const trendDataSettings = useAppSelector(SelectTrendDataSettings);
     const generalSettings = useAppSelector(SelectGeneralSettings);
 
     React.useLayoutEffect(() => setTitleHeight(titleRef?.current?.offsetHeight ?? 0));
-
     React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;
-        const centerTime: moment.Moment = moment(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
-        const startTime: string = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
-        // Need to move back in the other direction, so entire window
-        const endTime: string = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
+        const startMoment: moment.Moment = moment(props.TimeFilter.start, dateTimeFormat);
+        const endMoment: moment.Moment = moment(props.TimeFilter.end, dateTimeFormat);
+        const startTime: string = startMoment.format(dateTimeFormat);
+        const endTime: string = endMoment.format(dateTimeFormat);
 
         let newChannels: number[] = props.ChannelInfo.map(chan => chan.Channel.ID);
-        let keptOldData: Map<string,IChartData> = new Map<string,IChartData>();
+        let keptOldData: Map<string, IChartData> = new Map<string, IChartData>();
         // If the time filter is the same, we only need to ask for information on channels we have not yet seen
         if (_.isEqual(props.TimeFilter, oldValues.current.TimeFilter)) {
             newChannels = newChannels.filter(channel => oldValues.current.ChannelInfo.findIndex(oldChannel => oldChannel.Channel.ID === channel) === -1);
             // This represents data we already have and still need (only makes sense if we aren't changing our time window)
             keptOldData = allChartData;
             keptOldData.forEach((data, channelID) => {
-                if (props.ChannelInfo.findIndex(channel => channel.Channel.ID === Number("0x"+channelID)) < 0)
+                if (props.ChannelInfo.findIndex(channel => channel.Channel.ID === Number("0x" + channelID)) < 0)
                     keptOldData.delete(channelID);
             }
             );
@@ -143,10 +121,11 @@ const LineGraph = React.memo((props: IProps) => {
     }, [props.PlotFilter]);
 
     React.useEffect(() => {
-        const centerTime: moment.Moment = moment.utc(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
-        const startTime: number = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
-        // Need to move back in the other direction, so entire window
-        const endTime: number = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
+        const startMoment: moment.Moment = moment.utc(props.TimeFilter.start, dateTimeFormat);
+        const endMoment: moment.Moment = moment.utc(props.TimeFilter.end, dateTimeFormat);
+
+        const startTime: number = startMoment.valueOf();
+        const endTime: number = endMoment.valueOf();
         setTimeLimits([startTime, endTime]);
     }, [props.TimeFilter]);
 
@@ -185,7 +164,7 @@ const LineGraph = React.memo((props: IProps) => {
                     console.error("Failed to parse point: " + jsonPoint);
                 }
                 if (point !== undefined) {
-                    const timeStamp = moment.utc(point.Timestamp, serverFormat).valueOf();
+                    const timeStamp = moment.utc(point.Timestamp, dateTimeFormat).valueOf();
                     if (cachedData.has(point.Tag)) {
                         const chartData = cachedData.get(point.Tag);
                         chartData.MinSeries.push([timeStamp, point.Minimum]);
@@ -235,12 +214,12 @@ const LineGraph = React.memo((props: IProps) => {
             <GraphError Height={props.Height} Title={props.Title}>
                 {props.AlwaysRender}
             </GraphError>
-            );
+        );
     else
         return (
             <div className="row">
                 <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={29} />
-                <h4 ref={titleRef} style={{ textAlign: "center", width: `${props.Width}px`, marginBottom: '0px'}}>
+                <h4 ref={titleRef} style={{ textAlign: "center", width: `${props.Width}px`, marginBottom: '0px' }}>
                     {props?.Title ?? ''}
                     {props?.ChannelInfo == null || props.ChannelInfo.findIndex(info => !(info.Min.HasData || info.Max.HasData || info.Avg.HasData)) != -1 ?
                         <span data-tooltip={props.ID} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>{Warning}</span>
@@ -248,8 +227,8 @@ const LineGraph = React.memo((props: IProps) => {
                     }
                 </h4>
                 <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2} menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
-                    defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
-                    legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric ?? false} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={false} limitZoom={true}
+                    defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDataSettings.MarkerSnapping}
+                    legend={trendDataSettings.LegendDisplay} useMetricFactors={props.Metric ?? false} holdMenuOpen={!trendDataSettings.StartWithOptionsClosed} showDateOnTimeAxis={false} limitZoom={true}
                     Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={props.MouseHighlight} yDomain={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {props?.ChannelInfo == null ? null : props.ChannelInfo.map((series, index) => {
                         const lineArray: JSX.Element[] = [];
