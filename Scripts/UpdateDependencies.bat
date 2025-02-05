@@ -83,9 +83,15 @@ IF NOT "%donotpush%" == "" GOTO Finish
 :PushChanges
 ECHO.
 ECHO Pushing changes to remote repository...
-"%git%" push
+SET remotebranch=master
+IF "%pushtoversionbranch%" == "true" SET remotebranch=ud-%version%
+"%git%" push origin HEAD:%remotebranch%
+
+:AfterPushChanges
 CD /D %pwd%
+IF EXIST "%afterpushscript%" CALL "%afterpushscript%" SystemCenter %remotebranch%
 
 :Finish
+CD /D %pwd%
 ECHO.
 ECHO Update complete
