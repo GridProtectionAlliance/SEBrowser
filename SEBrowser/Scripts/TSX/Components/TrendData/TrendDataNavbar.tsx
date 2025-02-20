@@ -449,7 +449,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             </div>
                         </fieldset>
                     </li>
-                    <li className="nav-item" style={{ width: '55%', paddingRight: 10, height: tableHeight }}>
+                    <li className="nav-item d-flex" style={{ width: '55%', paddingRight: 10, height: tableHeight }}>
                         <TrendChannelTable Height={tableHeight} SetTrendChannels={setTrendChannels} TrendChannels={trendChannels}
                             Type='multi' SelectedSet={selectedSet} SetSelectedSet={setSelectedSet} EnableDragDrop={!props.Movable} />
                     </li>
