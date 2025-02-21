@@ -488,8 +488,6 @@ export function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters
     if (time != null) {
         result["date"] = time.date;
         result["time"] = time.time;
-        console.log(time.date);
-        console.log(time.time);
         result["windowSize"] = time.windowSize;
         result["timeWindowUnits"] = time.timeWindowUnits;
     }

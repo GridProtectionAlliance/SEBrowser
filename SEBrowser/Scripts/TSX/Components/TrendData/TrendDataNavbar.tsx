@@ -136,7 +136,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         if (query['assets'] !== undefined) queryRef.current.assetIds = parseArrayIntoSet(query['assets'].toString());
 
         setQueryReady(true);
-        console.log(query);
     }, []);
 
     // Multicheckbox Options Updates
@@ -209,8 +208,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         SetParamArrayFilter('meters', trendFilter?.MeterList);
         SetParamArrayKeyVal('phases', trendFilter?.Phases);
         SetParamArrayKeyVal('groups', trendFilter?.ChannelGroups);
-
-        console.log(timeFilter);
 
         const q = queryString.stringify(queryParams, "&", "=", { encodeURIComponent: queryString.escape });
         const handle = setTimeout(() => navigate(location.pathname + '?' + q), 500);
@@ -452,7 +449,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             </div>
                         </fieldset>
                     </li>
-                    <li className="nav-item" style={{ width: '55%', paddingRight: 10, height: tableHeight }}>
+                    <li className="nav-item d-flex" style={{ width: '55%', paddingRight: 10, height: tableHeight }}>
                         <TrendChannelTable Height={tableHeight} SetTrendChannels={setTrendChannels} TrendChannels={trendChannels}
                             Type='multi' SelectedSet={selectedSet} SetSelectedSet={setSelectedSet} EnableDragDrop={!props.Movable} />
                     </li>

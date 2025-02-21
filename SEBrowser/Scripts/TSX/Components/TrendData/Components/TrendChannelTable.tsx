@@ -135,9 +135,8 @@ const TrendChannelTable = (props: IProps) => {
                 }
             }}
             Selected={(item) => props.Type === 'multi' ? props.SelectedSet.has(item.ID) : props.Selected === item.ID}
-            TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
+            TheadStyle={{ fontSize: 'smaller' }}
             TbodyStyle={{ display: 'block', overflowY: 'scroll', height: props.Height - 45, userSelect: 'none'}}
-            RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
             TableClass="table table-hover"
             TableStyle={{ marginBottom: 0 }}>
             <Column<TrendSearch.ITrendChannel>

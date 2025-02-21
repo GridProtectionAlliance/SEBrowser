@@ -27,7 +27,6 @@ import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SelectTypeFilter } from './EventSearchSlice';
 import {  SetFilters } from './EventSearchSlice';
 import {  EventTypeSlice } from '../../Store';
-import { SEBrowser } from '../../Global';
 import { OpenXDA } from '@gpa-gemstone/application-typings';
 interface IProps {
     Height: number
