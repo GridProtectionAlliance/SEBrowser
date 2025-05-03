@@ -447,6 +447,8 @@
     <Compile Include="Controllers\OpenXDA\TrendChannelController.cs" />
     <Compile Include="Controllers\OpenXDA\ModelControlers.cs" />
     <Compile Include="Controllers\RoleController.cs" />
+    <Compile Include="EventWidgets\Configuration\ConfigurationParser.cs" />
+    <Compile Include="EventWidgets\Configuration\ConfigurationLoader.cs" />
     <Compile Include="EventWidgets\Controller\AssetFaultSegments.cs" />
     <Compile Include="EventWidgets\Controller\AssetHistoryTable.cs" />
     <Compile Include="EventWidgets\Controller\AssetHistoryStats.cs" />
