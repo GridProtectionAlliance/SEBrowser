@@ -227,3 +227,6 @@ _Pvt_Extensions
 /SEBrowser/NUglify.dll
 /Dependencies/NuGet
 /SEBrowser/web.config.backup
+/SEBrowser/Scripts/vendors-node_modules_canvg_lib_index_es_js.js
+/SEBrowser/Scripts/vendors-node_modules_dompurify_dist_purify_js.js
+/SEBrowser/Web.config
