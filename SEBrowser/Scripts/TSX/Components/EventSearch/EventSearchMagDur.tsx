@@ -22,12 +22,12 @@
 //******************************************************************************************************
 
 import * as React from 'react';
-import { SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs, SelectCharacteristicFilter, SelectEventSearchsSortField, SelectEventSearchsAscending, Sort } from './EventSearchSlice';
+import { SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs, SelectCharacteristicFilter, SelectEventSearchsSortField, SelectEventSearchsAscending, Sort } from '../../Store/EventSearchSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { Redux } from '../../global';
-import { MagDurCurveSlice } from '../../Store';
+import { MagDurCurveSlice } from '../../Store/Store';
 import { Line, Plot, Circle, AggregatingCircles } from '@gpa-gemstone/react-graph';
-import { SelectEventSearchSettings, SelectGeneralSettings } from '../SettingsSlice';
+import { SelectEventSearchSettings, SelectGeneralSettings } from '../../Store/SettingsSlice';
 import { OverlayDrawer } from '@gpa-gemstone/react-interactive';
 import { ConfigurableTable, ConfigurableColumn, Column } from '@gpa-gemstone/react-table';
 import { OpenXDA } from '@gpa-gemstone/application-typings'

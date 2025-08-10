@@ -24,9 +24,9 @@
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { GenericSlice } from '@gpa-gemstone/react-interactive';
 import { configureStore } from '@reduxjs/toolkit';
-import EventSearchReducer from './Components/EventSearch/EventSearchSlice';
-import { SettingsReducer } from './Components/SettingsSlice';
-import { TrendSearch } from './global';
+import EventSearchReducer from './EventSearchSlice';
+import { SettingsReducer } from './SettingsSlice';
+import { TrendSearch } from '../global';
 
 declare let homePath: string;
 

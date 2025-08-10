@@ -24,7 +24,7 @@ import React from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../Global';
-import { SelectTrendDataSettings, SelectGeneralSettings } from './../../SettingsSlice';
+import { SelectTrendDataSettings, SelectGeneralSettings } from '../../../Store/SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';

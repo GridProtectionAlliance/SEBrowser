@@ -26,7 +26,7 @@ import moment from 'moment';
 import momentTZ from 'moment-timezone';
 import { DatePicker, Select, Input } from '@gpa-gemstone/react-forms'
 import { useSelector } from 'react-redux';
-import { SelectTimeZone, SelectDateTimeSetting } from './SettingsSlice';
+import { SelectTimeZone, SelectDateTimeSetting } from '../Store/SettingsSlice';
 import { findAppropriateUnit, getMoment, getStartEndTime, momentUnit } from './EventSearch/TimeWindowUtils';
 
 interface IProps {

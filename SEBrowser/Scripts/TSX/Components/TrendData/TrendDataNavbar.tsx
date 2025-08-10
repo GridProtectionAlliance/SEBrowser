@@ -25,7 +25,7 @@ import React from 'react';
 import _ from 'lodash';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AssetSlice, MeterSlice, PhaseSlice, ChannelGroupSlice } from '../../Store';
+import { AssetSlice, MeterSlice, PhaseSlice, ChannelGroupSlice } from '../../Store/Store';
 import { SEBrowser, TrendSearch, IMultiCheckboxOption } from '../../Global';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';

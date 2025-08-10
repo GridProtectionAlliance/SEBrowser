@@ -30,9 +30,9 @@ import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, Axis
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { LineGraph } from './LineGraph';
 import { SEBrowser, TrendSearch } from '../../../global';
-import { SelectTrendDataSettings, SelectGeneralSettings } from './../../SettingsSlice';
+import { SelectTrendDataSettings, SelectGeneralSettings } from '../../../Store/SettingsSlice';
 import { useAppSelector } from './../../../hooks';
-import { GenerateQueryParams } from '../../EventSearch/EventSearchSlice';
+import { GenerateQueryParams } from '../../../Store/EventSearchSlice';
 import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
 import { SettingsModal, SeriesSettings } from '../Settings/SettingsModal';
 import { CyclicHistogram, ICyclicSeries } from './CyclicHistogram';

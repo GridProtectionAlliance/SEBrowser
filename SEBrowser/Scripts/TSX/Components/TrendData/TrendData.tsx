@@ -28,7 +28,7 @@ import TrendSearchNavbar from './TrendDataNavbar';
 import TrendPlot from './TrendPlot/TrendPlot';
 import { TrendSearch } from '../../Global';
 import AllSettingsModal from './Settings/AllSettingsModal';
-import { SelectTrendDataSettings } from './../SettingsSlice';
+import { SelectTrendDataSettings } from '../../Store/SettingsSlice';
 import { useAppSelector } from './../../hooks';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 

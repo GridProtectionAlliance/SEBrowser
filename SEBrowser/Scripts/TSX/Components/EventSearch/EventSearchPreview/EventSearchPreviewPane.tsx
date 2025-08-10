@@ -25,12 +25,12 @@
 import React from 'react';
 import { Redux, SEBrowser } from '../../../global'
 import { useAppSelector } from '../../../hooks';
-import { SelectEventSearchByID } from './../EventSearchSlice';
-import { SelectWidgetCategories } from '../../SettingsSlice';
+import { SelectEventSearchByID } from '../../../Store/EventSearchSlice';
+import { SelectWidgetCategories } from '../../../Store/SettingsSlice';
 import { TabSelector } from '@gpa-gemstone/react-interactive';
 import WidgetRouter from '../../../../../EventWidgets/TSX/WidgetWrapper';
 import { EventWidget } from '../../../../../EventWidgets/TSX/global';
-import { EventNoteSlice, MeterNoteSlice, AssetNoteSlice, LocationNoteSlice, EventTypeSlice } from '../../../Store';
+import { EventNoteSlice, MeterNoteSlice, AssetNoteSlice, LocationNoteSlice, EventTypeSlice } from '../../../Store/Store';
 interface IProps {
     EventID: number,
     InitialTab?: string,

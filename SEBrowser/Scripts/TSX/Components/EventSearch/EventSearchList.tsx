@@ -27,8 +27,8 @@ import { LoadingIcon, OverlayDrawer } from '@gpa-gemstone/react-interactive';
 import { Column, ConfigurableTable, ConfigurableColumn } from '@gpa-gemstone/react-table';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import {  Redux } from '../../global';
-import { SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from './EventSearchSlice';
-import { SelectEventSearchSettings } from '../SettingsSlice';
+import { SelectEventSearchsAscending, SelectEventSearchsSortField, Sort, SelectEventSearchsStatus, FetchEventSearches, SelectEventSearchs } from '../../Store/EventSearchSlice';
+import { SelectEventSearchSettings } from '../../Store/SettingsSlice';
 
 interface IProps {
     eventid: number,

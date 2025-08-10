@@ -22,7 +22,7 @@
 //******************************************************************************************************
 
 import { Provider } from 'react-redux';
-import store from './Store';
+import store from './Store/Store';
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -36,10 +36,10 @@ import DERAnalysisReport from './Components/DERAnalysisReport/DERAnalysisReport'
 
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { Application, Page, Section } from '@gpa-gemstone/react-interactive';
-import Settings from './Settings';
+import Settings from './Store/Settings';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { useAppDispatch } from './hooks';
-import { LoadSettings } from './Components/SettingsSlice';
+import { LoadSettings } from './Store/SettingsSlice';
 
 const SEBrowserMainPage = () => {
     const dispatch = useAppDispatch();
