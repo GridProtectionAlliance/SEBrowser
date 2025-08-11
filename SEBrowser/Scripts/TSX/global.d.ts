@@ -62,7 +62,8 @@ export namespace Redux {
         AssetNote: IGenericSliceState<XDA.Types.Note>,
         LocationNote: IGenericSliceState<XDA.Types.Note>,
         Phase: IGenericSliceState<XDA.Types.Phase>,
-        ChannelGroup: IGenericSliceState<SEBrowser.ChannelGroup>
+        ChannelGroup: IGenericSliceState<SEBrowser.ChannelGroup>,
+        ValueList: iValueListSliceState
     }
 
     interface State<T> {
@@ -111,6 +112,19 @@ export namespace Redux {
         MarkerSnapping: boolean,
         StartWithOptionsClosed: boolean,
         LegendDisplay: 'bottom' | 'right' | 'hidden'
+    }
+
+    interface IValueListSliceState {
+        Status: {
+            [group: string]: Application.Types.Status
+        }
+        Data: {
+            [group: string]: SystemCenter.Types.ValueListItem[]
+        }
+        ActiveFetchID: {
+            [group: string]: string[]
+        }
+        Error: null | string
     }
 }
 export namespace SEBrowser {
