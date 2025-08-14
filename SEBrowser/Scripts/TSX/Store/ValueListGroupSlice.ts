@@ -39,6 +39,7 @@ export default class ValueListGroupSlice {
     }
 
     constructor() {
+        this.fetchHandles = {};
         this.Fetch = createAsyncThunk(`${this.Name}/Fetch`, async (groupName: string, { signal }) => {
             if (this.fetchHandles?.[groupName]?.abort != null)
                 this.fetchHandles[groupName].abort('New Intiated');
@@ -92,7 +93,7 @@ export default class ValueListGroupSlice {
                     if (state.ActiveFetchID[action.meta.arg].length > 0)
                         return;
 
-                    state[action.meta.arg].Status = 'error';
+                    state.Status[action.meta.arg] = 'error';
                     state.Error = (action.error.message == null ? '' : action.error.message);
                 });
             }
@@ -101,6 +102,6 @@ export default class ValueListGroupSlice {
         this.Reducer = this.Slice.reducer;
     }
 
-    public Status = (state: any, group: string) => state[this.Name].Status[group] as Application.Types.Status;
-    public Data = (state: any, group: string) => state[this.Name].Data[group] as SystemCenter.Types.ValueListItem;
+    public Status = (state: any, group: string) => (state[this.Name].Status?.[group] ?? 'unintiated') as Application.Types.Status;
+    public Data = (state: any, group: string) => (state[this.Name].Data?.[group] ?? []) as SystemCenter.Types.ValueListItem[];
 }
