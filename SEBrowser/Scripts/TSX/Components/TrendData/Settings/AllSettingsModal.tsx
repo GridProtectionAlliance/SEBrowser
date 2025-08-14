@@ -110,6 +110,15 @@ const AllSettingsModal = React.memo((props: IProps) => {
         setLinePlots(newBuffer);
     }, [linePlots]);
 
+    React.useEffect(() => {
+        // Clear buffers
+        if (props.Show) {
+            setMarkers(props.MarkerDefaults);
+            setLinePlots(props.LinePlotDefaults);
+            setAllPlot(props.Defaults);
+        }
+    }, [props.Show])
+
     return (
         <Modal Title='Change Settings for All Plots' CallBack={settingsModalCallback} Show={props.Show} Size='xlg' BodyStyle={{ maxHeight: 'calc(100vh - 210px)', overflowY: 'hidden' }}
             ConfirmText="Apply to Existing & Future" CancelText="Discard Changes" TertiaryText="Apply to Future" ShowCancel={true} ShowTertiary={true} DisableConfirm={confirmDisabled} DisableTertiary={confirmDisabled}>
