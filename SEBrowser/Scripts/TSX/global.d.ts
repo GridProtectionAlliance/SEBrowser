@@ -161,6 +161,7 @@ export namespace TrendSearch {
         Description: string
     }
 
+    // Todo: Now in gemstone, change to use that when gemstone is updated
     interface ITrendChannel {
         ID: number,
         Name: string,
@@ -175,9 +176,16 @@ export namespace TrendSearch {
         Phase: string,
         ChannelGroup: string,
         ChannelGroupType: string,
-        Unit: string
+        Unit: string,
+        Series: ISeries[]
     }
 
+    interface ISeries {
+        ID: number, ChannelID: number,
+        TypeName: string, TypeDescription: string, 
+    }
+
+    // Data representation from HIDS
     interface IPQData {
         Tag: string,
         Minimum: number,
