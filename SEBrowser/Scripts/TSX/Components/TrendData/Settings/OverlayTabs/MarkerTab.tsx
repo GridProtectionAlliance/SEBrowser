@@ -189,7 +189,7 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
             <div className="col" style={{ width: '40%'}}>
-                <TrendMarkerTable Height={markersHeight} Markers={allMarkers} DisplayDescription={props.IsGlobalSettings}
+                <TrendMarkerTable Height={markersHeight} Markers={allMarkers} IsGlobal={props.IsGlobalSettings}
                     RemoveMarker={(marker) => applyToMarker(marker, removeFromArray)}
                     Selected={currentMarker} SetSelected={setCurrentMarker} />
             </div>

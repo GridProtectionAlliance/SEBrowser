@@ -33,7 +33,7 @@ interface IProps {
     Selected: TrendSearch.IMarker,
     SetSelected: (marker: TrendSearch.IMarker) => void,
     Height: number,
-    DisplayDescription: boolean
+    IsGlobal: boolean
 }
 
 const TrendMarkerTable = (props: IProps) => {
@@ -84,16 +84,16 @@ const TrendMarkerTable = (props: IProps) => {
             <Column<TrendSearch.IMarker> Key="symbol" Content={row => {
                 switch (row.item.type) {
                     case "VeHo":
-                        if (props.DisplayDescription ?? false) return "+"
+                        if (props.IsGlobal ?? false) return "+"
                         return row.item["isHori"] ? "-" : "|"
                     case "Symb": return row.item["symbol"];
                     default:
                         return "Event";
                 }
             }}
-            >&nbsp</Column>
+            >{""}</Column>
             <Column<TrendSearch.IMarker> Key="type" Field="type" Content={row => {
-                if (props.DisplayDescription ?? false) {
+                if (props.IsGlobal ?? false) {
                     switch (row.item.type) {
                         case "VeHo":
                             return "Vertical and Horizontal Line Marker(s)";
@@ -113,11 +113,13 @@ const TrendMarkerTable = (props: IProps) => {
                     }
                 }
             }}
-            >{(props.DisplayDescription ?? false) ? "" : "Value"}</Column>
-            <Column<TrendSearch.IMarker> Key="RemoveChannel"
-                RowStyle={{ width: "50px" }} HeaderStyle={{ width: "50px" }}
-                Content={row => removeButton(row.item)}
-            >&nbsp</Column>
+            >{(props.IsGlobal ?? false) ? "" : "Value"}</Column>
+            {(props.IsGlobal ?? false) ? null :
+                <Column<TrendSearch.IMarker> Key="RemoveChannel"
+                    RowStyle={{ width: "50px" }} HeaderStyle={{ width: "50px" }}
+                    Content={row => removeButton(row.item)}
+                >{""}</Column>
+            }
         </Table>
     );
 }
