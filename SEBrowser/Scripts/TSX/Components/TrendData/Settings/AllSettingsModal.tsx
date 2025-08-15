@@ -104,7 +104,7 @@ const AllSettingsModal = React.memo((props: IProps) => {
         setMarkers(newBuffer);
     }, [markers]);
 
-    const linePlotSetter = React.useCallback((record: any, field: 'Min' | 'Max' | 'Avg' | 'Colors') => {
+    const linePlotSetter = React.useCallback((record: any, field: 'Minimum' | 'Maximum' | 'Average' | 'Colors') => {
         const newBuffer = _.cloneDeep(linePlots);
         newBuffer[field].Default = record;
         setLinePlots(newBuffer);

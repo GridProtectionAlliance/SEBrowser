@@ -106,9 +106,9 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             const randomColor = SpacedColor(0.9, 0.9);
             const newColor: TrendSearch.IColor = {
                 Label: '',
-                MinColor: randomColor,
-                AvgColor: randomColor,
-                MaxColor: randomColor
+                Minimum: randomColor,
+                Average: randomColor,
+                Maximum: randomColor
             }
             return newColor;
         }
@@ -214,9 +214,9 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             }
         const newSettings = [...plotAllSeriesSettings];
         let shouldApply = false;
-        if (props.LineDefaults.Min.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Min.Default, 'Min');
-        if (props.LineDefaults.Avg.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Avg.Default, 'Avg');
-        if (props.LineDefaults.Max.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Max.Default, 'Max');
+        if (props.LineDefaults.Minimum.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Minimum.Default, 'Minimum');
+        if (props.LineDefaults.Average.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Average.Default, 'Average');
+        if (props.LineDefaults.Maximum.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Maximum.Default, 'Maximum');
         if (props.LineDefaults.Colors.ShouldApply) {
             shouldApply = true;
             colorIndex.current = { ind: -1, assetMap: new Map<string, number>() };
