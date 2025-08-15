@@ -34,8 +34,9 @@ import { SelectTrendDataSettings, SelectGeneralSettings } from '../../../Store/S
 import { useAppSelector } from './../../../hooks';
 import { GenerateQueryParams } from '../../../Store/EventSearchSlice';
 import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
-import { SettingsModal, SeriesSettings } from '../Settings/SettingsModal';
-import { CyclicHistogram, ICyclicSeries } from './CyclicHistogram';
+import { SettingsModal } from '../Settings/SettingsModal';
+import { CyclicHistogram } from './CyclicHistogram';
+import { findCommonComponents } from '../HelperFunctions';
 
 type customSelects = "drag" | "symbol" | "horizontal" | "vertical";
 const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
@@ -209,7 +210,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                     const newColor = getColor(newColors, setting.Channel);
                     Object.keys(newSettings[ind].Settings).forEach(key => {
                         newSettings[ind].Settings[key].Color = newColor[key] ?? newColor.Average
-                });
+                    });
                 });
             }
         const newSettings = [...plotAllSeriesSettings];
@@ -229,19 +230,24 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
     // Set default channel settings
     React.useEffect(() => {
         if (props?.Plot?.Channels?.some === undefined) return;
-        // These two are only used in the label construction
-        // If two channels are found with different meternames, we must append the meter name to the channel name
-        const useMeterAppend: boolean = props.Plot.Channels.some((channel) =>
-            channel.MeterKey !== props.Plot.Channels[0].MeterKey);
-        // Second verse, same as the first, using asset names
-        const useAssetAppend: boolean = props.Plot.Channels.some((channel) =>
-            channel.AssetKey !== props.Plot.Channels[0].AssetKey);
 
-        const constructLabel: (channel: TrendSearch.ITrendChannel) => string = (channel) => {
-            let label: string = channel.Name;
-            label = (useAssetAppend ? `${channel.AssetName} - ` : "") + label;
-            label = (useMeterAppend ? `${channel.MeterShortName ?? channel.MeterName} - ` : "") + label;
-            return label;
+        const allCommon = findCommonComponents(props.Plot.LabelComponents, props.Plot.Channels);
+
+        const constructLabel: (channel: TrendSearch.ITrendChannel, series: TrendSearch.ISeries) => string = (channel, series) => {
+            let label: string = "";
+            props.Plot.LabelComponents.forEach((component, idx) => {
+                const parts = component.split('.');
+                if (!allCommon[idx]) {
+                    if (parts.length !== 2)
+                        label += `- ${component}`;
+                    else if ('series'.localeCompare(parts[0], undefined, { sensitivity: 'base' }) === 0)
+                        label += `- ${series?.[parts[1]]}`;
+                    else if ('channel'.localeCompare(parts[0], undefined, { sensitivity: 'base' }) === 0)
+                        label += `- ${channel?.[parts[1]]}`;
+                }
+            });
+
+            return label.slice(2, label.length);
         };
 
         const getDefaultValue: (channel: TrendSearch.ITrendChannel, passChannelToColor: boolean) => TrendSearch.ISeriesSettings = (channel, passChannelToColor) => {
@@ -302,28 +308,44 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                 return oldSettings;
             })
         );
-    }, [props.Plot.Type, props.Plot.Channels]);
+    }, [props.Plot.Type, props.Plot.Channels, props.Plot.LabelComponents]);
 
-    // Set default plot settings
+    // Handle Title
     React.useEffect(() => {
         if (plotAllSeriesSettings === null) return;
         const newPlot = { ...props.Plot };
+
         if (!changedProperties.current.has('Title')) {
-            let title = plotAllSeriesSettings.some(series => series.Channel.MeterID !== plotAllSeriesSettings[0].Channel.MeterID) ?
-                "Multi-Meter " : (plotAllSeriesSettings[0].Channel.MeterShortName ?? plotAllSeriesSettings[0].Channel.MeterName);
-            title += plotAllSeriesSettings.some(series => series.Channel.AssetID !== plotAllSeriesSettings[0].Channel.AssetID) ?
-                "" : ` - ${plotAllSeriesSettings[0].Channel.AssetName}`;
-            if (plotAllSeriesSettings[0].Channel.ChannelGroup != null) {
-                title += plotAllSeriesSettings.some(series => series.Channel.ChannelGroup !== plotAllSeriesSettings[0].Channel.ChannelGroup) ?
-                    "" : ` - ${plotAllSeriesSettings[0].Channel.ChannelGroup}`;
+            if (props.Plot.Channels.length === 0) newPlot.Title = "Plot";
+            else {
+                const allCommon = findCommonComponents(props.Plot.LabelComponents, props.Plot.Channels);
+                let title: string = "";
+                props.Plot.LabelComponents.forEach((component, idx) => {
+                    const parts = component.split('.');
+                    if (allCommon[idx]) {
+                        if (parts.length !== 2)
+                            title += `- ${component}`;
+                        else if ('series'.localeCompare(parts[0], undefined, { sensitivity: 'base' }) === 0)
+                            title += `- ${props.Plot.Channels[0].Series?.[0]?.[parts[1]]}`;
+                        else if ('channel'.localeCompare(parts[0], undefined, { sensitivity: 'base' }) === 0)
+                            title += `- ${props.Plot.Channels[0]?.[parts[1]]}`;
+                    }
+                });
+
+                newPlot.Title = title.slice(2, title.length);
             }
-            newPlot.Title = title;
             props.SetPlot(newPlot.ID, newPlot, 'Title');
         }
         if (!changedProperties.current.has('XAxisLabel')) {
             newPlot.XAxisLabel = "";
             props.SetPlot(newPlot.ID, newPlot, 'XAxisLabel');
         }
+    }, [plotAllSeriesSettings, props.Plot.LabelComponents]);
+
+    // Handle Axis Labels
+    React.useEffect(() => {
+        if (plotAllSeriesSettings === null) return;
+        const newPlot = { ...props.Plot };
 
         // Need this function for vertical labels
         const vertLabelFunc = (field: 'YRightLabel' | 'YLeftLabel') => {

@@ -566,6 +566,7 @@
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\SOE.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\StructureInfo.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\Common\NavbarFilterButton.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\HelperFunctions.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Store\SettingsSlice.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Store\EventSearchSlice.ts" />
