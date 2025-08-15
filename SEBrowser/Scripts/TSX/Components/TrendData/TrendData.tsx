@@ -29,12 +29,14 @@ import TrendPlot from './TrendPlot/TrendPlot';
 import { TrendSearch } from '../../Global';
 import AllSettingsModal from './Settings/AllSettingsModal';
 import { SelectTrendDataSettings } from '../../Store/SettingsSlice';
-import { useAppSelector } from './../../hooks';
+import { useAppSelector, useAppDispatch } from './../../hooks';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
+import { ValueListGroupSlice } from '../../Store/Store';
 
 const momentDateFormat = "MM/DD/YYYY";
 const trendSearchId = "TrendDataChartAll";
 const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFilter"]);
+const defaultValueList = "TrendLabelDefaults";
 
 const TrendData = () => {
     const closureHandler = React.useRef<((o: boolean) => void)>(() => { return; });
@@ -49,7 +51,8 @@ const TrendData = () => {
         Width: 50,
         Height: 50,
         AxisZoom: 'AutoValue',
-        ShowEvents: false
+        ShowEvents: false,
+        LabelComponents: []
     });
     const [markerDefaults, setMarkerDefaults] = React.useState<TrendSearch.IMarkerSettingsBundle>({
         Symb: {
@@ -174,6 +177,10 @@ const TrendData = () => {
     const [plotsMovable, setPlotsMovable] = React.useState<boolean>(false);
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
 
+    const defaultSliceStatus = useAppSelector((state) => ValueListGroupSlice.Status(state, defaultValueList));
+    const defaultSliceData = useAppSelector((state) => ValueListGroupSlice.Data(state, defaultValueList));
+    const dispatch = useAppDispatch();
+
     function getShowNav(): boolean {
         if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.TrendData.ShowNav'))
             return JSON.parse(localStorage.getItem('SEbrowser.TrendData.ShowNav'));
@@ -246,6 +253,17 @@ const TrendData = () => {
     const toggleNavbar = React.useCallback((
         () => setShowNav(!showNav)
     ), [showNav]);
+
+    React.useEffect(() => {
+        if (defaultSliceStatus === 'unintiated' || defaultSliceStatus === 'changed')
+            dispatch(ValueListGroupSlice.Fetch(defaultValueList));
+    }, [defaultSliceStatus]);
+
+    React.useEffect(() => {
+        // only allow settings this if it hasn't been set before
+        if (defaultSliceStatus === 'idle' && defaultPlotSettings.LabelComponents.length === 0)
+            setDefaultPlotSettings({ ...defaultPlotSettings, LabelComponents: defaultSliceData.map(item => item.Value) });
+    }, [defaultSliceStatus]);
 
     return (
         <div className="container-fluid d-flex h-100 flex-column" style={{ height: 'inherit' }}>

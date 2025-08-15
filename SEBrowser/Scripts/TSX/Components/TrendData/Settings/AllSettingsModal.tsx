@@ -87,12 +87,6 @@ const AllSettingsModal = React.memo((props: IProps) => {
             // Handling All Plots
             props.SetDefaults(allPlot);
         }
-        // Clear buffers
-        else {
-            setMarkers(props.MarkerDefaults);
-            setLinePlots(props.LinePlotDefaults);
-            setAllPlot(props.Defaults);
-        }
         // Close modal
         props.SetShow(false);
     }
@@ -136,9 +130,9 @@ const AllSettingsModal = React.memo((props: IProps) => {
             </div>
             <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "styles" ? " active" : "fade")} id="styles">
-                    <LineStylesTab MinStyle={linePlots.Min.Default} SetMinStyle={l => linePlotSetter(l, 'Min')}
-                        AvgStyle={linePlots.Avg.Default} SetAvgStyle={l => linePlotSetter(l, 'Avg')}
-                        MaxStyle={linePlots.Max.Default} SetMaxStyle={l => linePlotSetter(l, 'Max')} />
+                    <LineStylesTab MinStyle={linePlots.Minimum.Default} SetMinStyle={l => linePlotSetter(l, 'Minimum')}
+                        AvgStyle={linePlots.Average.Default} SetAvgStyle={l => linePlotSetter(l, 'Average')}
+                        MaxStyle={linePlots.Maximum.Default} SetMaxStyle={l => linePlotSetter(l, 'Maximum')} />
                 </div>
             </div>
             <div className="tab-content" style={{ overflow: 'hidden' }}>

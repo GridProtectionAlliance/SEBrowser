@@ -275,7 +275,8 @@ export namespace TrendSearch {
         Height?: number,
         ShowEvents?: boolean,
         AxisZoom?: 'Manual' | 'AutoValue' | 'HalfAutoValue',
-        DefaultZoom?: [number, number][]
+        DefaultZoom?: [number, number][],
+        LabelComponents?: string[],
     }
 
     type LineStyles = "short-dash" | "long-dash" | "dash" | "solid";

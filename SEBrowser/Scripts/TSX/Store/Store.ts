@@ -68,7 +68,7 @@ const reducer = {
     LocationNote: LocationNoteSlice.Reducer,
     Phase: PhaseSlice.Reducer,
     ChannelGroup: ChannelGroupSlice.Reducer,
-    ValueListGroup: ValueListGroupSlice.Reducer
+    ValueList: ValueListGroupSlice.Reducer
 }
 
 const store = configureStore({ reducer });
