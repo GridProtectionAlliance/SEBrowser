@@ -21,20 +21,19 @@
 //
 //******************************************************************************************************
 
-using GSF.Data;
-using GSF.Data.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Web.Http;
 using System.Linq;
-using Newtonsoft.Json.Linq;
-using System.Threading.Tasks;
 using System.Net.Http;
-using openXDA.APIAuthentication;
 using System.Text;
-using System.IO;
-using System.Net.Http.Headers;
+using System.Threading.Tasks;
+using System.Web.Http;
+using GSF.Data;
+using GSF.Data.Model;
+using GSF.Reflection;
+using Newtonsoft.Json.Linq;
+using SEBrowser.Model;
 
 namespace SEBrowser.Controllers.OpenXDA
 {
@@ -48,7 +47,7 @@ namespace SEBrowser.Controllers.OpenXDA
 
         #region [ Http Methods ]
         [Route("GetTrendSearchData"), HttpPost]
-        public DataTable GetTrendSearchData([FromBody] JObject postData)
+        public IHttpActionResult GetTrendSearchData([FromBody] JObject postData)
         {
             using (AdoDataConnection connection = new(SettingsCategory))
             {
@@ -57,7 +56,7 @@ namespace SEBrowser.Controllers.OpenXDA
                 string assetFilter = GetIDFilter(postData["AssetList"], "Asset.ID");
                 string meterFilter = GetIDFilter(postData["MeterList"], "Meter.ID");
                 // Meters must be selected
-                if (string.IsNullOrEmpty(meterFilter)) return new DataTable();
+                if (string.IsNullOrEmpty(meterFilter)) return Ok(new List<TrendChannel>());
 
                 string filters =
                     $@"Channel.Trend = 1
@@ -66,35 +65,18 @@ namespace SEBrowser.Controllers.OpenXDA
                     {(string.IsNullOrEmpty(meterFilter) ? "" : $"AND {meterFilter}")}
                     {(string.IsNullOrEmpty(assetFilter) ? "" : $"AND {assetFilter}")}";
 
-                string query =
-                    $@"SELECT
-	                    Channel.ID,
-	                    Channel.Name,
-	                    Channel.Description,
-                        Asset.ID as AssetID,
-	                    Asset.AssetKey,
-	                    Asset.AssetName,
-                        Meter.ID as MeterID,
-	                    Meter.AssetKey AS MeterKey,
-	                    Meter.Name AS MeterName,
-                        Meter.ShortName AS MeterShortName,
-	                    Phase.Name AS Phase,
-	                    ChannelGroup.Name AS ChannelGroup,
-	                    ChannelGroupType.DisplayName AS ChannelGroupType,
-	                    ChannelGroupType.Unit
-                    FROM 
-	                    Channel LEFT JOIN
-	                    Phase ON Channel.PhaseID = Phase.ID LEFT JOIN
-	                    Asset ON Asset.ID = Channel.AssetID LEFT JOIN
-	                    Meter ON Meter.ID = Channel.MeterID LEFT JOIN
-	                    ChannelGroupType ON Channel.MeasurementCharacteristicID = ChannelGroupType.MeasurementCharacteristicID AND Channel.MeasurementTypeID = ChannelGroupType.MeasurementTypeID LEFT JOIN
-	                    ChannelGroup ON ChannelGroup.ID = ChannelGroupType.ChannelGroupID
-                    WHERE
-	                    {filters}";
+                if (!typeof(TrendChannel).TryGetAttribute(out CustomViewAttribute view))
+                    return Ok(new TableOperations<TrendChannel>(connection).QueryRecordsWhere(filters));
 
-                DataTable table = connection.RetrieveData(query);
+                string sql = $"{view.CustomView} WHERE {filters}";
+                DataTable table = connection.RetrieveData(sql);
 
-                return table;
+                List<TrendChannel> result = new List<TrendChannel>();
+                TableOperations<TrendChannel> tblOperations = new TableOperations<TrendChannel>(connection);
+                foreach (DataRow row in table.Rows)
+                    result.Add(tblOperations.LoadRecord(row));
+
+                return Ok(result);
             }
         }
 
