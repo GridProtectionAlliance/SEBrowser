@@ -40,6 +40,12 @@ namespace SEBrowser.Controllers.OpenXDA
     [RoutePrefix("api/OpenXDA")]
     public class TrendChannelController : ApiController
     {
+        class TrendChannelSeries : TrendChannel
+        {
+            [NonRecordField]
+            public List<DetailedSeries> Series { get; set; } = new List<DetailedSeries>();
+        }
+
         #region [ Members ]
         const string SettingsCategory = "systemSettings";
         SEBrowserXDAAPIHelper helper = new SEBrowserXDAAPIHelper();
@@ -56,7 +62,7 @@ namespace SEBrowser.Controllers.OpenXDA
                 string assetFilter = GetIDFilter(postData["AssetList"], "Asset.ID");
                 string meterFilter = GetIDFilter(postData["MeterList"], "Meter.ID");
                 // Meters must be selected
-                if (string.IsNullOrEmpty(meterFilter)) return Ok(new List<TrendChannel>());
+                if (string.IsNullOrEmpty(meterFilter)) return Ok(new List<TrendChannelSeries>());
 
                 string filters =
                     $@"Channel.Trend = 1
@@ -65,16 +71,31 @@ namespace SEBrowser.Controllers.OpenXDA
                     {(string.IsNullOrEmpty(meterFilter) ? "" : $"AND {meterFilter}")}
                     {(string.IsNullOrEmpty(assetFilter) ? "" : $"AND {assetFilter}")}";
 
-                if (!typeof(TrendChannel).TryGetAttribute(out CustomViewAttribute view))
-                    return Ok(new TableOperations<TrendChannel>(connection).QueryRecordsWhere(filters));
+                if (!typeof(TrendChannelSeries).TryGetAttribute(out CustomViewAttribute view))
+                    return Ok(new TableOperations<TrendChannelSeries>(connection).QueryRecordsWhere(filters));
 
                 string sql = $"{view.CustomView} WHERE {filters}";
                 DataTable table = connection.RetrieveData(sql);
 
-                List<TrendChannel> result = new List<TrendChannel>();
-                TableOperations<TrendChannel> tblOperations = new TableOperations<TrendChannel>(connection);
+                string seriesSql = "";
+                if (typeof(DetailedSeries).TryGetAttribute(out CustomViewAttribute seriesView))
+                    seriesSql = $"{seriesView?.CustomView ?? ""} WHERE ChannelID = {{0}}";
+
+                List<TrendChannelSeries> result = new List<TrendChannelSeries>();
+                TableOperations<TrendChannelSeries> tblOperations = new TableOperations<TrendChannelSeries>(connection);
+                TableOperations<DetailedSeries> seriesTblOperations = new TableOperations<DetailedSeries>(connection);
                 foreach (DataRow row in table.Rows)
-                    result.Add(tblOperations.LoadRecord(row));
+                {
+                    TrendChannelSeries record = tblOperations.LoadRecord(row);
+                    result.Add(record);
+                    if (!string.IsNullOrEmpty(seriesSql))
+                    {
+                        DataTable seriesTable = connection.RetrieveData(seriesSql, record.ID);
+                        foreach (DataRow seriesRow in seriesTable.Rows)
+                            record.Series.Add(seriesTblOperations.LoadRecord(seriesRow));
+                    }
+                }
+
 
                 return Ok(result);
             }
