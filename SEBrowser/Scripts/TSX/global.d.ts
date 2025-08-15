@@ -195,11 +195,18 @@ export namespace TrendSearch {
         Timestamp: string
     }
 
+    interface ICyclicData {
+        Bin: number,
+        Sample: number,
+        Value: number
+    }
+
+    // Color Settings for Lines
     interface IColor {
         Label: string,
-        MinColor: string,
-        AvgColor: string,
-        MaxColor: string
+        Minimum: string,
+        Average: string,
+        Maximum: string
     }
 
     interface IColorSettings {
@@ -212,6 +219,7 @@ export namespace TrendSearch {
         Type: TrendSearch.LineStyles,
     }
 
+    // Line Styling Settings
     interface ILineSettings extends ILineStyleSettings {
         Color: string,
         Axis: 'right' | 'left',
@@ -219,11 +227,20 @@ export namespace TrendSearch {
         HasData: boolean
     }
 
-    interface ILineSeries {
+    // Signifies Settings for a particular type of graph series
+    interface ILineSeriesSettings {
+        [key: string]: TrendSearch.ILineSettings,
+        Average: TrendSearch.ILineSettings
+    }
+
+    interface ICyclicSeriesSettings {
+        Color: string
+    }
+
+    // Overall Series Settings
+    interface ISeriesSettings {
         Channel?: TrendSearch.ITrendChannel,
-        Min: TrendSearch.ILineSettings,
-        Max: TrendSearch.ILineSettings,
-        Avg: TrendSearch.ILineSettings
+        Settings: ILineSeriesSettings | ICyclicSeriesSettings
     }
 
     interface IMetaData {
@@ -237,12 +254,6 @@ export namespace TrendSearch {
         CyclesMax: number,
         CyclesMin: number,
         CyclicHistogramBins: number
-    }
-
-    interface ICyclicData {
-        Bin: number,
-        Sample: number,
-        Value: number
     }
 
     type IPlotTypes = 'Line'|'Cyclic';
@@ -338,15 +349,15 @@ export namespace TrendSearch {
         }
     }
     interface ILinePlotSettingsBundle {
-        Min: {
+        Maximum: {
             Default: ILineStyleSettings,
             ShouldApply: boolean
         }
-        Max: {
+        Minimum: {
             Default: ILineStyleSettings,
             ShouldApply: boolean
         }
-        Avg: {
+        Average: {
             Default: ILineStyleSettings,
             ShouldApply: boolean
         }

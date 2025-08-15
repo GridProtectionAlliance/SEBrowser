@@ -30,13 +30,13 @@ import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
 import { LoadingIcon, ToolTip } from '@gpa-gemstone/react-interactive';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
-import { Warning } from '@gpa-gemstone/gpa-symbols';
+import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 
 interface IProps {
     ID: string,
     TimeFilter: SEBrowser.IReportTimeFilter,
-    ChannelInfo: TrendSearch.ILineSeries[],
-    SetChannelInfo: (newSettings: TrendSearch.ILineSeries[]) => void,
+    ChannelInfo: TrendSearch.ISeriesSettings[],
+    SetChannelInfo: (newSettings: TrendSearch.ISeriesSettings[]) => void,
     PlotFilter: IMultiCheckboxOption[],
     Height: number,
     Width: number,
@@ -56,9 +56,7 @@ interface IProps {
 }
 
 interface IChartData {
-    MinSeries: [number, number][],
-    MaxSeries: [number, number][],
-    AvgSeries: [number, number][]
+    [key: string]: [number, number][]
 }
 
 // TODO: These can be in a shared place with eventSearchBar
@@ -87,9 +85,6 @@ const serverFormat = "YYYY-MM-DD[T]HH:mm:ss.SSSZ";
 const LineGraph = React.memo((props: IProps) => {
     // Graph Consts
     const [timeLimits, setTimeLimits] = React.useState<[number, number]>([0, 1]);
-    const [displayMin, setDisplayMin] = React.useState<boolean>(true);
-    const [displayMax, setDisplayMax] = React.useState<boolean>(true);
-    const [displayAvg, setDisplayAvg] = React.useState<boolean>(true);
     const [hover, setHover] = React.useState<boolean>(false);
     const [allChartData, setAllChartData] = React.useState<Map<string,IChartData>>(new Map<string,IChartData>());
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
@@ -98,7 +93,7 @@ const LineGraph = React.memo((props: IProps) => {
     const [plotHeight, setPlotHeight] = React.useState<number>(props.Height);
     const [extraLegendHeight, setExtraLegendHeight] = React.useState<number>(0);
     const titleRef = React.useRef(null);
-    const oldValues = React.useRef<{ ChannelInfo: TrendSearch.ILineSeries[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
+    const oldValues = React.useRef<{ ChannelInfo: TrendSearch.ISeriesSettings[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const generalSettings = useAppSelector(SelectGeneralSettings);
 
@@ -135,12 +130,6 @@ const LineGraph = React.memo((props: IProps) => {
             if (handle != null && handle.abort != null) handle.abort();
         };
     }, [props.ChannelInfo, props.TimeFilter]);
-
-    React.useEffect(() => {
-        setDisplayMin(props.PlotFilter.find(element => element.Value === "min")?.Selected ?? false);
-        setDisplayMax(props.PlotFilter.find(element => element.Value === "max")?.Selected ?? false);
-        setDisplayAvg(props.PlotFilter.find(element => element.Value === "avg")?.Selected ?? false);
-    }, [props.PlotFilter]);
 
     React.useEffect(() => {
         const centerTime: moment.Moment = moment.utc(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
@@ -186,16 +175,17 @@ const LineGraph = React.memo((props: IProps) => {
                 }
                 if (point !== undefined) {
                     const timeStamp = moment.utc(point.Timestamp, serverFormat).valueOf();
+                    // Todo: Handle alternate Series Types
                     if (cachedData.has(point.Tag)) {
                         const chartData = cachedData.get(point.Tag);
-                        chartData.MinSeries.push([timeStamp, point.Minimum]);
-                        chartData.AvgSeries.push([timeStamp, point.Average]);
-                        chartData.MaxSeries.push([timeStamp, point.Maximum]);
+                        chartData.Minimum.push([timeStamp, point.Minimum]);
+                        chartData.Average.push([timeStamp, point.Average]);
+                        chartData.Maximum.push([timeStamp, point.Maximum]);
                     } else {
                         const chartData: IChartData = {
-                            MinSeries: [[timeStamp, point.Minimum]],
-                            AvgSeries: [[timeStamp, point.Minimum]],
-                            MaxSeries: [[timeStamp, point.Minimum]]
+                            Minimum: [[timeStamp, point.Minimum]],
+                            Average: [[timeStamp, point.Average]],
+                            Maximum: [[timeStamp, point.Maximum]]
                         }
                         cachedData.set(point.Tag, chartData);
                     }
@@ -210,17 +200,15 @@ const LineGraph = React.memo((props: IProps) => {
                 let channelID = setting.Channel.ID.toString(16);
                 channelID = "0".repeat(8 - channelID.length) + channelID;
                 const channeldata = cachedData.get(channelID);
-                const newsetting = _.cloneDeep(setting);
+                const newSettings = _.cloneDeep(setting.Settings) as TrendSearch.ILineSeriesSettings;
                 if (channeldata === undefined) {
-                    newsetting.Min.HasData = false;
-                    newsetting.Avg.HasData = true; // ToDo: Needed to display warning, perhaps we should change the name of this var to show?
-                    newsetting.Max.HasData = false;
-                    newchannelinfo[index] = newsetting;
+                    Object.keys(newSettings).forEach(key => newSettings[key].HasData = false);
+                    newSettings.Average.HasData = true;
+                    newchannelinfo[index].Settings = newSettings;
                 } else {
-                    newsetting.Min.HasData = channeldata.MinSeries.length !== 0;
-                    newsetting.Avg.HasData = true;
-                    newsetting.Max.HasData = channeldata.MaxSeries.length !== 0;
-                    newchannelinfo[index] = newsetting;
+                    Object.keys(newSettings).forEach(key => newSettings[key].HasData = channeldata[key].length !== 0);
+                    newSettings.Average.HasData = true;
+                    newchannelinfo[index].Settings = newSettings;
                 }
             });
             props.SetChannelInfo(newchannelinfo);
@@ -242,8 +230,8 @@ const LineGraph = React.memo((props: IProps) => {
                 <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={29} />
                 <h4 ref={titleRef} style={{ textAlign: "center", width: `${props.Width}px`, marginBottom: '0px'}}>
                     {props?.Title ?? ''}
-                    {props?.ChannelInfo == null || props.ChannelInfo.findIndex(info => !(info.Min.HasData || info.Max.HasData || info.Avg.HasData)) != -1 ?
-                        <span data-tooltip={props.ID} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>{Warning}</span>
+                    {props?.ChannelInfo == null || props.ChannelInfo.findIndex(info => Object.keys(info.Settings).some(key => !info.Settings[key].HasData)) != -1 ?
+                        <span data-tooltip={props.ID} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}><ReactIcons.Warning/></span>
                         : null
                     }
                 </h4>
@@ -253,19 +241,15 @@ const LineGraph = React.memo((props: IProps) => {
                     Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel, props.YRightLabel]} showMouse={props.MouseHighlight} yDomain={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
                     {props?.ChannelInfo == null ? null : props.ChannelInfo.map((series, index) => {
                         const lineArray: JSX.Element[] = [];
-                        const channelSetting: TrendSearch.ILineSeries = props.ChannelInfo.find((channel) => channel.Channel.ID === series.Channel.ID);
-                        const dataKey = [...allChartData.keys()].find(key => series.Channel.ID === Number("0x" + key))
+                        const channelSetting = props.ChannelInfo.find((channel) => channel.Channel.ID === series.Channel.ID)?.Settings as TrendSearch.ILineSeriesSettings;
+                        const dataKey = [...allChartData.keys()].find(key => series.Channel.ID === Number("0x" + key));
                         const chartData = allChartData.get(dataKey);
-                        if (channelSetting === undefined) return null;
-                        if (displayMin && channelSetting.Min.HasData)
-                            lineArray.push(<Line highlightHover={false} key={"min_" + index} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting.Min.Type}
-                                color={channelSetting.Min.Color} data={chartData.MinSeries} legend={channelSetting.Min.Label} axis={channelSetting.Min.Axis} width={channelSetting.Min.Width} />);
-                        if (displayAvg && channelSetting.Avg.HasData)
-                            lineArray.push(<Line highlightHover={false} key={"avg_" + index} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting.Avg.Type}
-                                color={channelSetting.Avg.Color} data={chartData?.AvgSeries} legend={channelSetting.Avg.Label} axis={channelSetting.Avg.Axis} width={channelSetting.Avg.Width} />);
-                        if (displayMax && channelSetting.Max.HasData)
-                            lineArray.push(<Line highlightHover={false} key={"max_" + index} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting.Max.Type}
-                                color={channelSetting.Max.Color} data={chartData.MaxSeries} legend={channelSetting.Max.Label} axis={channelSetting.Max.Axis} width={channelSetting.Max.Width} />);
+                        if (channelSetting == null || chartData == null) return null;
+                        Object.keys(chartData).forEach(key => {
+                            if ((channelSetting?.[key]?.HasData ?? false) && (props.PlotFilter.find(element => element.Value === key)?.Selected ?? true))
+                                lineArray.push(<Line highlightHover={false} key={`${key}_${index}`} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting[key].Type}
+                                    color={channelSetting[key].Color} data={chartData[key]} legend={channelSetting[key].Label} axis={channelSetting[key].Axis} width={channelSetting[key].Width} />);
+                        });
                         return lineArray;
                     })}
                     {props.children}

@@ -81,7 +81,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
     // Plot Saved Settings
     const generalSettings = useAppSelector(SelectGeneralSettings);
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
-    const [plotAllSeriesSettings, setPlotAllSeriesSettings] = React.useState<SeriesSettings[]>(null);
+    const [plotAllSeriesSettings, setPlotAllSeriesSettings] = React.useState<TrendSearch.ISeriesSettings[]>(null);
     const colorIndex = React.useRef<{ ind: number, assetMap: Map<string, number> }>({ind: -1, assetMap: new Map<string, number>()});
     const changedProperties = React.useRef<Set<string>>(new Set<string>());
 
@@ -190,9 +190,9 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
     React.useEffect(() => {
         if (props.Plot.Type !== 'Line' || plotAllSeriesSettings == null || plotAllSeriesSettings.length === 0) return;
         const applyStyleFunc: (
-            newSettings: TrendSearch.ILineSeries[],
+            newSettings: TrendSearch.ISeriesSettings[],
             defaultStyle: TrendSearch.ILineStyleSettings,
-            styleField: 'Min' | 'Max' | 'Avg')
+            styleField: 'Minimum' | 'Maximum' | 'Average')
             => boolean = (newSettings, defaultStyle, styleField) => {
                 newSettings.forEach((_setting, ind) => {
                     Object.keys(defaultStyle).forEach(field => {
@@ -202,17 +202,17 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                 return true;
             }
         const applyColorFunc: (
-            newSettings: TrendSearch.ILineSeries[],
+            newSettings: TrendSearch.ISeriesSettings[],
             newColors: TrendSearch.IColorSettings)
             => void = (newSettings, newColors) => {
                 newSettings.forEach((setting, ind) => {
                     const newColor = getColor(newColors, setting.Channel);
-                    newSettings[ind]["Min"].Color = newColor.MinColor;
-                    newSettings[ind]["Avg"].Color = newColor.AvgColor;
-                    newSettings[ind]["Max"].Color = newColor.MaxColor;
+                    Object.keys(newSettings[ind].Settings).forEach(key => {
+                        newSettings[ind].Settings[key].Color = newColor[key] ?? newColor.Average
+                });
                 });
             }
-        const newSettings: TrendSearch.ILineSeries[] = [...(plotAllSeriesSettings as TrendSearch.ILineSeries[])];
+        const newSettings = [...plotAllSeriesSettings];
         let shouldApply = false;
         if (props.LineDefaults.Min.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Min.Default, 'Min');
         if (props.LineDefaults.Avg.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Avg.Default, 'Avg');
@@ -244,21 +244,38 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             return label;
         };
 
-        const getDefaultValue: (channel: TrendSearch.ITrendChannel, passChannelToColor: boolean) => SeriesSettings = (channel, passChannelToColor) => {
+        const getDefaultValue: (channel: TrendSearch.ITrendChannel, passChannelToColor: boolean) => TrendSearch.ISeriesSettings = (channel, passChannelToColor) => {
             switch (props.Plot.Type) {
                 case 'Line': default: {
-                    const baseLabel = constructLabel(channel);
                     const color: TrendSearch.IColor = getColor(props.LineDefaults.Colors.Default, passChannelToColor ? channel : undefined);
-                    return ({
+                    const settings: TrendSearch.ISeriesSettings = {
                         Channel: channel,
-                        Min: { Color: color.MinColor, Width: props.LineDefaults.Min.Default.Width, Type: props.LineDefaults.Min.Default.Type, Axis: 'left', Label: baseLabel + ' min', HasData: false },
-                        Avg: { Color: color.AvgColor, Width: props.LineDefaults.Avg.Default.Width, Type: props.LineDefaults.Avg.Default.Type, Axis: 'left', Label: baseLabel + ' avg', HasData: false },
-                        Max: { Color: color.MaxColor, Width: props.LineDefaults.Max.Default.Width, Type: props.LineDefaults.Max.Default.Type, Axis: 'left', Label: baseLabel + ' max', HasData: false }
+                        Settings: {
+                            Average: {
+                                Color: color.Average,
+                                Width: props.LineDefaults.Average.Default.Width,
+                                Type: props.LineDefaults.Average.Default.Type,
+                                Axis: 'left',
+                                Label: 'avg',
+                                HasData: false
+                            }
+                        }
+                    };
+                    channel.Series.forEach(series => {
+                        settings.Settings[series.TypeName] = {
+                            Color: color[series.TypeName],
+                            Width: props.LineDefaults?.[series.TypeName].Default.Width,
+                            Type: props.LineDefaults?.[series.TypeName].Default.Type,
+                            Axis: 'left',
+                            Label: constructLabel(channel, series),
+                            HasData: false
+                        }
                     });
+                    return settings;
                 }
                 case 'Cyclic': {
                     return ({
-                        Channel: channel, Color: SpacedColor(1, 0.9)
+                        Channel: channel, Settings: { Color: SpacedColor(1, 0.9) }
                     });
                 }
             }
@@ -276,10 +293,11 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                 const oldSettings = plotAllSeriesSettings?.find(oldSetting => oldSetting.Channel.ID === channel.ID)
                 if (oldSettings === undefined) return getDefaultValue(channel, passChannel);
                 if (props.Plot.Type === 'Line') {
-                    const baseLabel = constructLabel(channel);
-                    oldSettings['Min']['Label'] = baseLabel + ' min';
-                    oldSettings['Avg']['Label'] = baseLabel + ' avg';
-                    oldSettings['Max']['Label'] = baseLabel + ' max';
+                    Object.keys(oldSettings.Settings).forEach(key => {
+                        const series = channel.Series.find(series => series.TypeName === key);
+                        oldSettings.Settings[key].Label = constructLabel(channel, series)
+                    }
+                    );
                 }
                 return oldSettings;
             })
@@ -311,12 +329,12 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         const vertLabelFunc = (field: 'YRightLabel' | 'YLeftLabel') => {
             const isOnAxis = (isRightAxis: boolean): boolean => (isRightAxis === ('YRightLabel' === field));
             const constructLabel = (field: keyof TrendSearch.ITrendChannel, maxUniques: number): string => {
-                const foundArray = Array<string | number>(maxUniques + 1);
+                const foundArray = Array<string>(maxUniques + 1);
                 let label = "";
                 for (let index = 0; index < foundArray.length; index++) {
                     const firstOnAxis = plotAllSeriesSettings.find(series => isOnAxis(series['RightAxis'] ?? false) && foundArray.find(type => type === series.Channel[field]) === undefined);
                     if (firstOnAxis === undefined || firstOnAxis.Channel[field] == null) break;
-                    foundArray[index] = firstOnAxis.Channel[field];
+                    foundArray[index] = firstOnAxis.Channel[field].toString();
                     if (index !== 0)
                         label += '/';
                     if (index !== foundArray.length - 1)
@@ -531,7 +549,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         switch (props.Plot.Type) {
             case 'Line':
                 plotBody = (
-                    <LineGraph ID={props.Plot.ID} ChannelInfo={plotAllSeriesSettings as TrendSearch.ILineSeries[]} SetChannelInfo={setPlotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
+                    <LineGraph ID={props.Plot.ID} ChannelInfo={plotAllSeriesSettings} SetChannelInfo={setPlotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
                         Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel} MouseHighlight={lineHighlight} SetExtraSpace={setExtraHeight}
                         Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
                         OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
@@ -595,7 +613,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                 break;
             case ('Cyclic'):
                 plotBody = (
-                    <CyclicHistogram ID={props.Plot.ID} ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] as ICyclicSeries : null} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
+                    <CyclicHistogram ID={props.Plot.ID} ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] : null} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
                         Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel} MouseHighlight={lineHighlight} SetExtraSpace={setExtraHeight}
                         Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
                         OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}/>

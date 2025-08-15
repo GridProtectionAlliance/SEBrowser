@@ -28,9 +28,9 @@ import { TrendSearch } from '../../../../Global';
 
 interface ILineProps {
     // Assumption that this doesnt change outside of this overlay
-    SeriesSettings: TrendSearch.ILineSeries,
-    SetSeriesSettings: (newSettings: TrendSearch.ILineSeries) => void,
-    Series: 'Min' | 'Max' | 'Avg'
+    SeriesSettings: TrendSearch.ISeriesSettings,
+    SetSeriesSettings: (newSettings: TrendSearch.ISeriesSettings) => void,
+    Series: string
 }
 
 const LineSettings = React.memo((props: ILineProps) => {
@@ -39,12 +39,12 @@ const LineSettings = React.memo((props: ILineProps) => {
     const setter = React.useCallback((record: TrendSearch.ILineSettings) => {
         setSeries(record);
         const newSettings = { ...props.SeriesSettings };
-        newSettings[props.Series] = record;
+        newSettings.Settings[props.Series] = record;
         props.SetSeriesSettings(newSettings);
     }, [setSeries, props]);
 
     React.useEffect(() => {
-        setSeries(props.SeriesSettings[props.Series]);
+        setSeries(props.SeriesSettings.Settings[props.Series]);
     }, [props.SeriesSettings, props.Series]);
 
     // No data = return null
@@ -52,7 +52,7 @@ const LineSettings = React.memo((props: ILineProps) => {
 
     return (
         <div className="col" style={{ width: 'auto' }}>
-            <h4>{(props.Series === 'Avg' && !props.SeriesSettings['Min']?.HasData && !props.SeriesSettings['Max']?.HasData) ? 'Values' : props.Series} Settings</h4>
+            <h4>{(props.Series === 'Avgerage' && !props.SeriesSettings['Minimum']?.HasData && !props.SeriesSettings['Maximum']?.HasData) ? 'Values' : props.Series} Settings</h4>
             <BlockPicker onChangeComplete={(color) => setter({ ...series, Color: color.hex })} color={series['Color']} triangle={"hide"} />
             <Input<TrendSearch.ILineSettings> Record={series} Label={'Legend Label'} Field={'Label'} Setter={setter} Valid={() => true} />
             <Input<TrendSearch.ILineSettings> Record={series} Label={'Line Width (pixels)'} Field={'Width'} Setter={setter} Type={'number'}

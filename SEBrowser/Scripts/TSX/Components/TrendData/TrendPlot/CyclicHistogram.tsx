@@ -36,7 +36,7 @@ import { Warning } from '@gpa-gemstone/gpa-symbols';
 interface IProps {
     ID: string,
     TimeFilter: SEBrowser.IReportTimeFilter,
-    ChannelInfo: ICyclicSeries,
+    ChannelInfo: TrendSearch.ISeriesSettings,
     PlotFilter: IMultiCheckboxOption[],
     Height: number,
     Width: number,
@@ -52,11 +52,6 @@ interface IProps {
     DefaultZoom?: [number, number][]
     AlwaysRender: React.ReactNode,
     children?: React.ReactNode
-}
-
-interface ICyclicSeries{
-    Channel: TrendSearch.ITrendChannel,
-    Color: string
 }
 
 interface IChartData {
@@ -101,7 +96,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
     const [plotHeight, setPlotHeight] = React.useState<number>(props.Height);
     const [extraLegendHeight, setExtraLegendHeight] = React.useState<number>(0);
     const titleRef = React.useRef(null);
-    const oldValues = React.useRef<{ ChannelInfo: ICyclicSeries, TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: null, TimeFilter: null });
+    const oldValues = React.useRef<{ ChannelInfo: TrendSearch.ISeriesSettings, TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: null, TimeFilter: null });
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const generalSettings = useAppSelector(SelectGeneralSettings);
 
@@ -157,10 +152,10 @@ const CyclicHistogram = React.memo((props: IProps) => {
     }, [props.TimeFilter]);
 
     React.useEffect(() => {
-        if (props.ChannelInfo?.Color == null) return;
-        const color = HexToHsv(props.ChannelInfo.Color);
+        if (props.ChannelInfo?.Settings?.Color == null) return;
+        const color = HexToHsv(props.ChannelInfo.Settings.Color as string);
         setBarColor({ Hue: color.h, Saturation: color.s})
-    }, [props.ChannelInfo?.Color]);
+    }, [props.ChannelInfo?.Settings?.Color]);
 
     React.useEffect(() => {
         setPlotHeight(props.Height - titleHeight - 5);
@@ -263,4 +258,4 @@ const CyclicHistogram = React.memo((props: IProps) => {
             </div>);
 });
 
-export { CyclicHistogram, ICyclicSeries };
+export { CyclicHistogram };

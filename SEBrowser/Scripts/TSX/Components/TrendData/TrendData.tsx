@@ -44,7 +44,7 @@ const TrendData = () => {
         TimeFilter: { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 12, timeWindowUnits: 3 },
         Type: 'Line',
         Channels: [],
-        PlotFilter: [{ Text: "Minimum", Value: "min", Selected: true }, { Text: "Maximum", Value: "max", Selected: true }, { Text: "Average/Values", Value: "avg", Selected: true }],
+        PlotFilter: [{ Text: "Minimum", Value: "Minimum", Selected: true }, { Text: "Maximum", Value: "Maximum", Selected: true }, { Text: "Average/Values", Value: "Average", Selected: true }],
         ID: "blank",
         Width: 50,
         Height: 50,
@@ -104,21 +104,21 @@ const TrendData = () => {
         }
     });
     const [lineDefaults, setLineDefaults] = React.useState<TrendSearch.ILinePlotSettingsBundle>({
-        Min: {
+        Minimum: {
             Default: {
                 Width: 3,
                 Type: 'short-dash'
             },
             ShouldApply: false
         },
-        Max: {
+        Maximum: {
             Default: {
                 Width: 3,
                 Type: 'short-dash'
             },
             ShouldApply: false
         },
-        Avg: {
+        Average: {
             Default: {
                 Width: 3,
                 Type: 'solid'
@@ -131,39 +131,39 @@ const TrendData = () => {
                 Colors: [
                     {
                         Label: "Color 1",
-                        MinColor: "#A30000",
-                        AvgColor: "#A30000",
-                        MaxColor: "#A30000"
+                        Minimum: "#A30000",
+                        Average: "#A30000",
+                        Maximum: "#A30000"
                     },
                     {
                         Label: "Color 2",
-                        MinColor: "#0029A3",
-                        AvgColor: "#0029A3",
-                        MaxColor: "#0029A3"
+                        Minimum: "#0029A3",
+                        Average: "#0029A3",
+                        Maximum: "#0029A3"
                     },
                     {
                         Label: "Color 3",
-                        MinColor: "#007A29",
-                        AvgColor: "#007A29",
-                        MaxColor: "#007A29"
+                        Minimum: "#007A29",
+                        Average: "#007A29",
+                        Maximum: "#007A29"
                     },
                     {
                         Label: "Color 4",
-                        MinColor: "#FF0000",
-                        AvgColor: "#FF0000",
-                        MaxColor: "#FF0000"
+                        Minimum: "#FF0000",
+                        Average: "#FF0000",
+                        Maximum: "#FF0000"
                     },
                     {
                         Label: "Color 5",
-                        MinColor: "#0066CC",
-                        AvgColor: "#0066CC",
-                        MaxColor: "#0066CC"
+                        Minimum: "#0066CC",
+                        Average: "#0066CC",
+                        Maximum: "#0066CC"
                     },
                     {
                         Label: "Color 6",
-                        MinColor: "#33CC33",
-                        AvgColor: "#33CC33",
-                        MaxColor: "#33CC33"
+                        Minimum: "#33CC33",
+                        Average: "#33CC33",
+                        Maximum: "#33CC33"
                     }
                 ]
             },
