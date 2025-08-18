@@ -234,7 +234,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         const allCommon = findCommonComponents(props.Plot.LabelComponents, props.Plot.Channels);
 
         const constructLabel: (channel: TrendSearch.ITrendChannel, series: TrendSearch.ISeries) => string = (channel, series) => {
-            let label: string = "";
+            let label = "";
             props.Plot.LabelComponents.forEach((component, idx) => {
                 const parts = component.split('.');
                 if (!allCommon[idx]) {
@@ -319,7 +319,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             if (props.Plot.Channels.length === 0) newPlot.Title = "Plot";
             else {
                 const allCommon = findCommonComponents(props.Plot.LabelComponents, props.Plot.Channels);
-                let title: string = "";
+                let title = "";
                 props.Plot.LabelComponents.forEach((component, idx) => {
                     const parts = component.split('.');
                     if (allCommon[idx]) {

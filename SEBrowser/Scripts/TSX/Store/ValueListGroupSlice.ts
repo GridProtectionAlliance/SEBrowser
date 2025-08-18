@@ -25,6 +25,7 @@ import { Application, SystemCenter } from '@gpa-gemstone/application-typings';
 import { AsyncThunk, createAsyncThunk, createSlice, Draft, PayloadAction, SerializedError, Slice } from '@reduxjs/toolkit';
 import { WritableDraft } from 'immer/dist/types/types-external';
 import { Redux } from '../global';
+import { RootState } from './Store';
 
 export default class ValueListGroupSlice {
     public APIPath = "api/ValueList";
@@ -33,9 +34,9 @@ export default class ValueListGroupSlice {
     public Slice: Slice<Redux.IValueListSliceState>;
     public Reducer: any;
 
-    public Fetch: (AsyncThunk<any, string, {}>);
+    public Fetch: (AsyncThunk<SystemCenter.Types.ValueListItem[], string, any>);
     private fetchHandles: {
-        [group: string]: JQuery.jqXHR<any> | null;
+        [group: string]: JQuery.jqXHR<SystemCenter.Types.ValueListItem[]> | null;
     }
 
     constructor() {
@@ -44,7 +45,7 @@ export default class ValueListGroupSlice {
             if (this.fetchHandles?.[groupName]?.abort != null)
                 this.fetchHandles[groupName].abort('New Intiated');
 
-            const handle = $.ajax({
+            const handle: JQuery.jqXHR<SystemCenter.Types.ValueListItem[]> = $.ajax({
                 type: "GET",
                 url: `${homePath}api/ValueList/Group/${groupName}`,
                 contentType: "application/json; charset=utf-8",
@@ -102,6 +103,6 @@ export default class ValueListGroupSlice {
         this.Reducer = this.Slice.reducer;
     }
 
-    public Status = (state: any, group: string) => (state[this.Name].Status?.[group] ?? 'unintiated') as Application.Types.Status;
-    public Data = (state: any, group: string) => (state[this.Name].Data?.[group] ?? []) as SystemCenter.Types.ValueListItem[];
+    public Status = (state: RootState, group: string) => (state[this.Name].Status?.[group] ?? 'unintiated') as Application.Types.Status;
+    public Data = (state: RootState, group: string) => (state[this.Name].Data?.[group] ?? []) as SystemCenter.Types.ValueListItem[];
 }
