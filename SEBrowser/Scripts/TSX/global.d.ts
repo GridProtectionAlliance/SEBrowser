@@ -163,7 +163,8 @@ export namespace TrendSearch {
 
     // Todo: Now in gemstone, change to use that when gemstone is updated
     interface ITrendChannel {
-        ID: number,
+        ID: string,
+        ChannelID: number
         Name: string,
         Description: string,
         AssetID: number,

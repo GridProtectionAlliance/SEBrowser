@@ -39,14 +39,14 @@ interface ICommon {
 
 interface IMultiProps {
     Type: 'multi',
-    SelectedSet: Set<number>,
-    SetSelectedSet: (set: Set<number>) => void
+    SelectedSet: Set<string>,
+    SetSelectedSet: (set: Set<string>) => void
 }
 
 interface ISingleProps {
     Type: 'single',
-    Selected: number,
-    SetSelected: (id: number) => void
+    Selected: string,
+    SetSelected: (id: string) => void
 }
 
 const colList = ["Description", "Asset Key", "Asset Name", "Meter Key", "Meter Name", "Channel Group", "Channel Group Type"];
@@ -111,7 +111,7 @@ const TrendChannelTable = (props: IProps) => {
                 if (props.Type === "single") props.SetSelected(item.row.ID);
                 // Handling the multi case
                 else {
-                    const newIds: Set<number> = new Set();
+                    const newIds: Set<string> = new Set();
                     if (event.shiftKey) {
                         const clickIndex: number = props.TrendChannels.findIndex(chan => chan.ID === item.row.ID);
                         const firstSelectedIndex: number = props.TrendChannels.findIndex(chan => props.SelectedSet.has(chan.ID));

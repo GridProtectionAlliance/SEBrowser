@@ -90,7 +90,7 @@ namespace SEBrowser.Controllers.OpenXDA
                     result.Add(record);
                     if (!string.IsNullOrEmpty(seriesSql))
                     {
-                        DataTable seriesTable = connection.RetrieveData(seriesSql, record.ID);
+                        DataTable seriesTable = connection.RetrieveData(seriesSql, record.ChannelID);
                         foreach (DataRow seriesRow in seriesTable.Rows)
                             record.Series.Add(seriesTblOperations.LoadRecord(seriesRow));
                     }

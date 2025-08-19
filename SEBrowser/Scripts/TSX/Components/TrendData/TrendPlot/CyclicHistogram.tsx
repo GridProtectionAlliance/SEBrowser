@@ -111,7 +111,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
         // Need to move back in the other direction, so entire window
         const endTime: string = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
 
-        const handle = GetMetaData(props.ChannelInfo.Channel.ID, startTime, endTime);
+        const handle = GetMetaData(props.ChannelInfo.Channel.ChannelID, startTime, endTime);
         return () => {
             if (handle != null && handle.abort != null) handle.abort();
         };

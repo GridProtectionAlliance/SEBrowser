@@ -96,7 +96,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [linePlotOptions, setLinePlotOptions] = React.useState<IMultiCheckboxOption[]>(props.LinePlot);
 
     const [trendChannels, setTrendChannels] = React.useState<TrendSearch.ITrendChannel[]>([]);
-    const [selectedSet, setSelectedSet] = React.useState<Set<number>>(new Set<number>());
+    const [selectedSet, setSelectedSet] = React.useState<Set<string>>(new Set<string>());
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
     const queryRef = React.useRef<{ phaseIds: Set<number>, groupIds: Set<number>, assetIds: Set<number>, meterIds: Set<number> }>({ phaseIds: undefined, groupIds: undefined, assetIds: undefined, meterIds: undefined})
@@ -265,7 +265,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             async: true
         }).done((data: TrendSearch.ITrendChannel[]) => {
             setTrendChannels(data);
-            setSelectedSet(new Set<number>());
+            setSelectedSet(new Set<string>());
         });
     }
 
@@ -482,7 +482,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${trendChannels.length === 0 ? ' disabled' : ''}`}
                         onClick={() => {
                             if (trendChannels.length !== 0) {
-                                const newSet = new Set<number>();
+                                const newSet = new Set<string>();
                                 trendChannels.forEach(chan => newSet.add(chan.ID));
                                 setSelectedSet(newSet);
                             }

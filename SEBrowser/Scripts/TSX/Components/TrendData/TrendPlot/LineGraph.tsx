@@ -106,15 +106,15 @@ const LineGraph = React.memo((props: IProps) => {
         // Need to move back in the other direction, so entire window
         const endTime: string = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
 
-        let newChannels: number[] = props.ChannelInfo.map(chan => chan.Channel.ID);
+        let newChannels: number[] = _.uniq(props.ChannelInfo.map(chan => chan.Channel.ChannelID));
         let keptOldData: Map<string,IChartData> = new Map<string,IChartData>();
         // If the time filter is the same, we only need to ask for information on channels we have not yet seen
         if (_.isEqual(props.TimeFilter, oldValues.current.TimeFilter)) {
-            newChannels = newChannels.filter(channel => oldValues.current.ChannelInfo.findIndex(oldChannel => oldChannel.Channel.ID === channel) === -1);
+            newChannels = newChannels.filter(channel => oldValues.current.ChannelInfo.findIndex(oldChannel => oldChannel.Channel.ChannelID === channel) === -1);
             // This represents data we already have and still need (only makes sense if we aren't changing our time window)
             keptOldData = allChartData;
-            keptOldData.forEach((data, channelID) => {
-                if (props.ChannelInfo.findIndex(channel => channel.Channel.ID === Number("0x"+channelID)) < 0)
+            keptOldData.forEach((_, channelID) => {
+                if (props.ChannelInfo.findIndex(channel => channel.Channel.ChannelID === Number("0x"+channelID)) < 0)
                     keptOldData.delete(channelID);
             }
             );
@@ -197,7 +197,7 @@ const LineGraph = React.memo((props: IProps) => {
             const newchannelinfo = [...props.ChannelInfo];
             newchannelinfo.forEach((setting, index) => {
                 // All tags from hids is exactly 8 characters long, need to reconstruct tag for matching
-                let channelID = setting.Channel.ID.toString(16);
+                let channelID = setting.Channel.ChannelID.toString(16);
                 channelID = "0".repeat(8 - channelID.length) + channelID;
                 const channeldata = cachedData.get(channelID);
                 const newSettings = _.cloneDeep(setting.Settings) as TrendSearch.ILineSeriesSettings;
@@ -242,7 +242,7 @@ const LineGraph = React.memo((props: IProps) => {
                     {props?.ChannelInfo == null ? null : props.ChannelInfo.map((series, index) => {
                         const lineArray: JSX.Element[] = [];
                         const channelSetting = props.ChannelInfo.find((channel) => channel.Channel.ID === series.Channel.ID)?.Settings as TrendSearch.ILineSeriesSettings;
-                        const dataKey = [...allChartData.keys()].find(key => series.Channel.ID === Number("0x" + key));
+                        const dataKey = [...allChartData.keys()].find(key => series.Channel.ChannelID === Number("0x" + key));
                         const chartData = allChartData.get(dataKey);
                         if (channelSetting == null || chartData == null) return null;
                         Object.keys(chartData).forEach(key => {

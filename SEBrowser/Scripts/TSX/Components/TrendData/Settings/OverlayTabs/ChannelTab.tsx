@@ -42,7 +42,7 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
     const [settingsHeight, setSettingsHeight] = React.useState<number>(500);
 
     // Settings Controls
-    const [currentChannelId, setCurrentChannelId] = React.useState<number>(undefined);
+    const [currentChannelId, setCurrentChannelId] = React.useState<string>(undefined);
     const [currentSeriesSetting, setCurrentSeriesSetting] = React.useState<TrendSearch.ISeriesSettings>(undefined);
 
     // Get Heights and Widths
