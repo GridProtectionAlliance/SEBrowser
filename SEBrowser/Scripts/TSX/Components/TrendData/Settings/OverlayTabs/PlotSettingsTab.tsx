@@ -85,7 +85,7 @@ const PlotSettingsTab = React.memo((props: IProps) => {
             setLabelOptions(_.uniqBy(optionsSliceData.concat(defaultSliceData), item => item.Value)
                 .map(item => ({
                     Value: item.Value,
-                    Text: item.AltValue,
+                    Text: item.AltValue ?? item.Value,
                     Selected: props.Plot.LabelComponents.some(comp => comp === item.Value)
             })));
     }, [optionsSliceStatus, defaultSliceStatus, props.Plot.LabelComponents]);
