@@ -70,7 +70,7 @@ const TrendChannelTable = (props: IProps) => {
                     props.SetTrendChannels(allChannels);
                     props.OnChannelRemoval(data.item);
                 }}>
-                <ReactIcons.TrashCan/>
+                <ReactIcons.TrashCan Color="var(--danger)"/>
             </button>
         ), [props.OnChannelRemoval, props.TrendChannels, props.SetTrendChannels]);
 
