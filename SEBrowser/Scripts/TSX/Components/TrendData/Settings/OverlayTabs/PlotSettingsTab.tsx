@@ -82,7 +82,7 @@ const PlotSettingsTab = React.memo((props: IProps) => {
     React.useEffect(() => {
         // Combine both lists so that we are robust against users including something in defaults but not options
         if (optionsSliceStatus === 'idle' && defaultSliceStatus === 'idle')
-            setLabelOptions(_.uniqBy(defaultSliceData.concat(optionsSliceData), item => item.Value)
+            setLabelOptions(_.uniqBy(optionsSliceData.concat(defaultSliceData), item => item.Value)
                 .map(item => ({
                     Value: item.Value,
                     Text: item.AltValue,
