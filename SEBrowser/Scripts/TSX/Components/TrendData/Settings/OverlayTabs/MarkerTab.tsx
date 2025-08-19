@@ -188,7 +188,15 @@ const MarkerTab = React.memo((props: IMarkerTabProps) => {
 
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
-            <div className="col" style={{ width: '40%'}}>
+            <div className="col" style={{ width: '40%' }}>
+                {   
+                    props.IsGlobalSettings ? 
+                        <>
+                            <br />
+                            <div className="alert alert-warning">Changes to these settings will NOT persist across sessions.</div>
+                        </> :
+                        <></>
+                }
                 <TrendMarkerTable Height={markersHeight} Markers={allMarkers} IsGlobal={props.IsGlobalSettings}
                     RemoveMarker={(marker) => applyToMarker(marker, removeFromArray)}
                     Selected={currentMarker} SetSelected={setCurrentMarker} />

@@ -119,7 +119,7 @@ const AllSettingsModal = React.memo((props: IProps) => {
             <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
             <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
-                    <PlotSettingsTab Plot={allPlot} SetPlot={setAllPlot} SetConfirmDisabled={setConfirmDisabled} />
+                    <PlotSettingsTab Plot={allPlot} SetPlot={setAllPlot} SetConfirmDisabled={setConfirmDisabled} IsGlobalSettings={true} />
                 </div>
             </div>
             <div className="tab-content" style={{ overflow: 'hidden' }}>

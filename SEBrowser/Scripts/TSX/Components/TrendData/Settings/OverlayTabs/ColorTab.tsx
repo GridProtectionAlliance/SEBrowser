@@ -69,7 +69,7 @@ const ColorTab = React.memo((props: IColorTabProps) => {
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
             <div className="col" style={{ width: '40%', height: 'calc(100vh - 264px)'}}>
                 <br />
-                <div className="alert alert-primary">These settings will only apply to line plots.</div>
+                <div className="alert alert-primary">These settings will only apply to line plots. Changes to these settings will persist across sessions.</div>
                 <div className="row">
                     <Select<TrendSearch.IColorSettings> Record={props.Colors} Label={'Grouping'} Field={'ApplyType'} Setter={props.SetColors} Options={ColorOptions} />
                 </div>

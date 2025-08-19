@@ -31,7 +31,8 @@ import { useAppSelector, useAppDispatch } from '../../../../hooks';
 interface IProps {
     Plot: TrendSearch.ITrendPlot,
     SetPlot: (record: TrendSearch.ITrendPlot) => void,
-    SetConfirmDisabled: (record: boolean) => void
+    SetConfirmDisabled: (record: boolean) => void,
+    IsGlobalSettings: boolean
 }
 
 interface AxisLimits { LeftUpper: number, LeftLower: number, RightUpper: number, RightLower: number }
@@ -119,73 +120,84 @@ const PlotSettingsTab = React.memo((props: IProps) => {
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20, paddingTop: 20, overflowY: 'scroll', maxHeight: 'calc(100vh - 284px)' }}>
             <div className="col" style={{ width: '50%', height: "100%" }}>
-                <legend className="w-auto" style={{ fontSize: 'large' }}>Plot Settings:</legend>
-                <div className="row">
-                    <div className="col" style={{ width: '50%'}}>
-                        <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Plot Title'} Field={'Title'} Setter={props.SetPlot} Valid={() => true} />
+                <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                    <legend className="w-auto" style={{ fontSize: 'large' }}>Plot Settings:</legend>
+                    <div className="row">
+                        <div className="col" style={{ width: '50%'}}>
+                            <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Plot Title'} Field={'Title'} Setter={props.SetPlot} Valid={() => true} />
+                        </div>
+                        <div className="col" style={{ width: '50%' }}>
+                            <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'X-Axis Label'} Field={'XAxisLabel'} Setter={props.SetPlot} Valid={() => true} />
+                        </div>
                     </div>
-                    <div className="col" style={{ width: '50%' }}>
-                        <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'X-Axis Label'} Field={'XAxisLabel'} Setter={props.SetPlot} Valid={() => true} />
+                    <div className="row">
+                        <div className="col" style={{ width: '50%' }}>
+                            <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Left Axis Label'} Field={'YLeftLabel'} Setter={props.SetPlot} Valid={() => true} />
+                        </div>
+                        <div className="col" style={{ width: '50%' }}>
+                            <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Right Axis Label'} Field={'YRightLabel'} Setter={props.SetPlot} Valid={() => true} />
+                        </div>
                     </div>
-                </div>
-                <div className="row">
-                    <div className="col" style={{ width: '50%' }}>
-                        <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Left Axis Label'} Field={'YLeftLabel'} Setter={props.SetPlot} Valid={() => true} />
-                    </div>
-                    <div className="col" style={{ width: '50%' }}>
-                        <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Right Axis Label'} Field={'YRightLabel'} Setter={props.SetPlot} Valid={() => true} />
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col" style={{ width: '50%' }}>
-                        <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Height (%)'} Field={'Height'} Setter={props.SetPlot} Valid={validateTrendPlot} Feedback="Must be a percentage value" />
-                    </div>
-                    <div className="col" style={{ width: '50%' }}>
-                        <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Width (%)'} Field={'Width'} Setter={props.SetPlot} Valid={validateTrendPlot} Feedback="Must be a percentage value" />
-                    </div>
-                </div>
-                <div className="row">
-                    <CheckBox<TrendSearch.ITrendPlot> Record={props.Plot} Label='Use Metric Abbreviation' Field='Metric' Setter={props.SetPlot} />
-                </div>
-                <div className="row">
-                    <CheckBox<TrendSearch.ITrendPlot> Record={props.Plot} Label='Display Events' Field='ShowEvents' Setter={props.SetPlot} />
-                </div>
-                <br/>
-                <MultiCheckBoxSelect
-                    Options={labelOptions}
-                    Label={'Label Components'}
-                    ItemTooltip={'dark'}
-                    OnChange={(evt, newOptions: IMultiCheckboxOption[]) => {
-                        const newComponents = [];
-                        labelOptions.forEach(option => {
-                            const newOptionIndex = newOptions.findIndex(newOption => newOption.Value === option.Value);
-                            if (newOptionIndex >= 0) {
-                                if (!newOptions[newOptionIndex].Selected) newComponents.push(newOptions[newOptionIndex].Value as string);
-                            }
-                            else {
-                                if (option.Selected) newComponents.push(option.Value as string);
-                            }
+                    <legend className="w-auto" style={{ fontSize: 'large' }}>Series Plotted:</legend>
+                    <MultiCheckBoxSelect
+                        Options={props.Plot.PlotFilter}
+                        Label={''}
+                        ItemTooltip={'dark'}
+                        OnChange={(evt, newOptions: IMultiCheckboxOption[]) => {
+                            const options: IMultiCheckboxOption[] = [];
+                            props.Plot.PlotFilter.forEach(item => {
+                                const selected: boolean = item.Selected != (newOptions.findIndex(option => item.Value === option.Value) > -1);
+                                options.push({ ...item, Selected: selected });
+                            });
+                            props.SetPlot({ ...props.Plot, PlotFilter: options });
+                        }}
+                    />
+                </fieldset>
+                <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                    <legend className="w-auto" style={{ fontSize: 'large' }}>Plot Style:</legend>
+                    {
+                        props.IsGlobalSettings ?
+                            <div className="alert alert-primary">Changes to these settings will persist across sessions.</div> :
+                            <></>
+                    }
+                    <MultiCheckBoxSelect
+                        Options={labelOptions}
+                        Label={'Label Components'}
+                        ItemTooltip={'dark'}
+                        OnChange={(evt, newOptions: IMultiCheckboxOption[]) => {
+                            const newComponents = [];
+                            labelOptions.forEach(option => {
+                                const newOptionIndex = newOptions.findIndex(newOption => newOption.Value === option.Value);
+                                if (newOptionIndex >= 0) {
+                                    if (!newOptions[newOptionIndex].Selected) newComponents.push(newOptions[newOptionIndex].Value as string);
+                                }
+                                else {
+                                    if (option.Selected) newComponents.push(option.Value as string);
+                                }
 
-                        });
-                        props.SetPlot({ ...props.Plot, LabelComponents: newComponents });
-                    }}
-                />
+                            });
+                            props.SetPlot({ ...props.Plot, LabelComponents: newComponents });
+                        }}
+                    />
+                    <div className="row">
+                        <div className="col" style={{ width: '50%' }}>
+                            <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Height (%)'} Field={'Height'} Setter={props.SetPlot} Valid={validateTrendPlot} Feedback="Must be a percentage value" />
+                        </div>
+                        <div className="col" style={{ width: '50%' }}>
+                            <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Width (%)'} Field={'Width'} Setter={props.SetPlot} Valid={validateTrendPlot} Feedback="Must be a percentage value" />
+                        </div>
+                    </div>
+                    <div className="col" style={{width: '100%'}}>
+                        <div className="row">
+                            <CheckBox<TrendSearch.ITrendPlot> Record={props.Plot} Label='Use Metric Abbreviation' Field='Metric' Setter={props.SetPlot} />
+                        </div>
+                        <div className="row">
+                            <CheckBox<TrendSearch.ITrendPlot> Record={props.Plot} Label='Display Events' Field='ShowEvents' Setter={props.SetPlot} />
+                        </div>
+                    </div>
+                </fieldset>
             </div>
             <div className="col" style={{ width: '50%', height: "100%" }}>
-                <legend className="w-auto" style={{ fontSize: 'large' }}>Series Plotted:</legend>
-                <MultiCheckBoxSelect
-                    Options={props.Plot.PlotFilter}
-                    Label={''}
-                    ItemTooltip={'dark'}
-                    OnChange={(evt, newOptions: IMultiCheckboxOption[]) => {
-                        const options: IMultiCheckboxOption[] = [];
-                        props.Plot.PlotFilter.forEach(item => {
-                            const selected: boolean = item.Selected != (newOptions.findIndex(option => item.Value === option.Value) > -1);
-                            options.push({ ...item, Selected: selected });
-                        });
-                        props.SetPlot({ ...props.Plot, PlotFilter: options });
-                    }}
-                />
                 <ReportTimeFilter filter={props.Plot.TimeFilter} showQuickSelect={false}
                     setFilter={newFilter => props.SetPlot({ ...props.Plot, TimeFilter: newFilter })} />
                 <fieldset className="border" style={{ padding: '10px', height: '100%' }}>

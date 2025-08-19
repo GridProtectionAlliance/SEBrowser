@@ -130,7 +130,7 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
             <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
             <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
-                    <PlotSettingsTab Plot={plotBuffer} SetPlot={setPlotBuffer} SetConfirmDisabled={setConfirmDisabled} />
+                    <PlotSettingsTab Plot={plotBuffer} SetPlot={setPlotBuffer} SetConfirmDisabled={setConfirmDisabled} IsGlobalSettings={false} />
                 </div>
             </div>
             <div className="tab-content" style={{ overflow: 'hidden' }}>
