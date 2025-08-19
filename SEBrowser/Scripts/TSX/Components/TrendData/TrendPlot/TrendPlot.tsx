@@ -239,15 +239,15 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                 const parts = component.split('.');
                 if (!allCommon[idx]) {
                     if (parts.length !== 2)
-                        label += `- ${component}`;
+                        label += ` - ${component}`;
                     else if ('series'.localeCompare(parts[0], undefined, { sensitivity: 'base' }) === 0)
-                        label += `- ${series?.[parts[1]]}`;
+                        label += ` - ${series?.[parts[1]]}`;
                     else if ('channel'.localeCompare(parts[0], undefined, { sensitivity: 'base' }) === 0)
-                        label += `- ${channel?.[parts[1]]}`;
+                        label += ` - ${channel?.[parts[1]]}`;
                 }
             });
 
-            return label.slice(2, label.length);
+            return label.slice(3, label.length);
         };
 
         const getDefaultValue: (channel: TrendSearch.ITrendChannel, passChannelToColor: boolean) => TrendSearch.ISeriesSettings = (channel, passChannelToColor) => {
@@ -324,15 +324,15 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                     const parts = component.split('.');
                     if (allCommon[idx]) {
                         if (parts.length !== 2)
-                            title += `- ${component}`;
+                            title += ` - ${component}`;
                         else if ('series'.localeCompare(parts[0], undefined, { sensitivity: 'base' }) === 0)
-                            title += `- ${props.Plot.Channels[0].Series?.[0]?.[parts[1]]}`;
+                            title += ` - ${props.Plot.Channels[0].Series?.[0]?.[parts[1]]}`;
                         else if ('channel'.localeCompare(parts[0], undefined, { sensitivity: 'base' }) === 0)
-                            title += `- ${props.Plot.Channels[0]?.[parts[1]]}`;
+                            title += ` - ${props.Plot.Channels[0]?.[parts[1]]}`;
                     }
                 });
 
-                newPlot.Title = title.slice(2, title.length);
+                newPlot.Title = title.slice(3, title.length);
             }
             props.SetPlot(newPlot.ID, newPlot, 'Title');
         }
