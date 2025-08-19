@@ -197,7 +197,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             => boolean = (newSettings, defaultStyle, styleField) => {
                 newSettings.forEach((_setting, ind) => {
                     Object.keys(defaultStyle).forEach(field => {
-                        newSettings[ind][styleField][field] = defaultStyle[field];
+                        newSettings[ind].Settings[styleField][field] = defaultStyle[field];
                     });
                 });
                 return true;
