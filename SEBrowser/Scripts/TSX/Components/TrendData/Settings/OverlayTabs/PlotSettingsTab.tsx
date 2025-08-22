@@ -49,7 +49,7 @@ const axisOptions: { Value: string, Label: string }[] = [
 
 const PlotSettingsTab = React.memo((props: IProps) => {
     const [limits, setLimits] = React.useState<AxisLimits>({ LeftUpper: 1, LeftLower: 0, RightUpper: 1, RightLower: 0 });
-    const [labelOptions, setLabelOptions] = React.useState<{Value: string, Text: string, Selected: boolean}[] >([]);
+    const [labelOptions, setLabelOptions] = React.useState<{ Value: string, Label: string, Selected: boolean}[] >([]);
 
     const dispatch = useAppDispatch();
     const defaultSliceStatus = useAppSelector((state) => ValueListGroupSlice.Status(state, defaultValueList));
@@ -86,7 +86,7 @@ const PlotSettingsTab = React.memo((props: IProps) => {
             setLabelOptions(_.uniqBy(optionsSliceData.concat(defaultSliceData), item => item.Value)
                 .map(item => ({
                     Value: item.Value,
-                    Text: item.AltValue ?? item.Value,
+                    Label: item.AltValue ?? item.Value,
                     Selected: props.Plot.LabelComponents.some(comp => comp === item.Value)
             })));
     }, [optionsSliceStatus, defaultSliceStatus, props.Plot.LabelComponents]);
@@ -142,8 +142,7 @@ const PlotSettingsTab = React.memo((props: IProps) => {
                     <MultiCheckBoxSelect
                         Options={props.Plot.PlotFilter}
                         Label={''}
-                        ItemTooltip={'dark'}
-                        OnChange={(evt, newOptions: IMultiCheckboxOption[]) => {
+                        OnChange={(_evt, newOptions: IMultiCheckboxOption[]) => {
                             const options: IMultiCheckboxOption[] = [];
                             props.Plot.PlotFilter.forEach(item => {
                                 const selected: boolean = item.Selected != (newOptions.findIndex(option => item.Value === option.Value) > -1);
@@ -163,8 +162,7 @@ const PlotSettingsTab = React.memo((props: IProps) => {
                     <MultiCheckBoxSelect
                         Options={labelOptions}
                         Label={'Label Components'}
-                        ItemTooltip={'dark'}
-                        OnChange={(evt, newOptions: IMultiCheckboxOption[]) => {
+                        OnChange={(_evt, newOptions: IMultiCheckboxOption[]) => {
                             const newComponents = [];
                             labelOptions.forEach(option => {
                                 const newOptionIndex = newOptions.findIndex(newOption => newOption.Value === option.Value);

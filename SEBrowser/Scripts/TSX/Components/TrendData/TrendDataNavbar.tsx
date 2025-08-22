@@ -238,7 +238,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     function makeMultiCheckboxOptions(keyValues: IKeyValuePair[], setOptions: (options: IMultiCheckboxOption[]) => void, allKeys: { ID: number, Name: string, Description: string }[]) {
         if (allKeys == null || keyValues == null) return;
         const newOptions: IMultiCheckboxOption[] = [];
-        allKeys.forEach((key) => newOptions.push({ Value: key.ID, Text: key.Name, Selected: keyValues.find(e => e[key.ID] !== undefined)[key.ID] ?? false }));
+        allKeys.forEach((key) => newOptions.push({ Value: key.ID, Label: key.Name, Selected: keyValues.find(e => e[key.ID] !== undefined)[key.ID] ?? false }));
         setOptions(newOptions);
     }
 
@@ -411,7 +411,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             <div className="row">
                                 <div className={"col"}>
                                     <MultiCheckBoxSelect
-                                        ItemTooltip={'dark'}
                                         Options={phaseOptions}
                                         Label={''}
                                         OnChange={(evt, Options: IMultiCheckboxOption[]) => multiCheckboxUpdate("Phases", Options, phaseOptions, setPhaseOptions)}
@@ -422,7 +421,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             <div className="row">
                                 <div className={"col"}>
                                     <MultiCheckBoxSelect
-                                        ItemTooltip={'dark'}
                                         Options={channelGroupOptions}
                                         Label={''}
                                         OnChange={(evt, Options: IMultiCheckboxOption[]) => multiCheckboxUpdate("ChannelGroups", Options, channelGroupOptions, setChannelGroupOptions)}
@@ -433,7 +431,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             <div className="row">
                                 <div className={"col"}>
                                     <MultiCheckBoxSelect
-                                        ItemTooltip={'dark'}
                                         Options={linePlotOptions}
                                         Label={''}
                                         OnChange={(evt, newOptions: IMultiCheckboxOption[]) => {

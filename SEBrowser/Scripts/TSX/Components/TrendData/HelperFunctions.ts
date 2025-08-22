@@ -197,7 +197,7 @@ export namespace TrendDefaults {
             TimeFilter: { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 12, timeWindowUnits: 3 },
             Type: 'Line',
             Channels: [],
-            PlotFilter: [{ Text: "Minimum", Value: "Minimum", Selected: true }, { Text: "Maximum", Value: "Maximum", Selected: true }, { Text: "Average/Values", Value: "Average", Selected: true }],
+            PlotFilter: [{ Label: "Minimum", Value: "Minimum", Selected: true }, { Label: "Maximum", Value: "Maximum", Selected: true }, { Label: "Average/Values", Value: "Average", Selected: true }],
             ID: "blank",
             Width: 50,
             Height: 50,

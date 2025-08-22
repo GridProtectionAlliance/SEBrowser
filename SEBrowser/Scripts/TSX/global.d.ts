@@ -43,7 +43,7 @@ declare global {
 //Todo: Move to gemstone?
 export interface IMultiCheckboxOption {
     Value: number | string,
-    Text: string,
+    Label: string,
     Selected: boolean
 }
 
