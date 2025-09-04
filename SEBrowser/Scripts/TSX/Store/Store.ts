@@ -24,9 +24,10 @@
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { GenericSlice } from '@gpa-gemstone/react-interactive';
 import { configureStore } from '@reduxjs/toolkit';
-import EventSearchReducer from './Components/EventSearch/EventSearchSlice';
-import { SettingsReducer } from './Components/SettingsSlice';
-import { TrendSearch } from './global';
+import EventSearchReducer from './EventSearchSlice';
+import { SettingsReducer } from './SettingsSlice';
+import GroupSlice from './ValueListGroupSlice'
+import { TrendSearch } from '../global';
 
 declare let homePath: string;
 
@@ -50,6 +51,8 @@ export const MeterNoteSlice = new GenericSlice<OpenXDA.Types.Note>("MeterNote", 
 export const AssetNoteSlice = new GenericSlice<OpenXDA.Types.Note>("AssetNote", `${homePath}api/OpenXDA/Note/Asset`, "Timestamp", true);
 export const LocationNoteSlice = new GenericSlice<OpenXDA.Types.Note>("LocationNote", `${homePath}api/OpenXDA/Note/Location`, "Timestamp", true);
 
+export const ValueListGroupSlice = new GroupSlice();
+
 const reducer = {
     EventSearch: EventSearchReducer,
     MagDurCurve: MagDurCurveSlice.Reducer,
@@ -64,7 +67,8 @@ const reducer = {
     AssetNote: AssetNoteSlice.Reducer,
     LocationNote: LocationNoteSlice.Reducer,
     Phase: PhaseSlice.Reducer,
-    ChannelGroup: ChannelGroupSlice.Reducer
+    ChannelGroup: ChannelGroupSlice.Reducer,
+    ValueList: ValueListGroupSlice.Reducer
 }
 
 const store = configureStore({ reducer });

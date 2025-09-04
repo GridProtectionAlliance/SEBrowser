@@ -43,7 +43,7 @@ declare global {
 //Todo: Move to gemstone?
 export interface IMultiCheckboxOption {
     Value: number | string,
-    Text: string,
+    Label: string,
     Selected: boolean
 }
 
@@ -62,7 +62,8 @@ export namespace Redux {
         AssetNote: IGenericSliceState<XDA.Types.Note>,
         LocationNote: IGenericSliceState<XDA.Types.Note>,
         Phase: IGenericSliceState<XDA.Types.Phase>,
-        ChannelGroup: IGenericSliceState<SEBrowser.ChannelGroup>
+        ChannelGroup: IGenericSliceState<SEBrowser.ChannelGroup>,
+        ValueList: iValueListSliceState
     }
 
     interface State<T> {
@@ -112,6 +113,19 @@ export namespace Redux {
         StartWithOptionsClosed: boolean,
         LegendDisplay: 'bottom' | 'right' | 'hidden'
     }
+
+    interface IValueListSliceState {
+        Status: {
+            [group: string]: Application.Types.Status
+        }
+        Data: {
+            [group: string]: SystemCenter.Types.ValueListItem[]
+        }
+        ActiveFetchID: {
+            [group: string]: string[]
+        }
+        Error: null | string
+    }
 }
 export namespace SEBrowser {
     type Status = 'loading' | 'idle' | 'error' | 'changed' | 'unitiated';
@@ -147,8 +161,10 @@ export namespace TrendSearch {
         Description: string
     }
 
+    // Todo: Now in gemstone, change to use that when gemstone is updated
     interface ITrendChannel {
-        ID: number,
+        ID: string,
+        ChannelID: number
         Name: string,
         Description: string,
         AssetID: number,
@@ -161,9 +177,16 @@ export namespace TrendSearch {
         Phase: string,
         ChannelGroup: string,
         ChannelGroupType: string,
-        Unit: string
+        Unit: string,
+        Series: ISeries[]
     }
 
+    interface ISeries {
+        ID: number, ChannelID: number,
+        TypeName: string, TypeDescription: string, 
+    }
+
+    // Data representation from HIDS
     interface IPQData {
         Tag: string,
         Minimum: number,
@@ -173,11 +196,18 @@ export namespace TrendSearch {
         Timestamp: string
     }
 
+    interface ICyclicData {
+        Bin: number,
+        Sample: number,
+        Value: number
+    }
+
+    // Color Settings for Lines
     interface IColor {
         Label: string,
-        MinColor: string,
-        AvgColor: string,
-        MaxColor: string
+        Minimum: string,
+        Average: string,
+        Maximum: string
     }
 
     interface IColorSettings {
@@ -190,6 +220,7 @@ export namespace TrendSearch {
         Type: TrendSearch.LineStyles,
     }
 
+    // Line Styling Settings
     interface ILineSettings extends ILineStyleSettings {
         Color: string,
         Axis: 'right' | 'left',
@@ -197,11 +228,20 @@ export namespace TrendSearch {
         HasData: boolean
     }
 
-    interface ILineSeries {
+    // Signifies Settings for a particular type of graph series
+    interface ILineSeriesSettings {
+        [key: string]: TrendSearch.ILineSettings,
+        Average: TrendSearch.ILineSettings
+    }
+
+    interface ICyclicSeriesSettings {
+        Color: string
+    }
+
+    // Overall Series Settings
+    interface ISeriesSettings {
         Channel?: TrendSearch.ITrendChannel,
-        Min: TrendSearch.ILineSettings,
-        Max: TrendSearch.ILineSettings,
-        Avg: TrendSearch.ILineSettings
+        Settings: ILineSeriesSettings | ICyclicSeriesSettings
     }
 
     interface IMetaData {
@@ -215,12 +255,6 @@ export namespace TrendSearch {
         CyclesMax: number,
         CyclesMin: number,
         CyclicHistogramBins: number
-    }
-
-    interface ICyclicData {
-        Bin: number,
-        Sample: number,
-        Value: number
     }
 
     type IPlotTypes = 'Line'|'Cyclic';
@@ -242,7 +276,8 @@ export namespace TrendSearch {
         Height?: number,
         ShowEvents?: boolean,
         AxisZoom?: 'Manual' | 'AutoValue' | 'HalfAutoValue',
-        DefaultZoom?: [number, number][]
+        DefaultZoom?: [number, number][],
+        LabelComponents?: string[],
     }
 
     type LineStyles = "short-dash" | "long-dash" | "dash" | "solid";
@@ -316,15 +351,15 @@ export namespace TrendSearch {
         }
     }
     interface ILinePlotSettingsBundle {
-        Min: {
+        Maximum: {
             Default: ILineStyleSettings,
             ShouldApply: boolean
         }
-        Max: {
+        Minimum: {
             Default: ILineStyleSettings,
             ShouldApply: boolean
         }
-        Avg: {
+        Average: {
             Default: ILineStyleSettings,
             ShouldApply: boolean
         }

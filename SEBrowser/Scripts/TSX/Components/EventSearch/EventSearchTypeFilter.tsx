@@ -24,9 +24,9 @@ import React from 'react';
 import 'moment';
 import _ from 'lodash';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { SelectTypeFilter } from './EventSearchSlice';
-import {  SetFilters } from './EventSearchSlice';
-import {  EventTypeSlice } from '../../Store';
+import { SelectTypeFilter } from '../../Store/EventSearchSlice';
+import {  SetFilters } from '../../Store/EventSearchSlice';
+import {  EventTypeSlice } from '../../Store/Store';
 import { OpenXDA } from '@gpa-gemstone/application-typings';
 interface IProps {
     Height: number

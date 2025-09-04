@@ -28,151 +28,31 @@ import TrendSearchNavbar from './TrendDataNavbar';
 import TrendPlot from './TrendPlot/TrendPlot';
 import { TrendSearch } from '../../Global';
 import AllSettingsModal from './Settings/AllSettingsModal';
-import { SelectTrendDataSettings } from './../SettingsSlice';
-import { useAppSelector } from './../../hooks';
+import { SelectTrendDataSettings } from '../../Store/SettingsSlice';
+import { useAppSelector, useAppDispatch } from './../../hooks';
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
+import { ValueListGroupSlice } from '../../Store/Store';
+import { TrendDefaults } from './HelperFunctions';
 
 const momentDateFormat = "MM/DD/YYYY";
 const trendSearchId = "TrendDataChartAll";
 const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFilter"]);
+const defaultValueList = "TrendLabelDefaults";
 
 const TrendData = () => {
     const closureHandler = React.useRef<((o: boolean) => void)>(() => { return; });
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
     const [plotList, setPlotList] = React.useState<TrendSearch.ITrendPlot[]>([]);
-    const [defaultPlotSettings, setDefaultPlotSettings] = React.useState<TrendSearch.ITrendPlot>({
-        TimeFilter: { date: moment.utc().format(momentDateFormat), time: '12:00:00.000', windowSize: 12, timeWindowUnits: 3 },
-        Type: 'Line',
-        Channels: [],
-        PlotFilter: [{ Text: "Minimum", Value: "min", Selected: true }, { Text: "Maximum", Value: "max", Selected: true }, { Text: "Average/Values", Value: "avg", Selected: true }],
-        ID: "blank",
-        Width: 50,
-        Height: 50,
-        AxisZoom: 'AutoValue',
-        ShowEvents: false
-    });
-    const [markerDefaults, setMarkerDefaults] = React.useState<TrendSearch.IMarkerSettingsBundle>({
-        Symb: {
-            Default: {
-                // Need to overwrite these
-                ID: "Symb",
-                xPos: undefined,
-                yPos: undefined,
-                axis: "left",
-                xBox: undefined,
-                yBox: undefined,
-                // Symbol
-                symbol: SVGIcons.ArrowDropDown,
-                radius: 12,
-                color: "#000000",
-                // Note
-                format: "HH:mm",
-                note: "",
-                opacity: 1,
-                fontColor: "#000000",
-                fontSize: 1,
-                type: "Symb"
-            },
-            ShouldApply: false
-        },
-        VeHo: {
-            Default: {
-                // Need to overwrite these
-                ID: "Veho",
-                value: undefined,
-                axis: "left",
-                isHori: undefined,
-                // Defaults
-                color: "#E41000",
-                line: "short-dash",
-                width: 4,
-                type: "VeHo"
-            },
-            ShouldApply: false
-        },
-        Event: {
-            Default: {
-                // Need to overwrite ID
-                ID: "Event",
-                axis: "left",
-                type: "Event-Vert",
-                color: "#E41000",
-                line: "short-dash",
-                width: 4
-            },
-            ShouldApply: false
-        }
-    });
-    const [lineDefaults, setLineDefaults] = React.useState<TrendSearch.ILinePlotSettingsBundle>({
-        Min: {
-            Default: {
-                Width: 3,
-                Type: 'short-dash'
-            },
-            ShouldApply: false
-        },
-        Max: {
-            Default: {
-                Width: 3,
-                Type: 'short-dash'
-            },
-            ShouldApply: false
-        },
-        Avg: {
-            Default: {
-                Width: 3,
-                Type: 'solid'
-            },
-            ShouldApply: false
-        },
-        Colors: {
-            Default: {
-                ApplyType: "Random",
-                Colors: [
-                    {
-                        Label: "Color 1",
-                        MinColor: "#A30000",
-                        AvgColor: "#A30000",
-                        MaxColor: "#A30000"
-                    },
-                    {
-                        Label: "Color 2",
-                        MinColor: "#0029A3",
-                        AvgColor: "#0029A3",
-                        MaxColor: "#0029A3"
-                    },
-                    {
-                        Label: "Color 3",
-                        MinColor: "#007A29",
-                        AvgColor: "#007A29",
-                        MaxColor: "#007A29"
-                    },
-                    {
-                        Label: "Color 4",
-                        MinColor: "#FF0000",
-                        AvgColor: "#FF0000",
-                        MaxColor: "#FF0000"
-                    },
-                    {
-                        Label: "Color 5",
-                        MinColor: "#0066CC",
-                        AvgColor: "#0066CC",
-                        MaxColor: "#0066CC"
-                    },
-                    {
-                        Label: "Color 6",
-                        MinColor: "#33CC33",
-                        AvgColor: "#33CC33",
-                        MaxColor: "#33CC33"
-                    }
-                ]
-            },
-            ShouldApply: false
-        }
-    });
+    const [defaultPlotSettings, setDefaultPlotSettings] = React.useState<TrendSearch.ITrendPlot>(TrendDefaults.getPlotSettingsOrDefault);
+    const [markerDefaults, setMarkerDefaults] = React.useState<TrendSearch.IMarkerSettingsBundle>(TrendDefaults.getMarkerSettingsOrDefault);
+    const [lineDefaults, setLineDefaults] = React.useState<TrendSearch.ILinePlotSettingsBundle>(TrendDefaults.getLineSettingsOrDefault);
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
     const [plotsMovable, setPlotsMovable] = React.useState<boolean>(false);
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
+
+    const defaultSliceStatus = useAppSelector((state) => ValueListGroupSlice.Status(state, defaultValueList));
+    const defaultSliceData = useAppSelector((state) => ValueListGroupSlice.Data(state, defaultValueList));
+    const dispatch = useAppDispatch();
 
     function getShowNav(): boolean {
         if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.TrendData.ShowNav'))
@@ -246,6 +126,33 @@ const TrendData = () => {
     const toggleNavbar = React.useCallback((
         () => setShowNav(!showNav)
     ), [showNav]);
+
+    React.useEffect(() => {
+        if (defaultSliceStatus === 'unintiated' || defaultSliceStatus === 'changed')
+            dispatch(ValueListGroupSlice.Fetch(defaultValueList));
+    }, [defaultSliceStatus]);
+
+    React.useEffect(() => {
+        // only allow settings this if it hasn't been set before
+        if (defaultSliceStatus === 'idle' && defaultPlotSettings.LabelComponents.length === 0)
+            setDefaultPlotSettings({ ...defaultPlotSettings, LabelComponents: defaultSliceData.map(item => item.Value) });
+    }, [defaultSliceStatus]);
+
+    // These store settings into local storage
+    React.useEffect(() => {
+        TrendDefaults.storePlotSettings(defaultPlotSettings);
+    }, [defaultPlotSettings]);
+
+    /* ToDo: Uncomment later, Trying to store these as is breaks things because you can't just store JSX elements as if they are objects with session storage,
+    but the way these are stored may change since we may move to ReactIcons over deprecated SVGIcons anyway...
+    React.useEffect(() => {
+        TrendDefaults.storeMarkerSettings(markerDefaults);
+    }, [markerDefaults]);
+    */
+
+    React.useEffect(() => {
+        TrendDefaults.storeLineSettings(lineDefaults);
+    }, [lineDefaults]);
 
     return (
         <div className="container-fluid d-flex h-100 flex-column" style={{ height: 'inherit' }}>

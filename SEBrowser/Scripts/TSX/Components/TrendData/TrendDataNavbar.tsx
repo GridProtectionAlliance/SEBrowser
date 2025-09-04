@@ -25,7 +25,7 @@ import React from 'react';
 import _ from 'lodash';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AssetSlice, MeterSlice, PhaseSlice, ChannelGroupSlice } from '../../Store';
+import { AssetSlice, MeterSlice, PhaseSlice, ChannelGroupSlice } from '../../Store/Store';
 import { SEBrowser, TrendSearch, IMultiCheckboxOption } from '../../Global';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { MultiCheckBoxSelect } from '@gpa-gemstone/react-forms';
@@ -96,7 +96,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [linePlotOptions, setLinePlotOptions] = React.useState<IMultiCheckboxOption[]>(props.LinePlot);
 
     const [trendChannels, setTrendChannels] = React.useState<TrendSearch.ITrendChannel[]>([]);
-    const [selectedSet, setSelectedSet] = React.useState<Set<number>>(new Set<number>());
+    const [selectedSet, setSelectedSet] = React.useState<Set<string>>(new Set<string>());
     const [tableHeight, setTableHeight] = React.useState<number>(100);
 
     const queryRef = React.useRef<{ phaseIds: Set<number>, groupIds: Set<number>, assetIds: Set<number>, meterIds: Set<number> }>({ phaseIds: undefined, groupIds: undefined, assetIds: undefined, meterIds: undefined})
@@ -238,7 +238,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     function makeMultiCheckboxOptions(keyValues: IKeyValuePair[], setOptions: (options: IMultiCheckboxOption[]) => void, allKeys: { ID: number, Name: string, Description: string }[]) {
         if (allKeys == null || keyValues == null) return;
         const newOptions: IMultiCheckboxOption[] = [];
-        allKeys.forEach((key) => newOptions.push({ Value: key.ID, Text: key.Name, Selected: keyValues.find(e => e[key.ID] !== undefined)[key.ID] ?? false }));
+        allKeys.forEach((key) => newOptions.push({ Value: key.ID, Label: key.Name, Selected: keyValues.find(e => e[key.ID] !== undefined)[key.ID] ?? false }));
         setOptions(newOptions);
     }
 
@@ -265,7 +265,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             async: true
         }).done((data: TrendSearch.ITrendChannel[]) => {
             setTrendChannels(data);
-            setSelectedSet(new Set<number>());
+            setSelectedSet(new Set<string>());
         });
     }
 
@@ -411,7 +411,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             <div className="row">
                                 <div className={"col"}>
                                     <MultiCheckBoxSelect
-                                        ItemTooltip={'dark'}
                                         Options={phaseOptions}
                                         Label={''}
                                         OnChange={(evt, Options: IMultiCheckboxOption[]) => multiCheckboxUpdate("Phases", Options, phaseOptions, setPhaseOptions)}
@@ -422,7 +421,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             <div className="row">
                                 <div className={"col"}>
                                     <MultiCheckBoxSelect
-                                        ItemTooltip={'dark'}
                                         Options={channelGroupOptions}
                                         Label={''}
                                         OnChange={(evt, Options: IMultiCheckboxOption[]) => multiCheckboxUpdate("ChannelGroups", Options, channelGroupOptions, setChannelGroupOptions)}
@@ -433,7 +431,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             <div className="row">
                                 <div className={"col"}>
                                     <MultiCheckBoxSelect
-                                        ItemTooltip={'dark'}
                                         Options={linePlotOptions}
                                         Label={''}
                                         OnChange={(evt, newOptions: IMultiCheckboxOption[]) => {
@@ -482,7 +479,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${trendChannels.length === 0 ? ' disabled' : ''}`}
                         onClick={() => {
                             if (trendChannels.length !== 0) {
-                                const newSet = new Set<number>();
+                                const newSet = new Set<string>();
                                 trendChannels.forEach(chan => newSet.add(chan.ID));
                                 setSelectedSet(newSet);
                             }

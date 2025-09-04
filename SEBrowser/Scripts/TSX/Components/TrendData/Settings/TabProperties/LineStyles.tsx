@@ -28,7 +28,7 @@ import { TrendSearch } from '../../../../Global';
 interface IChannelTabProps {
     DefaultStyle: TrendSearch.ILineStyleSettings,
     SetDefaultStyle: (newSettings: TrendSearch.ILineStyleSettings) => void,
-    Series: 'Min' | 'Max' | 'Avg'
+    Series: string
 }
 
 const LineStyles = React.memo((props: IChannelTabProps) => {

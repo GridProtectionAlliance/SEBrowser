@@ -57,9 +57,9 @@ function DERAnalysisReport() {
     const [time, setTime] = React.useState<string>(moment().format(momentTimeFormat));
     const [windowSize, setWindowSize] = React.useState<number>(1);
     const [timeWindowUnits, setTimeWindowUnits] = React.useState<number>(4);
-    const [regulations, setRegulations] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([])
-    const [stations, setStations] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([]);
-    const [ders, setDERs] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([]);
+    const [regulations, setRegulations] = React.useState<{ Value: number, Label: string, Selected: boolean }[]>([])
+    const [stations, setStations] = React.useState<{ Value: number, Label: string, Selected: boolean }[]>([]);
+    const [ders, setDERs] = React.useState<{ Value: number, Label: string, Selected: boolean }[]>([]);
     const [data, setData] = React.useState<DERAnalyticResult[]>([]);
     const [ascending, setAscending] = React.useState<boolean>(true);
     const [sortKey, setSortKey] = React.useState<keyof DERAnalyticResult>('Time');
@@ -97,7 +97,7 @@ function DERAnalysisReport() {
             async: true
         }) as JQuery.jqXHR<string[]>;
 
-        handle1.done(d => setRegulations(d.map((reg, i) => ({Value: i, Text: reg, Selected: true}))) )
+        handle1.done(d => setRegulations(d.map((reg, i) => ({ Value: i, Label: reg, Selected: true}))) )
 
         const handle2 = $.ajax({
             type: "GET",
@@ -108,7 +108,7 @@ function DERAnalysisReport() {
             async: true
         }) as JQuery.jqXHR<{LocationID: number, LocationKey: string, Name: string}[]>;
 
-        handle2.done(d => setStations(d.map((reg) => ({ Value: reg.LocationID, Text: reg.Name, Selected: true }))))
+        handle2.done(d => setStations(d.map((reg) => ({ Value: reg.LocationID, Label: reg.Name, Selected: true }))))
 
         return () => {
             if (handle1.abort != undefined) handle1.abort();
@@ -139,7 +139,7 @@ function DERAnalysisReport() {
             async: true
         }) as JQuery.jqXHR<OpenXDA.Types.Asset[]>;
 
-        handle1.done(d => setDERs(d.map((reg) => ({ Value: reg.ID, Text: reg.AssetName, Selected: true }))))
+        handle1.done(d => setDERs(d.map((reg) => ({ Value: reg.ID, Label: reg.AssetName, Selected: true }))))
 
         return () => {
             if (handle1.abort != undefined) handle1.abort();
@@ -164,7 +164,7 @@ function DERAnalysisReport() {
                 Time: date + ' ' + time,
                 Window: adjustedTime[1],
                 TimeWindowUnit: adjustedTime[0],
-                Regulations: regulations.filter(s => s.Selected).map(s => s.Text)
+                Regulations: regulations.filter(s => s.Selected).map(s => s.Label)
             }),
             cache: false,
             async: true
@@ -189,7 +189,7 @@ function DERAnalysisReport() {
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>DER:</legend>
                                 <form>
                                     <div className="form-group" style={{ height: 60, width: '100%' }}>
-                                        <MultiCheckBoxSelect Label={'Substation:'} Options={stations} ItemTooltip={'dark'} OnChange={(evt, options) => {
+                                        <MultiCheckBoxSelect Label={'Substation:'} Options={stations} OnChange={(evt, options) => {
                                             const records = [...stations]
                                             for (const option of options) {
                                                 const index = records.findIndex(r => r.Value == option.Value)
@@ -200,7 +200,7 @@ function DERAnalysisReport() {
 
                                     </div>
                                     <div className="form-group" style={{ height: 60, width: '100%' }}>
-                                        <MultiCheckBoxSelect Label={'DER:'} Options={ders} ItemTooltip={'dark'} OnChange={(evt, options) => {
+                                        <MultiCheckBoxSelect Label={'DER:'} Options={ders} OnChange={(evt, options) => {
                                             const records = [...ders]
                                             for (const option of options) {
                                                 const index = records.findIndex(r => r.Value == option.Value)
@@ -210,7 +210,7 @@ function DERAnalysisReport() {
                                         }} />
                                     </div>
                                     <div className="form-group" style={{ height: 60, width: '100%' }}>
-                                        <MultiCheckBoxSelect Label={'Regulations:'} Options={regulations} ItemTooltip={'dark'} OnChange={(evt, options) => {
+                                        <MultiCheckBoxSelect Label={'Regulations:'} Options={regulations} OnChange={(evt, options) => {
                                             const records = [...regulations]
                                             for (const option of options) {
                                                 const index = records.findIndex(r => r.Value == option.Value)

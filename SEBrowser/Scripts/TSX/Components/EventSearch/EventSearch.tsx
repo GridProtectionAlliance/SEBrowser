@@ -29,7 +29,7 @@ import EventSearchNavbar from './EventSearchNavbar';
 import EventPreviewPane from './EventSearchPreview/EventSearchPreviewPane';
 import queryString from 'querystring';
 import EventSearchMagDur from './EventSearchMagDur';
-import { ProcessQuery, SelectEventList, SelectQueryParam } from './EventSearchSlice';
+import { ProcessQuery, SelectEventList, SelectQueryParam } from '../../Store/EventSearchSlice';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SplitSection, VerticalSplit } from '@gpa-gemstone/react-interactive';

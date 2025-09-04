@@ -21,7 +21,6 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import { ICyclicSeries } from '../../TrendPlot/CyclicHistogram';
 import { TrendSearch } from '../../../../global';
 import { BlockPicker } from 'react-color';
 import { LineTypeOptions } from '../SettingsModal';
@@ -30,14 +29,12 @@ import { LineSettings } from '../TabProperties/LineSettings';
 
 interface IChannelTabProps {
     // Assumption that this doesnt change outside of this overlay
-    SeriesSettings: SeriesSettings[],
-    SetSeriesSettings: (newSettings: SeriesSettings[]) => void,
+    SeriesSettings: TrendSearch.ISeriesSettings[],
+    SetSeriesSettings: (newSettings: TrendSearch.ISeriesSettings[]) => void,
     Channels: TrendSearch.ITrendChannel[],
     SetChannels: (newSettings: TrendSearch.ITrendChannel[]) => void,
     Type: TrendSearch.IPlotTypes
 }
-
-export type SeriesSettings = TrendSearch.ILineSeries | ICyclicSeries;
 
 const ChannelTab = React.memo((props: IChannelTabProps) => {
     // Sizing Variables
@@ -45,8 +42,8 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
     const [settingsHeight, setSettingsHeight] = React.useState<number>(500);
 
     // Settings Controls
-    const [currentChannelId, setCurrentChannelId] = React.useState<number>(undefined);
-    const [currentSeriesSetting, setCurrentSeriesSetting] = React.useState<SeriesSettings>(undefined);
+    const [currentChannelId, setCurrentChannelId] = React.useState<string>(undefined);
+    const [currentSeriesSetting, setCurrentSeriesSetting] = React.useState<TrendSearch.ISeriesSettings>(undefined);
 
     // Get Heights and Widths
     React.useLayoutEffect(() => {
@@ -70,7 +67,7 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
         props.SetSeriesSettings(allSettings);
     }, [props.SeriesSettings, props.SetSeriesSettings, props.Channels, props.SetChannels]);
 
-    const editChannel = React.useCallback((seriesSetting: SeriesSettings) => {
+    const editChannel = React.useCallback((seriesSetting: TrendSearch.ISeriesSettings) => {
         const allSettings = [...props.SeriesSettings];
         const index = allSettings.findIndex(setting => setting.Channel.ID === seriesSetting.Channel.ID);
         allSettings.splice(index, 1, seriesSetting);
@@ -83,7 +80,7 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
     const getSettingsList = React.useCallback(() => {
         switch (props.Type) {
             case 'Line':
-                if (!currentSeriesSetting['Min']?.HasData && !currentSeriesSetting['Avg']?.HasData && !currentSeriesSetting['Max']?.HasData)
+                if (!currentSeriesSetting.Settings['Minimum']?.['HasData'] && !currentSeriesSetting.Settings['Average']?.['HasData'] && !currentSeriesSetting.Settings['Maximum']?.['HasData'])
                     return (
                         <div style={{
                             backgroundColor: "grey", borderRadius: ('25px 25px 25px 25px'),
@@ -91,16 +88,18 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
                         }} />
                     );
                 return (
-                    <div className="row" style={{height: '100%', width: '100%'}}>
-                        <LineSettings SeriesSettings={currentSeriesSetting as TrendSearch.ILineSeries} SetSeriesSettings={editChannel} Series='Min' />
-                        <LineSettings SeriesSettings={currentSeriesSetting as TrendSearch.ILineSeries} SetSeriesSettings={editChannel} Series='Avg' />
-                        <LineSettings SeriesSettings={currentSeriesSetting as TrendSearch.ILineSeries} SetSeriesSettings={editChannel} Series='Max' />
+                    <div className="row" style={{ height: '100%', width: '100%' }}>
+                        {
+                            Object.keys(currentSeriesSetting.Settings).map(seriesKey =>
+                                <LineSettings SeriesSettings={currentSeriesSetting} SetSeriesSettings={editChannel} Series={seriesKey} />
+                            )
+                        }
                     </div>
                 );
             case 'Cyclic':
                 return (
                     <>
-                        <BlockPicker onChangeComplete={(color) => editChannel({ ...currentSeriesSetting, Color: color.hex })} color={currentSeriesSetting['Color']} triangle={"hide"} />
+                        <BlockPicker onChangeComplete={(color) => editChannel({ ...currentSeriesSetting, Settings: {Color: color.hex } })} color={currentSeriesSetting['Color']} triangle={"hide"} />
                     </>
                 );
             default:

@@ -26,9 +26,9 @@ import React from 'react';
 import _ from 'lodash';
 import ReportTimeFilter from '../ReportTimeFilter';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { SelectAssetGroupList, SelectAssetList, SelectCharacteristicFilter, SelectMeterList, SelectReset, SelectStationList, SelectTimeFilter, SelectTypeFilter, SetFilterLists } from './EventSearchSlice';
-import { ResetFilters,  SetFilters } from './EventSearchSlice';
-import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice, MagDurCurveSlice, EventTypeSlice } from '../../Store';
+import { SelectAssetGroupList, SelectAssetList, SelectCharacteristicFilter, SelectMeterList, SelectReset, SelectStationList, SelectTimeFilter, SelectTypeFilter, SetFilterLists } from '../../Store/EventSearchSlice';
+import { ResetFilters,  SetFilters } from '../../Store/EventSearchSlice';
+import { AssetGroupSlice, AssetSlice, LocationSlice, MeterSlice, MagDurCurveSlice, EventTypeSlice } from '../../Store/Store';
 import { DefaultSelects } from '@gpa-gemstone/common-pages';
 import NavbarFilterButton from '../Common/NavbarFilterButton';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
@@ -37,7 +37,7 @@ import { Search } from '@gpa-gemstone/react-interactive';
 import { Column } from '@gpa-gemstone/react-table';
 import { SEBrowser } from '../../Global';
 import EventSearchTypeFilters from './EventSearchTypeFilter';
-import { SelectDateTimeSetting, SelectTimeZone } from '../SettingsSlice';
+import { SelectDateTimeSetting, SelectTimeZone } from '../../Store/SettingsSlice';
 import { getMoment, getStartEndTime, readableUnit } from './TimeWindowUtils';
 
 interface IProps {
@@ -84,15 +84,16 @@ const EventSearchNavbar = (props: IProps) => {
     React.useEffect(() => { setNewTypeFilter(eventTypeFilter) }, [eventTypeFilter])
     React.useEffect(() => { setNewEventCharacteristicFilter(eventCharacteristicFilter) }, [eventCharacteristicFilter])
 
-    const [newPhases, setNewPhases] = React.useState<{ Value: number, Text: string, Selected: boolean }[]>([]);
+    const [newPhases, setNewPhases] = React.useState<{ Value: number, Label: string, Selected: boolean }[]>([]);
 
     const [timeRange, setTimeRange] = React.useState<string>('');
 
     React.useEffect(() => {
         setNewEventCharacteristicFilter(eventCharacteristicFilter);
         setNewTypeFilter(eventTypeFilter);
-        const setupPhases: { Value: number, Text: string, Selected: boolean }[] = [];
-        Object.keys(eventCharacteristicFilter.phases).forEach((key, index) => setupPhases.push({ Value: index, Text: key, Selected: eventCharacteristicFilter.phases[key] }));
+        const setupPhases = Object
+            .keys(eventCharacteristicFilter.phases)
+            .map((key, index) => ({ Value: index, Label: key, Selected: eventCharacteristicFilter.phases[key] }));
         setNewPhases(setupPhases);
     }, []);
 
@@ -457,15 +458,14 @@ const EventSearchNavbar = (props: IProps) => {
                                         <MultiCheckBoxSelect
                                             Options={newPhases}
                                             Label={'Phases'}
-                                            ItemTooltip={'dark'}
                                             OnChange={
-                                                (evt, Options: { Value: number; Text: string; Selected: boolean; }[]) => { 
+                                                (_evt, Options: { Value: number; Label: string; Selected: boolean; }[]) => { 
                                                     const phaseList = [];
                                                     const phaseFilter: SEBrowser.IPhaseFilters = { ...newEventCharacteristicFilter.phases };
                                                     newPhases.forEach(phase => {
                                                         const phaseSelected: boolean = phase.Selected != (Options.findIndex(option => phase.Value === option.Value) > -1);
                                                         phaseList.push({ ...phase, Selected: phaseSelected });
-                                                        phaseFilter[phase.Text] = phaseSelected;
+                                                        phaseFilter[phase.Label] = phaseSelected;
                                                     })
                                                     setNewPhases(phaseList);
                                                     setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, phases: phaseFilter });

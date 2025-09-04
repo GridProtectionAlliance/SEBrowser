@@ -24,7 +24,6 @@
 //******************************************************************************************************
 import React from 'react';
 import _ from 'lodash';
-import { ICyclicSeries } from '../TrendPlot/CyclicHistogram';
 import { TrendSearch } from '../../../global';
 import { TabSelector, Modal } from '@gpa-gemstone/react-interactive';
 import { PlotSettingsTab } from './OverlayTabs/PlotSettingsTab';
@@ -43,14 +42,12 @@ interface IOverlayProps {
     EventSettings: TrendSearch.EventMarkerSettings,
     SetEventSettings: (setting: TrendSearch.EventMarkerSettings) => void,
     // Assumption that this doesnt change outside of this overlay
-    SeriesSettings?: SeriesSettings[]
-    SetSeriesSettings: (newSettings: SeriesSettings[]) => void
+    SeriesSettings?: TrendSearch.ISeriesSettings[]
+    SetSeriesSettings: (newSettings: TrendSearch.ISeriesSettings[]) => void
     // Manage Overlay
     Show: boolean,
     SetShow: (value: boolean) => void
 }
-
-export type SeriesSettings = TrendSearch.ILineSeries | ICyclicSeries;
 
 const SettingsModal = React.memo((props: IOverlayProps) => {
     // Settings Controls
@@ -59,7 +56,7 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
     // Plot Tab Buffers
     const [plotBuffer, setPlotBuffer] = React.useState<TrendSearch.ITrendPlot>(null);
     // Channels Tab Buffers
-    const [seriesBuffer, setSeriesBuffer] = React.useState<SeriesSettings[]>([]);
+    const [seriesBuffer, setSeriesBuffer] = React.useState<TrendSearch.ISeriesSettings[]>([]);
     const [channelsBuffer, setChannelsBuffer] = React.useState<TrendSearch.ITrendChannel[]>([]);
     // Markers Tab Buffers
     const [symbolicsBuffer, setSymbolicsBuffer] = React.useState<TrendSearch.ISymbolic[]>([]);
@@ -133,7 +130,7 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
             <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
             <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
-                    <PlotSettingsTab Plot={plotBuffer} SetPlot={setPlotBuffer} SetConfirmDisabled={setConfirmDisabled} />
+                    <PlotSettingsTab Plot={plotBuffer} SetPlot={setPlotBuffer} SetConfirmDisabled={setConfirmDisabled} IsGlobalSettings={false} />
                 </div>
             </div>
             <div className="tab-content" style={{ overflow: 'hidden' }}>

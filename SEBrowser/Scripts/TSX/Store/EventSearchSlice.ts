@@ -22,14 +22,14 @@
 //******************************************************************************************************
 
 import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
-import { SEBrowser, Redux } from '../../global';
+import { SEBrowser, Redux } from '../global';
 import * as _ from 'lodash';
 import { ajax } from 'jquery';
 import moment from 'moment';
 import queryString from 'querystring';
-import { AssetGroupSlice, AssetSlice, EventTypeSlice, LocationSlice, MeterSlice } from '../../Store';
+import { AssetGroupSlice, AssetSlice, EventTypeSlice, LocationSlice, MeterSlice } from '../Store/Store';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
-import { findAppropriateUnit, getStartEndTime, getMoment } from './TimeWindowUtils';
+import { findAppropriateUnit, getStartEndTime, getMoment } from '../Components/EventSearch/TimeWindowUtils';
 
 const momentDateFormat = "MM/DD/YYYY";
 

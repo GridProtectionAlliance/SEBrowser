@@ -566,9 +566,10 @@
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\SOE.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\StructureInfo.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\Common\NavbarFilterButton.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\SettingsSlice.ts" />
+    <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\HelperFunctions.ts" />
+    <TypeScriptCompile Include="Scripts\TSX\Store\SettingsSlice.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchMagDur.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Components\EventSearch\EventSearchSlice.ts" />
+    <TypeScriptCompile Include="Scripts\TSX\Store\EventSearchSlice.ts" />
     <None Include="Scripts\TSX\Components\ReportTimeFilter.tsx" />
     <None Include="Scripts\TSX\Components\DERAnalysisReport\DERAnalysisReport.tsx" />
     <Content Include="Scripts\TSX\Components\TrendData\TrendData.tsx" />
@@ -589,8 +590,9 @@
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\LineGraph.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\TrendPlot\TrendPlot.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\hooks.ts" />
-    <Content Include="Scripts\TSX\Settings.tsx" />
-    <TypeScriptCompile Include="Scripts\TSX\Store.ts" />
+    <Content Include="Scripts\TSX\Store\Settings.tsx" />
+    <TypeScriptCompile Include="Scripts\TSX\Store\ValueListGroupSlice.ts" />
+    <TypeScriptCompile Include="Scripts\TSX\Store\Store.ts" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
