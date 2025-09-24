@@ -201,15 +201,15 @@ const LineGraph = React.memo((props: IProps) => {
                 channelID = "0".repeat(8 - channelID.length) + channelID;
                 const channeldata = cachedData.get(channelID);
                 const newSettings = _.cloneDeep(setting.Settings) as TrendSearch.ILineSeriesSettings;
-                if (channeldata === undefined) {
-                    Object.keys(newSettings).forEach(key => newSettings[key].HasData = false);
-                    newSettings.Average.HasData = true;
-                    newchannelinfo[index].Settings = newSettings;
-                } else {
-                    Object.keys(newSettings).forEach(key => newSettings[key].HasData = channeldata[key].length !== 0);
-                    newSettings.Average.HasData = true;
-                    newchannelinfo[index].Settings = newSettings;
-                }
+                Object.keys(newSettings).forEach(key => {
+                    // Hide all if no data
+                    if (channeldata == null) newSettings[key].HasData = false;
+                    // Hide min/max if no data
+                    else if (key === "Minimum" || key === "Maximum") newSettings[key].HasData = channeldata[key].length !== 0;
+                    // Show all others (any strange keys should default to showing average)
+                    else newSettings[key].HasData = true;
+                });
+                newchannelinfo[index].Settings = newSettings;
             });
             props.SetChannelInfo(newchannelinfo);
             setGraphStatus('idle');
@@ -246,9 +246,12 @@ const LineGraph = React.memo((props: IProps) => {
                         const chartData = allChartData.get(dataKey);
                         if (channelSetting == null || chartData == null) return null;
                         Object.keys(chartData).forEach(key => {
-                            if ((channelSetting?.[key]?.HasData ?? false) && (props.PlotFilter.find(element => element.Value === key)?.Selected ?? true))
+                            if ((channelSetting?.[key]?.HasData ?? false) && (props.PlotFilter.find(element => element.Value === key)?.Selected ?? true)) {
+                                const dataKey = chartData?.[key] == null ? "Average" : key;
                                 lineArray.push(<Line highlightHover={false} key={`${key}_${index}`} autoShowPoints={generalSettings.ShowDataPoints} lineStyle={channelSetting[key].Type}
-                                    color={channelSetting[key].Color} data={chartData[key]} legend={channelSetting[key].Label} axis={channelSetting[key].Axis} width={channelSetting[key].Width} />);
+                                    color={channelSetting[key].Color} data={chartData[dataKey]} legend={channelSetting[key].Label} axis={channelSetting[key].Axis} width={channelSetting[key].Width} />);
+
+                            }
                         });
                         return lineArray;
                     })}
