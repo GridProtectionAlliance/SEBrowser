@@ -268,10 +268,11 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                         }
                     };
                     channel.Series.forEach(series => {
+                        const defaultsUsed = props.LineDefaults?.[series.TypeName] ?? props.LineDefaults.Average;
                         settings.Settings[series.TypeName] = {
-                            Color: color[series.TypeName],
-                            Width: props.LineDefaults?.[series.TypeName].Default.Width,
-                            Type: props.LineDefaults?.[series.TypeName].Default.Type,
+                            Color: color?.[series.TypeName] ?? color.Average,
+                            Width: defaultsUsed.Default.Width,
+                            Type: defaultsUsed.Default.Type,
                             Axis: 'left',
                             Label: constructLabel(channel, series),
                             HasData: false
