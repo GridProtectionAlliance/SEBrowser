@@ -33,6 +33,7 @@ using GSF.Data;
 using GSF.Data.Model;
 using GSF.Reflection;
 using Newtonsoft.Json.Linq;
+using openXDA.APIAuthentication;
 using SEBrowser.Model;
 
 namespace SEBrowser.Controllers.OpenXDA
@@ -48,7 +49,6 @@ namespace SEBrowser.Controllers.OpenXDA
 
         #region [ Members ]
         const string SettingsCategory = "systemSettings";
-        SEBrowserXDAAPIHelper helper = new SEBrowserXDAAPIHelper();
         #endregion
 
         #region [ Http Methods ]
@@ -104,13 +104,13 @@ namespace SEBrowser.Controllers.OpenXDA
         [Route("GetLineChartData"), HttpPost]
         public Task<HttpResponseMessage> GetLineChartData([FromBody] JObject postData)
         {
-            return helper.GetResponseTask("api/HIDS/QueryPoints", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
+            return XDAAPIHelper.GetResponseTask("api/HIDS/QueryPoints", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
         }
 
         [Route("GetMetaData"), HttpPost]
         public Task<HttpResponseMessage> GetCyclicMetaData([FromBody] JObject postData)
         {
-            return helper.GetResponseTask("api/HIDS/QueryHistogramMetadata", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
+            return XDAAPIHelper.GetResponseTask("api/HIDS/QueryHistogramMetadata", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
         }
 
         [Route("GetChartData/{type}"), HttpPost]
@@ -136,7 +136,7 @@ namespace SEBrowser.Controllers.OpenXDA
                     throw new InvalidOperationException($"Unknown type parameter: {type}");
             }
             // Read metadata into list
-            return helper.GetResponseTask($"api/HIDS/{route}", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
+            return XDAAPIHelper.GetResponseTask($"api/HIDS/{route}", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
         }
         #endregion
 

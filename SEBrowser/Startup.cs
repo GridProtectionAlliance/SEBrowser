@@ -21,21 +21,24 @@
 //
 //******************************************************************************************************
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Web.Http;
+using System.Web.Http.Controllers;
+using System.Web.Http.Routing;
+using GSF.Data;
+using GSF.Data.Model;
 using GSF.Diagnostics;
 using GSF.IO;
 using GSF.Web.Security;
-using Owin;
 using Microsoft.Owin;
-using System;
-using System.Web.Http;
-using System.Web.Http.Routing;
-using System.Collections.Generic;
-using System.Web.Http.Controllers;
-using System.IO;
-using System.Reflection;
-using Resources = GSF.Web.Shared.Resources;
-using AuthenticationOptions = GSF.Web.Security.AuthenticationOptions;
+using openXDA.APIAuthentication;
+using Owin;
 using static SEBrowser.Common;
+using AuthenticationOptions = GSF.Web.Security.AuthenticationOptions;
+using Resources = GSF.Web.Shared.Resources;
 
 // ReSharper disable MustUseReturnValue
 [assembly: OwinStartup(typeof(SEBrowser.Startup))]
@@ -55,6 +58,10 @@ public class Startup
 
         // Enable GSF session management
         config.EnableSessions(s_authenticationOptions);
+
+        // Configure XDA API
+        if (!XDAAPIHelper.IsIntialized)
+            XDAAPIHelper.InitializeHelper(GetAPICredentials);
 
         // Set configuration to use reflection to setup routes
         config.MapHttpAttributeRoutes(new CustomDirectRouteProvider());
@@ -119,5 +126,17 @@ public class Startup
             // This is not catastrophic
             Logger.SwallowException(ex, $"Failed to assign temp folder location to: {assemblyDirectory}");
         }
+    }
+
+    public static (string,string,string) GetAPICredentials()
+    {
+        using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+        {
+            string token = new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAApiToken' AND Scope='app.setting'")?.Value ?? "localhost:8989/";
+            string key = new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAApiKey' AND Scope='app.setting'")?.Value ?? "";
+            string host = new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAInstance' AND Scope='app.setting'")?.Value ?? "";
+            return (token, key, host);
+        }
+
     }
 }

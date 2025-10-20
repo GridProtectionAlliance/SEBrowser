@@ -443,7 +443,6 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\MeterActivity\MeterActivityController.cs" />
-    <Compile Include="Controllers\OpenXDA\SEBrowserXDAAPIHelper.cs" />
     <Compile Include="Controllers\OpenXDA\TrendChannelController.cs" />
     <Compile Include="Controllers\OpenXDA\ModelControlers.cs" />
     <Compile Include="Controllers\RoleController.cs" />
