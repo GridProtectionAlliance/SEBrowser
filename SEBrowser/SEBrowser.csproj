@@ -445,6 +445,7 @@
     <Compile Include="Controllers\MeterActivity\MeterActivityController.cs" />
     <Compile Include="Controllers\OpenXDA\TrendChannelController.cs" />
     <Compile Include="Controllers\OpenXDA\ModelControlers.cs" />
+    <Compile Include="Controllers\OpenXDA\XDAAPICredentialRetriever.cs" />
     <Compile Include="Controllers\RoleController.cs" />
     <Compile Include="EventWidgets\Configuration\ConfigurationParser.cs" />
     <Compile Include="EventWidgets\Configuration\ConfigurationLoader.cs" />

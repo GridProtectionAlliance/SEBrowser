@@ -28,14 +28,13 @@ using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Routing;
-using GSF.Data;
-using GSF.Data.Model;
 using GSF.Diagnostics;
 using GSF.IO;
 using GSF.Web.Security;
 using Microsoft.Owin;
 using openXDA.APIAuthentication;
 using Owin;
+using SEBrowser.Controllers;
 using static SEBrowser.Common;
 using AuthenticationOptions = GSF.Web.Security.AuthenticationOptions;
 using Resources = GSF.Web.Shared.Resources;
@@ -59,9 +58,9 @@ public class Startup
         // Enable GSF session management
         config.EnableSessions(s_authenticationOptions);
 
-        // Configure XDA API
+        // Supply Settings into XDAAPIHelper static class
         if (!XDAAPIHelper.IsIntialized)
-            XDAAPIHelper.InitializeHelper(GetAPICredentials);
+            XDAAPIHelper.InitializeHelper(new XDAAPICredentialRetriever());
 
         // Set configuration to use reflection to setup routes
         config.MapHttpAttributeRoutes(new CustomDirectRouteProvider());
@@ -126,17 +125,5 @@ public class Startup
             // This is not catastrophic
             Logger.SwallowException(ex, $"Failed to assign temp folder location to: {assemblyDirectory}");
         }
-    }
-
-    public static (string,string,string) GetAPICredentials()
-    {
-        using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
-        {
-            string token = new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAApiToken' AND Scope='app.setting'")?.Value ?? "localhost:8989/";
-            string key = new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAApiKey' AND Scope='app.setting'")?.Value ?? "";
-            string host = new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAInstance' AND Scope='app.setting'")?.Value ?? "";
-            return (token, key, host);
-        }
-
     }
 }
