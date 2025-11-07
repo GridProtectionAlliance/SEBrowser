@@ -21,21 +21,23 @@
 //
 //******************************************************************************************************
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Web.Http;
+using System.Web.Http.Controllers;
+using System.Web.Http.Routing;
 using GSF.Diagnostics;
 using GSF.IO;
 using GSF.Web.Security;
-using Owin;
 using Microsoft.Owin;
-using System;
-using System.Web.Http;
-using System.Web.Http.Routing;
-using System.Collections.Generic;
-using System.Web.Http.Controllers;
-using System.IO;
-using System.Reflection;
-using Resources = GSF.Web.Shared.Resources;
-using AuthenticationOptions = GSF.Web.Security.AuthenticationOptions;
+using openXDA.APIAuthentication;
+using Owin;
+using SEBrowser.Controllers;
 using static SEBrowser.Common;
+using AuthenticationOptions = GSF.Web.Security.AuthenticationOptions;
+using Resources = GSF.Web.Shared.Resources;
 
 // ReSharper disable MustUseReturnValue
 [assembly: OwinStartup(typeof(SEBrowser.Startup))]
@@ -55,6 +57,10 @@ public class Startup
 
         // Enable GSF session management
         config.EnableSessions(s_authenticationOptions);
+
+        // Supply Settings into XDAAPIHelper static class
+        if (!XDAAPIHelper.IsIntialized)
+            XDAAPIHelper.InitializeHelper(new XDAAPICredentialRetriever());
 
         // Set configuration to use reflection to setup routes
         config.MapHttpAttributeRoutes(new CustomDirectRouteProvider());
