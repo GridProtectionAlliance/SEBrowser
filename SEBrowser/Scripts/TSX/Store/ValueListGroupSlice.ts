@@ -103,6 +103,6 @@ export default class ValueListGroupSlice {
         this.Reducer = this.Slice.reducer;
     }
 
-    public Status = (state: RootState, group: string) => (state[this.Name].Status?.[group] ?? 'unintiated') as Application.Types.Status;
+    public Status = (state: RootState, group: string) => (state[this.Name].Status?.[group] ?? 'uninitiated') as Application.Types.Status;
     public Data = (state: RootState, group: string) => (state[this.Name].Data?.[group] ?? []) as SystemCenter.Types.ValueListItem[];
 }

@@ -158,22 +158,22 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
 
     // Slice dispatches
     React.useEffect(() => {
-        if (phaseStatus == 'changed' || phaseStatus == 'unintiated')
+        if (phaseStatus == 'changed' || phaseStatus == 'uninitiated')
             dispatch(PhaseSlice.DBSearch({ filter: [], sortField: "Name", ascending: true }));
     }, [phaseStatus]);
 
     React.useEffect(() => {
-        if (channelGroupStatus == 'changed' || channelGroupStatus == 'unintiated')
+        if (channelGroupStatus == 'changed' || channelGroupStatus == 'uninitiated')
             dispatch(ChannelGroupSlice.DBSearch({ filter: [], sortField: "Name", ascending: true }));
     }, [channelGroupStatus]);
 
     React.useEffect(() => {
-        if (meterStatus == 'changed' || meterStatus == 'unintiated')
+        if (meterStatus == 'changed' || meterStatus == 'uninitiated')
             dispatch(MeterSlice.Fetch());
     }, [meterStatus]);
 
     React.useEffect(() => {
-        if (assetStatus == 'changed' || assetStatus == 'unintiated')
+        if (assetStatus == 'changed' || assetStatus == 'uninitiated')
             dispatch(AssetSlice.Fetch());
     }, [assetStatus]);
 

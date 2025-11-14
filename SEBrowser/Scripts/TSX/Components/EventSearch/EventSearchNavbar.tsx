@@ -98,12 +98,12 @@ const EventSearchNavbar = (props: IProps) => {
     }, []);
 
     React.useEffect(() => {
-        if (magDurStatus == 'changed' || magDurStatus == 'unintiated')
+        if (magDurStatus == 'changed' || magDurStatus == 'uninitiated')
             dispatch(MagDurCurveSlice.Fetch());
     }, [magDurStatus]);
 
     React.useEffect(() => {
-        if (evtTypeStatus == 'changed' || evtTypeStatus == 'unintiated')
+        if (evtTypeStatus == 'changed' || evtTypeStatus == 'uninitiated')
             dispatch(EventTypeSlice.Fetch());
     }, [evtTypeStatus]);
 

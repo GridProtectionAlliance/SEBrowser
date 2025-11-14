@@ -71,12 +71,12 @@ const PlotSettingsTab = React.memo((props: IProps) => {
     }, [limits]);
 
     React.useEffect(() => {
-        if (defaultSliceStatus === 'unintiated' || defaultSliceStatus === 'changed')
+        if (defaultSliceStatus === 'uninitiated' || defaultSliceStatus === 'changed')
             dispatch(ValueListGroupSlice.Fetch(defaultValueList));
     }, [defaultSliceStatus]);
 
     React.useEffect(() => {
-        if (optionsSliceStatus === 'unintiated' || optionsSliceStatus === 'changed')
+        if (optionsSliceStatus === 'uninitiated' || optionsSliceStatus === 'changed')
             dispatch(ValueListGroupSlice.Fetch(allValueList));
     }, [optionsSliceStatus]);
 

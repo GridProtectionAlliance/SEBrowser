@@ -128,7 +128,7 @@ const TrendData = () => {
     ), [showNav]);
 
     React.useEffect(() => {
-        if (defaultSliceStatus === 'unintiated' || defaultSliceStatus === 'changed')
+        if (defaultSliceStatus === 'uninitiated' || defaultSliceStatus === 'changed')
             dispatch(ValueListGroupSlice.Fetch(defaultValueList));
     }, [defaultSliceStatus]);
 
