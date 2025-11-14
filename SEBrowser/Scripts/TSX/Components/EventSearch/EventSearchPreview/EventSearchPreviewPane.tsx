@@ -22,15 +22,16 @@
 //       Added Carde for Relay Performance and plot of TCE.
 //
 //******************************************************************************************************
+import { TabSelector } from '@gpa-gemstone/react-interactive';
+import moment from 'moment';
 import React from 'react';
-import { Redux, SEBrowser } from '../../../global'
+import { EventWidget } from '../../../../../EventWidgets/TSX/global';
+import WidgetRouter from '../../../../../EventWidgets/TSX/WidgetWrapper';
+import { Redux } from '../../../global';
 import { useAppSelector } from '../../../hooks';
 import { SelectEventSearchByID } from '../../../Store/EventSearchSlice';
 import { SelectWidgetCategories } from '../../../Store/SettingsSlice';
-import { TabSelector } from '@gpa-gemstone/react-interactive';
-import WidgetRouter from '../../../../../EventWidgets/TSX/WidgetWrapper';
-import { EventWidget } from '../../../../../EventWidgets/TSX/global';
-import { EventNoteSlice, MeterNoteSlice, AssetNoteSlice, LocationNoteSlice, EventTypeSlice } from '../../../Store/Store';
+import { AssetNoteSlice, EventNoteSlice, EventTypeSlice, LocationNoteSlice, MeterNoteSlice } from '../../../Store/Store';
 interface IProps {
     EventID: number,
     InitialTab?: string,
@@ -48,6 +49,10 @@ const widgetStore = {
     LocationNoteSlice,
     EventTypeSlice
 }
+
+// todo: this is what we recieve as a format for event starttime for SEBrowser.
+// Centralize this in gemstone or change it in the query to be the same as XDA
+const eventTimeFormat = 'MM/DD/YYYY <br> HH:mm:ss.SSSSSSS';
 
 export default function EventPreviewPane(props: IProps) {
     const categories = useAppSelector(SelectWidgetCategories);
@@ -108,7 +113,7 @@ export default function EventPreviewPane(props: IProps) {
                     return <WidgetRouter
                         Widget={widget}
                         DisturbanceID={0}
-                        StartTime={event.FileStartTime}
+                        StartTime={moment.utc(event.Time, eventTimeFormat).valueOf()}
                         EventID={props.EventID}
                         FaultID={0}
                         Height={props.Height}
