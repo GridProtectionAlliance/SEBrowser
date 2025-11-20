@@ -23,7 +23,6 @@
 //
 //******************************************************************************************************
 import { TabSelector } from '@gpa-gemstone/react-interactive';
-import moment from 'moment';
 import React from 'react';
 import { EventWidget } from '../../../../../EventWidgets/TSX/global';
 import WidgetRouter from '../../../../../EventWidgets/TSX/WidgetWrapper';
@@ -35,11 +34,7 @@ import { AssetNoteSlice, EventNoteSlice, EventTypeSlice, LocationNoteSlice, Mete
 interface IProps {
     EventID: number,
     InitialTab?: string,
-    Height: number,
-    Date?: string,
-    Time?: string,
-    TimeWindowUnits?: number,
-    WindowSize?: number
+    Height: number
 }
 
 const widgetStore = {
@@ -49,10 +44,6 @@ const widgetStore = {
     LocationNoteSlice,
     EventTypeSlice
 }
-
-// todo: this is what we recieve as a format for event starttime for SEBrowser.
-// Centralize this in gemstone or change it in the query to be the same as XDA
-const eventTimeFormat = 'MM/DD/YYYY <br> HH:mm:ss.SSSSSSS';
 
 export default function EventPreviewPane(props: IProps) {
     const categories = useAppSelector(SelectWidgetCategories);
@@ -113,7 +104,6 @@ export default function EventPreviewPane(props: IProps) {
                     return <WidgetRouter
                         Widget={widget}
                         DisturbanceID={0}
-                        StartTime={moment.utc(event.Time, eventTimeFormat).valueOf()}
                         EventID={props.EventID}
                         FaultID={0}
                         Height={props.Height}

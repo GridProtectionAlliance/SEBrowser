@@ -33,7 +33,6 @@ import { ProcessQuery, SelectEventList, SelectQueryParam } from '../../Store/Eve
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SplitSection, VerticalSplit } from '@gpa-gemstone/react-interactive';
-import moment from 'moment'
 
 type tab = 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All' | undefined;
 
@@ -43,10 +42,6 @@ const EventSearch = () => {
     const dispatch = useAppDispatch();
 
     const [eventId, setEventId] = React.useState<number>(-1);
-    const [date, setDate] = React.useState<string>('');
-    const [time, setTime] = React.useState<string>('');
-    const [windowSize, setWindowSize] = React.useState<number>(0);
-    const [timeWindowUnits, setTimeWindowUnits] = React.useState<number>(0);
     const [initialTab, setInitialTab] = React.useState<tab>(undefined);
     const [showMagDur, setShowMagDur] = React.useState<boolean>(false);
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
@@ -55,22 +50,13 @@ const EventSearch = () => {
     const queryParam = useAppSelector(SelectQueryParam);
     const evtList = useAppSelector(SelectEventList);
 
-    const momentDateFormat = "MM/DD/YYYY";
-    const momentTimeFormat = "HH:mm:ss.SSS";
-
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?",""), "&", "=", { decodeURIComponent: queryString.unescape });
 
         dispatch(ProcessQuery(query));
-
-
         setInitialTab(query['tab'] != undefined ? query['tab'].toString() as any : undefined);
         setShowMagDur(query['magDur'] != undefined ? query['magDur'] == 'true' : false);
         setEventId(query['eventid'] != undefined ? parseInt(query['eventid'].toString()) : -1);
-        setDate(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat));
-        setTime(query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat));
-        setWindowSize(query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10);
-        setTimeWindowUnits(query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2);
     }, []);
 
    
@@ -131,10 +117,6 @@ const EventSearch = () => {
                             EventID={eventId}
                             InitialTab={initialTab}
                             Height={window.innerHeight - ((showNav ? navHeight : 52) + 62)}
-                            Date={date}
-                            Time={time}
-                            WindowSize={windowSize}
-                            TimeWindowUnits={timeWindowUnits}
                         />
                         </div>
                 </SplitSection>
