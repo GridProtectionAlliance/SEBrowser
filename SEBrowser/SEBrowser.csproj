@@ -450,7 +450,6 @@
     <Compile Include="EventWidgets\API\Library\HelperMethods.cs" />
     <Compile Include="EventWidgets\API\Library\RedirectionController.cs" />
     <Compile Include="EventWidgets\API\Library\XDARedirectAttribute.cs" />
-    <Compile Include="EventWidgets\API\Model\ChannelController.cs" />
     <Compile Include="EventWidgets\API\Model\EventController.cs" />
     <Compile Include="EventWidgets\API\Visualizations\HIDSController.cs" />
     <Compile Include="EventWidgets\API\Visualizations\OpenSEEController.cs" />
