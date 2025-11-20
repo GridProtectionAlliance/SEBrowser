@@ -84,7 +84,7 @@ const MagDurChart = (props: IProps) => {
     }, [status]);
 
     React.useEffect(() => {
-        if (magDurStatus == 'changed' || magDurStatus == 'unintiated')
+        if (magDurStatus == 'changed' || magDurStatus == 'uninitiated')
             dispatch(MagDurCurveSlice.Fetch());
     }, [magDurStatus]);
 

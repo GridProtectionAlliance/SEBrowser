@@ -104,12 +104,14 @@ namespace SEBrowser.Controllers.OpenXDA
         [Route("GetLineChartData"), HttpPost]
         public Task<HttpResponseMessage> GetLineChartData([FromBody] JObject postData)
         {
+            XDAAPIHelper.TryRefreshSettings();
             return XDAAPIHelper.GetResponseTask("api/HIDS/QueryPoints", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
         }
 
         [Route("GetMetaData"), HttpPost]
         public Task<HttpResponseMessage> GetCyclicMetaData([FromBody] JObject postData)
         {
+            XDAAPIHelper.TryRefreshSettings();
             return XDAAPIHelper.GetResponseTask("api/HIDS/QueryHistogramMetadata", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
         }
 

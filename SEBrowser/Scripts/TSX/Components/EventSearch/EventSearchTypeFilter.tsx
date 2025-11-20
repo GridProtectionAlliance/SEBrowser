@@ -74,7 +74,7 @@ const EventSearchTypeFilters = (props: IProps) => {
 
 
     React.useEffect(() => {
-        if (evtTypeStatus == 'changed' || evtTypeStatus == 'unintiated')
+        if (evtTypeStatus == 'changed' || evtTypeStatus == 'uninitiated')
             dispatch(EventTypeSlice.Fetch());
     }, [evtTypeStatus]);
 

@@ -97,16 +97,16 @@ export const Sort = createAsyncThunk('EventSearchs/Sort', async (arg: { SortFiel
 
 export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async (query: queryString.ParsedUrlQuery , { dispatch, getState }) => {
     let state = getState() as Redux.StoreState;
-    if (state.Asset.Status == 'unintiated')
+    if (state.Asset.Status == 'uninitiated')
         await dispatch(AssetSlice.Fetch());
-    if (state.Meter.Status == 'unintiated')
+    if (state.Meter.Status == 'uninitiated')
         await dispatch(MeterSlice.Fetch());
-    if (state.AssetGroup.Status == 'unintiated')
+    if (state.AssetGroup.Status == 'uninitiated')
         await dispatch(AssetGroupSlice.Fetch());
-    if (state.Location.Status == 'unintiated')
+    if (state.Location.Status == 'uninitiated')
         await dispatch(LocationSlice.Fetch());
 
-    if (state.EventType.Status == 'unintiated')
+    if (state.EventType.Status == 'uninitiated')
         await dispatch(EventTypeSlice.Fetch());
     state = getState() as Redux.StoreState;
     return dispatch(EventSearchsSlice.actions.ProcessQuery({
@@ -120,7 +120,7 @@ export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async 
 export const ResetFilters = createAsyncThunk('EventSearchs/ResetFilterThunk', async (_: void, { dispatch, getState }) => {
     let state = getState() as Redux.StoreState;
     
-    if (state.EventType.Status == 'unintiated')
+    if (state.EventType.Status == 'uninitiated')
         await dispatch(EventTypeSlice.Fetch());
     state = getState() as Redux.StoreState;
     return dispatch(EventSearchsSlice.actions.ResetFilters({
@@ -133,7 +133,7 @@ export const SetFilters = createAsyncThunk('EventSearchs/SetFilters', async (arg
     time?: SEBrowser.IReportTimeFilter
 }, { dispatch, getState }) => {
     let state = getState() as Redux.StoreState;
-    if (state.EventType.Status == 'unintiated')
+    if (state.EventType.Status == 'uninitiated')
         await dispatch(EventTypeSlice.Fetch());
     state = getState() as Redux.StoreState;
     return dispatch(EventSearchsSlice.actions.SetFilters({ ...args, eventTypes: state.EventType.Data }));
@@ -146,7 +146,7 @@ export const SetFilterLists = createAsyncThunk('EventSearchs/SetFilterLists', as
     Stations: SystemCenter.Types.DetailedLocation[],
 }, { dispatch, getState }) => {
     let state = getState() as Redux.StoreState;
-    if (state.EventType.Status == 'unintiated')
+    if (state.EventType.Status == 'uninitiated')
         await dispatch(EventTypeSlice.Fetch());
     state = getState() as Redux.StoreState;
     return dispatch(EventSearchsSlice.actions.SetFilterLists({ ...args, eventTypes: state.EventType.Data }));

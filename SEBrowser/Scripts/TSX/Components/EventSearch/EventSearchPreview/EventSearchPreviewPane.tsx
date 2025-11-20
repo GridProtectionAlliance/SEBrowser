@@ -22,23 +22,19 @@
 //       Added Carde for Relay Performance and plot of TCE.
 //
 //******************************************************************************************************
+import { TabSelector } from '@gpa-gemstone/react-interactive';
 import React from 'react';
-import { Redux, SEBrowser } from '../../../global'
+import { EventWidget } from '../../../../../EventWidgets/TSX/global';
+import WidgetRouter from '../../../../../EventWidgets/TSX/WidgetWrapper';
+import { Redux } from '../../../global';
 import { useAppSelector } from '../../../hooks';
 import { SelectEventSearchByID } from '../../../Store/EventSearchSlice';
 import { SelectWidgetCategories } from '../../../Store/SettingsSlice';
-import { TabSelector } from '@gpa-gemstone/react-interactive';
-import WidgetRouter from '../../../../../EventWidgets/TSX/WidgetWrapper';
-import { EventWidget } from '../../../../../EventWidgets/TSX/global';
-import { EventNoteSlice, MeterNoteSlice, AssetNoteSlice, LocationNoteSlice, EventTypeSlice } from '../../../Store/Store';
+import { AssetNoteSlice, EventNoteSlice, EventTypeSlice, LocationNoteSlice, MeterNoteSlice } from '../../../Store/Store';
 interface IProps {
     EventID: number,
     InitialTab?: string,
-    Height: number,
-    Date?: string,
-    Time?: string,
-    TimeWindowUnits?: number,
-    WindowSize?: number
+    Height: number
 }
 
 const widgetStore = {
@@ -108,7 +104,6 @@ export default function EventPreviewPane(props: IProps) {
                     return <WidgetRouter
                         Widget={widget}
                         DisturbanceID={0}
-                        StartTime={event.FileStartTime}
                         EventID={props.EventID}
                         FaultID={0}
                         Height={props.Height}

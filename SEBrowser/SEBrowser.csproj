@@ -447,6 +447,13 @@
     <Compile Include="Controllers\OpenXDA\ModelControlers.cs" />
     <Compile Include="Controllers\OpenXDA\XDAAPICredentialRetriever.cs" />
     <Compile Include="Controllers\RoleController.cs" />
+    <Compile Include="EventWidgets\API\Library\HelperMethods.cs" />
+    <Compile Include="EventWidgets\API\Library\RedirectionController.cs" />
+    <Compile Include="EventWidgets\API\Library\XDARedirectAttribute.cs" />
+    <Compile Include="EventWidgets\API\Model\EventController.cs" />
+    <Compile Include="EventWidgets\API\Visualizations\HIDSController.cs" />
+    <Compile Include="EventWidgets\API\Visualizations\OpenSEEController.cs" />
+    <Compile Include="EventWidgets\API\Visualizations\PQIController.cs" />
     <Compile Include="EventWidgets\Configuration\ConfigurationParser.cs" />
     <Compile Include="EventWidgets\Configuration\ConfigurationLoader.cs" />
     <Compile Include="EventWidgets\Controller\AssetFaultSegments.cs" />
@@ -464,8 +471,6 @@
     <Compile Include="EventWidgets\Controller\Lightning.cs" />
     <Compile Include="EventWidgets\Controller\MatlabAnalyticResults.cs" />
     <Compile Include="EventWidgets\Controller\NoteWindow.cs" />
-    <Compile Include="EventWidgets\Controller\OpenSEE.cs" />
-    <Compile Include="EventWidgets\Controller\PQI.cs" />
     <Compile Include="EventWidgets\Controller\RelayPerformance.cs" />
     <Compile Include="EventWidgets\Controller\SOE.cs" />
     <Compile Include="Controllers\OpenXDA\NoteController.cs" />
@@ -565,6 +570,7 @@
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\PQICurves.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\SOE.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\StructureInfo.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\TrendGraph.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\Common\NavbarFilterButton.tsx" />
     <TypeScriptCompile Include="Scripts\TSX\Components\TrendData\HelperFunctions.ts" />
     <TypeScriptCompile Include="Scripts\TSX\Store\SettingsSlice.ts" />

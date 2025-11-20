@@ -87,7 +87,7 @@ const LineGraph = React.memo((props: IProps) => {
     const [timeLimits, setTimeLimits] = React.useState<[number, number]>([0, 1]);
     const [hover, setHover] = React.useState<boolean>(false);
     const [allChartData, setAllChartData] = React.useState<Map<string,IChartData>>(new Map<string,IChartData>());
-    const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('unintiated');
+    const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('uninitiated');
     // Height mangement
     const [titleHeight, setTitleHeight] = React.useState<number>(0);
     const [plotHeight, setPlotHeight] = React.useState<number>(props.Height);
@@ -227,7 +227,7 @@ const LineGraph = React.memo((props: IProps) => {
     else
         return (
             <div className="row">
-                <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'unintiated'} Size={29} />
+                <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'uninitiated'} Size={29} />
                 <h4 ref={titleRef} style={{ textAlign: "center", width: `${props.Width}px`, marginBottom: '0px'}}>
                     {props?.Title ?? ''}
                     {props?.ChannelInfo == null || props.ChannelInfo.findIndex(info => Object.keys(info.Settings).some(key => !info.Settings[key].HasData)) != -1 ?
