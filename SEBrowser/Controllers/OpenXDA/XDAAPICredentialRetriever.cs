@@ -21,6 +21,7 @@
 //
 //******************************************************************************************************
 
+using System.Security.Claims;
 using GSF.Data;
 using GSF.Data.Model;
 using openXDA.APIAuthentication;
@@ -42,6 +43,12 @@ namespace SEBrowser.Controllers
                 Host = new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAInstance' AND Scope='app.setting'")?.Value ?? "";
                 return true;
             }
+        }
+
+        public bool TryRetrieveCustomer(ClaimsPrincipal principal, out string customerKey)
+        {
+            customerKey = null;
+            return true;
         }
     }
 }

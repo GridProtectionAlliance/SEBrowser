@@ -447,13 +447,19 @@
     <Compile Include="Controllers\OpenXDA\ModelControlers.cs" />
     <Compile Include="Controllers\OpenXDA\XDAAPICredentialRetriever.cs" />
     <Compile Include="Controllers\RoleController.cs" />
+    <Compile Include="EventWidgets\API\Library\EventPost.cs" />
     <Compile Include="EventWidgets\API\Library\HelperMethods.cs" />
     <Compile Include="EventWidgets\API\Library\RedirectionController.cs" />
+    <Compile Include="EventWidgets\API\Library\XDAPostData.cs" />
     <Compile Include="EventWidgets\API\Library\XDARedirectAttribute.cs" />
     <Compile Include="EventWidgets\API\Model\EventController.cs" />
+    <Compile Include="EventWidgets\API\Model\EventEventTagController.cs" />
+    <Compile Include="EventWidgets\API\Model\MeterController.cs" />
     <Compile Include="EventWidgets\API\Visualizations\HIDSController.cs" />
+    <Compile Include="EventWidgets\API\Visualizations\MagDurCurveController.cs" />
     <Compile Include="EventWidgets\API\Visualizations\OpenSEEController.cs" />
     <Compile Include="EventWidgets\API\Visualizations\PQIController.cs" />
+    <Compile Include="EventWidgets\API\Visualizations\PQIHealthController.cs" />
     <Compile Include="EventWidgets\Configuration\ConfigurationParser.cs" />
     <Compile Include="EventWidgets\Configuration\ConfigurationLoader.cs" />
     <Compile Include="EventWidgets\Controller\AssetFaultSegments.cs" />
@@ -562,6 +568,7 @@
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\MatlabAnalyticResults.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\NoteWindow.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\OpenSEE.tsx" />
+    <TypeScriptCompile Include="EventWidgets\TSX\Widget\PQAI.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\PQI.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\RelayPerformance.tsx" />
     <TypeScriptCompile Include="EventWidgets\TSX\Widget\FaultInfo.tsx" />
