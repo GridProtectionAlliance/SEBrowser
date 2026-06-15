@@ -21,18 +21,15 @@
 //
 //******************************************************************************************************
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using GSF;
-using GSF.Snap;
-using GSF.Snap.Filters;
-using GSF.Snap.Services;
-using GSF.Snap.Services.Reader;
+using Gemstone;
+using Gemstone.WordExtensions;
 using openHistorian.Net;
 using openHistorian.Queues;
 using openHistorian.Snap;
+using SnapDB.Snap;
+using SnapDB.Snap.Filters;
+using SnapDB.Snap.Services;
+using SnapDB.Snap.Services.Reader;
 
 namespace openHistorian.XDALink
 {
@@ -160,7 +157,7 @@ namespace openHistorian.XDALink
             HistorianValue value = new HistorianValue();
 
             if ((object)measurementIDs != null)
-                pointFilter = PointIdMatchFilter.CreateFromList<HistorianKey, HistorianValue>(measurementIDs);
+                pointFilter = PointIDMatchFilter.CreateFromList<HistorianKey, HistorianValue>(measurementIDs);
 
             // Start stream reader for the provided time window and selected points
             using (TreeStream<HistorianKey, HistorianValue> stream = m_database.Read(SortedTreeEngineReaderOptions.Default, timeFilter, pointFilter))
