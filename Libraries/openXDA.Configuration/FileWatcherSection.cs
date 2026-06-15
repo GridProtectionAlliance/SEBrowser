@@ -21,16 +21,12 @@
 //
 //******************************************************************************************************
 
-using System;
-using System.Collections.Generic;
+using Gemstone.Configuration;
+using Gemstone.IO;
+using Gemstone.StringExtensions;
 using System.ComponentModel;
 using System.Configuration;
-using System.IO;
-using System.Linq;
 using System.Security;
-using GSF;
-using GSF.Configuration;
-using GSF.IO;
 using FileShare = openXDA.Configuration.FileWatcher.FileShare;
 
 namespace openXDA.Configuration
@@ -150,11 +146,11 @@ namespace openXDA.Configuration
             {
                 get
                 {
-                    return m_password.ToUnsecureString();
+                    return m_password.ToUnsecureString() ?? "";
                 }
                 set
                 {
-                    m_password = value.ToSecureString();
+                    m_password = value.ToSecureString() ?? new SecureString();
                 }
             }
 

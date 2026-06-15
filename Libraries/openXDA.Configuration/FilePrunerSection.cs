@@ -21,10 +21,9 @@
 //
 //******************************************************************************************************
 
-using System;
+using Gemstone.Configuration;
 using System.ComponentModel;
 using System.Configuration;
-using GSF.Configuration;
 
 namespace openXDA.Configuration
 {

@@ -22,8 +22,9 @@
 //******************************************************************************************************
 
 using System;
-using GSF.Data;
-using GSF.Data.Model;
+using Gemstone.Configuration;
+using Gemstone.Data;
+using Gemstone.Data.Model;
 using openXDA.Model;
 
 namespace openXDA.Configuration
@@ -68,7 +69,7 @@ namespace openXDA.Configuration
         /// </summary>
         public static void UpdateEdition()
         {
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection(Settings.Default))
             {
                 Guid value;
                 try

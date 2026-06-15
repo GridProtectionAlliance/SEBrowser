@@ -23,8 +23,6 @@
 
 using System.ComponentModel;
 using System.Configuration;
-using System.Security;
-using GSF;
 
 namespace openXDA.Configuration
 {

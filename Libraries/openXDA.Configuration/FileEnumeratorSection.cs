@@ -23,10 +23,33 @@
 
 using System.ComponentModel;
 using System.Configuration;
-using GSF.IO;
+using Gemstone.IO;
 
 namespace openXDA.Configuration
 {
+    //copied from GSF.IO as there was no equivalent in Gemstone.IO
+    public enum FileEnumerationStrategy
+    {
+        //
+        // Summary:
+        //     Enumerate all files sequentially.
+        Sequential,
+        //
+        // Summary:
+        //     Enumerates the watch directories in parallel, but subdirectories are processed
+        //     sequentially.
+        ParallelWatchDirectories,
+        //
+        // Summary:
+        //     Enumerates every directory, including subdirectories, in parallel.
+        ParallelSubdirectories,
+        //
+        // Summary:
+        //     Does not enumerate directories, relying only on the file watcher to handle file
+        //     processing events.
+        None
+    }
+
     public class FileEnumeratorSection
     {
         public const string CategoryName = "FileEnumerator";
@@ -51,7 +74,7 @@ namespace openXDA.Configuration
         /// Gets or sets the strategy used for enumeration of files in the file watcher.
         /// </summary>
         [Setting]
-        [DefaultValue(FileProcessor.DefaultEnumerationStrategy)]
+        [DefaultValue(FileEnumerationStrategy.ParallelSubdirectories)]
         public FileEnumerationStrategy Strategy { get; set; }
     }
 }

@@ -21,11 +21,8 @@
 //
 //******************************************************************************************************
 
-using System;
-using System.Web.Http.Controllers;
-using System.Web.Http.Filters;
-using System.Net.Http;
-using System.Net;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace openXDA.Configuration
 {
@@ -48,11 +45,12 @@ namespace openXDA.Configuration
         /// Creates a new <see cref="HttpEditionFilterAttribute"/>.
         /// </summary>
         /// <param name="EditionRequred">Edition this http method requires.</param>
-        public override void OnActionExecuting(HttpActionContext actionContext)
+        public override void OnActionExecuting(ActionExecutingContext actionContext)
         {
-            // Wronge edition means we should skip the method and return forbidden
+            // Wrong edition: skip the method and return forbidden
             if (!EditionChecker.CheckEdition(EditionRequred))
-                actionContext.Response = new HttpResponseMessage(HttpStatusCode.Forbidden);
+                actionContext.Result = new ForbidResult();
+          
             base.OnActionExecuting(actionContext);
         }
     }

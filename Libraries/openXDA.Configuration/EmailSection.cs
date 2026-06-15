@@ -21,10 +21,10 @@
 //
 //******************************************************************************************************
 
+using Gemstone.StringExtensions;
 using System.ComponentModel;
 using System.Configuration;
 using System.Security;
-using GSF;
 
 namespace openXDA.Configuration
 {
@@ -82,8 +82,8 @@ namespace openXDA.Configuration
         [DefaultValue(null)]
         public string Password
         {
-            get => SecurePassword.ToUnsecureString();
-            set => SecurePassword = value.ToSecureString();
+            get => SecurePassword.ToUnsecureString() ?? "";
+            set => SecurePassword = value?.ToSecureString() ?? new SecureString();
         }
 
         /// <summary>
