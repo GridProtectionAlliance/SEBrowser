@@ -80,9 +80,6 @@
   <ItemGroup>
     <!-- .NET References -->
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="openXDA.APIAuthentication">
-      <HintPath>..\Dependencies\OpenXDA\openXDA.APIAuthentication.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -158,22 +155,31 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <!-- openXDA References -->
-    <Reference Include="FaultAlgorithms">
-      <HintPath>..\Dependencies\OpenXDA\FaultAlgorithms.dll</HintPath>
-    </Reference>
-    <Reference Include="FaultData">
-      <HintPath>..\Dependencies\OpenXDA\FaultData.dll</HintPath>
-    </Reference>
-    <Reference Include="openXDA.Model">
-      <HintPath>..\Dependencies\OpenXDA\openXDA.Model.dll</HintPath>
-    </Reference>
-    <Reference Include="openXDA.PQI">
-      <HintPath>..\Dependencies\OpenXDA\openXDA.PQI.dll</HintPath>
-    </Reference>
-    <Reference Include="openXDA.Reports">
-      <HintPath>..\Dependencies\OpenXDA\openXDA.Reports.dll</HintPath>
-    </Reference>
+    <!-- openXDA Project References -->
+    <ProjectReference Include="..\Libraries\openXDA.APIAuthentication\openXDA.APIAuthentication.csproj">
+      <Project>{A174571F-FDA7-41E5-9C45-5AFF668B129D}</Project>
+      <Name>openXDA.APIAuthentication</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Libraries\FaultAlgorithms\FaultAlgorithms.csproj">
+      <Project>{DFC00D55-DF4D-4374-A849-D211D80ECAAE}</Project>
+      <Name>FaultAlgorithms</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Libraries\FaultData\FaultData.csproj">
+      <Project>{A8B2DADD-332F-4345-98E2-EFE7DC5FB4A6}</Project>
+      <Name>FaultData</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Libraries\openXDA.Model\openXDA.Model.csproj">
+      <Project>{3FD77019-7712-4488-B4F0-5DC7FBE5049B}</Project>
+      <Name>openXDA.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Libraries\openXDA.PQI\openXDA.PQI.csproj">
+      <Project>{3DEC81F1-9A02-4BBF-8325-F332AC63393E}</Project>
+      <Name>openXDA.PQI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Libraries\openXDA.Reports\openXDA.Reports.csproj">
+      <Project>{656F97D9-4FB6-4F65-A9A6-1A1DDE3AF634}</Project>
+      <Name>openXDA.Reports</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <!-- GSF References -->
@@ -322,7 +328,7 @@
       <HintPath>..\Dependencies\GSF\RazorEngine.dll</HintPath>
     </Reference>
     <Reference Include="Reports">
-      <HintPath>..\Dependencies\OpenXDA\Reports.dll</HintPath>
+      <HintPath>..\Dependencies\NuGet\Report.NET.0.9.9\lib\net48\Reports.dll</HintPath>
     </Reference>
     <Reference Include="System.Buffers">
       <HintPath>..\Dependencies\GSF\System.Buffers.dll</HintPath>
