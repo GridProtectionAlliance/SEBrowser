@@ -27,7 +27,8 @@ using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using GSF.Data;
+using Gemstone.Data;
+using Gemstone.Data.DataExtensions;
 
 namespace openXDA.PQI
 {
