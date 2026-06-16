@@ -21,6 +21,13 @@
 //
 //******************************************************************************************************
 
+using Gemstone.Configuration;
+using Gemstone.Data;
+using Gemstone.Data.DataExtensions;
+using Gemstone.StringExtensions;
+using log4net;
+using openXDA.Configuration;
+using openXDA.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -28,11 +35,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Xml.Linq;
-using GSF.Data;
-using GSF.Xml;
-using log4net;
-using openXDA.Configuration;
-using openXDA.Model;
 
 namespace openXDA.Reports
 {
@@ -64,7 +66,7 @@ namespace openXDA.Reports
 
         private void GenerateEmail(int month, int year)
         {
-            using(AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using(AdoDataConnection connection = new AdoDataConnection(Settings.Default))
             {
                 string sql = $"SELECT Email FROM UserAccount WHERE Email IS NOT NULL AND Email <> '' AND ID IN (SELECT UserAccountID FROM EmailGroupUserAccount WHERE EmailGroupID IN (SELECT EmailGroupID FROM EmailGroupType WHERE EmailTypeID IN (SELECT ID FROM EmailType WHERE  EmailCategoryID = (SELECT ID FROM EmailCategory WHERE Name = 'PQReport'))))";
                 DataTable emailTable = connection.RetrieveData(sql);

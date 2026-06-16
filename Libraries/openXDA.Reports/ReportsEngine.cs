@@ -30,11 +30,11 @@ using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
-using GSF;
-using GSF.Configuration;
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Scheduling;
+using Gemstone;
+using Gemstone.Configuration;
+using Gemstone.Data;
+using Gemstone.Data.Model;
+using Gemstone.Scheduling;
 using log4net;
 using openXDA.Configuration;
 using openXDA.Model;
@@ -55,11 +55,9 @@ namespace openXDA.Reports
             BreakerReportsSettings = new BreakerReportsSettings();
 
             Scheduler = new ScheduleManager();
-            Scheduler.Initialize();
             Scheduler.Starting += Scheduler_Starting;
             Scheduler.Started += Scheduler_Started;
             Scheduler.ScheduleDue += Scheduler_ScheduleDue;
-            Scheduler.Disposed += Scheduler_Disposed;
         }
 
         #endregion
@@ -91,7 +89,7 @@ namespace openXDA.Reports
             DateTime firstOfMonth = month.AddDays(1 - month.Day);
             DateTime endOfMonth = firstOfMonth.AddMonths(1).AddDays(-1);
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection(Settings.Default))
             {
                 ProcessMonthlyReport(meter, firstOfMonth, endOfMonth, connection);
             }
@@ -226,7 +224,7 @@ namespace openXDA.Reports
             DateTime firstOfMonth = today.AddDays(1 - today.Day).AddMonths(-1);
             DateTime endOfMonth = firstOfMonth.AddMonths(1).AddDays(-1);
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection(Settings.Default))
             {
                 // TODO: There is no EmailGroupAssetGroup
                 IEnumerable<Meter> meters = new TableOperations<Meter>(connection).QueryRecordsWhere("ID IN (SELECT MeterID FROM MeterAssetGroup WHERE AssetGroupID IN (SELECT AssetGroupID FROM EmailGroupAssetGroup WHERE EmailGroupID = (SELECT ID FROM EmailGroup WHERE Name = 'PQ Report')))");

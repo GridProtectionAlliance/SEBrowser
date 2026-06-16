@@ -27,7 +27,8 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using GSF.Data;
+using Gemstone.Configuration;
+using Gemstone.Data;
 using log4net;
 using Root.Reports;
 
@@ -164,7 +165,7 @@ namespace openXDA.Reports
             EndTime = endTime;
             FontDefinition = new FontDef(this, FontDef.StandardFont.Helvetica);
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+            using (AdoDataConnection connection = new AdoDataConnection(Settings.Default))
             {
 #if DEBUG
                 DataTable = connection.RetrieveData(TestQuery, startTime, endTime);

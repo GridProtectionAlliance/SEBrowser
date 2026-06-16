@@ -28,10 +28,11 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms.DataVisualization.Charting;
-using GSF.Data;
+using Gemstone.Data;
 using log4net;
 using Root.Reports;
 using ChartSeries = System.Windows.Forms.DataVisualization.Charting.Series;
+using Gemstone.Configuration;
 
 namespace openXDA.Reports
 {
@@ -200,7 +201,7 @@ namespace openXDA.Reports
             BreakerID = breakerId;
             FontDefinition = new FontDef(this, "Helvetica");
 
-            using (AdoDataConnection connection = new AdoDataConnection("systemSettings")) {
+            using (AdoDataConnection connection = new AdoDataConnection(Settings.Default)) {
 #if DEBUG
                 TimingDataTable = connection.RetrieveData(testTimingQuery, breakerId, startTime, endTime);
 #else
