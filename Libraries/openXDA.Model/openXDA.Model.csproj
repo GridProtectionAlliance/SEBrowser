@@ -10,6 +10,7 @@
     <PackageReference Include="Gemstone.Data" Version="1.0.178" />
     <PackageReference Include="Gemstone.IO" Version="1.0.178" />
     <PackageReference Include="Gemstone.PQDIF" Version="1.0.178" />
+    <PackageReference Include="Gemstone.Web" Version="1.0.178" />
   </ItemGroup>
 
 </Project>
