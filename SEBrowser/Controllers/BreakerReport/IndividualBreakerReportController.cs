@@ -21,81 +21,71 @@
 //
 //******************************************************************************************************
 
-using GSF.Data;
-using GSF.Web;
+using Microsoft.AspNetCore.Mvc;
+//using openXDA.Reports;
 using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Runtime.Caching;
-using System.Web.Http;
-using openXDA.Reports;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net;
+using System.Runtime.Caching;
 
-namespace PQDashboard.Controllers.BreakerReport
+namespace SEBrowser.Controllers.BreakerReport;
+
+public class IndividualBreakerReportController : ControllerBase
 {
-    [RoutePrefix("api/BreakerReport/IndividualBreakerReport")]
-    public class IndividualBreakerReportController : ApiController
+    #region [ Members ]
+
+    // Fields
+    private DateTime m_epoch = new(1970, 1, 1);
+
+    #endregion
+
+    #region [ Constructors ]
+    public IndividualBreakerReportController() : base() { }
+    #endregion
+
+    #region [ Static ]
+    private static MemoryCache s_memoryCache;
+
+    static IndividualBreakerReportController()
     {
-        #region [ Members ]
-
-        // Fields
-        private DateTime m_epoch = new(1970, 1, 1);
-
-        #endregion
-
-        #region [ Constructors ]
-        public IndividualBreakerReportController() : base() { }
-        #endregion
-
-        #region [ Static ]
-        private static MemoryCache s_memoryCache;
-
-        static IndividualBreakerReportController()
-        {
-            s_memoryCache = new MemoryCache("IndividualBreakerReportController");
-        }
-        #endregion
-
-        #region [ Methods ]
-
-        [Route, HttpGet]
-        public IHttpActionResult Get()
-        {
-            Dictionary<string, string> query = Request.QueryParameters();
-            string breakerId = query["breakerId"];
-
-            DateTime startTime = DateTime.Parse(query["startDate"]);
-            DateTime endTime = DateTime.Parse(query["endDate"]);
-
-            IndividualBreakerReport report = new(breakerId, startTime, endTime);
-            byte[] pdf = report.createPDF();
-            using (MemoryStream stream = new())
-            {
-
-                if (pdf == null) return BadRequest();
-
-                stream.WriteAsync(pdf, 0, pdf.Length);
-                HttpResponseMessage result = new(HttpStatusCode.OK)
-                {
-                    Content = new ByteArrayContent(stream.ToArray()),
-                };
-                result.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue($"inline")
-                {
-                    FileName = "IndividualBreakerReport_" +breakerId + "_" +  startTime.ToString("MM_dd_yyyy") + "_" + endTime.ToString("MM_dd_yyyy") + ".pdf"
-                };
-
-                result.Content.Headers.ContentType =
-                    new MediaTypeHeaderValue("application/pdf");
-
-                return ResponseMessage(result);
-
-
-            }
-        }
-        #endregion
-
+        s_memoryCache = new MemoryCache("IndividualBreakerReportController");
     }
+    #endregion
+
+    #region [ Methods ]
+
+    [Route("api/BreakerReport/IndividualBreakerReport"), HttpGet]
+    public IActionResult Get(string breakerId, string startDate, string endDate)
+    {
+        throw new Exception("This report is currently unavailable.");
+
+        /*
+        DateTime startTime = DateTime.Parse(startDate);
+        DateTime endTime = DateTime.Parse(endDate);
+        IndividualBreakerReport report = new(breakerId, startTime, endTime);
+        byte[] pdf = report.createPDF();
+        using MemoryStream stream = new();
+
+        if (pdf == null) return BadRequest();
+
+        stream.WriteAsync(pdf, 0, pdf.Length);
+
+        HttpResponseMessage result = new(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent(stream.ToArray()),
+        };
+
+        result.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue($"inline")
+        {
+            FileName = "IndividualBreakerReport_" + breakerId + "_" + startTime.ToString("MM_dd_yyyy") + "_" + endTime.ToString("MM_dd_yyyy") + ".pdf"
+        };
+
+        result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+
+        return Ok(result);*/
+    }
+    #endregion
+
 }

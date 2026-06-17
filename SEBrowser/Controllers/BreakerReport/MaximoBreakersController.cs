@@ -20,69 +20,49 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-using FaultData.DataAnalysis;
-using GSF;
-using GSF.Collections;
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Identity;
-using GSF.NumericalAnalysis;
-using GSF.Security;
-using GSF.Web;
-using GSF.Web.Model;
-using MathNet.Numerics.IntegralTransforms;
-using openXDA.Model;
+using Gemstone.Configuration;
+using Gemstone.Data;
+using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
-using System.Globalization;
-using System.Linq;
-using System.Net;
-using System.Numerics;
 using System.Runtime.Caching;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web.Http;
 
-namespace PQDashboard.Controllers.BreakerReport
+namespace SEBrowser.Controllers.BreakerReport;
+
+public class MaximoBreakersController : ControllerBase
 {
-    [RoutePrefix("api/BreakerReport/MaximoBreakers")]
-    public class MaximoBreakersController : ApiController
+    #region [ Members ]
+
+    // Fields
+    private DateTime m_epoch = new(1970, 1, 1);
+
+    #endregion
+
+    #region [ Constructors ]
+    public MaximoBreakersController() : base() { }
+    #endregion
+
+    #region [ Static ]
+    private static MemoryCache s_memoryCache;
+
+    static MaximoBreakersController()
     {
-        #region [ Members ]
+        s_memoryCache = new MemoryCache("MaximoBreakers");
+    }
+    #endregion
 
-        // Fields
-        private DateTime m_epoch = new(1970, 1, 1);
+    #region [ Methods ]
 
-        #endregion
+    [Route("api/BreakerReport/MaximoBreakers"), HttpGet]
+    public DataTable Get()
+    {
+        using AdoDataConnection connection = new(Settings.Default);
 
-        #region [ Constructors ]
-        public MaximoBreakersController() : base() { }
-        #endregion
+        DataTable table = new();
 
-        #region [ Static ]
-        private static MemoryCache s_memoryCache;
+        using IDbCommand sc = connection.Connection.CreateCommand();
 
-        static MaximoBreakersController()
-        {
-            s_memoryCache = new MemoryCache("MaximoBreakers");
-        }
-        #endregion
-
-        #region [ Methods ]
-
-        [Route, HttpGet]
-        public DataTable Get()
-        {
-            using (AdoDataConnection connection = new("systemSettings"))
-            {
-
-                DataTable table = new();
-
-                using (IDbCommand sc = connection.Connection.CreateCommand())
-                {
-                    sc.CommandText = @" 
+        sc.CommandText = @" 
                         SELECT DISTINCT
                             StationName + ' - ' + BreakerNum as BreakerName, 
                             SUBSTRING(BreakerNum, PATINDEX('%[^0]%', BreakerNum + '.'), LEN(BreakerNum)) as AssetKey 
@@ -90,17 +70,15 @@ namespace PQDashboard.Controllers.BreakerReport
                             MaximoBreaker
                         ORDER BY BreakerName
                     ";
-                    sc.CommandType = CommandType.Text;
 
-                    IDataReader rdr = sc.ExecuteReader();
-                    table.Load(rdr);
+        sc.CommandType = CommandType.Text;
 
-                    return table;
-                }
-            }
+        IDataReader rdr = sc.ExecuteReader();
+        table.Load(rdr);
 
-        }
-        #endregion
+        return table;
 
     }
+    #endregion
+
 }
