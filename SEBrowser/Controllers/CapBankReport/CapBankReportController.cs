@@ -20,42 +20,29 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-using FaultData.DataAnalysis;
-using GSF;
-using GSF.Collections;
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Identity;
-using GSF.NumericalAnalysis;
-using GSF.Security;
-using GSF.Web;
-using GSF.Web.Model;
-using MathNet.Numerics.IntegralTransforms;
-using openXDA.Model;
+using Gemstone.Configuration;
+using Gemstone.Data;
+using Gemstone.EnumExtensions;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
-using System.Net;
-using System.Numerics;
 using System.Runtime.Caching;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web.Http;
 
 namespace PQDashboard.Controllers.CapBankReport
 {
-    [RoutePrefix("api/PQDashboard/CapBankReport")]
-    public class CapBankReportController : ApiController
+    [Route("api/PQDashboard/CapBankReport")]
+    public class CapBankReportController : ControllerBase
     {
         #region [ Members ]
 
         // Fields
         private DateTime m_epoch = new(1970, 1, 1);
 
-        public class TrendSeries {
+        public class TrendSeries
+        {
             public string color;
             public string label;
             public List<double[]> data;
@@ -94,8 +81,8 @@ namespace PQDashboard.Controllers.CapBankReport
             public List<TrendSeries> RelayV;
             public List<TrendSeries> RelayXV;
             public List<TrendSeries> Ineutral;
-            public List<TrendSeries> BusZ; 
-            public List<TrendSeries> BusV; 
+            public List<TrendSeries> BusZ;
+            public List<TrendSeries> BusV;
             public List<TrendSeries> Unbalance;
 
         }
@@ -132,15 +119,12 @@ namespace PQDashboard.Controllers.CapBankReport
         [Route("GetSubstationData"), HttpGet]
         public DataTable GetSubstationData()
         {
-            using (AdoDataConnection connection = new("systemSettings"))
-            {
+            using AdoDataConnection connection = new(Settings.Default);
+            DataTable table = new();
 
+            using IDbCommand sc = connection.Connection.CreateCommand();
 
-                DataTable table = new();
-
-                using (IDbCommand sc = connection.Connection.CreateCommand())
-                {
-                    sc.CommandText = @" 
+            sc.CommandText = @" 
                      SELECT ID AS LocationID,
                         LocationKey,
                         Name AS AssetName 
@@ -153,51 +137,50 @@ namespace PQDashboard.Controllers.CapBankReport
 		                    WHERE AssetType.Name = 'CapacitorBank' AND AssetLocation.LocationID = Location.ID) > 0
                     ORDER BY AssetName";
 
-                    sc.CommandType = CommandType.Text;
+            sc.CommandType = CommandType.Text;
 
-                    IDataReader rdr = sc.ExecuteReader();
-                    table.Load(rdr);
+            IDataReader rdr = sc.ExecuteReader();
+            table.Load(rdr);
 
-                    return table;
-                }
-            }
-
+            return table;
         }
 
         [Route("GetCapBankData"), HttpGet]
-        public DataTable GetCapBankData()
+        public DataTable GetCapBankData(int locationID)
         {
-            Dictionary<string, string> query = Request.QueryParameters();
-            int locationID = int.Parse(query["locationID"]);
+            using AdoDataConnection connection = new(Settings.Default);
 
-            using (AdoDataConnection connection = new("systemSettings"))
-            {
-                DataTable table = new();
+            DataTable table = new();
 
-                using (IDbCommand sc = connection.Connection.CreateCommand())
-                {
-                    sc.CommandText = @" 
-                   SELECT DISTINCT CapBank.ID AS Id,
-                          CapBank.AssetKey,
-                          CapBank.AssetName,  
-                          CapBank.NumberOfBanks AS numBanks,
-                          CapBank.Fused AS fused,
-                          CapBank.Compensated AS compensated
-                    FROM	
-	                    CapBank LEFT JOIN AssetLocation ON CapBank.ID = AssetLocation.AssetID
-                    WHERE
-                        AssetLocation.LocationID = " + locationID + @"
-                    ORDER BY AssetKey";
+            using IDbCommand sc = connection.Connection.CreateCommand();
 
-                    sc.CommandType = CommandType.Text;
+            sc.CommandText = @" 
+                SELECT DISTINCT 
+                    CapBank.ID AS Id,
+                    CapBank.AssetKey,
+                    CapBank.AssetName,  
+                    CapBank.NumberOfBanks AS numBanks,
+                    CapBank.Fused AS fused,
+                    CapBank.Compensated AS compensated
+                FROM CapBank 
+                    LEFT JOIN AssetLocation ON CapBank.ID = AssetLocation.AssetID
+                WHERE
+                    AssetLocation.LocationID = @locationID
+                ORDER BY AssetKey";
 
-                    IDataReader rdr = sc.ExecuteReader();
-                    table.Load(rdr);
+            sc.CommandType = CommandType.Text;
 
-                    return table;
-                }
-            }
+            IDbDataParameter locationIDParam = sc.CreateParameter();
+            locationIDParam.ParameterName = "@locationID";
+            locationIDParam.Value = locationID;
+            locationIDParam.DbType = DbType.Int32;
 
+            sc.Parameters.Add(locationIDParam);
+
+            IDataReader rdr = sc.ExecuteReader();
+            table.Load(rdr);
+
+            return table;
         }
 
         [Route("GetEventTable"), HttpGet]
@@ -211,7 +194,7 @@ namespace PQDashboard.Controllers.CapBankReport
             int selectedBank = int.Parse(query["bankNum"]);
 
 
-            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD({ timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}'))";
+            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD({timeWindowUnits}, {(-1 * windowSize)}, '{dateTime}') AND DATEADD({timeWindowUnits}, {(windowSize)},  '{dateTime}'))";
             string capBankRestriction = $"((SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId})";
             string bankNumRestriction = $"(CBAnalyticResult.EnergizedBanks = {selectedBank} OR CBAnalyticResult.DeEnergizedBanks = {selectedBank})";
             string otherFilter = ProcessFilter(query);
@@ -227,65 +210,55 @@ namespace PQDashboard.Controllers.CapBankReport
                 bankNumRestriction = "(CBAnalyticResult.EnergizedBanks = -1 AND CBAnalyticResult.DeEnergizedBanks = -1)";
             }
 
-            using (AdoDataConnection connection = new("systemSettings"))
-            {
-                DataTable table = new();
+            using AdoDataConnection connection = new(Settings.Default);
 
-                using (IDbCommand sc = connection.Connection.CreateCommand())
-                {
-                    sc.CommandText = $@"SELECT
-                                            CBAnalyticResult.Id AS ID,
-                                            CBAnalyticResult.Time AS Time,
-                                            CBAnalyticResult.EventID AS EventId,
-                                            CBStatus.Description AS Status,
-                                            CBOperation.Description AS Operation,
-                                            CBAnalyticResult.IsRes AS Resonance,
-                                            Phase.Name AS Phase,
-                                            CBBankHealth.Description AS CapBankHealth,
-                                            CBRestrikeType.Description AS Restrike,
-                                            CBSwitchingCondition.Description AS PreInsertionSwitch
-                                        FROM CBAnalyticResult LEFT JOIN
-                                            Phase ON Phase.ID = CBAnalyticResult.PhaseID LEFT JOIN
-	                                        CBStatus ON CBStatus.ID = CBAnalyticResult.CBStatusID  LEFT JOIN
-                                            CBOperation ON CBOperation.ID = CBAnalyticResult.CBOperationID LEFT JOIN
-	                                        CBCapBankResult ON CBCapBankResult.CBResultID = CBAnalyticResult.Id LEFT JOIN
-                                            CBBankHealth ON CBBankHealth.Id =  CBCapBankResult.CBBankHealthID LEFT JOIN
-	                                        CBRestrikeResult ON CBRestrikeResult.CBResultID = CBAnalyticResult.Id LEFT JOIN
-                                            CBRestrikeType ON CBRestrikeResult.CBRestrikeTypeID = CBRestrikeType.ID	LEFT JOIN
-                                            CBSwitchHealthAnalytic ON CBSwitchHealthAnalytic.CBResultID = CBAnalyticResult.ID LEFT JOIN
-                                            CBSwitchingCondition ON CBSwitchHealthAnalytic.CBSwitchingConditionID = CBSwitchingCondition.ID
-                                        WHERE {capBankRestriction} AND {timeRestriction} AND {bankNumRestriction} AND ({otherFilter})
-                                        ORDER BY CBAnalyticResult.Time";
+            DataTable table = new();
 
-                    sc.CommandType = CommandType.Text;
+            using IDbCommand sc = connection.Connection.CreateCommand();
 
-                    IDataReader rdr = sc.ExecuteReader();
-                    table.Load(rdr);
+            sc.CommandText = $@"SELECT
+                  CBAnalyticResult.Id AS ID,
+                  CBAnalyticResult.Time AS Time,
+                  CBAnalyticResult.EventID AS EventId,
+                  CBStatus.Description AS Status,
+                  CBOperation.Description AS Operation,
+                  CBAnalyticResult.IsRes AS Resonance,
+                  Phase.Name AS Phase,
+                  CBBankHealth.Description AS CapBankHealth,
+                  CBRestrikeType.Description AS Restrike,
+                  CBSwitchingCondition.Description AS PreInsertionSwitch
+              FROM CBAnalyticResult LEFT JOIN
+                  Phase ON Phase.ID = CBAnalyticResult.PhaseID LEFT JOIN
+	              CBStatus ON CBStatus.ID = CBAnalyticResult.CBStatusID  LEFT JOIN
+                  CBOperation ON CBOperation.ID = CBAnalyticResult.CBOperationID LEFT JOIN
+	              CBCapBankResult ON CBCapBankResult.CBResultID = CBAnalyticResult.Id LEFT JOIN
+                  CBBankHealth ON CBBankHealth.Id =  CBCapBankResult.CBBankHealthID LEFT JOIN
+	              CBRestrikeResult ON CBRestrikeResult.CBResultID = CBAnalyticResult.Id LEFT JOIN
+                  CBRestrikeType ON CBRestrikeResult.CBRestrikeTypeID = CBRestrikeType.ID	LEFT JOIN
+                  CBSwitchHealthAnalytic ON CBSwitchHealthAnalytic.CBResultID = CBAnalyticResult.ID LEFT JOIN
+                  CBSwitchingCondition ON CBSwitchHealthAnalytic.CBSwitchingConditionID = CBSwitchingCondition.ID
+              WHERE {capBankRestriction} AND {timeRestriction} AND {bankNumRestriction} AND ({otherFilter})
+              ORDER BY CBAnalyticResult.Time";
 
-                    return table;
-                }
-            }
+            sc.CommandType = CommandType.Text;
 
+            IDataReader rdr = sc.ExecuteReader();
+            table.Load(rdr);
+
+            return table;
         }
 
         [HttpGet, Route("SetCapBank/{id:int}/{bank:int}")]
-        public IHttpActionResult GetSetCapBank(int id, int bank)
+        public IActionResult GetSetCapBank(int id, int bank)
         {
-            try
+            using (AdoDataConnection connection = new(Settings.Default))
             {
-                using (AdoDataConnection connection = new("systemSettings"))
-                {
-                    connection.ExecuteNonQuery($"UPDATE CBAnalyticResult SET EnergizedBanks = {bank} WHERE ID = {id}");
-                }
-                return Ok(1);
-            }
-            catch (Exception ex)
-            {
-                return InternalServerError(ex);
+                connection.ExecuteNonQuery($"UPDATE CBAnalyticResult SET EnergizedBanks = {bank} WHERE ID = {id}");
             }
 
+            return Ok(1);
         }
-           
+
         #region [ Trending Data ]
 
         [Route("GetTrend"), HttpGet]
@@ -297,9 +270,9 @@ namespace PQDashboard.Controllers.CapBankReport
             string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
             int windowSize = int.Parse(query["windowSize"]);
             int selectedBank = int.Parse(query["bankNum"]);
-            
 
-            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD({ timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}'))";
+
+            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD({timeWindowUnits}, {(-1 * windowSize)}, '{dateTime}') AND DATEADD({timeWindowUnits}, {(windowSize)},  '{dateTime}'))";
             string capBankRestriction = $"((SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId})";
             string bankNumRestriction = $"(CBAnalyticResult.EnergizedBanks = {selectedBank} OR CBAnalyticResult.DeEnergizedBanks = {selectedBank})";
             string bankNumAfterRestriction = $"(CBAnalyticResult.StepPost = {selectedBank})";
@@ -349,518 +322,515 @@ namespace PQDashboard.Controllers.CapBankReport
             phaseColor.Add("BN", "#0029A3");
             phaseColor.Add("CN", "#007A29");
 
-            using (AdoDataConnection connection = new("systemSettings"))
+            using AdoDataConnection connection = new(Settings.Default);
+
+            foreach (KeyValuePair<string, string> phase in phaseColor)
             {
-                
-                foreach (KeyValuePair<string, string> phase in phaseColor)
+                string phaseRestriction = $"CBAnalyticResult.PhaseID = (SELECT ID FROM Phase WHERE Name = '{phase.Key}')";
+
+                if (selectedBank > -1)
                 {
-                    string phaseRestriction = $"CBAnalyticResult.PhaseID = (SELECT ID FROM Phase WHERE Name = '{phase.Key}')";
+                    DataTable table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumRestriction, timeRestriction);
 
-                    if (selectedBank > -1)
-                    {
-                        DataTable table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumRestriction, timeRestriction);
+                    // Create Arrays of Data so we can Check if there are any later.
+                    List<double[]> DeltaQ = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, Math.Abs(row.Field<double?>("DeltaQ") ?? 0) }).ToList();
+                    List<double[]> DeltaI = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaI") ?? 0 }).ToList();
+                    List<double[]> DeltaV = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("DeltaV") ?? 0) * 100.0D }).ToList();
+                    List<double[]> ResFreq = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaV") ?? 0 }).ToList();
+                    List<double[]> DeltaITHD = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaITHD") ?? 0 }).ToList();
+                    List<double[]> DeltaVTHD = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaVTHD") ?? 0 }).ToList();
+                    List<double[]> SwitchingFreq = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("SwitchingFreq") ?? 0 }).ToList();
+                    List<double[]> Vpeak = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpeak") ?? 0) * 100.0D }).ToList();
 
-                        // Create Arrays of Data so we can Check if there are any later.
-                        List<double[]> DeltaQ = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, Math.Abs(row.Field<double?>("DeltaQ") ?? 0) }).ToList();
-                        List<double[]> DeltaI = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaI") ?? 0 }).ToList();
-                        List<double[]> DeltaV = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("DeltaV") ?? 0) * 100.0D }).ToList();
-                        List<double[]> ResFreq = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaV") ?? 0 }).ToList();
-                        List<double[]> DeltaITHD = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaITHD") ?? 0 }).ToList();
-                        List<double[]> DeltaVTHD = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaVTHD") ?? 0 }).ToList();
-                        List<double[]> SwitchingFreq = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("SwitchingFreq") ?? 0 }).ToList();
-                        List<double[]> Vpeak = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpeak") ?? 0)*100.0D }).ToList();
+                    List<double[]> RestDur = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RestrikeDuration") ?? 0 }).ToList();
+                    List<double[]> RestI = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RestrikeI") ?? 0 }).ToList();
+                    List<double[]> RestV = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RestrikeV") ?? 0 }).ToList();
 
-                        List<double[]> RestDur = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RestrikeDuration") ?? 0 }).ToList();
-                        List<double[]> RestI = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RestrikeI") ?? 0 }).ToList();
-                        List<double[]> RestV = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RestrikeV") ?? 0 }).ToList();
+                    List<double[]> PisDur = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("PISduration") ?? 0 }).ToList();
+                    List<double[]> PisR = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("PISr") ?? 0 }).ToList();
+                    List<double[]> PisX = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("PISx") ?? 0 }).ToList();
 
-                        List<double[]> PisDur = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("PISduration") ?? 0 }).ToList();
-                        List<double[]> PisR = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("PISr") ?? 0 }).ToList();
-                        List<double[]> PisX = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("PISx") ?? 0 }).ToList();
+                    List<double[]> Kfactor = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Kfactor") ?? 0 }).ToList();
+                    List<double[]> XcapBank = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("XcapBank") ?? 0 }).ToList();
+                    List<double[]> RelaydV = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RelaydV") ?? 0 }).ToList();
 
-                        List<double[]> Kfactor = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Kfactor") ?? 0 }).ToList();
-                        List<double[]> XcapBank = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("XcapBank") ?? 0 }).ToList();
-                        List<double[]> RelaydV = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RelaydV") ?? 0 }).ToList();
+                    List<double[]> Xlv = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xlv") ?? 0 }).ToList();
+                    List<double[]> Xug = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xug") ?? 0 }).ToList();
+                    List<double[]> Xlg = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xlg") ?? 0 }).ToList();
 
-                        List<double[]> Xlv = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xlv") ?? 0 }).ToList();
-                        List<double[]> Xug = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xug") ?? 0 }).ToList();
-                        List<double[]> Xlg = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xlg") ?? 0 }).ToList();
+                    List<double[]> XVration = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("XVration") ?? 0 }).ToList();
+                    List<double[]> PctIEC = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("PctIEC") ?? 0 }).ToList();
+                    List<double[]> PctIEEE = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("PctIEEE") ?? 0 }).ToList();
 
-                        List<double[]> XVration = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("XVration") ?? 0 }).ToList();
-                        List<double[]> PctIEC = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("PctIEC") ?? 0 }).ToList();
-                        List<double[]> PctIEEE = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("PctIEEE") ?? 0 }).ToList();
-
-                        List<double[]> RelayV = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RelayV") ?? 0 }).ToList();
-                        List<double[]> Ineutral = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Ineutral") ?? 0 }).ToList();
-                        List<double[]> BusZ0 = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("BusZ0") ?? 0 }).ToList();
-                        List<double[]> BusV0 = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("BusV0") ?? 0 }).ToList();
+                    List<double[]> RelayV = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RelayV") ?? 0 }).ToList();
+                    List<double[]> Ineutral = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Ineutral") ?? 0 }).ToList();
+                    List<double[]> BusZ0 = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("BusZ0") ?? 0 }).ToList();
+                    List<double[]> BusV0 = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("BusV0") ?? 0 }).ToList();
 
 
 
-                        table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumBeforeRestriction, timeRestriction);
+                    table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumBeforeRestriction, timeRestriction);
 
-                        List<double[]> Ipre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Ipre") ?? 0 }).ToList();
-                        List<double[]> Vpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpre") ?? 0)*100.0D }).ToList();
-                        List<double[]> THDpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDpre") ?? 0 }).ToList();
-                        List<double[]> THDVpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDVpre") ?? 0 }).ToList();
-                        List<double[]> Xpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xpre") ?? 0 }).ToList();
+                    List<double[]> Ipre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Ipre") ?? 0 }).ToList();
+                    List<double[]> Vpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpre") ?? 0) * 100.0D }).ToList();
+                    List<double[]> THDpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDpre") ?? 0 }).ToList();
+                    List<double[]> THDVpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDVpre") ?? 0 }).ToList();
+                    List<double[]> Xpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xpre") ?? 0 }).ToList();
 
-                        table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumAfterRestriction, timeRestriction);
+                    table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumAfterRestriction, timeRestriction);
 
-                        List<double[]> Ipost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Ipost") ?? 0 }).ToList();
-                        List<double[]> Vpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpost") ?? 0)*100.0 }).ToList();
-                        List<double[]> THDpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDpost") ?? 0 }).ToList();
-                        List<double[]> THDVpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDVpost") ?? 0 }).ToList();
-                        List<double[]> Xpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xpost") ?? 0 }).ToList();
+                    List<double[]> Ipost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Ipost") ?? 0 }).ToList();
+                    List<double[]> Vpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpost") ?? 0) * 100.0 }).ToList();
+                    List<double[]> THDpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDpost") ?? 0 }).ToList();
+                    List<double[]> THDVpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDVpost") ?? 0 }).ToList();
+                    List<double[]> Xpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xpost") ?? 0 }).ToList();
 
-                        // remove any points that are NULL or 0, Assumption is exaclty 0 means no data was computed by EPRI analytic
-                        DeltaQ = DeltaQ.Where(pt => pt[1] != 0).ToList();
-                        DeltaI = DeltaI.Where(pt => pt[1] != 0).ToList();
-                        DeltaV = DeltaV.Where(pt => pt[1] != 0).ToList();
-                        ResFreq = ResFreq.Where(pt => pt[1] != 0).ToList();
-                        DeltaVTHD = DeltaVTHD.Where(pt => pt[1] != 0).ToList();
-                        DeltaITHD = DeltaITHD.Where(pt => pt[1] != 0).ToList();
-                        SwitchingFreq = SwitchingFreq.Where(pt => pt[1] != 0).ToList();
-                        Vpeak = Vpeak.Where(pt => pt[1] != 0).ToList();
+                    // remove any points that are NULL or 0, Assumption is exaclty 0 means no data was computed by EPRI analytic
+                    DeltaQ = DeltaQ.Where(pt => pt[1] != 0).ToList();
+                    DeltaI = DeltaI.Where(pt => pt[1] != 0).ToList();
+                    DeltaV = DeltaV.Where(pt => pt[1] != 0).ToList();
+                    ResFreq = ResFreq.Where(pt => pt[1] != 0).ToList();
+                    DeltaVTHD = DeltaVTHD.Where(pt => pt[1] != 0).ToList();
+                    DeltaITHD = DeltaITHD.Where(pt => pt[1] != 0).ToList();
+                    SwitchingFreq = SwitchingFreq.Where(pt => pt[1] != 0).ToList();
+                    Vpeak = Vpeak.Where(pt => pt[1] != 0).ToList();
 
-                        Ipre = Ipre.Where(pt => pt[1] != 0).ToList();
-                        Vpre = Vpre.Where(pt => pt[1] != 0).ToList();
-                        THDpre = THDpre.Where(pt => pt[1] != 0).ToList();
-                        THDVpre = THDVpre.Where(pt => pt[1] != 0).ToList();
-                        Xpre = Xpre.Where(pt => pt[1] != 0).ToList();
+                    Ipre = Ipre.Where(pt => pt[1] != 0).ToList();
+                    Vpre = Vpre.Where(pt => pt[1] != 0).ToList();
+                    THDpre = THDpre.Where(pt => pt[1] != 0).ToList();
+                    THDVpre = THDVpre.Where(pt => pt[1] != 0).ToList();
+                    Xpre = Xpre.Where(pt => pt[1] != 0).ToList();
 
-                        Ipost = Ipost.Where(pt => pt[1] != 0).ToList();
-                        Vpost = Vpost.Where(pt => pt[1] != 0).ToList();
-                        THDpost = THDpost.Where(pt => pt[1] != 0).ToList();
-                        THDVpost = THDVpost.Where(pt => pt[1] != 0).ToList();
-                        Xpost = Xpost.Where(pt => pt[1] != 0).ToList();
+                    Ipost = Ipost.Where(pt => pt[1] != 0).ToList();
+                    Vpost = Vpost.Where(pt => pt[1] != 0).ToList();
+                    THDpost = THDpost.Where(pt => pt[1] != 0).ToList();
+                    THDVpost = THDVpost.Where(pt => pt[1] != 0).ToList();
+                    Xpost = Xpost.Where(pt => pt[1] != 0).ToList();
 
-                        RestDur = RestDur.Where(pt => pt[1] != 0).ToList();
-                        RestI = RestI.Where(pt => pt[1] != 0).ToList();
-                        RestV = RestV.Where(pt => pt[1] != 0).ToList();
+                    RestDur = RestDur.Where(pt => pt[1] != 0).ToList();
+                    RestI = RestI.Where(pt => pt[1] != 0).ToList();
+                    RestV = RestV.Where(pt => pt[1] != 0).ToList();
 
-                        PisDur = PisDur.Where(pt => pt[1] != 0).ToList();
-                        PisR = PisR.Where(pt => pt[1] != 0).ToList();
-                        PisX = PisX.Where(pt => pt[1] != 0).ToList();
+                    PisDur = PisDur.Where(pt => pt[1] != 0).ToList();
+                    PisR = PisR.Where(pt => pt[1] != 0).ToList();
+                    PisX = PisX.Where(pt => pt[1] != 0).ToList();
 
-                        Kfactor = Kfactor.Where(pt => pt[1] != 0).ToList();
-                        XcapBank = XcapBank.Where(pt => pt[1] != 0).ToList();
-                        RelaydV = RelaydV.Where(pt => pt[1] != 0).ToList();
-                        Xlv = Xlv.Where(pt => pt[1] != 0).ToList();
-                        Xug = Xug.Where(pt => pt[1] != 0).ToList();
-                        Xlg = Xlg.Where(pt => pt[1] != 0).ToList();
-                        XVration = XVration.Where(pt => pt[1] != 0).ToList();
-                        PctIEC = PctIEC.Where(pt => pt[1] != 0).ToList();
-                        PctIEEE = PctIEEE.Where(pt => pt[1] != 0).ToList();
-                        RelayV = RelayV.Where(pt => pt[1] != 0).ToList();
-                        Ineutral = Ineutral.Where(pt => pt[1] != 0).ToList();
-                        BusZ0 = BusZ0.Where(pt => pt[1] != 0).ToList();
-                        BusV0 = BusV0.Where(pt => pt[1] != 0).ToList();
+                    Kfactor = Kfactor.Where(pt => pt[1] != 0).ToList();
+                    XcapBank = XcapBank.Where(pt => pt[1] != 0).ToList();
+                    RelaydV = RelaydV.Where(pt => pt[1] != 0).ToList();
+                    Xlv = Xlv.Where(pt => pt[1] != 0).ToList();
+                    Xug = Xug.Where(pt => pt[1] != 0).ToList();
+                    Xlg = Xlg.Where(pt => pt[1] != 0).ToList();
+                    XVration = XVration.Where(pt => pt[1] != 0).ToList();
+                    PctIEC = PctIEC.Where(pt => pt[1] != 0).ToList();
+                    PctIEEE = PctIEEE.Where(pt => pt[1] != 0).ToList();
+                    RelayV = RelayV.Where(pt => pt[1] != 0).ToList();
+                    Ineutral = Ineutral.Where(pt => pt[1] != 0).ToList();
+                    BusZ0 = BusZ0.Where(pt => pt[1] != 0).ToList();
+                    BusV0 = BusV0.Where(pt => pt[1] != 0).ToList();
 
-                        if (DeltaQ.Count > 0)
-                            result.DeltaQ.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Change in Q Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = DeltaQ
-                            });
+                    if (DeltaQ.Count > 0)
+                        result.DeltaQ.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Change in Q Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = DeltaQ
+                        });
 
-                        if (DeltaI.Count > 0)
-                            result.DeltaIrms.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = DeltaI
-                            });
-
-                        if (DeltaV.Count > 0)
-                            result.DeltaVrms.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = DeltaV
-                            });
-
-                        if (ResFreq.Count > 0)
-                            result.Freq.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = ResFreq
-                            });
-
-                        if (Vpeak.Count > 0)
-                            result.PeakV.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = Vpeak
-                            });
-
-                        if (DeltaITHD.Count > 0)
-                            result.DeltaTHDV.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "V THD Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = DeltaITHD
-                            });
-
-                        if (DeltaVTHD.Count > 0)
-                            result.DeltaTHDI.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "I THD Phase " + (phase.Key),
-                                lineStyle = ":",
-                                includeLegend = true,
-                                data = DeltaVTHD
-                            });
-
-                        if (SwitchingFreq.Count > 0)
-                            result.SwitchingFreq.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = SwitchingFreq
-                            });
-
-                        if (Xpre.Count > 0)
-                            result.Xcap.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Pre Event Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = Xpre
-                            });
-
-                        if (Ipre.Count > 0)
-                            result.Irms.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Pre Event Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = Ipre
-                            });
-
-                        if (Vpre.Count > 0)
-                            result.Vrms.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Pre Event Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = Vpre
-                            });
-
-                        if (THDpre.Count > 0)
-                            result.THDI.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "I THD Pre Event Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = THDpre
-                            });
-
-                        if (THDVpre.Count > 0)
-                            result.THDV.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "V THD Pre Event Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = THDVpre
-                            });
-
-                        if (Xpost.Count > 0)
-                            result.Xcap.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Post Event Phase " + (phase.Key),
-                                lineStyle = ":",
-                                includeLegend = true,
-                                data = Xpost
-                            });
-
-                        if (Ipost.Count > 0)
-                            result.Irms.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Post Event Phase " + (phase.Key),
-                                lineStyle = ":",
-                                includeLegend = true,
-                                data = Ipost
-                            });
-
-                        if (Vpost.Count > 0)
-                            result.Vrms.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Post Event Phase " + (phase.Key),
-                                lineStyle = ":",
-                                includeLegend = true,
-                                data = Vpost
-                            });
-
-                        if (THDpost.Count > 0)
-                            result.THDI.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "I THD Post Event Phase " + (phase.Key),
-                                lineStyle = ":",
-                                includeLegend = true,
-                                data = THDpost
-                            });
-
-                        if (THDVpost.Count > 0)
-                            result.THDV.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "V THD Post Event Phase " + (phase.Key),
-                                lineStyle = ":",
-                                includeLegend = true,
-                                data = THDVpost
-                            });
-
-
-                        if (XcapBank.Count > 0)
-                            result.DeltaXcap.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = XcapBank
-                            });
-
-                        if (RestDur.Count > 0)
-                            result.RestrikeDuration.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = RestDur
-                            });
-                        if (RestI.Count > 0)
-                            result.RestrikeI.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = RestI
-                            });
-                        if (RestV.Count > 0)
-                            result.RestrikeV.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = RestV
-                            });
-
-                        if (PisDur.Count > 0)
-                            result.PISDuration.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = PisDur
-                            });
-                        if (PisR.Count > 0)
-                            result.PISZ.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "R Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = PisR
-                            });
-                        if (PisX.Count > 0)
-                            result.PISZ.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "X Phase " + (phase.Key),
-                                lineStyle = ":",
-                                includeLegend = true,
-                                data = PisX
-                            });
-
-                        if (Kfactor.Count > 0)
-                            result.KFactor.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = Kfactor
-                            });
-                        if (Xlv.Count > 0)
-                            result.RelayXLV.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = Xlv
-                            });
-                        if (Xug.Count > 0)
-                            result.RelayXLV.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Upper Group Phase " + (phase.Key),
-                                lineStyle = ":",
-                                includeLegend = true,
-                                data = Xug
-                            });
-                        if (Xlg.Count > 0)
-                            result.RelayXLV.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Lower Group Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = Xlg
-                            });
-
-                        if (PctIEC.Count > 0 && phase.Key == "AN")
-                            result.Unbalance.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "IEC",
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = PctIEC
-                            });
-                        if (PctIEEE.Count > 0 && phase.Key == "AN")
-                            result.Unbalance.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "IEEE",
-                                lineStyle = ":",
-                                includeLegend = true,
-                                data = PctIEEE
-                            });
-
-                        if (XVration.Count > 0)
-                            result.RelayXV.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = XVration
-                            });
-
-                        if (RelayV.Count > 0)
-                            result.RelayV.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = RelayV
-                            });
-                        if (RelaydV.Count > 0)
-                            result.RelaydV.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "Phase " + (phase.Key),
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = RelaydV
-                            });
-                        if (Ineutral.Count > 0 && phase.Key == "AN")
-                            result.Ineutral.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "",
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = Ineutral
-                            });
-                        if (BusV0.Count > 0 && phase.Key == "AN")
-                            result.BusV.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "",
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = BusV0
-                            });
-                        if (BusZ0.Count > 0 && phase.Key == "AN")
-                            result.BusZ.Add(new TrendSeries()
-                            {
-                                color = phase.Value,
-                                label = "",
-                                lineStyle = "-",
-                                includeLegend = true,
-                                data = BusZ0
-                            });
-
-
-
-                    }
-                    DataTable systable = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, "", timeRestriction);
-                    List<double[]> SCmva = systable.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, Math.Abs(row.Field<double?>("Q") ?? 0) }).ToList();
-                    if (SCmva.Count > 0)
-                        result.Q.Add(new TrendSeries()
+                    if (DeltaI.Count > 0)
+                        result.DeltaIrms.Add(new TrendSeries()
                         {
                             color = phase.Value,
                             label = "Phase " + (phase.Key),
                             lineStyle = "-",
                             includeLegend = true,
-                            data = SCmva
+                            data = DeltaI
                         });
 
+                    if (DeltaV.Count > 0)
+                        result.DeltaVrms.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = DeltaV
+                        });
+
+                    if (ResFreq.Count > 0)
+                        result.Freq.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = ResFreq
+                        });
+
+                    if (Vpeak.Count > 0)
+                        result.PeakV.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = Vpeak
+                        });
+
+                    if (DeltaITHD.Count > 0)
+                        result.DeltaTHDV.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "V THD Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = DeltaITHD
+                        });
+
+                    if (DeltaVTHD.Count > 0)
+                        result.DeltaTHDI.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "I THD Phase " + (phase.Key),
+                            lineStyle = ":",
+                            includeLegend = true,
+                            data = DeltaVTHD
+                        });
+
+                    if (SwitchingFreq.Count > 0)
+                        result.SwitchingFreq.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = SwitchingFreq
+                        });
+
+                    if (Xpre.Count > 0)
+                        result.Xcap.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Pre Event Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = Xpre
+                        });
+
+                    if (Ipre.Count > 0)
+                        result.Irms.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Pre Event Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = Ipre
+                        });
+
+                    if (Vpre.Count > 0)
+                        result.Vrms.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Pre Event Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = Vpre
+                        });
+
+                    if (THDpre.Count > 0)
+                        result.THDI.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "I THD Pre Event Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = THDpre
+                        });
+
+                    if (THDVpre.Count > 0)
+                        result.THDV.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "V THD Pre Event Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = THDVpre
+                        });
+
+                    if (Xpost.Count > 0)
+                        result.Xcap.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Post Event Phase " + (phase.Key),
+                            lineStyle = ":",
+                            includeLegend = true,
+                            data = Xpost
+                        });
+
+                    if (Ipost.Count > 0)
+                        result.Irms.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Post Event Phase " + (phase.Key),
+                            lineStyle = ":",
+                            includeLegend = true,
+                            data = Ipost
+                        });
+
+                    if (Vpost.Count > 0)
+                        result.Vrms.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Post Event Phase " + (phase.Key),
+                            lineStyle = ":",
+                            includeLegend = true,
+                            data = Vpost
+                        });
+
+                    if (THDpost.Count > 0)
+                        result.THDI.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "I THD Post Event Phase " + (phase.Key),
+                            lineStyle = ":",
+                            includeLegend = true,
+                            data = THDpost
+                        });
+
+                    if (THDVpost.Count > 0)
+                        result.THDV.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "V THD Post Event Phase " + (phase.Key),
+                            lineStyle = ":",
+                            includeLegend = true,
+                            data = THDVpost
+                        });
+
+
+                    if (XcapBank.Count > 0)
+                        result.DeltaXcap.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = XcapBank
+                        });
+
+                    if (RestDur.Count > 0)
+                        result.RestrikeDuration.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = RestDur
+                        });
+                    if (RestI.Count > 0)
+                        result.RestrikeI.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = RestI
+                        });
+                    if (RestV.Count > 0)
+                        result.RestrikeV.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = RestV
+                        });
+
+                    if (PisDur.Count > 0)
+                        result.PISDuration.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = PisDur
+                        });
+                    if (PisR.Count > 0)
+                        result.PISZ.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "R Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = PisR
+                        });
+                    if (PisX.Count > 0)
+                        result.PISZ.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "X Phase " + (phase.Key),
+                            lineStyle = ":",
+                            includeLegend = true,
+                            data = PisX
+                        });
+
+                    if (Kfactor.Count > 0)
+                        result.KFactor.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = Kfactor
+                        });
+                    if (Xlv.Count > 0)
+                        result.RelayXLV.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = Xlv
+                        });
+                    if (Xug.Count > 0)
+                        result.RelayXLV.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Upper Group Phase " + (phase.Key),
+                            lineStyle = ":",
+                            includeLegend = true,
+                            data = Xug
+                        });
+                    if (Xlg.Count > 0)
+                        result.RelayXLV.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Lower Group Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = Xlg
+                        });
+
+                    if (PctIEC.Count > 0 && phase.Key == "AN")
+                        result.Unbalance.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "IEC",
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = PctIEC
+                        });
+                    if (PctIEEE.Count > 0 && phase.Key == "AN")
+                        result.Unbalance.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "IEEE",
+                            lineStyle = ":",
+                            includeLegend = true,
+                            data = PctIEEE
+                        });
+
+                    if (XVration.Count > 0)
+                        result.RelayXV.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = XVration
+                        });
+
+                    if (RelayV.Count > 0)
+                        result.RelayV.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = RelayV
+                        });
+                    if (RelaydV.Count > 0)
+                        result.RelaydV.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "Phase " + (phase.Key),
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = RelaydV
+                        });
+                    if (Ineutral.Count > 0 && phase.Key == "AN")
+                        result.Ineutral.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "",
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = Ineutral
+                        });
+                    if (BusV0.Count > 0 && phase.Key == "AN")
+                        result.BusV.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "",
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = BusV0
+                        });
+                    if (BusZ0.Count > 0 && phase.Key == "AN")
+                        result.BusZ.Add(new TrendSeries()
+                        {
+                            color = phase.Value,
+                            label = "",
+                            lineStyle = "-",
+                            includeLegend = true,
+                            data = BusZ0
+                        });
+
+
+
                 }
-
-                DataTable totalTable = GettrendTable("", otherFilter, capBankRestriction, "", timeRestriction);
-
-                if (totalTable.Rows.Count > 0)
-                {
+                DataTable systable = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, "", timeRestriction);
+                List<double[]> SCmva = systable.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, Math.Abs(row.Field<double?>("Q") ?? 0) }).ToList();
+                if (SCmva.Count > 0)
                     result.Q.Add(new TrendSeries()
                     {
-                        color = "#ffA500",
-                        label = "Total",
+                        color = phase.Value,
+                        label = "Phase " + (phase.Key),
                         lineStyle = "-",
                         includeLegend = true,
-                        data = totalTable.AsEnumerable().GroupBy(row => row.Field<int>("EventID")).Select(group => new double[2] { group.First().Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, Math.Abs(group.First().Field<double?>("TotalQ") ?? 0) }).ToList()
+                        data = SCmva
                     });
-                }
 
-                totalTable = GettrendTable("", otherFilter, capBankRestriction, bankNumRestriction, timeRestriction);
+            }
 
-                if (totalTable.Rows.Count > 0 && selectedBank > -1)
+            DataTable totalTable = GettrendTable("", otherFilter, capBankRestriction, "", timeRestriction);
+
+            if (totalTable.Rows.Count > 0)
+            {
+                result.Q.Add(new TrendSeries()
                 {
-                    result.DeltaQ.Add(new TrendSeries()
-                    {
-                        color = "#ffA500",
-                        label = "Total",
-                        lineStyle = "-",
-                        includeLegend = true,
-                        data = totalTable.AsEnumerable().GroupBy(row => row.Field<int>("EventID")).Select(group => new double[2] { group.First().Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, Math.Abs(group.First().Field<double?>("TotalDeltaQ") ?? 0) }).ToList()
-                    });
-                
-                }
+                    color = "#ffA500",
+                    label = "Total",
+                    lineStyle = "-",
+                    includeLegend = true,
+                    data = totalTable.AsEnumerable().GroupBy(row => row.Field<int>("EventID")).Select(group => new double[2] { group.First().Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, Math.Abs(group.First().Field<double?>("TotalQ") ?? 0) }).ToList()
+                });
+            }
+
+            totalTable = GettrendTable("", otherFilter, capBankRestriction, bankNumRestriction, timeRestriction);
+
+            if (totalTable.Rows.Count > 0 && selectedBank > -1)
+            {
+                result.DeltaQ.Add(new TrendSeries()
+                {
+                    color = "#ffA500",
+                    label = "Total",
+                    lineStyle = "-",
+                    includeLegend = true,
+                    data = totalTable.AsEnumerable().GroupBy(row => row.Field<int>("EventID")).Select(group => new double[2] { group.First().Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, Math.Abs(group.First().Field<double?>("TotalDeltaQ") ?? 0) }).ToList()
+                });
 
             }
 
@@ -880,7 +850,7 @@ namespace PQDashboard.Controllers.CapBankReport
 
             if (query.TryGetValue("statFilt", out val))
             {
-                filter = filter + (filter== ""? "" : " AND ") + $" ( (CBAnalyticResult.CBStatusID%100) IN  ({val}) OR ";
+                filter = filter + (filter == "" ? "" : " AND ") + $" ( (CBAnalyticResult.CBStatusID%100) IN  ({val}) OR ";
                 filter = filter + $"((CBAnalyticResult.CBStatusID/100)%100) IN  ({val}) OR (CBAnalyticResult.CBStatusID/10000)  IN  ({val}))";
             }
 
@@ -907,7 +877,7 @@ namespace PQDashboard.Controllers.CapBankReport
             {
                 List<string> PhaseName = val.Trim('[').Trim(']').Split(',').Where(s => s == "1" || s == "2" || s == "3").Select(n => { if (n == "1") return "'AN'"; if (n == "2") return "'BN'"; return "'CN'"; }).ToList();
                 if (PhaseName.Count == 0)
-                    PhaseName = new List<string>() { "'AN'","'BN'","'CN'" };
+                    PhaseName = new List<string>() { "'AN'", "'BN'", "'CN'" };
                 filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBAnalyticResult.PhaseID,0) IN  (SELECT ID FROM Phase WHERE Name IN ({String.Join(",", PhaseName)}))";
             }
 
@@ -916,24 +886,24 @@ namespace PQDashboard.Controllers.CapBankReport
 
         private DataTable GettrendTable(string PhaseRestriction, string OtherRestriction, string CapBankRestriction, string NumRestriction, string timeRestriction)
         {
-            using (AdoDataConnection connection = new("systemSettings"))
-            {
-                List<string> restrictions = new();
+            using AdoDataConnection connection = new(Settings.Default);
 
-                if (!string.IsNullOrWhiteSpace(PhaseRestriction))
-                    restrictions.Add("(" + PhaseRestriction + ")");
-                if (!string.IsNullOrWhiteSpace(OtherRestriction))
-                    restrictions.Add("(" + OtherRestriction + ")");
-                if (!string.IsNullOrWhiteSpace(CapBankRestriction))
-                    restrictions.Add("(" + CapBankRestriction + ")");
-                if (!string.IsNullOrWhiteSpace(NumRestriction))
-                    restrictions.Add("(" + NumRestriction + ")");
-                if (!string.IsNullOrWhiteSpace(timeRestriction))
-                    restrictions.Add("(" + timeRestriction + ")");
+            List<string> restrictions = [];
 
-                bool hasRestriction = restrictions.Count > 0;
+            if (!string.IsNullOrWhiteSpace(PhaseRestriction))
+                restrictions.Add("(" + PhaseRestriction + ")");
+            if (!string.IsNullOrWhiteSpace(OtherRestriction))
+                restrictions.Add("(" + OtherRestriction + ")");
+            if (!string.IsNullOrWhiteSpace(CapBankRestriction))
+                restrictions.Add("(" + CapBankRestriction + ")");
+            if (!string.IsNullOrWhiteSpace(NumRestriction))
+                restrictions.Add("(" + NumRestriction + ")");
+            if (!string.IsNullOrWhiteSpace(timeRestriction))
+                restrictions.Add("(" + timeRestriction + ")");
 
-                string sqlQuery = $@"SELECT
+            bool hasRestriction = restrictions.Count > 0;
+
+            string sqlQuery = $@"SELECT
                         CBAnalyticResult.EventID AS EventID,
                         CBAnalyticResult.Time AS Time,
                         CBAnalyticResult.MVAsc AS Q,
@@ -980,11 +950,11 @@ namespace PQDashboard.Controllers.CapBankReport
                         CBRestrikeResult ON CBRestrikeResult.CBResultID = CBAnalyticResult.ID LEFT JOIN
                         CBSwitchHealthAnalytic ON CBSwitchHealthAnalytic.CBResultID = CBAnalyticResult.ID LEFT JOIN
 						CBCapBankResult ON CBCapBankResult.CBResultID = CBAnalyticResult.ID
-                    {(hasRestriction? ("WHERE " + string.Join(" AND ",restrictions)) : "")} 
+                    {(hasRestriction ? ("WHERE " + string.Join(" AND ", restrictions)) : "")} 
                     ORDER BY CBAnalyticResult.Time";
 
-                return connection.RetrieveData(sqlQuery);
-            }
+            return connection.RetrieveData(sqlQuery);
+
         }
         #endregion 
 

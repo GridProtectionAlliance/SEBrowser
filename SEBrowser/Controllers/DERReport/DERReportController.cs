@@ -22,11 +22,10 @@
 //******************************************************************************************************
 
 using FaultData.DataAnalysis;
-using GSF;
-using GSF.Collections;
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Web;
+using Gemstone.Configuration;
+using Gemstone.Data;
+using Gemstone.Data.Model;
+using Microsoft.AspNetCore.Mvc;
 using openXDA.Model;
 using System;
 using System.Collections.Generic;
@@ -40,19 +39,19 @@ using System.Net.Security;
 using System.Runtime.Caching;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
-using System.Web.Http;
 
-namespace SEBrowser.Controllers
+namespace SEBrowser.Controllers.DERReport
 {
-    [RoutePrefix("api/DERReport")]
-    public class DERReportController : ApiController
+    [Route("api/DERReport")]
+    public class DERReportController : ControllerBase
     {
         #region [ Members ]
 
         // Fields
         private DateTime m_epoch = new(1970, 1, 1);
 
-        public class TrendSeries {
+        public class TrendSeries
+        {
             public string color;
             public string label;
             public List<double[]> data;
@@ -91,8 +90,8 @@ namespace SEBrowser.Controllers
             public List<TrendSeries> RelayV;
             public List<TrendSeries> RelayXV;
             public List<TrendSeries> Ineutral;
-            public List<TrendSeries> BusZ; 
-            public List<TrendSeries> BusV; 
+            public List<TrendSeries> BusZ;
+            public List<TrendSeries> BusV;
             public List<TrendSeries> Unbalance;
 
         }
@@ -127,16 +126,15 @@ namespace SEBrowser.Controllers
         #region [ Methods ]
 
         [Route("Substation"), HttpGet]
-        public IHttpActionResult GetSubstations()
+        public IActionResult GetSubstations()
         {
-            try {
-                using (AdoDataConnection connection = new("systemSettings"))
-                {
-                    DataTable table = new();
+            using AdoDataConnection connection = new(Settings.Default);
 
-                    using (IDbCommand sc = connection.Connection.CreateCommand())
-                    {
-                        sc.CommandText = @" 
+            DataTable table = new();
+
+            using IDbCommand sc = connection.Connection.CreateCommand();
+
+            sc.CommandText = @" 
                     SELECT
 	                    Distinct
 	                    Location.ID as LocationID,
@@ -149,19 +147,12 @@ namespace SEBrowser.Controllers
 	                    Asset ON MeterAsset.AssetID = Asset.ID AND Asset.AssetTypeID = (SELECT ID FROM AssetType WHERE Name = 'DER')
                     ORDER BY Name";
 
-                        sc.CommandType = CommandType.Text;
+            sc.CommandType = CommandType.Text;
 
-                        IDataReader rdr = sc.ExecuteReader();
-                        table.Load(rdr);
+            IDataReader rdr = sc.ExecuteReader();
+            table.Load(rdr);
 
-                        return Ok(table);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                return InternalServerError(ex);
-            }
+            return Ok(table);
         }
 
         public class DERPostRequest
@@ -170,17 +161,15 @@ namespace SEBrowser.Controllers
         }
 
         [Route("DER"), HttpPost]
-        public IHttpActionResult GetDER([FromBody] DERPostRequest content)
+        public IActionResult GetDER([FromBody] DERPostRequest content)
         {
-            try
-            {
-                using (AdoDataConnection connection = new("systemSettings"))
-                {
-                    DataTable table = new();
+            using AdoDataConnection connection = new(Settings.Default);
 
-                    using (IDbCommand sc = connection.Connection.CreateCommand())
-                    {
-                        sc.CommandText = $@" 
+            DataTable table = new();
+
+            using IDbCommand sc = connection.Connection.CreateCommand();
+
+            sc.CommandText = $@" 
                         SELECT
 	                        Asset.*
                         FROM
@@ -192,44 +181,27 @@ namespace SEBrowser.Controllers
 	                        Location.ID IN ({(content.SubstationIDs.Any() ? string.Join(",", content.SubstationIDs) : "-1")})
                     ORDER BY AssetName";
 
-                        sc.CommandType = CommandType.Text;
+            sc.CommandType = CommandType.Text;
 
-                        IDataReader rdr = sc.ExecuteReader();
-                        table.Load(rdr);
+            IDataReader rdr = sc.ExecuteReader();
+            table.Load(rdr);
 
-                        return Ok(table);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                return InternalServerError(ex);
-            }
-
-
+            return Ok(table);
         }
 
         [Route("Regulation"), HttpGet]
-        public IHttpActionResult GetRegulations()
+        public IActionResult GetRegulations()
         {
-            try
-            {
-                List<string> regulations = new() {
+            List<string> regulations = [
                 "7.1 Limitation of dc injection",
                 "7.2.2 Rapid Voltage Change (RVC)",
                 "7.2.3 Flicker",
                 "7.3 Limitation of current distoriation",
                 "7.4.1 Limitation of overvoltage over one fundametnal frequency",
                 "7.4.2 Limitation of cumulative instantaneous overvoltage"
-            };
+            ];
 
-                return Ok(regulations);
-            }
-            catch (Exception ex)
-            {
-                return InternalServerError(ex);
-            }
-
+            return Ok(regulations);
         }
 
         public class DERReportPostRequest
@@ -243,15 +215,15 @@ namespace SEBrowser.Controllers
         }
 
         [Route(""), HttpPost]
-        public IHttpActionResult Get([FromBody]DERReportPostRequest content)
+        public IActionResult Post([FromBody] DERReportPostRequest content)
         {
-            using (AdoDataConnection connection = new("systemSettings"))
-            {
-                DataTable table = new();
+            using AdoDataConnection connection = new(Settings.Default);
 
-                using (IDbCommand sc = connection.Connection.CreateCommand())
-                {
-                    string sql = $@"
+            DataTable table = new();
+
+            using IDbCommand sc = connection.Connection.CreateCommand();
+
+            string sql = $@"
                         SELECT
 	                        Meter.Name as Meter,
 	                        Asset.AssetName as Asset,
@@ -264,126 +236,111 @@ namespace SEBrowser.Controllers
 	                        ChannelDetail ON DERAnalyticResult.ChannelID = ChannelDetail.ID 
                         WHERE 
                             Asset.ID IN ({(content.DERIDs.Any() ? string.Join(",", content.DERIDs) : "-1")}) AND 
-                            (DERAnalyticResult.Time BETWEEN DATEADD({ content.TimeWindowUnit}, { (-1 * content.Window)}, '{content.Time}') AND DATEADD({ content.TimeWindowUnit}, { (content.Window)},  '{content.Time}')) AND
-                            DERAnalyticResult.Regulation IN ({(content.Regulations.Any() ? string.Join(",", content.Regulations.Select(s => "'" +s + "'")) : "-1")})
+                            (DERAnalyticResult.Time BETWEEN DATEADD({content.TimeWindowUnit}, {(-1 * content.Window)}, '{content.Time}') AND DATEADD({content.TimeWindowUnit}, {(content.Window)},  '{content.Time}')) AND
+                            DERAnalyticResult.Regulation IN ({(content.Regulations.Any() ? string.Join(",", content.Regulations.Select(s => "'" + s + "'")) : "-1")})
 
                         ORDER BY DERAnalyticResult.Time";
 
-                    sc.CommandText = sql;
-                    sc.CommandType = CommandType.Text;
+            sc.CommandText = sql;
+            sc.CommandType = CommandType.Text;
 
-                    IDataReader rdr = sc.ExecuteReader();
-                    table.Load(rdr);
+            IDataReader rdr = sc.ExecuteReader();
+            table.Load(rdr);
 
-                    return Ok(table);
-                }
-            }
-
+            return Ok(table);
         }
 
         [Route("Data/{id:int}"), HttpGet]
-        public IHttpActionResult Get(int id)
+        public IActionResult Get(int id)
         {
-            try
+
+            DERAnalyticResult result;
+
+            using (AdoDataConnection connection = new(Settings.Default))
             {
-                DERAnalyticResult result;
-
-                using (AdoDataConnection connection = new("systemSettings"))
-                {
-                    result = new TableOperations<DERAnalyticResult>(connection).QueryRecordWhere("ID = {0}", id);
-                };
-
-                if (result.EventID != null)
-                    return GetWaveformData(result);
-                else if (result.Regulation == "7.3 Limitation of current distoriation")
-                    return GetDistortionTrendData(result);
-                else
-                    return GetTrendData(result);
-
+                result = new TableOperations<DERAnalyticResult>(connection).QueryRecordWhere("ID = {0}", id);
             }
-            catch (Exception ex)
-            {
-                return InternalServerError(ex);
-            }
+            ;
 
+            if (result.EventID != null)
+                return GetWaveformData(result);
+            else if (result.Regulation == "7.3 Limitation of current distoriation")
+                return GetDistortionTrendData(result);
+            else
+                return GetTrendData(result);
         }
 
 
         #region [ Trending Data ]
 
-        private IHttpActionResult GetTrendData(DERAnalyticResult result) {
-            using (HttpClientHandler handler = new())
-            using (HttpClient client = new(handler))
+        private IActionResult GetTrendData(DERAnalyticResult result)
+        {
+            using HttpClientHandler handler = new();
+            using HttpClient client = new(handler);
+
+            DER der;
+
+            string host = "";
+            string pointBucket = "";
+            string org = "";
+            string token = "";
+            ChannelDetail channel;
+            using (AdoDataConnection connection = new(Settings.Default))
             {
-                DER der;
-
-                string host = "";
-                string pointBucket = "";
-                string org = "";
-                string token = "";
-                ChannelDetail channel;
-                using(AdoDataConnection connection = new("systemSettings"))
-                {
-                    host = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.Host'");
-                    pointBucket = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.PointBucket'");
-                    org = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.OrganizationID'");
-                    token = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.TokenID'");
-                    der = new TableOperations<DER>(connection).QueryRecordWhere("ID = {0}", result.AssetID);
-                    channel = new TableOperations<ChannelDetail>(connection).QueryRecordWhere("ID = {0}", result.ChannelID);
-
-                }
-
-                double nominalVoltage = der.VoltageKV * 1000;
-
-                if (new List<string>() { "AN", "BN", "CN" }.IndexOf(channel.Phase) >= 0)
-                    nominalVoltage = nominalVoltage / Math.Sqrt(3);
-
-                client.BaseAddress = new Uri(host);
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token",token);
-                DateTime start = new(result.Time.Year, result.Time.Month, result.Time.Day);
-                DateTime end = start.AddDays(1).AddSeconds(-1);
-                try
-                {
-                    //handler.ServerCertificateCustomValidationCallback = ServerCertificateCustomValidation;
-                    string query = $"from(bucket: \"{ pointBucket}\")\n" +
-                            $"|> range(start: {start.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")}, stop: {end.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")})\n" +
-                             "|> filter(fn: (r) => r._field == \"avg\")\n" +
-                            $"|> filter(fn: (r) => r.tag == \"{result.ChannelID.ToString("X").PadLeft(8, '0')}\")";
-
-                    var json = new { 
-                        query = query,
-                        type = "flux"
-                    };
-                    var response = client.PostAsync($"api/v2/query?org={org}", JsonContent.Create(json)).Result;
-                    if (!response.IsSuccessStatusCode)
-                        throw new Exception(response.ReasonPhrase);
-
-                    string data = response.Content.ReadAsStringAsync().Result;
-                    List<InfluxQueryTable> list = ParseCSV(data);
-                    var points = list.Where(l => l.tag == result.ChannelID).GroupBy(d => d._time).Select(d => new { Time = d.Key, Value = d.Sum(x => x._value) });
-                    var dataPoints = points.Select((dp,i) => {
-                        if(result.Regulation.Contains("7.1"))
-                            return new double[2] { dp.Time.Subtract(m_epoch).TotalMilliseconds, dp.Value*100/der.FullRatedOutputCurrent };
-                        else if (result.Regulation.Contains("7.4.1"))
-                            return new double[2] { dp.Time.Subtract(m_epoch).TotalMilliseconds, dp.Value / nominalVoltage };
-                        else
-                            return new double[2] { dp.Time.Subtract(m_epoch).TotalMilliseconds, dp.Value };
-                    });
-
-                    return Ok(dataPoints);
-                }
-                catch (Exception ex)
-                {
-                    return InternalServerError(ex);
-                }
+                host = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.Host'");
+                pointBucket = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.PointBucket'");
+                org = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.OrganizationID'");
+                token = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.TokenID'");
+                der = new TableOperations<DER>(connection).QueryRecordWhere("ID = {0}", result.AssetID);
+                channel = new TableOperations<ChannelDetail>(connection).QueryRecordWhere("ID = {0}", result.ChannelID);
 
             }
 
+            double nominalVoltage = der.VoltageKV * 1000;
+
+            if (new List<string>() { "AN", "BN", "CN" }.IndexOf(channel.Phase) >= 0)
+                nominalVoltage = nominalVoltage / Math.Sqrt(3);
+
+            client.BaseAddress = new Uri(host);
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
+            DateTime start = new(result.Time.Year, result.Time.Month, result.Time.Day);
+            DateTime end = start.AddDays(1).AddSeconds(-1);
+
+            //handler.ServerCertificateCustomValidationCallback = ServerCertificateCustomValidation;
+            string query = $"from(bucket: \"{pointBucket}\")\n" +
+                    $"|> range(start: {start.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")}, stop: {end.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")})\n" +
+                     "|> filter(fn: (r) => r._field == \"avg\")\n" +
+                    $"|> filter(fn: (r) => r.tag == \"{result.ChannelID.ToString("X").PadLeft(8, '0')}\")";
+
+            var json = new
+            {
+                query,
+                type = "flux"
+            };
+
+            var response = client.PostAsync($"api/v2/query?org={org}", JsonContent.Create(json)).Result;
+            if (!response.IsSuccessStatusCode)
+                throw new Exception(response.ReasonPhrase);
+
+            string data = response.Content.ReadAsStringAsync().Result;
+            List<InfluxQueryTable> list = ParseCSV(data);
+            var points = list.Where(l => l.tag == result.ChannelID).GroupBy(d => d._time).Select(d => new { Time = d.Key, Value = d.Sum(x => x._value) });
+            var dataPoints = points.Select((dp, i) =>
+            {
+                if (result.Regulation.Contains("7.1"))
+                    return new double[2] { dp.Time.Subtract(m_epoch).TotalMilliseconds, dp.Value * 100 / der.FullRatedOutputCurrent };
+                else if (result.Regulation.Contains("7.4.1"))
+                    return new double[2] { dp.Time.Subtract(m_epoch).TotalMilliseconds, dp.Value / nominalVoltage };
+                else
+                    return new double[2] { dp.Time.Subtract(m_epoch).TotalMilliseconds, dp.Value };
+            });
+
+            return Ok(dataPoints);
         }
 
-        private IHttpActionResult GetDistortionTrendData(DERAnalyticResult result)
+        private IActionResult GetDistortionTrendData(DERAnalyticResult result)
         {
             Regex expression = new(@"^(?<lower>\d+)\s*<=\s*h\s*<\s*(?<upper>\d+)|Even,\s*h\s*>=\s*(?<threshold>\d+)$");
             Match match = expression.Match(result.Parameter);
@@ -400,11 +357,10 @@ namespace SEBrowser.Controllers
                     return GetDistortionTrendData(result, lower, upper);
             }
             else
-                return InternalServerError(new Exception("Result paramater not constructed correctly"));
-
+                throw new Exception("Result paramater not constructed correctly");
         }
 
-        private IHttpActionResult GetDistortionTrendData(DERAnalyticResult result, int lower, int upper)
+        private IActionResult GetDistortionTrendData(DERAnalyticResult result, int lower, int upper)
         {
             using (HttpClientHandler handler = new())
             using (HttpClient client = new(handler))
@@ -417,7 +373,7 @@ namespace SEBrowser.Controllers
 
                 List<Channel> harmonicChannels;
                 Channel rmsChannel;
-                using (AdoDataConnection connection = new("systemSettings"))
+                using (AdoDataConnection connection = new(Settings.Default))
                 {
                     host = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.Host'");
                     pointBucket = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.PointBucket'");
@@ -443,44 +399,38 @@ namespace SEBrowser.Controllers
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
                 DateTime start = new(result.Time.Year, result.Time.Month, result.Time.Day);
                 DateTime end = start.AddDays(1).AddSeconds(-1);
-                try
+
+                string query = $"from(bucket: \"{pointBucket}\")\n" +
+                        $"|> range(start: {start.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")}, stop: {end.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")})\n" +
+                         "|> filter(fn: (r) => r._field == \"avg\")\n" +
+                        $"|> filter(fn: (r) => r.tag == \"{result.ChannelID.ToString("X").ToLower().PadLeft(8, '0')}\" or {string.Join(" or ", harmonicChannels.Select(ch => $"r.tag == \"{ch.ID.ToString("X").ToLower().PadLeft(8, '0')}\""))})";
+
+                var json = new
                 {
-                    string query = $"from(bucket: \"{ pointBucket}\")\n" +
-                            $"|> range(start: {start.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")}, stop: {end.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")})\n" +
-                             "|> filter(fn: (r) => r._field == \"avg\")\n" +
-                            $"|> filter(fn: (r) => r.tag == \"{result.ChannelID.ToString("X").ToLower().PadLeft(8, '0')}\" or {string.Join(" or ", harmonicChannels.Select(ch => $"r.tag == \"{ch.ID.ToString("X").ToLower().PadLeft(8, '0')}\""))})";
+                    query,
+                    type = "flux"
+                };
+                var response = client.PostAsync($"api/v2/query?org={org}", JsonContent.Create(json)).Result;
+                if (!response.IsSuccessStatusCode)
+                    throw new Exception(response.ReasonPhrase);
 
-                    var json = new
-                    {
-                        query = query,
-                        type = "flux"
-                    };
-                    var response = client.PostAsync($"api/v2/query?org={org}", JsonContent.Create(json)).Result;
-                    if (!response.IsSuccessStatusCode)
-                        throw new Exception(response.ReasonPhrase);
-
-                    string data = response.Content.ReadAsStringAsync().Result;
-                    List<InfluxQueryTable> list = ParseCSV(data);
-                    var groupedHarmonics = list.Where(l => harmonicChannels.Select(x => x.ID).Contains(l.tag)).GroupBy(d => d._time).Select(d => new { Time = d.Key, Value = d.Sum(x => x._value) });
-                    var rms = list.Where(l => l.tag == result.ChannelID).GroupBy(d => d._time).Select(d => new { Time = d.Key, Value = d.Sum(x => x._value) });
-                    var dataPoints = groupedHarmonics.Join(rms, harmonicDP => harmonicDP.Time, rmsDP => rmsDP.Time, (dp, rmsDp) => {
-                        return new double[2]{ dp.Time.Subtract(m_epoch).TotalMilliseconds, Math.Sqrt(Math.Abs(Math.Pow(dp.Value, 2) - Math.Pow(rmsDp.Value, 2))) / der.FullRatedOutputCurrent * 100 };
-                    });
-
-                    return Ok(dataPoints);
-                }
-                catch (Exception ex)
+                string data = response.Content.ReadAsStringAsync().Result;
+                List<InfluxQueryTable> list = ParseCSV(data);
+                var groupedHarmonics = list.Where(l => harmonicChannels.Select(x => x.ID).Contains(l.tag)).GroupBy(d => d._time).Select(d => new { Time = d.Key, Value = d.Sum(x => x._value) });
+                var rms = list.Where(l => l.tag == result.ChannelID).GroupBy(d => d._time).Select(d => new { Time = d.Key, Value = d.Sum(x => x._value) });
+                var dataPoints = groupedHarmonics.Join(rms, harmonicDP => harmonicDP.Time, rmsDP => rmsDP.Time, (dp, rmsDp) =>
                 {
-                    return InternalServerError(ex);
-                }
+                    return new double[2] { dp.Time.Subtract(m_epoch).TotalMilliseconds, Math.Sqrt(Math.Abs(Math.Pow(dp.Value, 2) - Math.Pow(rmsDp.Value, 2))) / der.FullRatedOutputCurrent * 100 };
+                });
 
+                return Ok(dataPoints);
             }
 
         }
 
-        private IHttpActionResult GetDistortionTrendData(DERAnalyticResult result, int threshold)
+        private IActionResult GetDistortionTrendData(DERAnalyticResult result, int threshold)
         {
-            using (HttpClientHandler handler = new())
+            using HttpClientHandler handler = new();
             using (HttpClient client = new(handler))
             {
                 string host = "";
@@ -491,7 +441,7 @@ namespace SEBrowser.Controllers
                 List<Channel> harmonicChannels;
                 Channel rmsChannel;
                 DER der;
-                using (AdoDataConnection connection = new("systemSettings"))
+                using (AdoDataConnection connection = new(Settings.Default))
                 {
                     host = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.Host'");
                     pointBucket = connection.ExecuteScalar<string>("SELECT Value FROM Setting WHERE Name = 'HIDS.PointBucket'");
@@ -518,83 +468,73 @@ namespace SEBrowser.Controllers
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
                 DateTime start = new(result.Time.Year, result.Time.Month, result.Time.Day);
                 DateTime end = start.AddDays(1).AddSeconds(-1);
-                try
+
+                //handler.ServerCertificateCustomValidationCallback = ServerCertificateCustomValidation;
+                string query = $"from(bucket: \"{pointBucket}\")\n" +
+                        $"|> range(start: {start.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")}, stop: {end.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")})\n" +
+                         "|> filter(fn: (r) => r._field == \"avg\")\n" +
+                        $"|> filter(fn: (r) => r.tag == \"{result.ChannelID.ToString("X").ToLower().PadLeft(8, '0')}\" or {string.Join(" or ", harmonicChannels.Select(ch => $"r.tag == \"{ch.ID.ToString("X").ToLower().PadLeft(8, '0')}\""))})";
+
+                var json = new
                 {
-                    //handler.ServerCertificateCustomValidationCallback = ServerCertificateCustomValidation;
-                    string query = $"from(bucket: \"{ pointBucket}\")\n" +
-                            $"|> range(start: {start.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")}, stop: {end.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")})\n" +
-                             "|> filter(fn: (r) => r._field == \"avg\")\n" +
-                            $"|> filter(fn: (r) => r.tag == \"{result.ChannelID.ToString("X").ToLower().PadLeft(8, '0')}\" or {string.Join(" or ", harmonicChannels.Select(ch => $"r.tag == \"{ch.ID.ToString("X").ToLower().PadLeft(8, '0')}\""))})";
+                    query,
+                    type = "flux"
+                };
+                var response = client.PostAsync($"api/v2/query?org={org}", JsonContent.Create(json)).Result;
+                if (!response.IsSuccessStatusCode)
+                    throw new Exception(response.ReasonPhrase);
 
-                    var json = new
-                    {
-                        query = query,
-                        type = "flux"
-                    };
-                    var response = client.PostAsync($"api/v2/query?org={org}", JsonContent.Create(json)).Result;
-                    if (!response.IsSuccessStatusCode)
-                        throw new Exception(response.ReasonPhrase);
-
-                    string data = response.Content.ReadAsStringAsync().Result;
-                    List<InfluxQueryTable> list = ParseCSV(data);
-                    var groupedHarmonics = list.Where(l => harmonicChannels.Select(x => x.ID).Contains(l.tag)).GroupBy(d => d._time).Select(d => new { Time = d.Key, Value = d.Sum(x => x._value) });
-                    var rms =  list.Where(l => l.tag == result.ChannelID).GroupBy(d => d._time).Select(d => new { Time = d.Key, Value = d.Sum(x => x._value) });
-                    var dataPoints = groupedHarmonics.Join(rms, harmonicDP => harmonicDP.Time, rmsDP => rmsDP.Time, (dp, rmsDp) => {
-                        return new double[2] { dp.Time.Subtract(m_epoch).TotalMilliseconds, Math.Sqrt(Math.Abs(Math.Pow(dp.Value, 2) - Math.Pow(rmsDp.Value, 2))) / der.FullRatedOutputCurrent * 100 };
-                    });
-
-                    return Ok(dataPoints);
-                }
-                catch (Exception ex)
+                string data = response.Content.ReadAsStringAsync().Result;
+                List<InfluxQueryTable> list = ParseCSV(data);
+                var groupedHarmonics = list.Where(l => harmonicChannels.Select(x => x.ID).Contains(l.tag)).GroupBy(d => d._time).Select(d => new { Time = d.Key, Value = d.Sum(x => x._value) });
+                var rms = list.Where(l => l.tag == result.ChannelID).GroupBy(d => d._time).Select(d => new { Time = d.Key, Value = d.Sum(x => x._value) });
+                var dataPoints = groupedHarmonics.Join(rms, harmonicDP => harmonicDP.Time, rmsDP => rmsDP.Time, (dp, rmsDp) =>
                 {
-                    return InternalServerError(ex);
-                }
+                    return new double[2] { dp.Time.Subtract(m_epoch).TotalMilliseconds, Math.Sqrt(Math.Abs(Math.Pow(dp.Value, 2) - Math.Pow(rmsDp.Value, 2))) / der.FullRatedOutputCurrent * 100 };
+                });
 
-            }
-
-        }
-
-        private IHttpActionResult GetWaveformData(DERAnalyticResult result) {
-            try
-            {
-                using(AdoDataConnection connection = new("systemSettings"))
-                {
-                    Meter meter = new TableOperations<Meter>(connection).QueryRecordWhere("ID = {0}", result.MeterID);
-                    meter.ConnectionFactory = () => new AdoDataConnection("systemSettings");
-                    byte[] data = ChannelData.DataFromEvent((int)result.EventID, result.ChannelID, () => new AdoDataConnection("systemSettings"));
-                    DataSeries dataSeries = DataSeries.FromData(meter, data);
-                    DataSeries rms = Transform.ToRMS(dataSeries, 60);
-                    rms.Downsample(500);
-
-                    List<DataPoint> dataPoints = rms.DataPoints;
-                    var list = dataPoints.Select((dp, index) => {
-                        if(result.Regulation.Contains("7.4.2"))
-                            return new double[2] { dp.Time.Subtract(m_epoch).TotalMilliseconds, dp.Value };
-
-                        double current = dp.Value;
-                        double previous = dp.Value;
-                        if (index > 0) previous = dataPoints[index - 1].Value;
-                        double rvc = Math.Abs(current / previous - 1) * 100;
-                        return new double[2] { dp.Time.Subtract(m_epoch).TotalMilliseconds, rvc };
-
-
-                    }).ToList();
-                    return Ok(list);
-                }
-            }
-            catch (Exception ex)
-            {
-                return InternalServerError(ex);
+                return Ok(dataPoints);
             }
         }
 
-        public class InfluxQueryTable {
+        private IActionResult GetWaveformData(DERAnalyticResult result)
+        {
+            using AdoDataConnection connection = new(Settings.Default);
+
+            Meter meter = new TableOperations<Meter>(connection).QueryRecordWhere("ID = {0}", result.MeterID);
+            meter.ConnectionFactory = () => new AdoDataConnection(Settings.Default);
+            byte[] data = ChannelData.DataFromEvent((int)result.EventID, result.ChannelID, () => new AdoDataConnection(Settings.Default));
+            DataSeries dataSeries = DataSeries.FromData(meter, data);
+            DataSeries rms = Transform.ToRMS(dataSeries, 60);
+            rms.Downsample(500);
+
+            List<DataPoint> dataPoints = rms.DataPoints;
+            var list = dataPoints.Select((dp, index) =>
+            {
+                if (result.Regulation.Contains("7.4.2"))
+                    return new double[2] { dp.Time.Subtract(m_epoch).TotalMilliseconds, dp.Value };
+
+                double current = dp.Value;
+                double previous = dp.Value;
+                if (index > 0) previous = dataPoints[index - 1].Value;
+                double rvc = Math.Abs(current / previous - 1) * 100;
+                return new double[2] { dp.Time.Subtract(m_epoch).TotalMilliseconds, rvc };
+
+
+            }).ToList();
+
+            return Ok(list);
+        }
+
+        public class InfluxQueryTable
+        {
             public DateTime _time { get; set; }
             public double _value { get; set; }
             public int tag { get; set; }
-            public string _field {get;set;}
+            public string _field { get; set; }
 
-            public InfluxQueryTable(DataRow row) {
+            public InfluxQueryTable(DataRow row)
+            {
                 _time = (DateTime)row["_time"];
                 _value = (double)row["_value"];
                 tag = (int)row["tag"];
@@ -609,7 +549,8 @@ namespace SEBrowser.Controllers
             string[] tableData = data.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
             string[] cols = tableData[0].Split(",".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
 
-            table.Columns.AddRange(cols.Select(x => {
+            table.Columns.AddRange(cols.Select(x =>
+            {
                 if (x == "_time")
                     return new DataColumn(x, typeof(DateTime));
                 else if (x == "_value")
@@ -658,9 +599,9 @@ namespace SEBrowser.Controllers
             string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
             int windowSize = int.Parse(query["windowSize"]);
             int selectedBank = int.Parse(query["bankNum"]);
-            
 
-            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD({ timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}'))";
+
+            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD({timeWindowUnits}, {(-1 * windowSize)}, '{dateTime}') AND DATEADD({timeWindowUnits}, {(windowSize)},  '{dateTime}'))";
             string capBankRestriction = $"((SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId})";
             string bankNumRestriction = $"(CBAnalyticResult.EnergizedBanks = {selectedBank} OR CBAnalyticResult.DeEnergizedBanks = {selectedBank})";
             string bankNumAfterRestriction = $"(CBAnalyticResult.StepPost = {selectedBank})";
@@ -710,9 +651,9 @@ namespace SEBrowser.Controllers
             phaseColor.Add("BN", "#0029A3");
             phaseColor.Add("CN", "#007A29");
 
-            using (AdoDataConnection connection = new("systemSettings"))
+            using (AdoDataConnection connection = new(Settings.Default))
             {
-                
+
                 foreach (KeyValuePair<string, string> phase in phaseColor)
                 {
                     string phaseRestriction = $"CBAnalyticResult.PhaseID = (SELECT ID FROM Phase WHERE Name = '{phase.Key}')";
@@ -729,7 +670,7 @@ namespace SEBrowser.Controllers
                         List<double[]> DeltaITHD = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaITHD") ?? 0 }).ToList();
                         List<double[]> DeltaVTHD = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("DeltaVTHD") ?? 0 }).ToList();
                         List<double[]> SwitchingFreq = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("SwitchingFreq") ?? 0 }).ToList();
-                        List<double[]> Vpeak = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpeak") ?? 0)*100.0D }).ToList();
+                        List<double[]> Vpeak = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpeak") ?? 0) * 100.0D }).ToList();
 
                         List<double[]> RestDur = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RestrikeDuration") ?? 0 }).ToList();
                         List<double[]> RestI = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("RestrikeI") ?? 0 }).ToList();
@@ -761,7 +702,7 @@ namespace SEBrowser.Controllers
                         table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumBeforeRestriction, timeRestriction);
 
                         List<double[]> Ipre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Ipre") ?? 0 }).ToList();
-                        List<double[]> Vpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpre") ?? 0)*100.0D }).ToList();
+                        List<double[]> Vpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpre") ?? 0) * 100.0D }).ToList();
                         List<double[]> THDpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDpre") ?? 0 }).ToList();
                         List<double[]> THDVpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDVpre") ?? 0 }).ToList();
                         List<double[]> Xpre = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xpre") ?? 0 }).ToList();
@@ -769,7 +710,7 @@ namespace SEBrowser.Controllers
                         table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumAfterRestriction, timeRestriction);
 
                         List<double[]> Ipost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Ipost") ?? 0 }).ToList();
-                        List<double[]> Vpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpost") ?? 0)*100.0 }).ToList();
+                        List<double[]> Vpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, (row.Field<double?>("Vpost") ?? 0) * 100.0 }).ToList();
                         List<double[]> THDpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDpost") ?? 0 }).ToList();
                         List<double[]> THDVpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("THDVpost") ?? 0 }).ToList();
                         List<double[]> Xpost = table.AsEnumerable().Select(row => new double[2] { row.Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, row.Field<double?>("Xpost") ?? 0 }).ToList();
@@ -1220,7 +1161,7 @@ namespace SEBrowser.Controllers
                         includeLegend = true,
                         data = totalTable.AsEnumerable().GroupBy(row => row.Field<int>("EventID")).Select(group => new double[2] { group.First().Field<DateTime>("Time").Subtract(m_epoch).TotalMilliseconds, Math.Abs(group.First().Field<double?>("TotalDeltaQ") ?? 0) }).ToList()
                     });
-                
+
                 }
 
             }
@@ -1241,7 +1182,7 @@ namespace SEBrowser.Controllers
 
             if (query.TryGetValue("statFilt", out val))
             {
-                filter = filter + (filter== ""? "" : " AND ") + $" ( (CBAnalyticResult.CBStatusID%100) IN  ({val}) OR ";
+                filter = filter + (filter == "" ? "" : " AND ") + $" ( (CBAnalyticResult.CBStatusID%100) IN  ({val}) OR ";
                 filter = filter + $"((CBAnalyticResult.CBStatusID/100)%100) IN  ({val}) OR (CBAnalyticResult.CBStatusID/10000)  IN  ({val}))";
             }
 
@@ -1268,7 +1209,7 @@ namespace SEBrowser.Controllers
             {
                 List<string> PhaseName = val.Trim('[').Trim(']').Split(',').Where(s => s == "1" || s == "2" || s == "3").Select(n => { if (n == "1") return "'AN'"; if (n == "2") return "'BN'"; return "'CN'"; }).ToList();
                 if (PhaseName.Count == 0)
-                    PhaseName = new List<string>() { "'AN'","'BN'","'CN'" };
+                    PhaseName = new List<string>() { "'AN'", "'BN'", "'CN'" };
                 filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBAnalyticResult.PhaseID,0) IN  (SELECT ID FROM Phase WHERE Name IN ({String.Join(",", PhaseName)}))";
             }
 
@@ -1277,24 +1218,24 @@ namespace SEBrowser.Controllers
 
         private DataTable GettrendTable(string PhaseRestriction, string OtherRestriction, string CapBankRestriction, string NumRestriction, string timeRestriction)
         {
-            using (AdoDataConnection connection = new("systemSettings"))
-            {
-                List<string> restrictions = new();
+            using AdoDataConnection connection = new(Settings.Default);
 
-                if (!string.IsNullOrWhiteSpace(PhaseRestriction))
-                    restrictions.Add("(" + PhaseRestriction + ")");
-                if (!string.IsNullOrWhiteSpace(OtherRestriction))
-                    restrictions.Add("(" + OtherRestriction + ")");
-                if (!string.IsNullOrWhiteSpace(CapBankRestriction))
-                    restrictions.Add("(" + CapBankRestriction + ")");
-                if (!string.IsNullOrWhiteSpace(NumRestriction))
-                    restrictions.Add("(" + NumRestriction + ")");
-                if (!string.IsNullOrWhiteSpace(timeRestriction))
-                    restrictions.Add("(" + timeRestriction + ")");
+            List<string> restrictions = new();
 
-                bool hasRestriction = restrictions.Count > 0;
+            if (!string.IsNullOrWhiteSpace(PhaseRestriction))
+                restrictions.Add("(" + PhaseRestriction + ")");
+            if (!string.IsNullOrWhiteSpace(OtherRestriction))
+                restrictions.Add("(" + OtherRestriction + ")");
+            if (!string.IsNullOrWhiteSpace(CapBankRestriction))
+                restrictions.Add("(" + CapBankRestriction + ")");
+            if (!string.IsNullOrWhiteSpace(NumRestriction))
+                restrictions.Add("(" + NumRestriction + ")");
+            if (!string.IsNullOrWhiteSpace(timeRestriction))
+                restrictions.Add("(" + timeRestriction + ")");
 
-                string sqlQuery = $@"SELECT
+            bool hasRestriction = restrictions.Count > 0;
+
+            string sqlQuery = $@"SELECT
                         CBAnalyticResult.EventID AS EventID,
                         CBAnalyticResult.Time AS Time,
                         CBAnalyticResult.MVAsc AS Q,
@@ -1341,11 +1282,10 @@ namespace SEBrowser.Controllers
                         CBRestrikeResult ON CBRestrikeResult.CBResultID = CBAnalyticResult.ID LEFT JOIN
                         CBSwitchHealthAnalytic ON CBSwitchHealthAnalytic.CBResultID = CBAnalyticResult.ID LEFT JOIN
 						CBCapBankResult ON CBCapBankResult.CBResultID = CBAnalyticResult.ID
-                    {(hasRestriction? ("WHERE " + string.Join(" AND ",restrictions)) : "")} 
+                    {(hasRestriction ? ("WHERE " + string.Join(" AND ", restrictions)) : "")} 
                     ORDER BY CBAnalyticResult.Time";
 
-                return connection.RetrieveData(sqlQuery);
-            }
+            return connection.RetrieveData(sqlQuery);
         }
 
         private static bool ServerCertificateCustomValidation(HttpRequestMessage requestMessage, X509Certificate2 certificate, X509Chain chain, SslPolicyErrors sslErrors)

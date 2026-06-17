@@ -21,52 +21,51 @@
 //
 //******************************************************************************************************
 
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Identity;
-using GSF.Web.Model;
+using Gemstone.Data;
+using Gemstone.Data.Model;
+using Gemstone.Identity;
+using Gemstone.Web;
 using openXDA.Model;
 using SystemCenter.Model;
-using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Net;
-using System.Web.Http;
 using System.Linq;
 using SEBrowser.Model;
+using Microsoft.AspNetCore.Mvc;
+using Gemstone.Web.APIController;
 
 namespace SEBrowser.Controllers.OpenXDA
 {
-    [RoutePrefix("api/openXDA/AssetGroup")]
+    [Route("api/openXDA/AssetGroup")]
     public class OpenXDAAssetGroupController : ModelController<AssetGroupView> { }
 
     [RootQueryRestriction("ShowInFilter = 1")]
     [UseEscapedName, TableName("EventType")]
     public class SEbrowserEventType : EventType { }
-    [RoutePrefix("api/openXDA/EventType")]
+    [Route("api/openXDA/EventType")]
     public class EventTypeController : ModelController<SEbrowserEventType> { }
 
-    [RoutePrefix("api/openXDA/Asset")]
+    [Route("api/openXDA/Asset")]
     public class OpenXDAAssetController : DetailedAssetController<DetailedAsset> { }
 
-    [RoutePrefix("api/openXDA/Meter")]
+    [Route("api/openXDA/Meter")]
     public class OpenXDAMeterController : ModelController<DetailedMeter> { }
 
-    [RoutePrefix("api/openXDA/Location")]
+    [Route("api/openXDA/Location")]
     public class OpenXDALocationController : DetailedLocationController<DetailedLocation> { }
 
-    [RoutePrefix("api/openXDA/Widget")]
+    [Route("api/openXDA/Widget")]
     public class WidgetController : ModelController<WidgetView> { }
 
-    [RoutePrefix("api/OpenXDA/WidgetCategory")]
+    [Route("api/OpenXDA/WidgetCategory")]
     public class WidgetCategoryController : ModelController<WidgetCategory> { }
 
-    [RoutePrefix("api/openXDA/AdditionalField")]
+    [Route("api/openXDA/AdditionalField")]
     public class AdditionalFieldController : ModelController<AdditionalFieldView>
     {
 
         [HttpGet, Route("ParentTable/{openXDAParentTable}/{sort}/{ascending:int}")]
-        public IHttpActionResult GetAdditionalFieldsForTable(string openXDAParentTable, string sort, int ascending)
+        public IActionResult GetAdditionalFieldsForTable(string openXDAParentTable, string sort, int ascending)
         {
             if (GetRoles == string.Empty || User.IsInRole(GetRoles))
             {
@@ -79,16 +78,18 @@ namespace SEBrowser.Controllers.OpenXDA
                 if (sort != null && sort != string.Empty)
                     orderByExpression = $"{sort} {(ascending == 1 ? "ASC" : "DESC")}";
 
-                using (AdoDataConnection connection = new(Connection))
-                {
-                    IEnumerable<AdditionalField> records = new TableOperations<AdditionalField>(connection).QueryRecords(orderByExpression, new RecordRestriction("ParentTable = {0}", openXDAParentTable));
-                    if (!User.IsInRole("Administrator"))
-                    {
-                        records = records.Where(x => !x.IsSecure);
-                    }
+                using AdoDataConnection connection = CreateConnection();
 
-                    return Ok(records);
+                IEnumerable<AdditionalField> records = new TableOperations<AdditionalField>(connection).QueryRecords(orderByExpression, new RecordRestriction("ParentTable = {0}", openXDAParentTable));
+                
+                //not going to work anymore.
+                if (!User.IsInRole("Administrator"))
+                {
+                    records = records.Where(x => !x.IsSecure);
                 }
+
+                return Ok(records);
+
             }
             else
             {
@@ -98,16 +99,15 @@ namespace SEBrowser.Controllers.OpenXDA
 
     }
 
-    [RoutePrefix("api/ValueList")]
-    public class SEBrowserValueListController : ValueListController<ValueList> { }
+    [Route("api/ValueList")]
+    public class SEBrowserValueListController : ValueListController<ValueList>;
 
-    [RoutePrefix("api/openXDA/Phase")]
-    public class PhaseController : ModelController<Phase> { }
+    [Route("api/openXDA/Phase")]
+    public class PhaseController : ModelController<Phase>;
 
-    [RoutePrefix("api/openXDA/ChannelGroup")]
-    public class ChannelGroupController : ModelController<ChannelGroup> { }
+    [Route("api/openXDA/ChannelGroup")]
+    public class ChannelGroupController : ModelController<ChannelGroup>;
 
-    [RoutePrefix("api/openXDA/StandardMagDurCurve")]
-    public class StandardMagDurCurveController : ModelController<openXDA.Model.StandardMagDurCurve>
-    { }
+    [Route("api/openXDA/StandardMagDurCurve")]
+    public class StandardMagDurCurveController : ModelController<openXDA.Model.StandardMagDurCurve>;
 }

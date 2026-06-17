@@ -20,103 +20,86 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-using FaultData.DataAnalysis;
-using GSF;
-using GSF.Collections;
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Identity;
-using GSF.NumericalAnalysis;
-using GSF.Security;
-using GSF.Web;
-using GSF.Web.Model;
-using MathNet.Numerics.IntegralTransforms;
-using openXDA.Model;
+using Gemstone.Configuration;
+using Gemstone.Data;
+using Gemstone.EnumExtensions;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Globalization;
-using System.Linq;
-using System.Net;
-using System.Numerics;
 using System.Runtime.Caching;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web.Http;
 
-namespace PQDashboard.Controllers.BreakerReport
+namespace SEBrowser.Controllers.RelayReport;
+
+[Route("api/PQDashboard/RelayReport")]
+public class RelayReportController : ControllerBase
 {
-    [RoutePrefix("api/PQDashboard/RelayReport")]
-    public class RelayReportController : ApiController
+    #region [ Members ]
+
+    // Fields
+    private DateTime m_epoch = new(1970, 1, 1);
+
+    public class FlotSeries
     {
-        #region [ Members ]
+        public int ChannelID;
+        public string ChannelName;
+        public string ChannelDescription;
+        public string MeasurementType;
+        public string MeasurementCharacteristic;
+        public string Phase;
+        public string SeriesType;
+        public string ChartLabel;
+        public List<double[]> DataPoints = new();
+    }
+    public class JsonReturn
+    {
+        public DateTime StartDate;
+        public DateTime EndDate;
+        public double CalculationTime;
+        public double CalculationEnd;
+        public List<FlotSeries> Data;
+    }
 
-        // Fields
-        private DateTime m_epoch = new(1970, 1, 1);
+    enum TimeWindowUnits
+    {
+        Millisecond,
+        Second,
+        Minute,
+        Hour,
+        Day,
+        Week,
+        Month,
+        Year
+    }
 
-        public class FlotSeries
-        {
-            public int ChannelID;
-            public string ChannelName;
-            public string ChannelDescription;
-            public string MeasurementType;
-            public string MeasurementCharacteristic;
-            public string Phase;
-            public string SeriesType;
-            public string ChartLabel;
-            public List<double[]> DataPoints = new();
-        }
-        public class JsonReturn
-        {
-            public DateTime StartDate;
-            public DateTime EndDate;
-            public double CalculationTime;
-            public double CalculationEnd;
-            public List<FlotSeries> Data;
-        }
+    #endregion
 
-        enum TimeWindowUnits
-        {
-            Millisecond,
-            Second,
-            Minute,
-            Hour,
-            Day,
-            Week,
-            Month,
-            Year
-        }
+    #region [ Constructors ]
+    public RelayReportController() : base() { }
+    #endregion
 
-        #endregion
+    #region [ Static ]
+    private static MemoryCache s_memoryCache;
 
-        #region [ Constructors ]
-        public RelayReportController() : base() { }
-        #endregion
+    static RelayReportController()
+    {
+        s_memoryCache = new MemoryCache("RelayReport");
+    }
+    #endregion
 
-        #region [ Static ]
-        private static MemoryCache s_memoryCache;
+    #region [ Methods ]
 
-        static RelayReportController()
-        {
-            s_memoryCache = new MemoryCache("RelayReport");
-        }
-        #endregion
+    [Route("GetSubstationData"), HttpGet]
+    public DataTable GetSubstationData()
+    {
+        using AdoDataConnection connection = new(Settings.Default);
 
-        #region [ Methods ]
+        DataTable table = new();
 
-        [Route("GetSubstationData"), HttpGet]
-        public DataTable GetSubstationData()
-        {
-            using (AdoDataConnection connection = new("systemSettings"))
-            {
-                
-                
-                DataTable table = new();
+        using IDbCommand sc = connection.Connection.CreateCommand();
 
-                using (IDbCommand sc = connection.Connection.CreateCommand())
-                {
-                    sc.CommandText = @" 
+        sc.CommandText = @" 
                      SELECT ID AS LocationID,
                         LocationKey,
                         Name AS AssetName 
@@ -129,30 +112,24 @@ namespace PQDashboard.Controllers.BreakerReport
 		                    WHERE AssetType.Name = 'Breaker' AND AssetLocation.LocationID = Location.ID) > 0
                     ORDER BY LocationKey";
 
-                    sc.CommandType = CommandType.Text;
+        sc.CommandType = CommandType.Text;
 
-                    IDataReader rdr = sc.ExecuteReader();
-                    table.Load(rdr);
+        IDataReader rdr = sc.ExecuteReader();
+        table.Load(rdr);
 
-                    return table;
-                }
-            }
+        return table;
+    }
 
-        }
+    [Route("GetBreakerData"), HttpGet]
+    public DataTable GetBreakerData(int locationID)
+    {
+        using AdoDataConnection connection = new(Settings.Default);
 
-        [Route("GetBreakerData"), HttpGet]
-        public DataTable GetBreakerData()
-        {
-            Dictionary<string, string> query = Request.QueryParameters();
-            int locationID = int.Parse(query["locationID"]);
+        DataTable table = new();
 
-            using (AdoDataConnection connection = new("systemSettings"))
-            {
-                DataTable table = new();
+        using IDbCommand sc = connection.Connection.CreateCommand();
 
-                using (IDbCommand sc = connection.Connection.CreateCommand())
-                {
-                    sc.CommandText = @" SELECT
+        sc.CommandText = @" SELECT
                         Breaker.ID AS AssetId,
                         Breaker.AssetKey,
                         Breaker.AssetName
@@ -164,30 +141,24 @@ namespace PQDashboard.Controllers.BreakerReport
 							WHERE E.AssetID = Breaker.ID ) > 0
                     ORDER BY Breaker.AssetName";
 
-                    sc.CommandType = CommandType.Text;
+        sc.CommandType = CommandType.Text;
 
-                    IDataReader rdr = sc.ExecuteReader();
-                    table.Load(rdr);
+        IDataReader rdr = sc.ExecuteReader();
+        table.Load(rdr);
 
-                    return table;
-                }
-            }
+        return table;
+    }
 
-        }
+    [Route("GetCoilData"), HttpGet]
+    public DataTable GetCoilData(int lineID)
+    {
+        using AdoDataConnection connection = new(Settings.Default);
 
-        [Route("GetCoilData"), HttpGet]
-        public DataTable GetCoilData()
-        {
-            Dictionary<string, string> query = Request.QueryParameters();
-            int lineID = int.Parse(query["lineID"]);
+        DataTable table = new();
 
-            using (AdoDataConnection connection = new("systemSettings"))
-            {
-                DataTable table = new();
+        using IDbCommand sc = connection.Connection.CreateCommand();
 
-                using (IDbCommand sc = connection.Connection.CreateCommand())
-                {
-                    sc.CommandText = @" 
+        sc.CommandText = @" 
                    SELECT ID AS ChannelID,
                         Name
                     FROM Channel
@@ -197,62 +168,46 @@ namespace PQDashboard.Controllers.BreakerReport
 							WHERE RP.ChannelID = Channel.ID ) > 0
                     ORDER BY Name";
 
-                    sc.CommandType = CommandType.Text;
+        sc.CommandType = CommandType.Text;
 
-                    IDataReader rdr = sc.ExecuteReader();
-                    table.Load(rdr);
+        IDataReader rdr = sc.ExecuteReader();
+        table.Load(rdr);
 
-                    return table;
-                }
-            }
-
-        }
-
-        private DataTable RelayHistoryTable( DateTime dateTime, int windowSize, string timeWindowUnits, int relayID, int channelID = -1)
-        {
-            DataTable dataTable;
-
-            string timeRestriction = $"TripInitiate Between DATEADD({timeWindowUnits}, { (-1 * windowSize)}, '{dateTime}') AND DATEADD({ timeWindowUnits}, { (windowSize)},  '{dateTime}')";
-
-            using (AdoDataConnection connection = new("systemSettings"))
-            {
-                if (channelID > 0)
-                {
-                    dataTable = connection.RetrieveData($"SELECT * FROM BreakerHistory WHERE BreakerId = {{0}} AND TripCoilChannelID = {{1}} AND {timeRestriction}", relayID, channelID);
-                }
-                else
-                {
-                    dataTable = connection.RetrieveData($"SELECT * FROM BreakerHistory WHERE BreakerId = {{0}} AND {timeRestriction}", relayID);
-                }
-            }
-            return dataTable;
-        }
-
-        [Route("GetRelayPerformance"), HttpGet]
-        public DataTable GetRelayPerformance()
-        {
-            Dictionary<string, string> query = Request.QueryParameters();
-            int lineID;
-            int channelID;
-
-            DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
-            string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
-            int windowSize = int.Parse(query["windowSize"]);
-
-
-            try { channelID = int.Parse(query["channelID"]); }
-            catch { channelID = -1; }
-
-            try { lineID = int.Parse(query["lineID"]); }
-            catch { lineID = -1; }
-            
-            if (lineID <= 0) return new DataTable();
-            
-            return RelayHistoryTable(dateTime,windowSize,timeWindowUnits,lineID, channelID);
-            
-        }
-
-        #endregion
-
+        return table;
     }
+
+    private DataTable RelayHistoryTable(DateTime dateTime, int windowSize, string timeWindowUnits, int relayID, int channelID = -1)
+    {
+        DataTable dataTable;
+
+        string timeRestriction = $"TripInitiate Between DATEADD({timeWindowUnits}, {(-1 * windowSize)}, '{dateTime}') AND DATEADD({timeWindowUnits}, {(windowSize)},  '{dateTime}')";
+
+        using (AdoDataConnection connection = new(Settings.Default))
+        {
+            if (channelID > 0)
+            {
+                dataTable = connection.RetrieveData($"SELECT * FROM BreakerHistory WHERE BreakerId = {{0}} AND TripCoilChannelID = {{1}} AND {timeRestriction}", relayID, channelID);
+            }
+            else
+            {
+                dataTable = connection.RetrieveData($"SELECT * FROM BreakerHistory WHERE BreakerId = {{0}} AND {timeRestriction}", relayID);
+            }
+        }
+        return dataTable;
+    }
+
+    [Route("GetRelayPerformance"), HttpGet]
+    public DataTable GetRelayPerformance(int windowSize, int channelID, int lineID, string date, string time, int timeWindowUnits)
+    {
+        DateTime dateTime = DateTime.ParseExact(date + " " + time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+        string timeWindowUnitsString = ((TimeWindowUnits)timeWindowUnits).GetDescription();
+
+        if(channelID <= 0) channelID = -1;
+        if (lineID <= 0) return new DataTable();
+
+        return RelayHistoryTable(dateTime, windowSize, timeWindowUnitsString, lineID, channelID);
+    }
+
+    #endregion
+
 }

@@ -21,6 +21,11 @@
 //
 //******************************************************************************************************
 
+using Gemstone.Data;
+using Gemstone.Data.Model;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+using openXDA.APIAuthentication;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -28,18 +33,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.Http;
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Reflection;
-using Newtonsoft.Json.Linq;
-using openXDA.APIAuthentication;
-using SEBrowser.Model;
 
 namespace SEBrowser.Controllers.OpenXDA
 {
-    [RoutePrefix("api/OpenXDA")]
-    public class TrendChannelController : ApiController
+    [Route("api/OpenXDA")]
+    public class TrendChannelController : ControllerBase
     {
         class TrendChannelSeries : TrendChannel
         {
@@ -53,7 +51,7 @@ namespace SEBrowser.Controllers.OpenXDA
 
         #region [ Http Methods ]
         [Route("GetTrendSearchData"), HttpPost]
-        public IHttpActionResult GetTrendSearchData([FromBody] JObject postData)
+        public IActionResult GetTrendSearchData([FromBody] JObject postData)
         {
             using (AdoDataConnection connection = new(SettingsCategory))
             {

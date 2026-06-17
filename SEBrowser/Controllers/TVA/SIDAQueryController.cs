@@ -21,25 +21,22 @@
 //
 //******************************************************************************************************
 
-using GSF.Data;
-using System;
+using Gemstone.Configuration;
+using Gemstone.Data;
+using Microsoft.AspNetCore.Mvc;
 using System.Data;
-using System.Web.Http;
 
-namespace SEBrowser.Controllers
+namespace SEBrowser.Controllers.TVA;
+
+[Route("api/SIDA")]
+public class SIDAQueryController : ControllerBase
 {
-    [RoutePrefix("api/SIDA")]
-    public class SIDAQueryController : ApiController
+    [Route("{eventID:int}"), HttpGet]
+    public IActionResult Get(int eventID)
     {
-        const string SettingsCategory = "systemSettings";
+        using AdoDataConnection connection = new(Settings.Default);
 
-        [Route("{eventID:int}"), HttpGet]
-        public IHttpActionResult Get(int eventID) {
-            try
-            {
-                using(AdoDataConnection connection = new(SettingsCategory))
-                {
-                    DataTable table = connection.RetrieveData(@"
+        DataTable table = connection.RetrieveData(@"
                         DECLARE @startTime DATETIME2(7)
 	                    DECLARE @endTime DATETIME2(7)
 
@@ -54,13 +51,8 @@ namespace SEBrowser.Controllers
 	                    WHERE
 		                    EventTime BETWEEN @startTime AND @endTime
                     ", eventID);
-                    return Ok(table);
-                }
-            }
-            catch (Exception ex) {
-                return InternalServerError(ex);
-            }
-        }
+        return Ok(table);
 
     }
+
 }

@@ -21,57 +21,48 @@
 //
 //******************************************************************************************************
 
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Identity;
-using GSF.Web.Model;
+using Gemstone.Data.Model;
+using Microsoft.AspNetCore.Mvc;
 using openXDA.Model;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Net;
-using System.Web.Http;
 
-namespace SEBrowser.Controllers.OpenXDA
+namespace SEBrowser.Controllers.OpenXDA;
+
+[RootQueryRestriction("[NoteTypeID] = (SELECT TOP 1 ID FROM NoteType WHERE ReferenceTableName = 'Meter')")]
+public class MeterNote : Notes
 {
-    [RootQueryRestriction("[NoteTypeID] = (SELECT TOP 1 ID FROM NoteType WHERE ReferenceTableName = 'Meter')")]
-    public class MeterNote : Notes 
-    {
     [ParentKey(typeof(Meter))]
     public new int ReferenceTableID { get; set; }
-    }
-
-    [RootQueryRestriction("[NoteTypeID] = (SELECT TOP 1 ID FROM NoteType WHERE ReferenceTableName = 'Asset')")]
-    public class AssetNote : Notes
-    {
-        [ParentKey(typeof(Asset))]
-        public new int ReferenceTableID { get; set; }
-    }
-
-    [RootQueryRestriction("[NoteTypeID] = (SELECT TOP 1 ID FROM NoteType WHERE ReferenceTableName = 'Location')")]
-    public class LocationNote : Notes
-    {
-        [ParentKey(typeof(Location))]
-        public new int ReferenceTableID { get; set; }
-    }
-
-    [RootQueryRestriction("[NoteTypeID] = (SELECT TOP 1 ID FROM NoteType WHERE ReferenceTableName = 'Event')")]
-    public class EventNote : Notes
-    {
-        [ParentKey(typeof(Event))]
-        public new int ReferenceTableID { get; set; }
-    }
-
-    [RoutePrefix("api/OpenXDA/Note/Meter")]
-    public class OpenXDAMeterNoteController : NotesController<MeterNote> { }
-
-    [RoutePrefix("api/OpenXDA/Note/Asset")]
-    public class OpenXDAAssetNoteController : NotesController<AssetNote> { }
-
-    [RoutePrefix("api/OpenXDA/Note/Location")]
-    public class OpenXDALocationNoteController : NotesController<LocationNote> { }
-
-    [RoutePrefix("api/OpenXDA/Note/Event")]
-    public class OpenXDAEventNoteController : NotesController<EventNote> { }
-
 }
+
+[RootQueryRestriction("[NoteTypeID] = (SELECT TOP 1 ID FROM NoteType WHERE ReferenceTableName = 'Asset')")]
+public class AssetNote : Notes
+{
+    [ParentKey(typeof(Asset))]
+    public new int ReferenceTableID { get; set; }
+}
+
+[RootQueryRestriction("[NoteTypeID] = (SELECT TOP 1 ID FROM NoteType WHERE ReferenceTableName = 'Location')")]
+public class LocationNote : Notes
+{
+    [ParentKey(typeof(Location))]
+    public new int ReferenceTableID { get; set; }
+}
+
+[RootQueryRestriction("[NoteTypeID] = (SELECT TOP 1 ID FROM NoteType WHERE ReferenceTableName = 'Event')")]
+public class EventNote : Notes
+{
+    [ParentKey(typeof(Event))]
+    public new int ReferenceTableID { get; set; }
+}
+
+[Route("api/OpenXDA/Note/Meter")]
+public class OpenXDAMeterNoteController : NotesController<MeterNote> { }
+
+[Route("api/OpenXDA/Note/Asset")]
+public class OpenXDAAssetNoteController : NotesController<AssetNote> { }
+
+[Route("api/OpenXDA/Note/Location")]
+public class OpenXDALocationNoteController : NotesController<LocationNote> { }
+
+[Route("api/OpenXDA/Note/Event")]
+public class OpenXDAEventNoteController : NotesController<EventNote> { }
