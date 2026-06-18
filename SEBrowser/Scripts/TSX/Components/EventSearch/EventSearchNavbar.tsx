@@ -182,7 +182,7 @@ const EventSearchNavbar = (props: IProps) => {
 
         handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
             const ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
-                { label: `[AF${item.ExternalDBTableID != undefined ? " " + item.ExternalDBTableID : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedMeter>
+                { label: `[AF${item.ExternalDBTableID != undefined ? " " + item.ExternalDBTableID : ''}] ${item.FieldName}`, key: `AdditionalField.${item.FieldName}`, ...ConvertType(item.Type), isPivotField: false } as Search.IField<SystemCenter.Types.DetailedMeter>
             )), ['label'], ["asc"]);
             setFields(ordered)
         });
@@ -195,7 +195,7 @@ const EventSearchNavbar = (props: IProps) => {
     function getAdditionalAssetFields(setFields) {
         const handle = $.ajax({
             type: "GET",
-            url: `${homePath}api/SystemCenter/AdditionalField/ParentTable/Asset/FieldName/0`,
+            url: `${homePath}api/openXDA/AdditionalField/ParentTable/Asset/FieldName/0`,
             contentType: "application/json; charset=utf-8",
             cache: false,
             async: true
@@ -212,7 +212,7 @@ const EventSearchNavbar = (props: IProps) => {
         handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
 
             const ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
-                { label: `[AF${item.ExternalDBTableID != undefined ? " " + item.ExternalDBTableID : ''}] ${item.FieldName}`, key: item.FieldName, ...ConvertType(item.Type), isPivotField: true } as Search.IField<SystemCenter.Types.DetailedAsset>
+                { label: `[AF${item.ExternalDBTableID != undefined ? " " + item.ExternalDBTableID : ''}] ${item.FieldName}`, key: `AdditionalField.${item.FieldName}`, ...ConvertType(item.Type), isPivotField: false } as Search.IField<SystemCenter.Types.DetailedAsset>
             )), ['label'], ["asc"]);
             setFields(ordered);
         });
