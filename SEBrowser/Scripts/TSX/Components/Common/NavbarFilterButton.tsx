@@ -35,8 +35,8 @@ interface IProps<T extends S> {
 
 function NavbarFilterButton<T extends S>(props: IProps<T>) {
     const [hover, setHover] = React.useState<boolean>(false);
-    const [rows, setRows] = React.useState<JSX.Element[]>([]);
-    const [header, setHeader] = React.useState<JSX.Element>(null);
+    const [rows, setRows] = React.useState<React.ReactNode[]>([]);
+    const [header, setHeader] = React.useState<React.ReactNode>(null);
     const [buttonStyle, setButtonStyle] = React.useState<React.CSSProperties>({ marginBottom: 5 });
 
     React.useEffect(() => {
