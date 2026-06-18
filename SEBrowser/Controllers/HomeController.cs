@@ -1,4 +1,4 @@
-﻿//******************************************************************************************************
+//******************************************************************************************************
 //  HomeController.cs - Gbtc
 //
 //  Copyright © 2020, Grid Protection Alliance.  All Rights Reserved.
@@ -21,29 +21,14 @@
 //
 //******************************************************************************************************
 
-using SEBrowser.Model;
-using System.Web.Mvc;
-using GSF.Web.Security;
+using Microsoft.AspNetCore.Mvc;
 
-namespace SEBrowser.Controllers
+namespace SEBrowser.Controllers;
+
+/// <summary>
+/// Serves the single-page application shell.
+/// </summary>
+public class HomeController : Controller
 {
-    /// <summary>
-    /// Represents a MVC controller for the site's main pages.
-    /// </summary>
-    [AuthorizeControllerRole]
-    public class HomeController : Controller
-    {
-        public HomeController()
-        {
-            ViewData.Model = new AppModel();
-        }
-
-        public ActionResult Home()
-        {
-            if (User?.Identity?.IsAuthenticated ?? false)
-                return View("Index");
-
-            return RedirectToAction("Index", "Login");
-        }
-    }
+    public IActionResult Index() => View();
 }
