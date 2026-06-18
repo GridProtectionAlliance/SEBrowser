@@ -19,90 +19,181 @@
 //  02/19/2020 - Billy Ernest
 //       Generated original version of source code.
 //
+//  06/15/2026 - Preston Crawford
+//       Migrated to .Net 9.0
 //******************************************************************************************************
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using System.Web.Http;
-using System.Web.Http.Controllers;
-using System.Web.Http.Routing;
-using GSF.Diagnostics;
-using GSF.IO;
-using GSF.Web.Security;
-using Microsoft.Owin;
+using Gemstone.Configuration;
+using Gemstone.Diagnostics;
+using Gemstone.IO;
+using Gemstone.Security.AuthenticationProviders;
+using Gemstone.Web.Security;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json.Serialization;
 using openXDA.APIAuthentication;
-using Owin;
-using SEBrowser.Controllers;
-using static SEBrowser.Common;
-using AuthenticationOptions = GSF.Web.Security.AuthenticationOptions;
-using Resources = GSF.Web.Shared.Resources;
-
-// ReSharper disable MustUseReturnValue
-[assembly: OwinStartup(typeof(SEBrowser.Startup))]
+using SEBrowser.Controllers.OpenXDA;
+using SEBrowser.Security;
+using System;
+using System.IO;
 namespace SEBrowser;
 
 public class Startup
 {
-    public void Configuration(IAppBuilder app)
+    public Startup(IConfiguration configuration, IWebHostEnvironment env)
     {
-        // Enable GSF role-based security authentication
-        app.UseAuthentication(s_authenticationOptions);
+        SetupTempPath();
+        Configuration = configuration;
+        Env = env;
+    }
 
-        OwinLoaded = true;
+    public static class Policies
+    {
+        public const string Authenticated = nameof(Authenticated);
+        public const string ControllerAccess = nameof(ControllerAccess);
+    }
 
-        // Configure Web API for self-host. 
-        HttpConfiguration config = new();
+    public IWebHostEnvironment Env { get; set; }
+    public IConfiguration Configuration { get; }
 
-        // Enable GSF session management
-        config.EnableSessions(s_authenticationOptions);
+    public void ConfigureServices(IServiceCollection services)
+    {
+        IMvcBuilder builder = services
+            .AddControllersWithViews()
+            .AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                options.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
+                options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+            });
+
+        services.AddAntiforgery(options => options.HeaderName = "X-GEMSTONE-VERIFY");
+
+        // services.AddTransient<WindowsAuthenticationProviderOptions>(_ => new()
+        // {
+        //     LDAPPath = Settings.Default[WindowsAuthenticationProvider.SettingsSection].LDAPPath,
+        //     AllowLocalAccounts = (bool?)(Settings.Default[WindowsAuthenticationProvider.SettingsSection].AllowLocalAccounts) ?? false
+        // });
+
+        // AuthenticationBuilder authenticationBuilder = services.ConfigureGemstoneWebAuthentication<AuthenticationSetup>();
+
+        // dynamic oauthSection = Settings.Instance[OAuthAuthenticationProvider.SettingsSection];
+
+        // if (oauthSection.Enabled)
+        // {
+        //     OAuthAuthenticationProviderOptions oauthOptions = new()
+        //     {
+        //         UserIdClaim = oauthSection.UserIdClaim,
+        //         Authority = oauthSection.Authority,
+        //         ClientId = oauthSection.ClientId,
+        //         ClientSecret = oauthSection.ClientSecret,
+        //         Scopes = oauthSection.Scopes
+        //     };
+
+        //     authenticationBuilder.ConfigureOAuthProvider(oauthOptions);
+        // }
+
+        // services.AddTransient<IClaimsTransformation, OAuthClaimsTransformation>();
+
+        // services
+        //     .AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
+        //     .Configure(options =>
+        //     {
+        //         double ticketTimeout = Settings.Default.WebHosting.AuthenticationTicketTimeout;
+        //         options.ExpireTimeSpan = TimeSpan.FromHours(ticketTimeout);
+        //     });
+
+        // services
+        //     .AddOptions<SessionCacheOptions>()
+        //     .Configure(options =>
+        //     {
+        //         double sessionTimeout = Settings.Default.WebHosting.AuthenticationSessionTimeout;
+        //         options.SlidingExpiration = TimeSpan.FromMinutes(sessionTimeout);
+        //     });
+
+        // services.AddAuthorization(options =>
+        // {
+        //     AuthorizationPolicy controllerAccessPolicy = new AuthorizationPolicyBuilder()
+        //         .RequireControllerAccess()
+        //         .RequireAuthenticatedUser()
+        //         .Build();
+
+        //     options.AddPolicy(Policies.Authenticated, policy => policy.RequireAuthenticatedUser());
+        //     options.AddPolicy(Policies.ControllerAccess, controllerAccessPolicy);
+        //     options.DefaultPolicy = controllerAccessPolicy;
+        //     options.FallbackPolicy = controllerAccessPolicy;
+        // });
+
+        // services.AddSingleton<IAuthorizationHandler, ControllerAccessHandler>();
+
+        services.AddMvc();
+    }
+
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
 
         // Supply Settings into XDAAPIHelper static class
         if (!XDAAPIHelper.IsIntialized)
             XDAAPIHelper.InitializeHelper(new XDAAPICredentialRetriever());
 
-        // Set configuration to use reflection to setup routes
-        config.MapHttpAttributeRoutes(new CustomDirectRouteProvider());
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseExceptionHandler("/Error");
+            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            app.UseHsts();
+        }
 
-        app.UseWebApi(config);
+        app.UseForwardedHeaders(new ForwardedHeadersOptions()
+        {
+            ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost
+        });
+
+        // app.UseGemstoneAuthentication();
+
+        app.UseStaticFiles(Gemstone.Web.WebExtensions.StaticFileEmbeddedResources());
+        app.UseStaticFiles();
+
+        app.UseRouting();
+
+        // app.UseAuthorization();
+
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapRazorPages();
+
+            endpoints.MapControllerRoute(
+            name: "default",
+            pattern: "{controller}/{newaction?}/{id?}",
+            defaults: new
+            {
+                controller = "Home",
+                action = "Index"
+            });
+
+            endpoints.MapControllers();
+
+            // Serve the SPA shell for any unmatched (non-API, non-file) route so client-side deep links work.
+            endpoints.MapFallbackToController("Index", "Home");
+        });
+
     }
 
-    public class CustomDirectRouteProvider : DefaultDirectRouteProvider
+    /*public class CustomDirectRouteProvider : DefaultDirectRouteProvider
     {
         protected override IReadOnlyList<IDirectRouteFactory> GetActionRouteFactories(HttpActionDescriptor actionDescriptor) => 
             actionDescriptor.GetCustomAttributes<IDirectRouteFactory>(inherit: true);
-    }
-
-    private static readonly AuthenticationOptions s_authenticationOptions;
-
-    static Startup()
-    {
-        SetupTempPath();
-
-        s_authenticationOptions = new AuthenticationOptions
-        {
-            LoginPage = "~/Login",
-            LogoutPage = "~/Security/logout",
-            LoginHeader = $"<h3><img src=\"{Resources.Root}/Shared/Images/gpa-smalllock.png\"/> {ApplicationName}</h3>",
-            AuthTestPage = "~/AuthTest",
-            AnonymousResourceExpression = AnonymousResourceExpression,
-            AuthFailureRedirectResourceExpression = @"^/$|^/.+$"
-        };
-
-        AuthenticationOptions = CreateInstance<ReadonlyAuthenticationOptions>(s_authenticationOptions);
-    }
-
-    public static bool OwinLoaded { get; private set; }
-
-    public static ReadonlyAuthenticationOptions AuthenticationOptions { get; }
-
-    private static T CreateInstance<T>(params object[] args)
-    {
-        Type type = typeof(T);
-        object instance = type.Assembly.CreateInstance(type.FullName!, false, BindingFlags.Instance | BindingFlags.NonPublic, null, args, null, null);
-        return (T)instance;
-    }
+    }*/
 
     private static void SetupTempPath()
     {
