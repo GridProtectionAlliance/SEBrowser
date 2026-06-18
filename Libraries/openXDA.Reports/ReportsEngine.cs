@@ -41,9 +41,11 @@ using openXDA.Model;
 
 namespace openXDA.Reports
 {
-    public class ReportsEngine
+    public class ReportsEngine : IDisposable
     {
         #region [ Members ]
+        private bool m_disposed;
+
         #endregion
 
         #region [ Constructors ]
@@ -147,6 +149,19 @@ namespace openXDA.Reports
                     Running = false;
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            if (m_disposed)
+                return;
+
+            Scheduler.Starting -= Scheduler_Starting;
+            Scheduler.Started -= Scheduler_Started;
+            Scheduler.ScheduleDue -= Scheduler_ScheduleDue;
+            Scheduler.Dispose();
+
+            m_disposed = true;
         }
 
         public void ReloadSystemSettings(string connectionString)
