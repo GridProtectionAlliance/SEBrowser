@@ -109,5 +109,25 @@ namespace SEBrowser.Controllers.OpenXDA
     public class ChannelGroupController : ModelController<ChannelGroup>;
 
     [Route("api/openXDA/StandardMagDurCurve")]
-    public class StandardMagDurCurveController : ModelController<openXDA.Model.StandardMagDurCurve>;
+    public class StandardMagDurCurveController : ControllerBase
+    {
+        [HttpGet, Route("{sort}/{ascending:int}")]
+        public IActionResult GetStandardMagDurCurves(string sort, int ascending)
+        {
+            string[] allowedSortColumns = { "ID", "Name", "Color", "Area" };
+            string orderByExpression = $"{(allowedSortColumns.Contains(sort) ? sort : "Name")} {(ascending == 1 ? "ASC" : "DESC")}";
+
+            using AdoDataConnection connection = new(Gemstone.Configuration.Settings.Default);
+
+            // Converts the spatial Area (geometry) column into the "x y, x y, ..." coordinate string the frontend expects.
+            DataTable curves = connection.RetrieveData($@"
+                SELECT
+                    ID, Name, Color,
+                    REPLACE(REPLACE(RIGHT(Area.STAsText(), len(Area.STAsText()) - charindex('(', Area.STAsText())),')',''),'(','') AS Area
+                FROM StandardMagDurCurve
+                ORDER BY {orderByExpression}");
+
+            return Ok(curves);
+        }
+    }
 }
