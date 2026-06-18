@@ -20,13 +20,13 @@
 //       Generated original version of source code.
 //
 //*******************************************************************************************************@
-@using GSF.Data
-@using GSF.Web.Shared
+@using Gemstone.Data
+@using Gemstone.Configuration;
 @{
     Layout = "";
 
     try {
-        using (AdoDataConnection connection = new AdoDataConnection("systemSettings"))
+        using (AdoDataConnection connection = new AdoDataConnection(Settings.Default))
         {
             ViewBag.xdaInstance = connection.ExecuteScalar<string>("SELECT Value FROM [SEBrowser.Setting] WHERE Name = 'XDAInstance'");
             ViewBag.scInstance = connection.ExecuteScalar<string>("SELECT Value FROM [SEBrowser.Setting] WHERE Name = 'SCInstance'");
@@ -46,7 +46,7 @@
         ViewBag.settingsException = ex;
     }
 
-    Version assemblyVersionInfo = typeof(SEBrowser.MvcApplication).Assembly.GetName().Version;
+    Version assemblyVersionInfo = typeof(SEBrowser.Program).Assembly.GetName().Version;
     string applicationVersion = assemblyVersionInfo.Major + "." + assemblyVersionInfo.Minor + "." + assemblyVersionInfo.Build;
 }
 <!DOCTYPE html>
@@ -116,13 +116,8 @@
         var faultLocationInstance = '@Html.Raw(ViewBag.faultLocationInstance)';
         var version = '@applicationVersion';
         var homePath = '@Html.Raw(Url.Content("~/"))';
-        var controllerViewPath = homePath + '@Html.Raw(this.ViewContext.RouteData.GetRequiredString("controller"))/@Html.Raw(this.ViewContext.RouteData.GetRequiredString("action"))';
+        var controllerViewPath = homePath + '@Html.Raw(ViewContext.RouteData.Values["controller"])/@Html.Raw(ViewContext.RouteData.Values["action"])';
     </script>
-
-    @if (Request.Browser.Browser == "InternetExplorer" || Request.Browser.Browser == "IE")
-    {
-        <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/default.polyfill.min.js")"></script>
-    }
 
     <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/jquery.js")"></script>
     <script src="@Url.Content("~/@GSF/Web/Shared/Scripts/jquery-ui.js")"></script>
