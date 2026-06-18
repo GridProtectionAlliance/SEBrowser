@@ -1,23 +1,19 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Http;
 
-namespace SEBrowser.Controllers
+namespace SEBrowser.Controllers;
+
+public class SecurityRoleController : ControllerBase
 {
-    [RoutePrefix("api/SEBrowser/SecurityRoles")]
-    public class SecurityRoleController : ApiController
+    [Route("api/SEBrowser/SecurityRoles"), HttpGet]
+    public IActionResult GetRoles()
     {
-        [Route(), HttpGet]
-        public IHttpActionResult GetRoles()
-        {
-            List<string> roles = new List<string>();
+        List<string> roles = new List<string>();
 
-            if (User.IsInRole("Engineer")) roles.Add("Engineer");
-            if (User.IsInRole("Viewer")) roles.Add("Viewer");
+        //this wont work anymore
+        if (User.IsInRole("Engineer")) roles.Add("Engineer");
+        if (User.IsInRole("Viewer")) roles.Add("Viewer");
 
-            return Ok(roles);
-        }
+        return Ok(roles);
     }
 }
