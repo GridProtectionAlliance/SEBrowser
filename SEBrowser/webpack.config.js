@@ -15,7 +15,7 @@ module.exports = env => {
 
         },
         output: {
-            path: path.resolve(__dirname, 'Scripts'),
+            path: path.resolve(__dirname, 'wwwroot', 'Scripts'),
             publicPath: 'Scripts/',
             filename: "[name].js"
         },

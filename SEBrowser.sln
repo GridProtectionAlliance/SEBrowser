@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.4.33213.308
+# Visual Studio Version 18
+VisualStudioVersion = 18.6.11819.183 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SEBrowser", "SEBrowser\SEBrowser.csproj", "{845F68F7-4094-4FE6-95E3-1B113BBFAD3F}"
 EndProject
@@ -22,6 +22,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openXDA.PQI", "Libraries\openXDA.PQI\openXDA.PQI.csproj", "{3DEC81F1-9A02-4BBF-8325-F332AC63393E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openXDA.Reports", "Libraries\openXDA.Reports\openXDA.Reports.csproj", "{656F97D9-4FB6-4F65-A9A6-1A1DDE3AF634}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gemstone.Common", "..\snapDB\Gemstone\common\src\Gemstone\Gemstone.Common.csproj", "{B2ECA036-6093-BF28-A5BB-A02F472F4CD4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gemstone.Web", "..\snapDB\Gemstone\web\src\Gemstone.Web\Gemstone.Web.csproj", "{7E067330-F8CA-4D3E-3794-B6DB741E5EFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gemstone.Security", "..\snapDB\Gemstone\security\src\Gemstone.Security\Gemstone.Security.csproj", "{037AD873-653E-268B-37A1-4854B8AE80B3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +71,18 @@ Global
 		{656F97D9-4FB6-4F65-A9A6-1A1DDE3AF634}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{656F97D9-4FB6-4F65-A9A6-1A1DDE3AF634}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{656F97D9-4FB6-4F65-A9A6-1A1DDE3AF634}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2ECA036-6093-BF28-A5BB-A02F472F4CD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2ECA036-6093-BF28-A5BB-A02F472F4CD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2ECA036-6093-BF28-A5BB-A02F472F4CD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2ECA036-6093-BF28-A5BB-A02F472F4CD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E067330-F8CA-4D3E-3794-B6DB741E5EFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E067330-F8CA-4D3E-3794-B6DB741E5EFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E067330-F8CA-4D3E-3794-B6DB741E5EFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E067330-F8CA-4D3E-3794-B6DB741E5EFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{037AD873-653E-268B-37A1-4854B8AE80B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{037AD873-653E-268B-37A1-4854B8AE80B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{037AD873-653E-268B-37A1-4854B8AE80B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{037AD873-653E-268B-37A1-4854B8AE80B3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -78,6 +96,9 @@ Global
 		{83D8122C-2BCC-4813-B449-224D9F7E5AEE} = {F2E35B3E-9711-EDEC-6202-DB40BDEED14A}
 		{3DEC81F1-9A02-4BBF-8325-F332AC63393E} = {F2E35B3E-9711-EDEC-6202-DB40BDEED14A}
 		{656F97D9-4FB6-4F65-A9A6-1A1DDE3AF634} = {F2E35B3E-9711-EDEC-6202-DB40BDEED14A}
+		{B2ECA036-6093-BF28-A5BB-A02F472F4CD4} = {F2E35B3E-9711-EDEC-6202-DB40BDEED14A}
+		{7E067330-F8CA-4D3E-3794-B6DB741E5EFD} = {F2E35B3E-9711-EDEC-6202-DB40BDEED14A}
+		{037AD873-653E-268B-37A1-4854B8AE80B3} = {F2E35B3E-9711-EDEC-6202-DB40BDEED14A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E81769A-8E91-4DE2-AD77-438C680437A5}
