@@ -186,7 +186,7 @@ namespace PQDashboard.Controllers.CapBankReport
         [Route("GetEventTable"), HttpGet]
         public DataTable GetEventTable()
         {
-            Dictionary<string, string> query = Request.QueryParameters();
+            Dictionary<string, string> query = Request.Query.ToDictionary(item => item.Key, item => item.Value.ToString());
             int capBankId = int.Parse(query["capBankId"]);
             DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
             string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
@@ -264,7 +264,7 @@ namespace PQDashboard.Controllers.CapBankReport
         [Route("GetTrend"), HttpGet]
         public TrendingResponse GetTrendData()
         {
-            Dictionary<string, string> query = Request.QueryParameters();
+            Dictionary<string, string> query = Request.Query.ToDictionary(item => item.Key, item => item.Value.ToString());
             int capBankId = int.Parse(query["capBankId"]);
             DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
             string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();

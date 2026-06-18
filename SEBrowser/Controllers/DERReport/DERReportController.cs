@@ -25,6 +25,7 @@ using FaultData.DataAnalysis;
 using Gemstone.Configuration;
 using Gemstone.Data;
 using Gemstone.Data.Model;
+using Gemstone.EnumExtensions;
 using Microsoft.AspNetCore.Mvc;
 using openXDA.Model;
 using System;
@@ -260,7 +261,7 @@ namespace SEBrowser.Controllers.DERReport
             {
                 result = new TableOperations<DERAnalyticResult>(connection).QueryRecordWhere("ID = {0}", id);
             }
-            ;
+            
 
             if (result.EventID != null)
                 return GetWaveformData(result);
@@ -593,7 +594,7 @@ namespace SEBrowser.Controllers.DERReport
         [Route("GetTrend"), HttpGet]
         public TrendingResponse GetTrendData()
         {
-            Dictionary<string, string> query = Request.QueryParameters();
+            Dictionary<string, string> query = Request.Query.ToDictionary(item => item.Key, item => item.Value.ToString());
             int capBankId = int.Parse(query["capBankId"]);
             DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
             string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
