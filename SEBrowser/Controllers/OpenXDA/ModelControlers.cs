@@ -37,70 +37,61 @@ using Gemstone.Web.APIController;
 namespace SEBrowser.Controllers.OpenXDA
 {
     [Route("api/openXDA/AssetGroup")]
-    public class OpenXDAAssetGroupController : ModelController<AssetGroupView> { }
+    public class OpenXDAAssetGroupController : ModelController<AssetGroupView>;
 
     [RootQueryRestriction("ShowInFilter = 1")]
     [UseEscapedName, TableName("EventType")]
-    public class SEbrowserEventType : EventType { }
+    public class SEbrowserEventType : EventType;
+
     [Route("api/openXDA/EventType")]
-    public class EventTypeController : ModelController<SEbrowserEventType> { }
+    public class EventTypeController : ModelController<SEbrowserEventType>;
 
     [Route("api/openXDA/Asset")]
-    public class OpenXDAAssetController : DetailedAssetController<DetailedAsset> { }
+    public class OpenXDAAssetController : ReadOnlyModelController<DetailedAsset>;
 
     [Route("api/openXDA/Meter")]
-    public class OpenXDAMeterController : ModelController<DetailedMeter> { }
+    public class OpenXDAMeterController : ReadOnlyModelController<DetailedMeter>;
 
     [Route("api/openXDA/Location")]
-    public class OpenXDALocationController : DetailedLocationController<DetailedLocation> { }
+    public class OpenXDALocationController : ReadOnlyModelController<DetailedLocation>;
 
     [Route("api/openXDA/Widget")]
-    public class WidgetController : ModelController<WidgetView> { }
+    public class WidgetController : ModelController<WidgetView>;
 
     [Route("api/OpenXDA/WidgetCategory")]
-    public class WidgetCategoryController : ModelController<WidgetCategory> { }
+    public class WidgetCategoryController : ModelController<WidgetCategory>;
 
     [Route("api/openXDA/AdditionalField")]
-    public class AdditionalFieldController : ModelController<AdditionalFieldView>
+    public class AdditionalFieldController : ControllerBase
     {
-
         [HttpGet, Route("ParentTable/{openXDAParentTable}/{sort}/{ascending:int}")]
         public IActionResult GetAdditionalFieldsForTable(string openXDAParentTable, string sort, int ascending)
         {
-            if (GetRoles == string.Empty || User.IsInRole(GetRoles))
-            {
-                //Fix added Fro Capacitor Bank due to naming Missmatch
-                if (openXDAParentTable == "CapacitorBank")
-                    openXDAParentTable = "CapBank";
+            //Fix added for Capacitor Bank due to naming mismatch
+            if (openXDAParentTable == "CapacitorBank")
+                openXDAParentTable = "CapBank";
 
-                string orderByExpression = DefaultSort;
+            string orderByExpression = $"{sort} {(ascending == 1 ? "ASC" : "DESC")}";
 
-                if (sort != null && sort != string.Empty)
-                    orderByExpression = $"{sort} {(ascending == 1 ? "ASC" : "DESC")}";
+            // Asset additional fields are stored under the individual asset-type tables, not a single "Asset" table.
+            RecordRestriction restriction = openXDAParentTable == "Asset"
+                ? new RecordRestriction("ParentTable IN ('Line', 'Transformer', 'Breaker', 'CapBank', 'Bus', 'Generation', 'StationAux', 'StationBattery')")
+                : new RecordRestriction("ParentTable = {0}", openXDAParentTable);
 
-                using AdoDataConnection connection = CreateConnection();
+            using AdoDataConnection connection = new(Gemstone.Configuration.Settings.Default);
 
-                IEnumerable<AdditionalField> records = new TableOperations<AdditionalField>(connection).QueryRecords(orderByExpression, new RecordRestriction("ParentTable = {0}", openXDAParentTable));
-                
-                //not going to work anymore.
-                if (!User.IsInRole("Administrator"))
-                {
-                    records = records.Where(x => !x.IsSecure);
-                }
+            IEnumerable<AdditionalField> records = new TableOperations<AdditionalField>(connection)
+                .QueryRecords(orderByExpression, restriction);
 
-                return Ok(records);
+            if (!User.IsInRole("Administrator"))
+                records = records.Where(x => !x.IsSecure);
 
-            }
-            else
-            {
-                return Unauthorized();
-            }
+            return Ok(records);
         }
-
     }
 
     [Route("api/ValueList")]
-    public class SEBrowserValueListController : ValueListController<ValueList>;
+    public class SEBrowserValueListController : ValueListController;
 
     [Route("api/openXDA/Phase")]
     public class PhaseController : ModelController<Phase>;
