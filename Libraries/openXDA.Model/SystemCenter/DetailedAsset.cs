@@ -1,4 +1,4 @@
-﻿//******************************************************************************************************
+//******************************************************************************************************
 //  DetailedAsset.cs - Gbtc
 //
 //  Copyright © 2021, Grid Protection Alliance.  All Rights Reserved.
@@ -21,49 +21,12 @@
 //
 //******************************************************************************************************
 
+using Gemstone.Configuration;
+using Gemstone.Data;
 using Gemstone.Data.Model;
-using System.Data;
-using Gemstone.Web;
-using Gemstone.Web.APIController;
 
 namespace SystemCenter.Model
 {
-     [TableName("Asset"), 
-     CustomView(@"
-    SELECT
-        DISTINCT
-            Asset.ID,
-            Asset.AssetKey,
-            Asset.AssetName,
-            Asset.VoltageKV,
-            AssetType.Name as AssetType,
-            COUNT(DISTINCT Meter.ID) as Meters,
-            COUNT(DISTINCT Location.ID) as Locations
-    FROM 
-        Asset Join
-        AssetType ON Asset.AssetTypeID = AssetType.ID LEFT JOIN
-        MeterAsset ON MeterAsset.AssetID = Asset.ID LEFT JOIN
-        Meter ON MeterAsset.MeterID = Meter.ID LEFT JOIN
-        AssetLocation ON AssetLocation.AssetID = Asset.ID LEFT JOIN
-        Location ON AssetLocation.LocationID = Location.ID
-    GROUP BY
-        Asset.ID,
-        Asset.AssetKey,
-        Asset.AssetName,
-        Asset.VoltageKV,
-        AssetType.Name
-    "), /*AllowSearch*/]
-    [AdditionalFieldSearch("ParentTable = 'Line' OR  ParentTable = 'Transformer' OR  ParentTable = 'Breaker'  OR  ParentTable = 'CapBank'  OR  ParentTable = 'Bus' OR  ParentTable = 'Generation' OR  ParentTable = 'StationAux' OR  ParentTable = 'StationBattery'", @"
-    (SELECT
-	    AdditionalFieldValue.ID,
-	    AdditionalField.FieldName,
-	    AdditionalFieldValue.Value,
-        AdditionalFieldValue.ParentTableID, 
-        AdditionalField.ParentTable
-    FROM
-	    AdditionalField JOIN
-	    AdditionalFieldValue ON AdditionalField.ID = AdditionalFieldValue.AdditionalFieldID)
-    ", "ParentTableID", "Value", "FieldName")]
     public class DetailedAsset
     {
         [PrimaryKey(true)]
@@ -73,54 +36,48 @@ namespace SystemCenter.Model
         public string AssetKey { get; set; }
         public string AssetName { get; set; }
         public double VoltageKV { get; set; }
-        public string AssetType { get; set; } 
+        public string AssetType { get; set; }
         public int Meters { get; set; }
-        public int Locations { get; set; } 
-    }
+        public int Locations { get; set; }
 
-    public class DetailedAssetController<T> : ModelController<T> where T : DetailedAsset, new()
-    {
-        protected override DataTable GetSearchResults(PostData postData, int? page)
+        // The frontend prefixes any user-defined Additional Field filter with "AdditionalField.", so this matches that prefix, strips
+        // it back to the real field name, and resolves the value through the AdditionalFieldSearch view.
+        [SearchExtension(@"^AdditionalField\.")]
+        public static RecordRestriction GetAdditionalFieldRestriction(IRecordFilter filter)
         {
-            List<SQLSearchFilter> searches = postData.Searches.ToList();
-            searches = searches.Select((s) =>
-            {
-                if (s.FieldName == "Meter")
-                    return new SQLSearchFilter()
-                    {
-                        Type = "query",
-                        Operator = ">",
-                        IsPivotColumn = false,
-                        SearchText = "0",
-                        FieldName = $"(SELECT Count(*) FROM Meter LEFT JOIN MeterAsset ON Meter.ID = MeterAsset.MeterID WHERE Meter.AssetKey {Transform(s)} AND MeterAsset.AssetID = FullTbl.ID)",
-                    };
-                if (s.FieldName == "Location")
-                    return new SQLSearchFilter()
-                    {
-                        Type = "query",
-                        Operator = ">",
-                        IsPivotColumn = false,
-                        SearchText = "0",
-                        FieldName = $"(SELECT Count(*) FROM Location LEFT JOIN AssetLocation ON AssetLocation.LocationID = Location.ID WHERE Location.LocationKey {Transform(s)} AND AssetLocation.AssetID = FullTbl.ID)",
-                    };
-                return s;
+            string fieldName = filter.FieldName["AdditionalField.".Length..];
 
-            }).ToList();
-            postData.Searches = searches;
+            TableOperations<DetailedAsset> tableOps = new(new AdoDataConnection(Settings.Default));
+            if (RecordFilter<DetailedAsset>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
+                filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
 
-            return base.GetSearchResults(postData, page);
+            return new RecordRestriction(
+                $"ID IN (SELECT ParentTableID FROM AdditionalFieldSearch WHERE ParentTable IN ('Line', 'Transformer', 'Breaker', 'CapBank', 'Bus', 'Generation', 'StationAux', 'StationBattery') AND FieldName = {{0}} AND Value {filter.Operator} {{1}})",
+                fieldName, filter.SearchParameter);
         }
 
-        private string Transform(SQLSearchFilter search)
+        [SearchExtension("^Meter$")]
+        public static RecordRestriction GetMeterRestriction(IRecordFilter filter)
         {
-            if (search.SearchText == string.Empty) search.SearchText = "%";
-            else search.SearchText = search.SearchText.Replace("*", "%");
-            search.SearchText = $"'{search.SearchText}'";
+            TableOperations<DetailedAsset> tableOps = new(new AdoDataConnection(Settings.Default));
+            if (RecordFilter<DetailedAsset>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
+                filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
 
-            string escape = "ESCAPE '$'";
-            if (search.Operator != "LIKE")
-                escape = "";
-            return $"{search.Operator} {search.SearchText} {escape}";
+            return new RecordRestriction(
+                $"ID IN (SELECT MeterAsset.AssetID FROM Meter JOIN MeterAsset ON Meter.ID = MeterAsset.MeterID WHERE Meter.AssetKey {filter.Operator} {{0}})",
+                filter.SearchParameter);
+        }
+
+        [SearchExtension("^Location$")]
+        public static RecordRestriction GetLocationRestriction(IRecordFilter filter)
+        {
+            TableOperations<DetailedAsset> tableOps = new(new AdoDataConnection(Settings.Default));
+            if (RecordFilter<DetailedAsset>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
+                filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
+
+            return new RecordRestriction(
+                $"ID IN (SELECT AssetLocation.AssetID FROM Location JOIN AssetLocation ON AssetLocation.LocationID = Location.ID WHERE Location.LocationKey {filter.Operator} {{0}})",
+                filter.SearchParameter);
         }
     }
 }

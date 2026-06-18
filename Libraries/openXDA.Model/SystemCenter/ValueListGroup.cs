@@ -21,22 +21,16 @@
 //
 //******************************************************************************************************
 
-using GSF.ComponentModel.DataAnnotations;
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Web.Model;
-using System;
-using System.Collections.Generic;
+using Gemstone.ComponentModel.DataAnnotations;
+using Gemstone.Data;
+using Gemstone.Data.Model;
+using Gemstone.Web.APIController;
+using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.Web.Http;
 
 namespace SystemCenter.Model
 {
-
-    [PostRoles("Administrator, Transmission SME")]
-    [PatchRoles("Administrator, Transmission SME")]
-    [GetRoles("Administrator, Transmission SME")]
-    [TableName("ValueListGroup"), UseEscapedName, PrimaryLabel("Name"), AllowSearch]
+    [TableName("ValueListGroup"), UseEscapedName, PrimaryLabel("Name")]
     public class ValueListGroup
     {
         [PrimaryKey(true)]
@@ -156,21 +150,16 @@ namespace SystemCenter.Model
         };
     }
 
-    public class ValueListGroupController<T> : ModelController<T, ValueListGroup> 
-        where T : ValueListGroup, new()
+    [Route("api/ValueListGroup")]
+    public class ValueListGroupController : ModelController<ValueListGroup>
     {
-        public override IHttpActionResult Patch([FromBody] ValueListGroup newRecord)
+        public override Task<IActionResult> Patch([FromBody] ValueListGroup newRecord, CancellationToken cancellationToken)
         {
-            if (!PatchAuthCheck())
-            {
-                return Unauthorized();
-            }
-
             // Check if Value changed
             bool changeVal = false;
             ValueListGroup oldRecord;
 
-            using (AdoDataConnection connection = new AdoDataConnection(Connection))
+            using (AdoDataConnection connection = CreateConnection())
             {
                 oldRecord = new TableOperations<ValueListGroup>(connection).QueryRecordWhere("ID = {0}", newRecord.ID);
                 changeVal = !(newRecord.Name == oldRecord.Name);
@@ -178,33 +167,30 @@ namespace SystemCenter.Model
 
             if (changeVal)
             {
-                using (AdoDataConnection connection = new AdoDataConnection(Connection))
-                {
-                    // Wrapping is needed here, since C# tries to use the wrong method signature otherwise
-                    object[] parameters = new object[] { newRecord.Name, oldRecord.Name };
-                    // Update Additional Fields
-                    connection.ExecuteScalar(@"UPDATE 
+                using AdoDataConnection connection = CreateConnection();
+
+                // Wrapping is needed here, since C# tries to use the wrong method signature otherwise
+                object[] parameters = { newRecord.Name, oldRecord.Name };
+
+                // Update Additional Fields
+                connection.ExecuteScalar(@"UPDATE 
                         AdditionalField
                         SET [Type] = {0} 
                         WHERE
                         [Type] = {1}", parameters);
-                }
-            }
-            return base.Patch(newRecord);
 
+            }
+
+            return base.Patch(newRecord, cancellationToken);
         }
 
-        public override IHttpActionResult Delete(ValueListGroup record)
+        public override Task<IActionResult> Delete(ValueListGroup record, CancellationToken cancellationToken)
         {
-            if (!DeleteAuthCheck())
-            {
-                return Unauthorized();
-            }
-
-            using (AdoDataConnection connection = new AdoDataConnection(Connection))
+            using (AdoDataConnection connection = CreateConnection())
             {
                 // Wrapping is needed here, since C# tries to use the wrong method signature otherwise
-                object[] parameters = new object[] { record.Name };
+                object[] parameters = { record.Name };
+
                 // Update Additional Fields
                 connection.ExecuteScalar(@"UPDATE 
                     AdditionalField
@@ -212,7 +198,8 @@ namespace SystemCenter.Model
                     WHERE
                     [Type] = {0}", parameters);
             }
-            return base.Delete(record);
+
+            return base.Delete(record, cancellationToken);
         }
     }
 }

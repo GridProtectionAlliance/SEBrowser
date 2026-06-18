@@ -1,4 +1,4 @@
-﻿//******************************************************************************************************
+//******************************************************************************************************
 //  DetailedMeter.cs - Gbtc
 //
 //  Copyright © 2019, Grid Protection Alliance.  All Rights Reserved.
@@ -21,46 +21,12 @@
 //
 //******************************************************************************************************
 
-using GSF.Data.Model;
+using Gemstone.Configuration;
+using Gemstone.Data;
+using Gemstone.Data.Model;
 
 namespace SystemCenter.Model
 {
-     [TableName("Meter"), 
-     CustomView(@"
-    SELECT
-        DISTINCT
-        Meter.ID,
-        Meter.AssetKey,
-        Meter.Name,
-        Meter.Make,
-        Meter.Model,
-        Location.Name as Location,
-        COUNT(DISTINCT MeterAsset.AssetID)  as MappedAssets
-    FROM 
-        Meter LEFT JOIN
-        Location ON Meter.LocationID = Location.ID LEFT JOIN
-        MeterAsset ON Meter.ID = MeterAsset.MeterID LEFT JOIN 
-        Asset ON MeterAsset.AssetID = Asset.ID LEFT JOIN
-        Note ON Note.NoteTypeID = (SELECT ID FROM NoteType WHERE Name = 'Meter') AND Note.ReferenceTableID = Meter.ID
-    GROUP BY
-        Meter.ID,
-        Meter.AssetKey,
-        Meter.Name,
-        Meter.Make,
-        Meter.Model,
-        Location.Name
-    "), AllowSearch]
-    [AdditionalFieldSearch("ParentTable='Meter'", @"
-    (SELECT
-	    AdditionalFieldValue.ID,
-	    AdditionalField.FieldName,
-	    AdditionalFieldValue.Value,
-        AdditionalFieldValue.ParentTableID, 
-        AdditionalField.ParentTable
-    FROM
-	    AdditionalField JOIN
-	    AdditionalFieldValue ON AdditionalField.ID = AdditionalFieldValue.AdditionalFieldID)
-    ", "ParentTableID", "Value", "FieldName")]
     public class DetailedMeter
     {
         [PrimaryKey(true)]
@@ -68,10 +34,31 @@ namespace SystemCenter.Model
 
         [DefaultSortOrder]
         public string AssetKey { get; set; }
+
         public string Name { get; set; }
+
         public string Location { get; set; }
-        public int MappedAssets { get; set; } 
+
+        public int MappedAssets { get; set; }
+
         public string Make { get; set; }
-        public string Model { get; set; } 
+
+        public string Model { get; set; }
+
+        // The frontend prefixes any user-defined Additional Field filter with "AdditionalField.", so this matches that prefix, strips
+        // it back to the real field name, and resolves the value through the AdditionalFieldSearch view.
+        [SearchExtension(@"^AdditionalField\.")]
+        public static RecordRestriction GetAdditionalFieldRestriction(IRecordFilter filter)
+        {
+            string fieldName = filter.FieldName["AdditionalField.".Length..];
+
+            TableOperations<DetailedMeter> tableOps = new(new AdoDataConnection(Settings.Default));
+            if (RecordFilter<DetailedMeter>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
+                filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
+
+            return new RecordRestriction(
+                $"ID IN (SELECT ParentTableID FROM AdditionalFieldSearch WHERE ParentTable = 'Meter' AND FieldName = {{0}} AND Value {filter.Operator} {{1}})",
+                fieldName, filter.SearchParameter);
+        }
     }
 }
