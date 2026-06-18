@@ -21,11 +21,13 @@
 //
 //******************************************************************************************************
 
+using Gemstone.Configuration;
 using Gemstone.Data;
 using Gemstone.Data.Model;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using openXDA.APIAuthentication;
+using SEBrowser.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -39,21 +41,52 @@ namespace SEBrowser.Controllers.OpenXDA
     [Route("api/OpenXDA")]
     public class TrendChannelController : ControllerBase
     {
+        private const string TrendChannelSql = @"
+        SELECT DISTINCT
+            CONCAT(Channel.ID, '_', ChannelGroupType.ID) as ID,
+            Channel.ID as ChannelID,
+	        Channel.Name,
+	        Channel.Description,
+            Asset.ID as AssetID,
+	        Asset.AssetKey,
+	        Asset.AssetName,
+            Meter.ID as MeterID,
+	        Meter.AssetKey AS MeterKey,
+	        Meter.Name AS MeterName,
+            Meter.ShortName AS MeterShortName,
+	        Phase.Name AS Phase,
+	        ChannelGroup.Name AS ChannelGroup,
+	        ChannelGroupType.DisplayName AS ChannelGroupType,
+	        ChannelGroupType.Unit
+        FROM
+	        Channel LEFT JOIN
+	        Phase ON Channel.PhaseID = Phase.ID LEFT JOIN
+	        Asset ON Asset.ID = Channel.AssetID LEFT JOIN
+	        Meter ON Meter.ID = Channel.MeterID LEFT JOIN
+	        ChannelGroupType ON Channel.MeasurementCharacteristicID = ChannelGroupType.MeasurementCharacteristicID AND Channel.MeasurementTypeID = ChannelGroupType.MeasurementTypeID LEFT JOIN
+	        ChannelGroup ON ChannelGroup.ID = ChannelGroupType.ChannelGroupID";
+
+        private const string DetailedSeriesSql = @"
+        SELECT
+	        Series.ID,
+	        Series.ChannelID,
+	        SeriesType.Name as TypeName,
+	        SeriesType.Description as TypeDescription
+        FROM
+	        Series LEFT JOIN
+	        SeriesType ON Series.SeriesTypeID = SeriesType.ID";
+
         class TrendChannelSeries : TrendChannel
         {
             [NonRecordField]
             public List<DetailedSeries> Series { get; set; } = new List<DetailedSeries>();
         }
 
-        #region [ Members ]
-        const string SettingsCategory = "systemSettings";
-        #endregion
-
         #region [ Http Methods ]
         [Route("GetTrendSearchData"), HttpPost]
         public IActionResult GetTrendSearchData([FromBody] JObject postData)
         {
-            using (AdoDataConnection connection = new(SettingsCategory))
+            using (AdoDataConnection connection = new(Settings.Default))
             {
                 string phaseFilter = GetKeyValueFilter((JArray) postData["Phases"], "Phase.ID");
                 string channelGroupFilter = GetKeyValueFilter((JArray) postData["ChannelGroups"], "ChannelGroup.ID");
@@ -69,31 +102,32 @@ namespace SEBrowser.Controllers.OpenXDA
                     {(string.IsNullOrEmpty(meterFilter) ? "" : $"AND {meterFilter}")}
                     {(string.IsNullOrEmpty(assetFilter) ? "" : $"AND {assetFilter}")}";
 
-                if (!typeof(TrendChannelSeries).TryGetAttribute(out CustomViewAttribute view))
-                    return Ok(new TableOperations<TrendChannelSeries>(connection).QueryRecordsWhere(filters));
-
-                string sql = $"{view.CustomView} WHERE {filters}";
+                string sql = $"{TrendChannelSql} WHERE {filters}";
                 DataTable table = connection.RetrieveData(sql);
-
-                string seriesSql = "";
-                if (typeof(DetailedSeries).TryGetAttribute(out CustomViewAttribute seriesView))
-                    seriesSql = $"{seriesView?.CustomView ?? ""} WHERE ChannelID = {{0}}";
 
                 List<TrendChannelSeries> result = new List<TrendChannelSeries>();
                 TableOperations<TrendChannelSeries> tblOperations = new TableOperations<TrendChannelSeries>(connection);
-                TableOperations<DetailedSeries> seriesTblOperations = new TableOperations<DetailedSeries>(connection);
                 foreach (DataRow row in table.Rows)
-                {
-                    TrendChannelSeries record = tblOperations.LoadRecord(row);
-                    result.Add(record);
-                    if (!string.IsNullOrEmpty(seriesSql))
-                    {
-                        DataTable seriesTable = connection.RetrieveData(seriesSql, record.ChannelID);
-                        foreach (DataRow seriesRow in seriesTable.Rows)
-                            record.Series.Add(seriesTblOperations.LoadRecord(seriesRow));
-                    }
-                }
+                    result.Add(tblOperations.LoadRecord(row));
 
+                if (result.Count == 0)
+                    return Ok(result);
+
+                string channelIDs = string.Join(", ", result.Select(record => record.ChannelID).Distinct());
+                string seriesSql = $"{DetailedSeriesSql} WHERE Series.ChannelID IN ({channelIDs}) ORDER BY Series.ChannelID, Series.ID";
+                DataTable seriesTable = connection.RetrieveData(seriesSql);
+                TableOperations<DetailedSeries> seriesTblOperations = new TableOperations<DetailedSeries>(connection);
+                Dictionary<int, List<DetailedSeries>> seriesLookup = seriesTable
+                    .Select()
+                    .Select(seriesTblOperations.LoadRecord)
+                    .GroupBy(series => series.ChannelID)
+                    .ToDictionary(group => group.Key, group => group.ToList());
+
+                foreach (TrendChannelSeries record in result)
+                {
+                    if (seriesLookup.TryGetValue(record.ChannelID, out List<DetailedSeries> series))
+                        record.Series.AddRange(series);
+                }
 
                 return Ok(result);
             }
@@ -144,14 +178,21 @@ namespace SEBrowser.Controllers.OpenXDA
         private string GetKeyValueFilter(JArray keyValuePairs, string fieldName)
         {
             //Note: we're only gonna filter out ones that have been explicitly exluded
-            IEnumerable<string> validIds = keyValuePairs.SelectMany(pair => ((JObject) pair).Properties()).Where(pair => !pair.Value.ToObject<bool>()).Select(pair => pair.Name);
-            if (validIds.Count() == 0) return null;
+            List<int> validIds = keyValuePairs
+                .SelectMany(pair => ((JObject) pair).Properties())
+                .Where(pair => !pair.Value.ToObject<bool>())
+                .Select(pair => int.Parse(pair.Name))
+                .ToList();
+
+            if (validIds.Count == 0) return null;
             return $"{fieldName} NOT IN ({string.Join(", ", validIds)})";
         }
+
         private string GetIDFilter(JToken idObjectList, string fieldName)
         {
-            if (idObjectList.Count() == 0) return null;
-            return $"{fieldName} IN ({string.Join(", ", idObjectList.Select(idObject => idObject["ID"].ToObject<int>()))})";
+            List<int> ids = idObjectList.Select(idObject => idObject["ID"].ToObject<int>()).ToList();
+            if (ids.Count == 0) return null;
+            return $"{fieldName} IN ({string.Join(", ", ids)})";
         }
         #endregion
     }
