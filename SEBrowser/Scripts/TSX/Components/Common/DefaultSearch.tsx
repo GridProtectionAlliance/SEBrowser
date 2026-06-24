@@ -40,15 +40,11 @@ interface IProps<T> {
     StorageID?: string
 }
 
-function useSetFilters<T>(setFilter: (filters: Search.IFilter<T>[]) => void, addlFilters: Search.IFilter<T>[] | undefined | null) {
+const useSetFilters = <T,>(setFilter: (filters: Search.IFilter<T>[]) => void, addlFilters: Search.IFilter<T>[] | undefined | null) => {
     return React.useCallback((filters: Search.IFilter<T>[]) =>
         setFilter(addlFilters == null ? filters : [...filters, ...addlFilters]),
         [addlFilters, setFilter]);
 }
-
-//This needs some visualization cleanup.. 
-//Add pagination
-//UX in general feels clunky
 
 /** This Implements a few standardized SearchBars */
 export namespace DefaultSearch {
@@ -69,7 +65,6 @@ export namespace DefaultSearch {
             Direction={'left'}
             defaultCollumn={defaultMeterSearch}
             Width={'50%'}
-            Label={'Search'}
             ShowLoading={props.SearchStatus === 'loading'}
             ResultNote={props.SearchStatus === 'error' ? 'Could not complete Search' : 'Found ' + props.ResultCount + ' Meter(s)'}
             GetEnum={props.GetEnum}
@@ -95,7 +90,6 @@ export namespace DefaultSearch {
             Direction={'left'}
             defaultCollumn={defaultLocationSearch}
             Width={'50%'}
-            Label={'Search'}
             ShowLoading={props.SearchStatus === 'loading'}
             ResultNote={props.SearchStatus === 'error' ? 'Could not complete Search' : 'Found ' + props.ResultCount + '  Substation(s)'}
             GetEnum={props.GetEnum}
@@ -121,7 +115,6 @@ export namespace DefaultSearch {
             Direction={'left'}
             defaultCollumn={defaultAssetSearch}
             Width={'50%'}
-            Label={'Search'}
             ShowLoading={props.SearchStatus === 'loading'}
             ResultNote={props.SearchStatus === 'error' ? 'Could not complete Search' : 'Found ' + props.ResultCount + ' Transmission Asset(s)'}
             GetEnum={props.GetEnum}
@@ -147,7 +140,6 @@ export namespace DefaultSearch {
             Direction={'left'}
             defaultCollumn={defaultAssetGroupSearch}
             Width={'50%'}
-            Label={'Search'}
             ShowLoading={props.SearchStatus === 'loading'}
             ResultNote={props.SearchStatus === 'error' ? 'Could not complete Search' : 'Found ' + props.ResultCount + ' Asset Group(s)'}
             GetEnum={props.GetEnum}
@@ -173,7 +165,6 @@ export namespace DefaultSearch {
             Direction={'left'}
             defaultCollumn={defaultUserSearch}
             Width={'50%'}
-            Label={'Search'}
             ShowLoading={props.SearchStatus === 'loading'}
             ResultNote={props.SearchStatus === 'error' ? 'Could not complete Search' : 'Found ' + props.ResultCount + ' User(s)'}
             GetEnum={props.GetEnum}
@@ -200,7 +191,6 @@ export namespace DefaultSearch {
             Direction={'left'}
             defaultCollumn={defaultCustomerSearch}
             Width={'50%'}
-            Label={'Search'}
             ShowLoading={props.SearchStatus === 'loading'}
             ResultNote={props.SearchStatus === 'error' ? 'Could not complete Search' : 'Found ' + props.ResultCount + ' Customer(s)'}
             GetEnum={props.GetEnum}

@@ -49,6 +49,7 @@ export namespace DefaultSelects {
     export function Meter(props: IProps<SystemCenter.Types.DetailedMeter>) {
         return <SelectPopup<SystemCenter.Types.DetailedMeter>
             {...props}
+            PrimaryKey="ID"
             DefaultSortField="Name"
             Searchbar={(children, setFilter, searchStatus, resultCount) =>
                 <DefaultSearch.Meter
@@ -72,6 +73,7 @@ export namespace DefaultSelects {
     export function Location(props: IProps<SystemCenter.Types.DetailedLocation>) {
         return <SelectPopup<SystemCenter.Types.DetailedLocation>
             {...props}
+            PrimaryKey="ID"
             DefaultSortField="Name"
             Searchbar={(children, setFilter, searchStatus, resultCount) =>
                 <DefaultSearch.Location
@@ -95,6 +97,7 @@ export namespace DefaultSelects {
     export function Asset(props: IProps<SystemCenter.Types.DetailedAsset>) {
         return <SelectPopup<SystemCenter.Types.DetailedAsset>
             {...props}
+            PrimaryKey="ID"
             DefaultSortField="AssetName"
             Searchbar={(children, setFilter, searchStatus, resultCount) =>
                 <DefaultSearch.Asset
@@ -118,6 +121,7 @@ export namespace DefaultSelects {
     export function AssetGroup(props: IProps<OpenXDA.Types.AssetGroup>) {
         return <SelectPopup<OpenXDA.Types.AssetGroup>
             {...props}
+            PrimaryKey="ID"
             DefaultSortField="Name"
             Searchbar={(children, setFilter, searchStatus, resultCount) =>
                 <DefaultSearch.AssetGroup
@@ -141,6 +145,7 @@ export namespace DefaultSelects {
     export function User(props: IProps<Application.Types.iUserAccount>) {
         return <SelectPopup<Application.Types.iUserAccount>
             {...props}
+            PrimaryKey="ID"
             DefaultSortField="Name"
             Searchbar={(children, setFilter, searchStatus, resultCount) =>
                 <DefaultSearch.User
@@ -163,6 +168,7 @@ export namespace DefaultSelects {
     export function Customer(props: IProps<OpenXDA.Types.Customer>) {
         return <SelectPopup<OpenXDA.Types.Customer>
             {...props}
+            PrimaryKey="ID"
             DefaultSortField="Name"
             Searchbar={(children, setFilter, searchStatus, resultCount) =>
                 <DefaultSearch.Customer
@@ -180,6 +186,5 @@ export namespace DefaultSelects {
         >
             {props.children}
         </SelectPopup>
-
     }
 }

@@ -37,7 +37,6 @@ function NavbarFilterButton<T extends S>(props: IProps<T>) {
     const [hover, setHover] = React.useState<boolean>(false);
     const [rows, setRows] = React.useState<React.ReactNode[]>([]);
     const [header, setHeader] = React.useState<React.ReactNode>(null);
-    const [buttonStyle, setButtonStyle] = React.useState<React.CSSProperties>({ marginBottom: 5 });
 
     React.useEffect(() => {
         switch (props.Type) {
@@ -55,9 +54,6 @@ function NavbarFilterButton<T extends S>(props: IProps<T>) {
         }
     }, [props.Type]);
 
-    React.useEffect(() => {
-        setButtonStyle({ ...buttonStyle, backgroundColor: (props.Data.length > 0 ? props.AlternateColors?.selected : props.AlternateColors?.normal) });
-    }, [props.AlternateColors, props.Data.length]);
 
     React.useEffect(() => {
         switch (props.Type) {
@@ -93,15 +89,39 @@ function NavbarFilterButton<T extends S>(props: IProps<T>) {
                     <td>{d['Assets']}</td>
                 </tr>));
         }
-        
+
     }, [props.Data, props.Type])
-    
+
     return (
         <>
-            <button className={"btn btn-block btn-sm btn-" + (props.Data.length > 0 ? "warning" : "primary")} style={buttonStyle} onClick={(evt) => { evt.preventDefault(); props.OnClick(); }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+            <button
+                className={"btn btn-block btn-sm btn-" + (props.Data.length > 0 ? "warning" : "primary")}
+                style={{
+                    marginBottom: 5,
+                    backgroundColor: (props.Data.length > 0 ? props.AlternateColors?.selected : props.AlternateColors?.normal)
+                }}
+                onClick={(evt) => {
+                    evt.preventDefault();
+                    props.OnClick();
+                }}
+                onMouseEnter={() => setHover(true)}
+                onMouseLeave={() => setHover(false)}
+            >
                 {typeToString(props.Type)} {props.Data.length > 0 ? ('(' + props.Data.length + ')') : ''}
             </button>
-            <div style={{ width: window.innerWidth / 3, display: hover ? 'block' : 'none', position: 'absolute', backgroundColor: '#f1f1f1', boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)', zIndex: 1, right: 0 }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+            <div
+                style={{
+                    width: window.innerWidth / 3,
+                    display: hover ? 'block' : 'none',
+                    position: 'absolute',
+                    backgroundColor: '#f1f1f1',
+                    boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)',
+                    zIndex: 1,
+                    right: 0
+                }}
+                onMouseEnter={() => setHover(true)}
+                onMouseLeave={() => setHover(false)}
+            >
                 <table className='table'>
                     <thead>
                         {header}
@@ -109,7 +129,6 @@ function NavbarFilterButton<T extends S>(props: IProps<T>) {
                     <tbody>
                         {rows}
                     </tbody>
-
                 </table>
             </div>
         </>

@@ -20,21 +20,18 @@
 //       Generated original version of source code.
 // ******************************************************************************************************
 
-import { Table, Column, FilterableColumn, ConfigurableColumn } from "@gpa-gemstone/react-table";
+import { Table, Column, FilterableColumn, ConfigurableColumn, Paging } from "@gpa-gemstone/react-table";
 import * as React from 'react';
-import { Modal, Search } from "@gpa-gemstone/react-interactive";
+import { Modal, Search, BtnDropdown } from "@gpa-gemstone/react-interactive";
 import _ from "lodash";
 import { ReactIcons } from "@gpa-gemstone/gpa-symbols";
 import { Application } from '@gpa-gemstone/application-typings';
-import { Gemstone, ReadOnlyControllerFunctions_Gemstone } from '@gpa-gemstone/common-pages';
+import { Gemstone, ReadOnlyControllerFunctions_Gemstone, useSearchData_Gemstone } from '@gpa-gemstone/common-pages';
 
-interface IRecord {
-    ID: number | string
-}
-
-interface IProps<T extends IRecord> {
+interface IProps<T> {
     ControllerAPIPath: string,
     DefaultSortField: keyof T,
+    PrimaryKey: keyof T,
     Selection: T[],
     OnClose: (selected: T[], conf: boolean) => void
     Show: boolean,
@@ -45,74 +42,81 @@ interface IProps<T extends IRecord> {
     children?: React.ReactNode
 }
 
-
-export default function SelectPopup<T extends IRecord>(props: IProps<T>) {
+const SelectPopup = <T,>(props: IProps<T>) => {
     const controller = React.useMemo(() => new ReadOnlyControllerFunctions_Gemstone<T>(props.ControllerAPIPath), [props.ControllerAPIPath]);
-    const fetchHandle = React.useRef<JQuery.jqXHR<T[]> | null>(null);
+    const bulkHandle = React.useRef<JQuery.jqXHR<T[]> | null>(null);
     const [filters, setFilters] = React.useState<Search.IFilter<T>[]>([]);
-    const [data, setData] = React.useState<T[]>([]);
-    const [searchStatus, setSearchStatus] = React.useState<Application.Types.Status>('uninitiated');
     const [sortField, setSortField] = React.useState<keyof T>(props.DefaultSortField);
     const [ascending, setAscending] = React.useState<boolean>(true);
+
+    const [activePage, setActivePage] = React.useState<number>(0);
+    const [pageInfo, setPageInfo] = React.useState<Gemstone.Types.IPageInfo>({ TotalCount: 0, PageCount: 0, PageSize: 0 });
+    const [bulkLoading, setBulkLoading] = React.useState<boolean>(false);
 
     const [selectedData, setSelectedData] = React.useState<T[]>(props.Selection);
 
     const [sortKeySelected, setSortKeySelected] = React.useState<string>('');
     const [ascendingSelected, setAscendingSelected] = React.useState<boolean>(false);
 
+    const { SearchResults: data, SearchStatus: searchStatus } = useSearchData_Gemstone<T>(activePage, sortField, filters, ascending, props.ControllerAPIPath, setPageInfo);
+
+    const searchStatusEffective: Application.Types.Status = bulkLoading || searchStatus === 'loading' ? 'loading' : searchStatus;
+
     const stringifiedFilter = React.useMemo(() => JSON.stringify(filters), [filters]);
     const memoizedFilters = React.useMemo(() => Gemstone.HelperFunctions.getSearchFilter(JSON.parse(stringifiedFilter) as Search.IFilter<T>[]), [stringifiedFilter]);
 
-    const reFetchData = React.useCallback(() => {
-        setSearchStatus('loading');
-        //when this was working with slices it would just do a non paged search which just takes the first page
-        //we are account for the case where theres more records than can be returned in a single page
-        //however the cleaner path would be to implement pagination somehow.. 
-        fetchHandle.current = controller.GetAll(sortField, ascending, memoizedFilters).done((records) => {
-            setData(records);
-            setSearchStatus('idle');
-        }).fail(() => setSearchStatus('error'));
-
-        return () => {
-            if (fetchHandle.current?.abort != null)
-                fetchHandle.current.abort();
-        };
-    }, [ascending, controller, memoizedFilters, sortField]);
-
-    React.useEffect(() => reFetchData(), [reFetchData]);
+    //keep the active page valid when the filtered result set shrinks
+    React.useEffect(() => {
+        if (pageInfo.PageCount > 0 && activePage >= pageInfo.PageCount)
+            setActivePage(pageInfo.PageCount - 1);
+    }, [pageInfo.PageCount, activePage]);
 
     React.useEffect(() => {
         setSelectedData(props.Selection);
     }, [props.Selection])
 
-    function AddCurrentList() {
-        const updatedData = selectedData.concat(data);
-        setSelectedData(_.uniqBy(updatedData, (d) => d.ID));
-    }
+    //abort any in-flight bulk fetch on unmount
+    React.useEffect(() => () => { if (bulkHandle.current?.abort != null) bulkHandle.current.abort(); }, []);
 
-    return (<>
-        <Modal Show={props.Show} Title={props.Title} ShowX={true} Size={'xlg'} CallBack={(conf) => props.OnClose(selectedData, conf)}
+    const addRecords = React.useCallback((records: T[]) => {
+        setSelectedData((s) => _.uniqBy([...s, ...records], (d) => d[props.PrimaryKey]));
+    }, [props.PrimaryKey]);
+
+    const removeRecords = React.useCallback((records: T[]) => {
+        const ids = new Set(records.map((r) => r[props.PrimaryKey]));
+        setSelectedData((s) => s.filter((d) => !ids.has(d[props.PrimaryKey])));
+    }, [props.PrimaryKey]);
+
+    //fetches every record matching the current filter and applies the bulk action to them
+    const handleAddAllPages = React.useCallback(() => {
+        if (bulkHandle.current?.abort != null) bulkHandle.current.abort();
+
+        setBulkLoading(true);
+        bulkHandle.current = controller.GetAll(sortField, ascending, memoizedFilters)
+            .done((records) => addRecords(records))
+            .always(() => setBulkLoading(false));
+    }, [controller, sortField, ascending, memoizedFilters, addRecords]);
+
+    return (
+        <Modal
+            Show={props.Show}
+            Title={props.Title}
+            ShowX={true}
+            Size={'xlg'}
+            BodyStyle={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 210px)', overflow: 'hidden' }}
+            CallBack={(conf) => props.OnClose(selectedData, conf)}
             DisableConfirm={props.MinSelection !== undefined && selectedData.length < props.MinSelection}
             ConfirmShowToolTip={props.MinSelection !== undefined && selectedData.length < props.MinSelection}
-            ConfirmToolTipContent={<p><ReactIcons.CrossMark /> At least {props.MinSelection} items must be selected. </p>}
+            ConfirmToolTipContent={
+                <p>
+                    <ReactIcons.CrossMark /> At least {props.MinSelection} items must be selected.
+                </p>
+            }
         >
-            <div className="row">
-                <div className="col">
+            <div className="row" style={{ flexShrink: 0 }}>
+                <div className="col" style={{ width: (props.Type === undefined || props.Type === 'single' ? '100%' : '60%') }}>
                     {props.Searchbar(
                         <>
-                            {props.Type === 'multiple' ? <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
-                                <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                    <legend className="w-auto" style={{ fontSize: 'large' }}>Quick Selects:</legend>
-                                    <form>
-                                        <div className="form-group">
-                                            <div className="btn btn-primary" onClick={(event) => { event.preventDefault(); AddCurrentList(); }}>Add Current List to Selection</div>
-                                        </div>
-                                        <div className="form-group">
-                                            <div className="btn btn-danger" onClick={(event) => { event.preventDefault(); setSelectedData([]) }}>Remove All</div>
-                                        </div>
-                                    </form>
-                                </fieldset>
-                            </li> : null}
                             {React.Children.map(props.children, (e) => {
                                 if (React.isValidElement(e)) {
                                     if (((e as React.ReactElement).type === FilterableColumn) ||
@@ -123,13 +127,48 @@ export default function SelectPopup<T extends IRecord>(props: IProps<T>) {
                                 }
                                 return null;
                             })}
-                        </>, setFilters, searchStatus, data.length)}
+                        </>, setFilters, searchStatusEffective, pageInfo.TotalCount)}
                 </div>
+                {props.Type === 'multiple' ? <div className="col" style={{ width: '40%', borderLeft: '1px solid #dee2e6' }}>
+                    <h3> Current Selection </h3>
+                    <div className="form-group">
+                        <BtnDropdown
+                            Label={'Add Page'}
+                            Callback={() => addRecords(data)}
+                            Options={[{
+                                Label: 'Add All Pages',
+                                Callback: () => handleAddAllPages(),
+                                ShowToolTip: true,
+                                ToolTipContent: <p className='mb-0'>Adds every matching record to your selection.</p>
+                            }]}
+                            BtnClass={'btn-primary'}
+                            Size="std"
+                            ShowToolTip={true}
+                            TooltipContent={<p className='mb-0'>Adds the records on this page to your selection.</p>}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <BtnDropdown
+                            Label={'Remove Page'}
+                            Callback={() => removeRecords(data)}
+                            Options={[{
+                                Label: 'Remove All Pages',
+                                Callback: () => setSelectedData([]),
+                                ShowToolTip: true,
+                                ToolTipContent: <p className='mb-0'>Removes all records from your selection.</p>
+                            }]}
+                            BtnClass={'btn-danger'}
+                            Size="std"
+                            ShowToolTip={true}
+                            TooltipContent={<p className='mb-0'>Removes the records on this page from your selection.</p>}
+                        />
+                    </div>
+                </div> : null}
             </div>
-            <div className="row">
-                <div className="col" style={{ width: (props.Type === undefined || props.Type === 'single' ? '100%' : '60%') }}>
+            <div className="row flex-grow-1" style={{ overflow: 'hidden', minHeight: 0 }}>
+                <div className="col h-100" style={{ width: (props.Type === undefined || props.Type === 'single' ? '100%' : '60%') }}>
                     <Table<T>
-                        TableClass="table table-hover"
+                        TableClass="table table-hover h-100"
                         Data={data}
                         SortKey={sortField as string}
                         Ascending={ascending}
@@ -147,20 +186,17 @@ export default function SelectPopup<T extends IRecord>(props: IProps<T>) {
                             if (props.Type === undefined || props.Type === 'single')
                                 setSelectedData([d.row])
                             else
-                                setSelectedData((s) => [...s.filter(item => item.ID !== d.row.ID), d.row])
+                                setSelectedData((s) => [...s.filter(item => item[props.PrimaryKey] !== d.row[props.PrimaryKey]), d.row])
                         }}
-                        Selected={(item) => selectedData.findIndex(d => d.ID === item.ID) > -1}
-                        KeySelector={item => item.ID}
+                        Selected={(item) => selectedData.findIndex(d => d[props.PrimaryKey] === item[props.PrimaryKey]) > -1}
+                        KeySelector={item => item[props.PrimaryKey] as string | number}
                     >
                         {props.children}
                     </Table>
                 </div>
-                {props.Type === 'multiple' ? <div className="col" style={{ width: '40%' }}>
-                    <div style={{ width: '100%' }}>
-                        <h3> Current Selection </h3>
-                    </div>
+                {props.Type === 'multiple' ? <div className="col h-100" style={{ width: '40%', borderLeft: '1px solid #dee2e6' }}>
                     <Table<T>
-                        TableClass="table table-hover"
+                        TableClass="table table-hover h-100"
                         Data={selectedData}
                         SortKey={sortKeySelected}
                         Ascending={ascendingSelected}
@@ -177,15 +213,29 @@ export default function SelectPopup<T extends IRecord>(props: IProps<T>) {
                                 setSortKeySelected(d.colKey);
                             }
                         }}
-                        OnClick={(d) => setSelectedData([...selectedData.filter(item => item.ID !== d.row.ID)])}
+                        OnClick={(d) => setSelectedData([...selectedData.filter(item => item[props.PrimaryKey] !== d.row[props.PrimaryKey])])}
                         Selected={() => false}
-                        KeySelector={item => item.ID}
+                        KeySelector={item => item[props.PrimaryKey] as string | number}
                     >
                         {props.children}
                     </Table>
                 </div> : null}
             </div>
+            <div className="row" style={{ flexShrink: 0 }}>
+                <div className="col" style={{ width: (props.Type === undefined || props.Type === 'single' ? '100%' : '60%') }}>
+                    <Paging
+                        Current={activePage + 1}
+                        Total={pageInfo.PageCount}
+                        SetPage={(p) => setActivePage(p - 1)}
+                    />
+                </div>
+                {props.Type === 'multiple' ?
+                    <div className="col" style={{ width: '40%' }} />
+                    : null
+                }
+            </div>
         </Modal>
-    </>)
-
+    )
 }
+
+export default SelectPopup;
