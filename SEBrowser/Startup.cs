@@ -75,6 +75,8 @@ public class Startup
 
         services.AddAntiforgery(options => options.HeaderName = "X-GEMSTONE-VERIFY");
 
+        services.AddTransient<IAPICredentialRetriever, XDAAPICredentialRetriever>();
+
         // services.AddTransient<WindowsAuthenticationProviderOptions>(_ => new()
         // {
         //     LDAPPath = Settings.Default[WindowsAuthenticationProvider.SettingsSection].LDAPPath,
