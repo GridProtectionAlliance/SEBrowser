@@ -58,7 +58,9 @@ namespace SEBrowser.Controllers
                                 OR TABLE_NAME = 'SEBrowser.EventSearchDetailsView' 
                                 AND COLUMN_NAME NOT LIKE 'Sort.%'");
                         m_collumns = String.Join(",", collumns.Select()
-                            .Select(r => $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}]")
+                            .Select(r => r["TABLE_NAME"].ToString() == "SEBrowser.EventSearchDetailsView" && r["COLUMN_NAME"].ToString() == "EventID"
+                                ? $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}] AS [EventID1]"
+                                : $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}]")
                             );
                     }
                 return m_collumns;
@@ -125,12 +127,12 @@ namespace SEBrowser.Controllers
             public string transientType { get; set; }
             public string sagType { get; set; }
             public string swellType { get; set; }
-            public List<int> meterIDs { get; set; }
-            public List<int> typeIDs { get; set; }
-            public List<int> assetIDs { get; set; }
-            public List<int> groupIDs { get; set; }
-            public List<int> locationIDs { get; set; }
-            public string numberResults { get; set; }
+            public int[] meterIDs { get; set; }
+            public int[] typeIDs { get; set; }
+            public int[] assetIDs { get; set; }
+            public int[] groupIDs { get; set; }
+            public int[] locationIDs { get; set; }
+            public int? numberResults { get; set; }
             public bool ascending { get; set; }
             public string sortKey { get; set; }
         }
@@ -162,9 +164,12 @@ namespace SEBrowser.Controllers
         }
 
         [Route("GetEventSearchData"), HttpPost]
-        public DataTable GetEventSearchData(EventSearchPostData postData)
+        public DataTable GetEventSearchData([FromBody] EventSearchPostData postData)
         {
-            using (AdoDataConnection connection = new(Settings.Default))
+            if(postData is null)
+                throw new Exception("Unable to parse request body");
+
+            using AdoDataConnection connection = new(Settings.Default);
             {
                 DateTime dateTime = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
 
@@ -185,7 +190,7 @@ namespace SEBrowser.Controllers
 
                 string query =
                     $"""
-                    SELECT TOP {postData.numberResults ?? "100"}
+                    SELECT TOP {postData.numberResults?.ToString() ?? "100"}
                         {Columns}
                     FROM
                         (
