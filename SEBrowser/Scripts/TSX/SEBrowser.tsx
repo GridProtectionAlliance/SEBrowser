@@ -22,7 +22,7 @@
 //******************************************************************************************************
 
 import { Provider } from 'react-redux';
-import store from './Store/Store';
+import store, { EventTypeSlice } from './Store/Store';
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -37,8 +37,8 @@ import DERAnalysisReport from './Components/DERAnalysisReport/DERAnalysisReport'
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { Application, Page, Section } from '@gpa-gemstone/react-interactive';
 import Settings from './Store/Settings';
-import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
-import { useAppDispatch } from './hooks';
+import { SVGIcons } from '@gpa-gemstone/gpa-symbols'; //replace with ReacttIcons
+import { useAppDispatch, useAppSelector } from './hooks';
 import { LoadSettings } from './Store/SettingsSlice';
 
 const SEBrowserMainPage = () => {
@@ -47,35 +47,23 @@ const SEBrowserMainPage = () => {
     const [links, setLinks] = React.useState<SystemCenter.Types.ValueListItem[]>([]);
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
 
+    const evtTypeStatus = useAppSelector(EventTypeSlice.FetchStatus);
+
+    //Effect to fetch event types
     React.useEffect(() => {
-        const handle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/ValueList/Group/CustomReports`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: true,
-            async: true
-        });
+        if (evtTypeStatus == 'changed' || evtTypeStatus == 'uninitiated')
+            dispatch(EventTypeSlice.Fetch({}));
+    }, [evtTypeStatus]);
 
-
-        handle.done(data => setLinks(data));
-        return () => { if(handle.abort != undefined) handle.abort()}
-    }, []);
-
+    //Effect to load settings/ custom reports on app mount
     React.useEffect(() => {
         dispatch(LoadSettings());
-    }, [])
 
-    const createWidget = (item: string) => {
-        if (item === "breakerreport")
-            return <BreakerReport />
-        if (item === "relayreport")
-            return <RelayReport />
-        if (item === "capbankreport")
-            return <CapBankReport />
-        if (item === "derreport")
-            return <DERAnalysisReport />
-    }
+        const handle = getCustomReports();
+
+        handle.done(data => setLinks(data));
+        return () => { if (handle.abort != undefined) handle.abort() }
+    }, [])
 
     return (
         <>
@@ -83,36 +71,69 @@ const SEBrowserMainPage = () => {
                 HomePath={homePath} DefaultPath={"eventsearch"}
                 Logo={homePath + "Images/PQBrowserLight.png"}
                 Version={version}
-                NavBarContent={<ul className="navbar-nav mr-l">
-                    <li className="nav-item" style={{ width: '84px' }}>
-                        <button type="button" className="btn btn-primary" style={{
-                            borderRadius: "0.25rem",
-                            height: 30, paddingLeft: 6,
-                            paddingRight: 6, paddingTop: 2
-                        }}
-                            onClick={() => setShowSettings(true)}>
-                            {SVGIcons.Settings}
-                    </button>
-                </li> </ul>}
-                OnSignOut={() => { window.location.href = `${homePath}/Logout`;}}
+                NavBarContent={
+                    <ul className="navbar-nav mr-l">
+                        <li className="nav-item" style={{ width: '84px' }}>
+                            <button type="button" className="btn btn-primary"
+                                style={{
+                                    borderRadius: "0.25rem",
+                                    height: 30, paddingLeft: 6,
+                                    paddingRight: 6, paddingTop: 2
+                                }}
+                                onClick={() => setShowSettings(true)}
+                            >
+                                {SVGIcons.Settings}
+                            </button>
+                        </li>
+                    </ul>
+                }
+                OnSignOut={() => { window.location.href = `${homePath}/Logout`; }}
             >
-            <Page Name={'eventsearch'} Label={'Event Search'}>
-                <EventSearch />
-            </Page>
-            <Page Name={'meteractivity'} Label={'Meter Activity'}>
-                <MeterActivity />
-            </Page>
-            <Page Name={'trenddata'} Label={'Trend Data'}>
-                <TrendData />
-            </Page>
-            <Section Label={"Custom Reports"}>
-                {links.map((item, i) => <Page key={i} Name={item.AltValue ?? item.Value} Label={item.Value}>{createWidget(item.AltValue ?? item.Value)}</Page>)}
-            </Section>
+                <Page Name={'eventsearch'} Label={'Event Search'}>
+                    <EventSearch />
+                </Page>
+                <Page Name={'meteractivity'} Label={'Meter Activity'}>
+                    <MeterActivity />
+                </Page>
+                <Page Name={'trenddata'} Label={'Trend Data'}>
+                    <TrendData />
+                </Page>
+                <Section Label={"Custom Reports"}>
+                    {links.map((item, i) =>
+                        <Page
+                            key={i}
+                            Name={item.AltValue ?? item.Value}
+                            Label={item.Value}
+                        >
+                            {createWidget(item.AltValue ?? item.Value)}
+                        </Page>)}
+                </Section>
             </Application>
             <Settings Show={showSettings} Close={() => setShowSettings(false)} />
         </>
     );
 }
 
-ReactDOM.render(<Provider store={store}><SEBrowserMainPage /></Provider>, document.getElementById('pageBody'));
+const getCustomReports = () => {
+    return $.ajax({
+        type: "GET",
+        url: `${homePath}api/ValueList/Group/CustomReports`,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        cache: true,
+        async: true
+    });
+}
 
+const createWidget = (item: string) => {
+    if (item === "breakerreport")
+        return <BreakerReport />
+    if (item === "relayreport")
+        return <RelayReport />
+    if (item === "capbankreport")
+        return <CapBankReport />
+    if (item === "derreport")
+        return <DERAnalysisReport />
+}
+
+ReactDOM.render(<Provider store={store}><SEBrowserMainPage /></Provider>, document.getElementById('pageBody'));

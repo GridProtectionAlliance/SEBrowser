@@ -20,8 +20,7 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-import { SystemCenter, OpenXDA as XDA } from '@gpa-gemstone/application-typings';
-import { IGenericSliceState } from '@gpa-gemstone/react-interactive';
+import { SystemCenter, OpenXDA as XDA, Application } from '@gpa-gemstone/application-typings';
 
 declare global {
     let homePath: string;
@@ -40,34 +39,23 @@ declare global {
 
 }
 
-//Todo: Move to gemstone?
+//this should be in gemstone?
 export interface IMultiCheckboxOption {
     Value: number | string,
-    Label: string,
+    Label: string | JSX.Element,
     Selected: boolean
 }
 
 export namespace Redux {
     interface StoreState {
         EventSearch: EventSearchState,
-        MagDurCurve: IGenericSliceState<XDA.Types.MagDurCurve>,
-        Meter: IGenericSliceState<SystemCenter.Types.DetailedMeter>,
-        Asset: IGenericSliceState<SystemCenter.Types.DetailedAsset>,
-        AssetGroup: IGenericSliceState<XDA.Types.AssetGroup>,
-        Location: IGenericSliceState<SystemCenter.Types.DetailedLocation>,
         Settings: SettingsState,
-        EventType: IGenericSliceState<SEBrowser.EventType>,
-        EventNote: IGenericSliceState<XDA.Types.Note>,
-        MeterNote: IGenericSliceState<XDA.Types.Note>,
-        AssetNote: IGenericSliceState<XDA.Types.Note>,
-        LocationNote: IGenericSliceState<XDA.Types.Note>,
-        Phase: IGenericSliceState<XDA.Types.Phase>,
-        ChannelGroup: IGenericSliceState<SEBrowser.ChannelGroup>,
+        EventType: ReadWriteGenericSlice_Gemstone<XDA.Types.EventType>,
         ValueList: iValueListSliceState
     }
 
     interface State<T> {
-        Status: SEBrowser.Status,
+        Status: Application.Types.Status,
         Data: T[],
         Error: null | string,
         SortField: string,
@@ -128,7 +116,6 @@ export namespace Redux {
     }
 }
 export namespace SEBrowser {
-    type Status = 'loading' | 'idle' | 'error' | 'changed' | 'unitiated';
     type TimeWindowMode =   'center' | 'startWindow' | 'endWindow' | 'startEnd';
       
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
@@ -136,12 +123,21 @@ export namespace SEBrowser {
     interface IReportTimeFilter { date: string, time: string, windowSize: number, timeWindowUnits: number }
     interface IPhaseFilters { AN: boolean, BN: boolean, CN: boolean, AB: boolean, BC: boolean, CA: boolean, ABG: boolean, BCG: boolean, ABC: boolean, ABCG: boolean }
     interface IEventCharacteristicFilters {
-        durationMin: number, durationMax: number,
+        durationMin: number | null,
+        durationMax: number | null,
         phases: IPhaseFilters,
-        transientMin?: number, transientMax?: number, transientType: ('LL'|'LN'|'both'),
-        sagMin?: number, sagMax?: number, sagType: ('LL' | 'LN' | 'both'),
-        swellMin?: number, swellMax?: number, swellType: ('LL' | 'LN' | 'both'),
-        curveID: number, curveInside: boolean, curveOutside: boolean
+        transientMin: number | null, 
+        transientMax: number | null, 
+        transientType: ('LL'|'LN'|'both'),
+        sagMin: number | null, 
+        sagMax: number | null, 
+        sagType: ('LL' | 'LN' | 'both'),
+        swellMin: number | null, 
+        swellMax: number | null, 
+        swellType: ('LL' | 'LN' | 'both'),
+        curveID: number, 
+        curveInside: boolean, 
+        curveOutside: boolean
     }
     
     interface EventNote extends XDA.Types.Note {
