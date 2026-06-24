@@ -25,10 +25,10 @@
 
 import React from 'react';
 import EventSearchList from './EventSearchList';
-import EventSearchNavbar from './EventSearchNavbar';
-import EventPreviewPane from './EventSearchPreview/EventSearchPreviewPane';
+import EventSearchNavbar from './Navbar/EventSearchNavbar';
+import EventPreviewPane from './EventSearchPreviewPane';
 import queryString from 'querystring';
-import EventSearchMagDur from './EventSearchMagDur';
+import EventSearchMagDur from './MagDurChart/MagDurChart';
 import { ProcessQuery, SelectEventList, SelectQueryParam } from '../../Store/EventSearchSlice';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
@@ -51,7 +51,7 @@ const EventSearch = () => {
     const evtList = useAppSelector(SelectEventList);
 
     React.useEffect(() => {
-        const query = queryString.parse(history.search.replace("?",""), "&", "=", { decodeURIComponent: queryString.unescape });
+        const query = queryString.parse(history.search.replace("?", ""), "&", "=");
 
         dispatch(ProcessQuery(query));
         setInitialTab(query['tab'] != undefined ? query['tab'].toString() as any : undefined);
@@ -59,9 +59,8 @@ const EventSearch = () => {
         setEventId(query['eventid'] != undefined ? parseInt(query['eventid'].toString()) : -1);
     }, []);
 
-   
     React.useEffect(() => {
-        const q = queryString.stringify(queryParam, "&", "=", { encodeURIComponent: queryString.escape });
+        const q = queryString.stringify(queryParam, "&", "=");
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
     }, [queryParam])
@@ -76,8 +75,12 @@ const EventSearch = () => {
 
 
     function getShowNav(): boolean {
-        if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.EventSearch.ShowNav'))
-            return JSON.parse(localStorage.getItem('SEbrowser.EventSearch.ShowNav'))
+        if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.EventSearch.ShowNav')) {
+            const value = localStorage.getItem('SEbrowser.EventSearch.ShowNav');
+            if (value == null)
+                return true;
+            return JSON.parse(value);
+        }
         else
             return true;
     }
@@ -89,36 +92,36 @@ const EventSearch = () => {
                 showNav={showNav}
                 setHeight={setNavHeight}
             />
-            <VerticalSplit style={{ width: '100%', height: (showNav ? 'calc(100% - ' + navHeight + 'px)': 'calc( 100% - 52px)') }}>
-                    <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
-                        <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
-                            <div style={{ width: 'calc(100% - 300px)', padding: 10, float: 'left' }}>
-                            </div>
-                            <div style={{ width: 160, float: 'right', padding: 10 }}>
+            <VerticalSplit style={{ width: '100%', height: (showNav ? 'calc(100% - ' + navHeight + 'px)' : 'calc( 100% - 52px)') }}>
+                <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
+                    <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
+                        <div style={{ width: 'calc(100% - 300px)', padding: 10, float: 'left' }}>
+                        </div>
+                        <div style={{ width: 160, float: 'right', padding: 10 }}>
                             <button className='btn btn-danger' onClick={() => setShowMagDur((c) => !c)} >
                                 View As {showMagDur ? 'List' : 'Mag/Dur'}
                             </button>
-                            </div>
-                            {showMagDur ?
-                                <EventSearchMagDur
+                        </div>
+                        {showMagDur ?
+                            <EventSearchMagDur
                                 Height={window.innerHeight - ((showNav ? navHeight : 52) + 120)}
-                                    EventID={eventId}
+                                EventID={eventId}
                                 SelectEvent={setEventId}
-                                /> :
+                            /> :
                             <EventSearchList eventid={eventId}
                                 selectEvent={setEventId}
                                 height={window.innerHeight - ((showNav ? navHeight : 52) + 120)} />
-                            }
-                        </div>
-                    </SplitSection>
-                    <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
+                        }
+                    </div>
+                </SplitSection>
+                <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
                     <div style={{ width: '100%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
                         <EventPreviewPane
                             EventID={eventId}
                             InitialTab={initialTab}
                             Height={window.innerHeight - ((showNav ? navHeight : 52) + 62)}
                         />
-                        </div>
+                    </div>
                 </SplitSection>
             </VerticalSplit>
         </div>

@@ -22,7 +22,7 @@
 //******************************************************************************************************
 import React from 'react';
 import _ from 'lodash';
-import { TrendSearch } from '../../../Global';
+import { TrendSearch } from '../../../global';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { ConfigurableTable, Column, ConfigurableColumn } from '@gpa-gemstone/react-table';
 
@@ -68,9 +68,10 @@ const TrendChannelTable = (props: IProps) => {
                     const indexChannel = allChannels.findIndex(chan => chan.ID === data.item.ID);
                     allChannels.splice(indexChannel, 1);
                     props.SetTrendChannels(allChannels);
+                    if (props.OnChannelRemoval == null) return;
                     props.OnChannelRemoval(data.item);
                 }}>
-                <ReactIcons.TrashCan Color="var(--danger)"/>
+                <ReactIcons.TrashCan Color="var(--danger)" />
             </button>
         ), [props.OnChannelRemoval, props.TrendChannels, props.SetTrendChannels]);
 
@@ -81,13 +82,18 @@ const TrendChannelTable = (props: IProps) => {
             if (data.colField === sortField)
                 setAscending(!ascending);
             else
-                setSortField(data.colField);
+                setSortField(prev => data.colField ?? prev);
         }, [ascending, sortField, setAscending, setSortField]);
 
     const dragFuncCallback = React.useCallback(
         (item: { row: TrendSearch.ITrendChannel }, event: React.DragEvent<Element>) => {
-            let channelsTransfered = [];
-            if (props.Type === 'single' || !props.SelectedSet.has(item.row.ID)) channelsTransfered.push(props.TrendChannels.find(channel => channel.ID === item.row.ID));
+            let channelsTransfered: TrendSearch.ITrendChannel[] = [];
+            if (props.Type === 'single' || !props.SelectedSet.has(item.row.ID)) {
+                const channel = props.TrendChannels.find(channel => channel.ID === item.row.ID);
+                if (channel != null)
+                    channelsTransfered.push(channel);
+
+            }
             // These should be sorted same as props.TrendChannels as per filter specs
             else channelsTransfered = props.TrendChannels.filter(channel => props.SelectedSet.has(channel.ID));
             event.dataTransfer.setData("text/plain", JSON.stringify(channelsTransfered));
@@ -136,7 +142,7 @@ const TrendChannelTable = (props: IProps) => {
             }}
             Selected={(item) => props.Type === 'multi' ? props.SelectedSet.has(item.ID) : props.Selected === item.ID}
             TheadStyle={{ fontSize: 'smaller' }}
-            TbodyStyle={{ display: 'block', overflowY: 'scroll', height: props.Height - 45, userSelect: 'none'}}
+            TbodyStyle={{ display: 'block', overflowY: 'scroll', height: props.Height - 45, userSelect: 'none' }}
             TableClass="table table-hover"
             TableStyle={{ marginBottom: 0 }}>
             <Column<TrendSearch.ITrendChannel>
@@ -170,7 +176,7 @@ const TrendChannelTable = (props: IProps) => {
                     RowStyle={{ width: "50px" }}
                     HeaderStyle={{ width: "50px" }}
                     Content={removeButton}
-                > </Column>: null}
+                > </Column> : null}
         </ConfigurableTable>);
 }
 

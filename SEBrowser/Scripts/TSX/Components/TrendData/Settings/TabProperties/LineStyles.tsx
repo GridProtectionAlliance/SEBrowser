@@ -23,7 +23,7 @@
 import React from 'react';
 import { Input, Select } from '@gpa-gemstone/react-forms';
 import { LineTypeOptions } from '../SettingsModal';
-import { TrendSearch } from '../../../../Global';
+import { TrendSearch } from '../../../../global';
 
 interface IChannelTabProps {
     DefaultStyle: TrendSearch.ILineStyleSettings,
@@ -35,14 +35,25 @@ const LineStyles = React.memo((props: IChannelTabProps) => {
     return (
         <div className="col" style={{ width: 'auto' }}>
             <h4>{props.Series} Settings</h4>
-            <Input<TrendSearch.ILineStyleSettings> Record={props.DefaultStyle} Label={'Line Width (pixels)'}
-                Field={'Width'} Setter={props.SetDefaultStyle} Type={'number'}
-                Feedback={"Width must be a positive number"} Valid={() => {
+            <Input<TrendSearch.ILineStyleSettings>
+                Record={props.DefaultStyle}
+                Label={'Line Width (pixels)'}
+                Field={'Width'}
+                Setter={props.SetDefaultStyle}
+                Type={'number'}
+                Feedback={"Width must be a positive number"}
+                Valid={() => {
                     return props.DefaultStyle['Width'] > 0;
-                }} />
-            <Select<TrendSearch.ILineStyleSettings> Record={props.DefaultStyle} Label={'Line Style'}
-                Field={'Type'} Setter={props.SetDefaultStyle} Options={LineTypeOptions} />
-       </div>
+                }}
+            />
+            <Select<TrendSearch.ILineStyleSettings>
+                Record={props.DefaultStyle}
+                Label={'Line Style'}
+                Field={'Type'}
+                Setter={props.SetDefaultStyle}
+                Options={LineTypeOptions}
+            />
+        </div>
     );
 });
 

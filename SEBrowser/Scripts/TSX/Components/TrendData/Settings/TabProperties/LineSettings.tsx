@@ -24,7 +24,7 @@ import React from 'react';
 import { BlockPicker } from 'react-color';
 import { Input, Select } from '@gpa-gemstone/react-forms';
 import { LineTypeOptions, AxisOptions } from '../SettingsModal';
-import { TrendSearch } from '../../../../Global';
+import { TrendSearch } from '../../../../global';
 
 interface ILineProps {
     // Assumption that this doesnt change outside of this overlay
@@ -34,7 +34,7 @@ interface ILineProps {
 }
 
 const LineSettings = React.memo((props: ILineProps) => {
-    const [series, setSeries] = React.useState<TrendSearch.ILineSettings>(undefined);
+    const [series, setSeries] = React.useState<TrendSearch.ILineSettings | undefined>(undefined);
 
     const setter = React.useCallback((record: TrendSearch.ILineSettings) => {
         setSeries(record);
@@ -47,20 +47,46 @@ const LineSettings = React.memo((props: ILineProps) => {
         setSeries(props.SeriesSettings.Settings[props.Series]);
     }, [props.SeriesSettings, props.Series]);
 
-    // No data = return null
     if (series === undefined || !series.HasData) return null;
 
     return (
         <div className="col" style={{ width: 'auto' }}>
-            <h4>{(props.Series === 'Avgerage' && !props.SeriesSettings['Minimum']?.HasData && !props.SeriesSettings['Maximum']?.HasData) ? 'Values' : props.Series} Settings</h4>
+            <h4>
+                {(props.Series === 'Avgerage' && !props.SeriesSettings['Minimum']?.HasData && !props.SeriesSettings['Maximum']?.HasData) ? 'Values' : props.Series} Settings
+                </h4>
             <BlockPicker onChangeComplete={(color) => setter({ ...series, Color: color.hex })} color={series['Color']} triangle={"hide"} />
-            <Input<TrendSearch.ILineSettings> Record={series} Label={'Legend Label'} Field={'Label'} Setter={setter} Valid={() => true} />
-            <Input<TrendSearch.ILineSettings> Record={series} Label={'Line Width (pixels)'} Field={'Width'} Setter={setter} Type={'number'}
-                Feedback={"Width must be a positive number"} Valid={() => {
+            <Input<TrendSearch.ILineSettings>
+                Record={series}
+                Label={'Legend Label'}
+                Field={'Label'}
+                Setter={setter}
+                Valid={() => true}
+            />
+            <Input<TrendSearch.ILineSettings>
+                Record={series}
+                Label={'Line Width (pixels)'}
+                Field={'Width'}
+                Setter={setter}
+                Type={'number'}
+                Feedback={"Width must be a positive number"}
+                Valid={() => {
                     return series['Width'] > 0;
-                }} />
-            <Select<TrendSearch.ILineSettings> Record={series} Label={'Line Style'} Field={'Type'} Setter={setter} Options={LineTypeOptions} />
-            <Select<TrendSearch.ILineSettings> Record={series} Label={'Axis'} Field={'Axis'} Setter={setter} Options={AxisOptions} />
+                }}
+            />
+            <Select<TrendSearch.ILineSettings>
+                Record={series}
+                Label={'Line Style'}
+                Field={'Type'}
+                Setter={setter}
+                Options={LineTypeOptions}
+            />
+            <Select<TrendSearch.ILineSettings>
+                Record={series}
+                Label={'Axis'}
+                Field={'Axis'}
+                Setter={setter}
+                Options={AxisOptions}
+            />
         </div>
     );
 });

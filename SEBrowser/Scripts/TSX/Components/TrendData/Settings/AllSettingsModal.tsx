@@ -28,7 +28,7 @@ import { PlotSettingsTab } from './OverlayTabs/PlotSettingsTab';
 import { MarkerTab } from './OverlayTabs/MarkerTab';
 import { LineStylesTab } from './OverlayTabs/LineStylesTab';
 import { ColorTab } from './OverlayTabs/ColorTab';
-import { TrendSearch } from '../../../Global';
+import { TrendSearch } from '../../../global';
 
 interface IProps {
     Show: boolean,
@@ -67,7 +67,7 @@ const AllSettingsModal = React.memo((props: IProps) => {
                 if (!_.isEqual(allPlot[field], props.Defaults[field]))
                     props.ApplyFieldToAll(allPlot, field as keyof (TrendSearch.ITrendPlot));
             });
-        } 
+        }
         // Settings defaults
         if (confirmed || futureOnly) {
             // Handling Markers
@@ -114,30 +114,67 @@ const AllSettingsModal = React.memo((props: IProps) => {
     }, [props.Show])
 
     return (
-        <Modal Title='Change Settings for All Plots' CallBack={settingsModalCallback} Show={props.Show} Size='xlg' BodyStyle={{ maxHeight: 'calc(100vh - 210px)', overflowY: 'hidden' }}
-            ConfirmText="Apply to Existing & Future" CancelText="Discard Changes" TertiaryText="Apply to Future" ShowCancel={true} ShowTertiary={true} DisableConfirm={confirmDisabled} DisableTertiary={confirmDisabled}>
-            <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
+        <Modal
+            Title='Change Settings for All Plots'
+            CallBack={settingsModalCallback}
+            Show={props.Show}
+            Size='xlg'
+            BodyStyle={{ maxHeight: 'calc(100vh - 210px)', overflowY: 'hidden' }}
+            ConfirmText="Apply to Existing & Future"
+            CancelText="Discard Changes"
+            TertiaryText="Apply to Future"
+            ShowCancel={true}
+            ShowTertiary={true}
+            DisableConfirm={confirmDisabled}
+            DisableTertiary={confirmDisabled}
+        >
+            <TabSelector
+                CurrentTab={tab}
+                SetTab={setTab}
+                Tabs={Tabs}
+            />
             <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
-                    <PlotSettingsTab Plot={allPlot} SetPlot={setAllPlot} SetConfirmDisabled={setConfirmDisabled} IsGlobalSettings={true} />
+                    <PlotSettingsTab 
+                    Plot={allPlot}
+                     SetPlot={setAllPlot}
+                      SetConfirmDisabled={setConfirmDisabled} 
+                      IsGlobalSettings={true} 
+                      />
                 </div>
             </div>
             <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
-                    <MarkerTab VeHoMarkers={[markers.VeHo.Default]} SetVeHoMarkers={r => markerBufferSetter(r, 'VeHo')} SymbMarkers={[markers.Symb.Default]} SetSymbMarkers={r => markerBufferSetter(r, 'Symb')}
-                        EventSettings={markers.Event.Default} SetEventSettings={r => markerBufferSetter(r, 'Event')} DisplayEventSettings={true} IsGlobalSettings={true} />
+                    <MarkerTab
+                        VeHoMarkers={[markers.VeHo.Default]}
+                        SetVeHoMarkers={r => markerBufferSetter(r, 'VeHo')}
+                        SymbMarkers={[markers.Symb.Default]}
+                        SetSymbMarkers={r => markerBufferSetter(r, 'Symb')}
+                        EventSettings={markers.Event.Default}
+                        SetEventSettings={r => markerBufferSetter(r, 'Event')}
+                        DisplayEventSettings={true}
+                        IsGlobalSettings={true}
+                    />
                 </div>
             </div>
             <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "styles" ? " active" : "fade")} id="styles">
-                    <LineStylesTab MinStyle={linePlots.Minimum.Default} SetMinStyle={l => linePlotSetter(l, 'Minimum')}
-                        AvgStyle={linePlots.Average.Default} SetAvgStyle={l => linePlotSetter(l, 'Average')}
-                        MaxStyle={linePlots.Maximum.Default} SetMaxStyle={l => linePlotSetter(l, 'Maximum')} />
+                    <LineStylesTab
+                        MinStyle={linePlots.Minimum.Default}
+                        SetMinStyle={l => linePlotSetter(l, 'Minimum')}
+                        AvgStyle={linePlots.Average.Default}
+                        SetAvgStyle={l => linePlotSetter(l, 'Average')}
+                        MaxStyle={linePlots.Maximum.Default}
+                        SetMaxStyle={l => linePlotSetter(l, 'Maximum')}
+                    />
                 </div>
             </div>
             <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "colors" ? " active" : "fade")} id="colors">
-                    <ColorTab Colors={linePlots.Colors.Default} SetColors={l => linePlotSetter(l, 'Colors')} />
+                    <ColorTab
+                        Colors={linePlots.Colors.Default}
+                        SetColors={l => linePlotSetter(l, 'Colors')}
+                    />
                 </div>
             </div>
         </Modal>

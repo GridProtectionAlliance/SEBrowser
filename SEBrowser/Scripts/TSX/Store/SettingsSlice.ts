@@ -128,11 +128,9 @@ function loadTimeZone() {
         type: "GET",
         url: `${homePath}api/SEBrowser/GetTimeZone`,
         contentType: "application/json; charset=utf-8",
-        dataType: 'json',
-        cache: true,
+        cache: false,
         async: true
     });
-
 }
 
 function loadWidgetCategories() {
@@ -141,11 +139,10 @@ function loadWidgetCategories() {
         url: `${homePath}api/openXDA/WidgetCategory`,
         contentType: "application/json; charset=utf-8",
         dataType: 'json',
-        cache: true,
+        cache: false,
         async: true
     });
 }
-
 
 export const SettingsReducer = settingsSlice.reducer
 export const { SetEventSearch, SetTrendData, SetGeneral } = settingsSlice.actions

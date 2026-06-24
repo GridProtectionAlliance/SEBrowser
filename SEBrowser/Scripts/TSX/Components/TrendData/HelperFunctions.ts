@@ -23,7 +23,7 @@
 
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import moment from 'moment';
-import { TrendSearch } from '../../Global';
+import { TrendSearch } from '../../global';
 import { momentDateFormat } from '../ReportTimeFilter';
 
 // Returns an array of booleans telling which components are common to all channels

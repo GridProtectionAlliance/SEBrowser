@@ -22,19 +22,16 @@
 //******************************************************************************************************
 
 import React from 'react';
-import moment from 'moment';
 import _ from 'lodash';
-import TrendSearchNavbar from './TrendDataNavbar';
+import TrendSearchNavbar from './NavBar/TrendDataNavbar';
 import TrendPlot from './TrendPlot/TrendPlot';
-import { TrendSearch } from '../../Global';
+import { TrendSearch } from '../../global';
 import AllSettingsModal from './Settings/AllSettingsModal';
 import { SelectTrendDataSettings } from '../../Store/SettingsSlice';
 import { useAppSelector, useAppDispatch } from './../../hooks';
-import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { ValueListGroupSlice } from '../../Store/Store';
 import { TrendDefaults } from './HelperFunctions';
 
-const momentDateFormat = "MM/DD/YYYY";
 const trendSearchId = "TrendDataChartAll";
 const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFilter"]);
 const defaultValueList = "TrendLabelDefaults";
@@ -53,13 +50,6 @@ const TrendData = () => {
     const defaultSliceStatus = useAppSelector((state) => ValueListGroupSlice.Status(state, defaultValueList));
     const defaultSliceData = useAppSelector((state) => ValueListGroupSlice.Data(state, defaultValueList));
     const dispatch = useAppDispatch();
-
-    function getShowNav(): boolean {
-        if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.TrendData.ShowNav'))
-            return JSON.parse(localStorage.getItem('SEbrowser.TrendData.ShowNav'));
-        else
-            return true;
-    }
 
     const removePlot = React.useCallback(((ID: string) => {
         const index = plotList.findIndex(item => item.ID === ID);
@@ -134,7 +124,7 @@ const TrendData = () => {
 
     React.useEffect(() => {
         // only allow settings this if it hasn't been set before
-        if (defaultSliceStatus === 'idle' && defaultPlotSettings.LabelComponents.length === 0)
+        if (defaultSliceStatus === 'idle' && defaultPlotSettings?.LabelComponents?.length === 0)
             setDefaultPlotSettings({ ...defaultPlotSettings, LabelComponents: defaultSliceData.map(item => item.Value) });
     }, [defaultSliceStatus]);
 
@@ -166,22 +156,51 @@ const TrendData = () => {
                 LinePlot={defaultPlotSettings.PlotFilter}
                 Movable={plotsMovable}
                 SetMovable={setPlotsMovable}
-                PlotIds={plotList.map(plot => { return { ID: plot.ID, Width: plot.Width, Height: plot.Height } })}
+                PlotIds={plotList.map(plot => { return { ID: plot.ID, Width: plot.Width ?? 0, Height: plot.Height ?? 0 } })}
             />
             <div className={'row'} style={{ flex: 1, overflow: 'hidden' }}>
                 <div className={'col-12'} style={{ height: '100%', overflowY: 'scroll', overflowX: 'hidden' }} id={trendSearchId}>
-                    {plotList.map(element => <TrendPlot key={element.ID} DragMode={plotsMovable}
-                        Plot={element} SetPlot={setPlot} RemovePlot={removePlot} SplicePlot={movePlot}
-                        HandleOverlay={closeSettings} MarkerDefaults={markerDefaults} LineDefaults={lineDefaults}
-                    />)}
+                    {plotList.map(element =>
+                        <TrendPlot
+                            key={element.ID}
+                            DragMode={plotsMovable}
+                            Plot={element}
+                            SetPlot={setPlot}
+                            RemovePlot={removePlot}
+                            SplicePlot={movePlot}
+                            HandleOverlay={closeSettings}
+                            MarkerDefaults={markerDefaults}
+                            LineDefaults={lineDefaults}
+                        />)}
                 </div>
             </div>
-            <AllSettingsModal Show={showSettings} SetShow={setShowSettings} ApplyFieldToAll={setAllPlot}
-                Defaults={defaultPlotSettings} SetDefaults={setDefaultPlotSettings}
-                MarkerDefaults={markerDefaults} SetMarkerDefaults={setMarkerDefaults}
-                LinePlotDefaults={lineDefaults} SetLinePlotDefaults={setLineDefaults} />
+            <AllSettingsModal
+                Show={showSettings}
+                SetShow={setShowSettings}
+                ApplyFieldToAll={setAllPlot}
+                Defaults={defaultPlotSettings}
+                SetDefaults={setDefaultPlotSettings}
+                MarkerDefaults={markerDefaults}
+                SetMarkerDefaults={setMarkerDefaults}
+                LinePlotDefaults={lineDefaults}
+                SetLinePlotDefaults={setLineDefaults}
+            />
         </div>
     );
+}
+
+const getShowNav = (): boolean => {
+    const value = localStorage.getItem('SEbrowser.TrendData.ShowNav');
+
+    if (value === null)
+        return true;
+
+    const parsed: unknown = JSON.parse(value);
+
+    if (typeof parsed !== 'boolean')
+        return false
+
+    return parsed;
 }
 
 export default TrendData;

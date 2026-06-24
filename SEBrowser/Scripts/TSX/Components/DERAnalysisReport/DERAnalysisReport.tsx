@@ -63,10 +63,10 @@ function DERAnalysisReport() {
     const [data, setData] = React.useState<DERAnalyticResult[]>([]);
     const [ascending, setAscending] = React.useState<boolean>(true);
     const [sortKey, setSortKey] = React.useState<keyof DERAnalyticResult>('Time');
-    const [selectedData, setSelectedData] = React.useState<DERAnalyticResult>(null);
+    const [selectedData, setSelectedData] = React.useState<DERAnalyticResult | null>(null);
 
     React.useEffect(() => {
-        const query = queryString.parse(history.search.replace("?", ""), "&", "=", { decodeURIComponent: queryString.unescape });
+        const query = queryString.parse(history.search.replace("?", ""), "&", "=");
 
         setTime(query['time'] != undefined ? query['time'] as string : moment().format(momentTimeFormat))
         setDate(query['date'] != undefined ? query['date'] as string : moment().format(momentDateFormat))
@@ -82,7 +82,7 @@ function DERAnalysisReport() {
             windowSize,
             timeWindowUnits
         };
-        const q = queryString.stringify(queryParam, "&", "=", { encodeURIComponent: queryString.escape });
+        const q = queryString.stringify(queryParam, "&", "=");
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
     }, [time, date, windowSize, timeWindowUnits])
@@ -247,7 +247,7 @@ function DERAnalysisReport() {
                             if (data.colField == sortKey)
                                 setAscending(!ascending);
                             else
-                                setSortKey(data.colField);
+                                setSortKey(data.colField as keyof DERAnalyticResult);
                         }}
                         Data={data}
                         OnClick={(d) => {
@@ -286,13 +286,11 @@ function DERAnalysisReport() {
                         >Value</Column>
                     </Table>
                 </div>
-
             </div>
 
             <div className="modal" id="dataModal">
                 <div className="modal-dialog modal-lg" style={{ maxWidth: '75%' }}>
                     <div className="modal-content">
-
                         <div className="modal-header">
                             <h4 className="modal-title">Time: {selectedData?.Time ?? ''}, Meter: {selectedData?.Meter ?? ''}, Asset: {selectedData?.Asset ?? ''}, Channel: {selectedData?.Channel ?? ''}</h4>
                             <button type="button" className="close" data-dismiss="modal">&times;</button>

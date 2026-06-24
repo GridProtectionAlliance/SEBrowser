@@ -23,7 +23,7 @@
 import { Input, Select } from '@gpa-gemstone/react-forms';
 import { Table, Column } from '@gpa-gemstone/react-table';
 import React from 'react';
-import { TrendSearch } from '../../../../Global';
+import { TrendSearch } from '../../../../global';
 import { TrashCan, UpArrow, DownArrow } from '@gpa-gemstone/gpa-symbols';
 import { BlockPicker } from 'react-color';
 import _ from 'lodash';

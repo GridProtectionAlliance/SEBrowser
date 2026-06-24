@@ -54,14 +54,14 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
     const [tab, setTab] = React.useState<string>("plot");
     const [confirmDisabled, setConfirmDisabled] = React.useState<boolean>(false);
     // Plot Tab Buffers
-    const [plotBuffer, setPlotBuffer] = React.useState<TrendSearch.ITrendPlot>(null);
+    const [plotBuffer, setPlotBuffer] = React.useState<TrendSearch.ITrendPlot | null>(null);
     // Channels Tab Buffers
     const [seriesBuffer, setSeriesBuffer] = React.useState<TrendSearch.ISeriesSettings[]>([]);
     const [channelsBuffer, setChannelsBuffer] = React.useState<TrendSearch.ITrendChannel[]>([]);
     // Markers Tab Buffers
     const [symbolicsBuffer, setSymbolicsBuffer] = React.useState<TrendSearch.ISymbolic[]>([]);
     const [markersBuffer, setMarkersBuffer] = React.useState<TrendSearch.IVertHori[]>([]);
-    const [eventBuffer, setEventBuffer] = React.useState<TrendSearch.EventMarkerSettings>(null);
+    const [eventBuffer, setEventBuffer] = React.useState<TrendSearch.EventMarkerSettings | null>(null);
 
     // Create Settings Buffers
     React.useEffect(() => {
@@ -69,7 +69,7 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
     }, [props.Plot]);
 
     React.useEffect(() => {
-        setSeriesBuffer(props.SeriesSettings);
+        setSeriesBuffer(props.SeriesSettings ?? []);
     }, [props.SeriesSettings]);
 
     React.useEffect(() => {
@@ -93,16 +93,18 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
             props.SetPlot(props.Plot.ID, record, field);
     }
 
-    const Tabs = [
-        { Id: "plot", Label: "Plot" },
-        { Id: "marks", Label: "Marker" },
-        { Id: "series", Label: "Channel" }
-    ];
-
     return (
-        <Modal Title={`Change Plot: ${props.Plot.Title ?? `${props.Plot.Channels.length} Channel ${props.Plot.Type} Plot`}`} ShowX={false} Size='xlg'
-            ShowConfirm={true} ConfirmText='Save Changes' DisableConfirm={confirmDisabled} ShowCancel={true} CancelText='Discard Changes'
-            Show={props.Show} CallBack={(conf) => {
+        <Modal 
+        Title={`Change Plot: ${props.Plot.Title ?? `${props.Plot.Channels.length} Channel ${props.Plot.Type} Plot`}`} 
+        ShowX={false} 
+        Size='xlg'
+            ShowConfirm={true} 
+            ConfirmText='Save Changes' 
+            DisableConfirm={confirmDisabled} 
+            ShowCancel={true} 
+            CancelText='Discard Changes'
+            Show={props.Show} 
+            CallBack={(conf) => {
                 if (conf) {
                     // Each of the fields that are set global to all channels (do this field by field to avoid unneccessary rerenders)
                     const plotSettings = { ...plotBuffer };
@@ -117,7 +119,7 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
                 } else {
                     // Reset buffers
                     setPlotBuffer(props.Plot);
-                    setSeriesBuffer(props.SeriesSettings);
+                    setSeriesBuffer(props.SeriesSettings ?? []);
                     setChannelsBuffer(props.Plot.Channels);
                     setSymbolicsBuffer(props.SymbolicMarkers);
                     setMarkersBuffer(props.VertHoriMarkers);
@@ -126,28 +128,56 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
                 setTab("plot");
                 props.SetShow(false);
 
-        }}>
-            <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
+            }}>
+            <TabSelector
+             CurrentTab={tab}
+              SetTab={setTab} 
+              Tabs={Tabs}
+               />
             <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
-                    <PlotSettingsTab Plot={plotBuffer} SetPlot={setPlotBuffer} SetConfirmDisabled={setConfirmDisabled} IsGlobalSettings={false} />
+                    <PlotSettingsTab
+                        Plot={plotBuffer}
+                        SetPlot={setPlotBuffer}
+                        SetConfirmDisabled={setConfirmDisabled}
+                        IsGlobalSettings={false}
+                    />
                 </div>
             </div>
             <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "series" ? " active" : "fade")} id="series">
-                    <ChannelTab Type={props.Plot.Type} SetChannels={setChannelsBuffer} Channels={channelsBuffer} SeriesSettings={seriesBuffer} SetSeriesSettings={setSeriesBuffer} />
+                    <ChannelTab
+                        Type={props.Plot.Type}
+                        SetChannels={setChannelsBuffer}
+                        Channels={channelsBuffer}
+                        SeriesSettings={seriesBuffer}
+                        SetSeriesSettings={setSeriesBuffer}
+                    />
                 </div>
             </div>
             <div className="tab-content" style={{ overflow: 'hidden' }}>
                 <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
-                    <MarkerTab VeHoMarkers={markersBuffer} SetVeHoMarkers={setMarkersBuffer} SymbMarkers={symbolicsBuffer} SetSymbMarkers={setSymbolicsBuffer}
-                        EventSettings={eventBuffer} SetEventSettings={setEventBuffer} DisplayEventSettings={plotBuffer?.ShowEvents ?? false} IsGlobalSettings={false}/>
+                    <MarkerTab
+                        VeHoMarkers={markersBuffer}
+                        SetVeHoMarkers={setMarkersBuffer}
+                        SymbMarkers={symbolicsBuffer}
+                        SetSymbMarkers={setSymbolicsBuffer}
+                        EventSettings={eventBuffer}
+                        SetEventSettings={setEventBuffer}
+                        DisplayEventSettings={plotBuffer?.ShowEvents ?? false}
+                        IsGlobalSettings={false}
+                    />
                 </div>
             </div>
         </Modal>
     );
 });
 
+const Tabs = [
+    { Id: "plot", Label: "Plot" },
+    { Id: "marks", Label: "Marker" },
+    { Id: "series", Label: "Channel" }
+];
 const LineTypeOptions = [{ Label: "Solid", Value: "solid" }, { Label: "Short Dashes", Value: "short-dash" }, { Label: "Dashes", Value: "dash" }, { Label: "Long Dashes", Value: "long-dash" }];
 const AxisOptions = [{ Label: "Right", Value: "right" }, { Label: "Left", Value: "left" }];
 

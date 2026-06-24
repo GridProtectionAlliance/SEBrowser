@@ -108,15 +108,21 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
             >
                 <div className="row">
                     <div className="col-6">
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Event Search Settings:</legend>
-                                <div className={"row"}>
-                                    <div className={'col'}>
+                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>
+                                Event Search Settings:
+                            </legend>
+                            <div className={"row"}>
+                                <div className={'col'}>
                                     <Input<Redux.IEventSearchSettings>
-                                        Record={evtSearch} Field='NumberResults'
-                                        Setter={setEvtSearch} Valid={() => true}
-                                        Label='Number of Results' Type='integer' />
-                                    </div>
+                                        Record={evtSearch}
+                                        Field='NumberResults'
+                                        Setter={setEvtSearch}
+                                        Valid={() => true}
+                                        Label='Number of Results'
+                                        Type='integer'
+                                    />
+                                </div>
                             </div>
                             <div className={"row"}>
                                 <div className={'col'}>
@@ -124,7 +130,8 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={evtSearch}
                                         Field='AggregateMagDur'
                                         Setter={setEvtSearch}
-                                        Label='Aggregate Events on Mag-Dur chart' />
+                                        Label='Aggregate Events on Mag-Dur chart'
+                                    />
                                 </div>
                             </div>
                         </fieldset>
@@ -149,7 +156,8 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={trendData}
                                         Field='BorderPlots'
                                         Setter={setTrendData}
-                                        Label='Enable Plot Borders'/>
+                                        Label='Enable Plot Borders'
+                                    />
                                 </div>
                             </div>
                             <div className={"row"}>
@@ -158,7 +166,8 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={trendData}
                                         Field='InsertAtStart'
                                         Setter={setTrendData}
-                                        Label='Add New Plots to Top'/>
+                                        Label='Add New Plots to Top'
+                                    />
                                 </div>
                             </div>
                             <div className={"row"}>
@@ -167,7 +176,8 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={trendData}
                                         Field='StartWithOptionsClosed'
                                         Setter={setTrendData}
-                                        Label='Toolbar Closed by Default'/>
+                                        Label='Toolbar Closed by Default'
+                                    />
                                 </div>
                             </div>
                             <div className={"row"}>
@@ -176,7 +186,8 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Record={trendData}
                                         Field='MarkerSnapping'
                                         Setter={setTrendData}
-                                        Label='Snap Markers to Nearest Data Point'/>
+                                        Label='Snap Markers to Nearest Data Point'
+                                    />
                                 </div>
                             </div>
                         </fieldset>
@@ -192,7 +203,7 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                         Options={searchSettingsOptions}
                                         Record={general}
                                         Field='DateTime'
-                                        Setter={(g) => setGeneral(g)}
+                                        Setter={setGeneral}
                                         Label='Date/Time Filter Mode'
                                     />
                                 </div>
@@ -202,8 +213,9 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                     <CheckBox<Redux.IGeneralSettings>
                                         Record={general}
                                         Field='MoveOptionsLeft'
-                                        Setter={(g) => setGeneral(g)}
-                                        Label='Move Toolbar to Left of Plot' />
+                                        Setter={setGeneral}
+                                        Label='Move Toolbar to Left of Plot'
+                                    />
                                 </div>
                             </div>
                             <div className={"row"}>
@@ -211,14 +223,15 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
                                     <CheckBox<Redux.IGeneralSettings>
                                         Record={general}
                                         Field='ShowDataPoints'
-                                        Setter={(g) => setGeneral(g)}
-                                        Label='Display Plot Datapoints on Zoom-In' />
+                                        Setter={setGeneral}
+                                        Label='Display Plot Datapoints on Zoom-In'
+                                    />
                                 </div>
                             </div>
                         </fieldset>
                     </div>
                 </div>
-        </Modal>
+            </Modal>
         </>
     );
 }

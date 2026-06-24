@@ -22,52 +22,26 @@
 //******************************************************************************************************
 
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
-import { GenericSlice } from '@gpa-gemstone/react-interactive';
+import { ReadWriteGenericSlice_Gemstone } from "@gpa-gemstone/common-pages";
 import { configureStore } from '@reduxjs/toolkit';
 import EventSearchReducer from './EventSearchSlice';
 import { SettingsReducer } from './SettingsSlice';
 import GroupSlice from './ValueListGroupSlice'
 import { TrendSearch } from '../global';
-
-declare let homePath: string;
+import { EventTypeControllerPath } from './ControllerFunctions';
 
 //Dispatch and Selector Typed
 export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>
 
-export const MagDurCurveSlice = new GenericSlice<OpenXDA.Types.MagDurCurve>('MagDurCurve', `${homePath}api/openXDA/StandardMagDurCurve`, 'Name');
-export const AssetGroupSlice = new GenericSlice<OpenXDA.Types.AssetGroup>('AssetGroup', `${homePath}api/openXDA/AssetGroup`, 'Name');
-
-export const MeterSlice = new GenericSlice<SystemCenter.Types.DetailedMeter>("Meter", `${homePath}api/OpenXDA/Meter`, "Name", true);
-export const AssetSlice = new GenericSlice<SystemCenter.Types.DetailedAsset>("Asset", `${homePath}api/OpenXDA/Asset`, "AssetName", true);
-export const LocationSlice = new GenericSlice<SystemCenter.Types.DetailedLocation>("Location", `${homePath}api/OpenXDA/Location`, "LocationKey", true);
-export const EventTypeSlice = new GenericSlice<OpenXDA.Types.EventType>("EventType", `${homePath}api/OpenXDA/EventType`, "Category", true);
-export const PhaseSlice = new GenericSlice<OpenXDA.Types.Phase>("Phase", `${homePath}api/OpenXDA/Phase`, "Name");
-export const ChannelGroupSlice = new GenericSlice<TrendSearch.ChannelGroup>("ChannelGroup", `${homePath}api/openXDA/ChannelGroup`, "Name");
-
-export const EventNoteSlice = new GenericSlice<OpenXDA.Types.Note>("EventNote", `${homePath}api/OpenXDA/Note/Event`, "Timestamp", true);
-
-export const MeterNoteSlice = new GenericSlice<OpenXDA.Types.Note>("MeterNote", `${homePath}api/OpenXDA/Note/Meter`, "Timestamp", true);
-export const AssetNoteSlice = new GenericSlice<OpenXDA.Types.Note>("AssetNote", `${homePath}api/OpenXDA/Note/Asset`, "Timestamp", true);
-export const LocationNoteSlice = new GenericSlice<OpenXDA.Types.Note>("LocationNote", `${homePath}api/OpenXDA/Note/Location`, "Timestamp", true);
+export const EventTypeSlice = new ReadWriteGenericSlice_Gemstone<OpenXDA.Types.EventType>("EventType", "Category", true, EventTypeControllerPath);
 
 export const ValueListGroupSlice = new GroupSlice();
 
 const reducer = {
     EventSearch: EventSearchReducer,
-    MagDurCurve: MagDurCurveSlice.Reducer,
-    Meter: MeterSlice.Reducer,
-    Asset: AssetSlice.Reducer,
-    AssetGroup: AssetGroupSlice.Reducer,
-    Location: LocationSlice.Reducer,
     Settings: SettingsReducer,
     EventType: EventTypeSlice.Reducer,
-    EventNote: EventNoteSlice.Reducer,
-    MeterNote: MeterNoteSlice.Reducer,
-    AssetNote: AssetNoteSlice.Reducer,
-    LocationNote: LocationNoteSlice.Reducer,
-    Phase: PhaseSlice.Reducer,
-    ChannelGroup: ChannelGroupSlice.Reducer,
     ValueList: ValueListGroupSlice.Reducer
 }
 

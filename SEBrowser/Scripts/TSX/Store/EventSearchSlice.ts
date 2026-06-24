@@ -27,7 +27,8 @@ import * as _ from 'lodash';
 import { ajax } from 'jquery';
 import moment from 'moment';
 import queryString from 'querystring';
-import { AssetGroupSlice, AssetSlice, EventTypeSlice, LocationSlice, MeterSlice } from '../Store/Store';
+import { ReadOnlyControllerFunctions_Gemstone } from '@gpa-gemstone/common-pages';
+import { MeterController, AssetController, LocationController, AssetGroupController, EventTypeController } from './ControllerFunctions';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { findAppropriateUnit, getStartEndTime, getMoment } from '../Components/EventSearch/TimeWindowUtils';
 
@@ -68,7 +69,7 @@ export const FetchEventSearches = createAsyncThunk('EventSearchs/FetchEventSearc
         meterIDs: meterList.map(item => item.ID), assetIDs: assetList.map(item => item.ID),
         groupIDs: groupList.map(item => item.ID), locationIDs: locationList.map(item => item.ID),
         numberResults: settings.NumberResults,
-    } 
+    }
 
     const additionalArguments = {
         numberResults: settings.NumberResults,
@@ -95,48 +96,30 @@ export const Sort = createAsyncThunk('EventSearchs/Sort', async (arg: { SortFiel
     return dispatch(FetchEventSearches());
 })
 
-export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async (query: queryString.ParsedUrlQuery , { dispatch, getState }) => {
-    let state = getState() as Redux.StoreState;
-    if (state.Asset.Status == 'uninitiated')
-        await dispatch(AssetSlice.Fetch());
-    if (state.Meter.Status == 'uninitiated')
-        await dispatch(MeterSlice.Fetch());
-    if (state.AssetGroup.Status == 'uninitiated')
-        await dispatch(AssetGroupSlice.Fetch());
-    if (state.Location.Status == 'uninitiated')
-        await dispatch(LocationSlice.Fetch());
+export const ProcessQuery = createAsyncThunk('EventSearchs/ProcessQuery', async (query: queryString.ParsedUrlQuery, { dispatch }) => {
+    const [meters, assets, locations, groups, typeIDs] = await Promise.all([
+        FetchAll(MeterController, 'Name'),
+        FetchAll(AssetController, 'AssetName'),
+        FetchAll(LocationController, 'LocationKey'),
+        FetchAll(AssetGroupController, 'Name'),
+        FetchAll(EventTypeController, 'Category'),
+    ]);
 
-    if (state.EventType.Status == 'uninitiated')
-        await dispatch(EventTypeSlice.Fetch());
-    state = getState() as Redux.StoreState;
-    return dispatch(EventSearchsSlice.actions.ProcessQuery({
-        query, assets: state.Asset.Data, groups: state.AssetGroup.Data,
-        locations: state.Location.Data,
-        meters: state.Meter.Data,
-        typeIDs: state.EventType.Data
-    }));
+    return dispatch(EventSearchsSlice.actions.ProcessQuery({ query, assets, groups, locations, meters, typeIDs }));
 });
 
-export const ResetFilters = createAsyncThunk('EventSearchs/ResetFilterThunk', async (_: void, { dispatch, getState }) => {
-    let state = getState() as Redux.StoreState;
-    
-    if (state.EventType.Status == 'uninitiated')
-        await dispatch(EventTypeSlice.Fetch());
-    state = getState() as Redux.StoreState;
-    return dispatch(EventSearchsSlice.actions.ResetFilters({
-        types: state.EventType.Data
-    }));
+export const ResetFilters = createAsyncThunk('EventSearchs/ResetFilterThunk', async (_: void, { dispatch }) => {
+    const eventTypes = await FetchAll(EventTypeController, 'Category');
+    return dispatch(EventSearchsSlice.actions.ResetFilters({ types: eventTypes }));
 });
+
 export const SetFilters = createAsyncThunk('EventSearchs/SetFilters', async (args: {
     characteristics?: SEBrowser.IEventCharacteristicFilters,
     types?: number[],
     time?: SEBrowser.IReportTimeFilter
-}, { dispatch, getState }) => {
-    let state = getState() as Redux.StoreState;
-    if (state.EventType.Status == 'uninitiated')
-        await dispatch(EventTypeSlice.Fetch());
-    state = getState() as Redux.StoreState;
-    return dispatch(EventSearchsSlice.actions.SetFilters({ ...args, eventTypes: state.EventType.Data }));
+}, { dispatch }) => {
+    const eventTypes = await FetchAll(EventTypeController, 'Category');
+    return dispatch(EventSearchsSlice.actions.SetFilters({ ...args, eventTypes }));
 });
 
 export const SetFilterLists = createAsyncThunk('EventSearchs/SetFilterLists', async (args: {
@@ -144,55 +127,73 @@ export const SetFilterLists = createAsyncThunk('EventSearchs/SetFilterLists', as
     Assets: SystemCenter.Types.DetailedAsset[],
     Groups: OpenXDA.Types.AssetGroup[],
     Stations: SystemCenter.Types.DetailedLocation[],
-}, { dispatch, getState }) => {
-    let state = getState() as Redux.StoreState;
-    if (state.EventType.Status == 'uninitiated')
-        await dispatch(EventTypeSlice.Fetch());
-    state = getState() as Redux.StoreState;
-    return dispatch(EventSearchsSlice.actions.SetFilterLists({ ...args, eventTypes: state.EventType.Data }));
+}, { dispatch }) => {
+    const eventTypes = await FetchAll(EventTypeController, 'Category');
+    return dispatch(EventSearchsSlice.actions.SetFilterLists({ ...args, eventTypes }));
 });
 // #endregion
+
+const initialState: Redux.EventSearchState = {
+    Status: 'uninitiated',
+    Data: [],
+    Error: null,
+    SortField: 'Time',
+    Ascending: true,
+    EventCharacteristic: {
+        durationMax: null,
+        durationMin: null,
+        phases: {
+            AN: true,
+            BN: true,
+            CN: true,
+            AB: true,
+            BC: true,
+            CA: true,
+            ABG: true,
+            BCG: true,
+            ABC: true,
+            ABCG: true
+        },
+        transientMin: null,
+        transientMax: null,
+        sagMin: null,
+        sagMax: null,
+        swellMin: null,
+        swellMax: null,
+        sagType: 'both',
+        swellType: 'both',
+        transientType: 'both',
+        curveID: 1,
+        curveInside: true,
+        curveOutside: true
+    },
+    TimeRange: {
+        date: moment.utc().subtract(84, 'h').format(momentDateFormat),
+        time: '12:00:00.000',
+        windowSize: 84,
+        timeWindowUnits: 3
+    },
+    EventType: [],
+    isReset: true,
+    SelectedAssets: [],
+    SelectedGroups: [],
+    SelectedMeters: [],
+    SelectedStations: [],
+    ActiveFetchID: []
+};
 
 // #region [ Slice ]
 export const EventSearchsSlice = createSlice({
     name: 'EventSearch',
-    initialState: {
-        Status: 'unitiated',
-        Data: [],
-        Error: null,
-        SortField: 'Time',
-        Ascending: true,
-        SearchText: '',
-        EventCharacteristic: {
-            durationMax: null, durationMin: null, phases: {
-                AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true
-            },
-            transientMin: null, transientMax: null, sagMin: null, sagMax: null, swellMin: null, swellMax: null,
-            sagType: 'both', swellType: 'both', transientType: 'both',
-            curveID: 1, curveInside: true, curveOutside: true
-        },
-        TimeRange: {
-            date: moment.utc().subtract(84,'h').format(momentDateFormat),
-            time: '12:00:00.000',
-            windowSize: 84,
-            timeWindowUnits: 3
-        },
-        EventType: [],
-        isReset: true,
-        SelectedAssets: [],
-        SelectedGroups: [],
-        SelectedMeters: [],
-        SelectedStations: [],
-        SelectedDetailedMeters: [],
-        SelectedDetailedAssets: [],
-        SelectedDetailedStations: [],
-        ActiveFetchID: []
-    } as Redux.EventSearchState,
+    initialState,
     reducers: {
         ProcessQuery: (state, action: PayloadAction<{
-            query: queryString.ParsedUrlQuery, assets: SystemCenter.Types.DetailedAsset[],
-            groups: OpenXDA.Types.AssetGroup[], locations: SystemCenter.Types.DetailedLocation[],
-            meters: SystemCenter.Types.DetailedMeter[], typeIDs: OpenXDA.Types.EventType[]
+            query: queryString.ParsedUrlQuery,
+            assets: SystemCenter.Types.DetailedAsset[],
+            groups: OpenXDA.Types.AssetGroup[],
+            locations: SystemCenter.Types.DetailedLocation[],
+            meters: SystemCenter.Types.DetailedMeter[],
+            typeIDs: OpenXDA.Types.EventType[]
         }>) => {
 
 
@@ -251,23 +252,22 @@ export const EventSearchsSlice = createSlice({
             if (action.payload.characteristics !== undefined)
                 state.EventCharacteristic = action.payload.characteristics;
 
-            state.EventCharacteristic.durationMax = isNaN(state.EventCharacteristic.durationMax) ? null : state.EventCharacteristic.durationMax;
-            state.EventCharacteristic.durationMin = isNaN(state.EventCharacteristic.durationMin) ? null : state.EventCharacteristic.durationMin;
+            state.EventCharacteristic.durationMax = isNaN(state.EventCharacteristic.durationMax ?? NaN) ? null : state.EventCharacteristic.durationMax;
+            state.EventCharacteristic.durationMin = isNaN(state.EventCharacteristic.durationMin ?? NaN) ? null : state.EventCharacteristic.durationMin;
 
-            state.EventCharacteristic.transientMax = isNaN(state.EventCharacteristic.transientMax) ? null : state.EventCharacteristic.transientMax;
-            state.EventCharacteristic.transientMin = isNaN(state.EventCharacteristic.transientMin) ? null : state.EventCharacteristic.transientMin;
-            state.EventCharacteristic.sagMax = isNaN(state.EventCharacteristic.sagMax) ? null : state.EventCharacteristic.sagMax;
-            state.EventCharacteristic.sagMin = isNaN(state.EventCharacteristic.sagMin) ? null : state.EventCharacteristic.sagMin;
-            state.EventCharacteristic.swellMax = isNaN(state.EventCharacteristic.swellMax) ? null : state.EventCharacteristic.swellMax;
-            state.EventCharacteristic.swellMin = isNaN(state.EventCharacteristic.swellMin) ? null : state.EventCharacteristic.swellMin;
-
+            state.EventCharacteristic.transientMax = isNaN(state.EventCharacteristic.transientMax ?? NaN) ? null : state.EventCharacteristic.transientMax;
+            state.EventCharacteristic.transientMin = isNaN(state.EventCharacteristic.transientMin ?? NaN) ? null : state.EventCharacteristic.transientMin;
+            state.EventCharacteristic.sagMax = isNaN(state.EventCharacteristic.sagMax ?? NaN) ? null : state.EventCharacteristic.sagMax;
+            state.EventCharacteristic.sagMin = isNaN(state.EventCharacteristic.sagMin ?? NaN) ? null : state.EventCharacteristic.sagMin;
+            state.EventCharacteristic.swellMax = isNaN(state.EventCharacteristic.swellMax ?? NaN) ? null : state.EventCharacteristic.swellMax;
+            state.EventCharacteristic.swellMin = isNaN(state.EventCharacteristic.swellMin ?? NaN) ? null : state.EventCharacteristic.swellMin;
 
             state.isReset = computeReset(state, action.payload.eventTypes);
         },
         ResetFilters: (state, action: PayloadAction<{ types: OpenXDA.Types.EventType[] }>) => {
             state.EventCharacteristic = {
                 durationMax: null, durationMin: null,
-                phases: { AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true }, 
+                phases: { AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true },
                 transientMin: null, transientMax: null, sagMin: null, sagMax: null, swellMin: null, swellMax: null, sagType: 'both', swellType: 'both', transientType: 'both',
                 curveID: 1, curveInside: true, curveOutside: true
             };
@@ -314,14 +314,13 @@ export const EventSearchsSlice = createSlice({
                 return;
             state.Status = 'error';
             state.Error = action.error.message;
-
         });
         builder.addCase(Sort.pending, (state, action) => {
             if (state.SortField === action.meta.arg.SortField)
                 state.Ascending = !action.meta.arg.Ascending;
             else
                 state.SortField = action.meta.arg.SortField;
-           
+
         });
 
     }
@@ -363,6 +362,11 @@ export const SelectEventList = createSelector(
 // #endregion
 
 // #region [ Async Functions ]
+//We probably should be using pagination here but for now we'll fetch all
+const FetchAll = <T,>(controller: ReadOnlyControllerFunctions_Gemstone<T>, sortField: keyof T): Promise<T[]> => {
+    return Promise.resolve(controller.GetAll(sortField, true)) as Promise<T[]>;
+}
+
 function GetEventSearchs(params: any): JQuery.jqXHR<any[]> {
     return ajax({
         type: "POST",

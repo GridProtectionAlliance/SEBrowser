@@ -336,7 +336,6 @@ class FilesProcessed extends React.Component<unknown, { meterTable: Array<JSX.El
             </div>
         );
     }
-
 }
 
 const ListItem = (props: { CreationTime: string, FilePath: string, FileGroupID: number }) => {

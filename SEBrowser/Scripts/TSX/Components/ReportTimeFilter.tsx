@@ -296,8 +296,6 @@ const AvailableQuickSelects: IQuickSelect[] = [
     }
 ];
 
-
-
 const ReportTimeFilter = (props: IProps) => {
     const timeZone = useSelector(SelectTimeZone);
     const [activeQP, setActiveQP] = React.useState<number>(-1);
@@ -314,7 +312,6 @@ const ReportTimeFilter = (props: IProps) => {
         windowSize: props.filter.windowSize*2,
         halfWindowSize: props.filter.windowSize,
     });
-
     
     React.useEffect(() => {
         if (isEqual(filter, props.filter))
@@ -356,7 +353,6 @@ const ReportTimeFilter = (props: IProps) => {
 
     }, [props.filter]);
    
-
     return (
         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
             <legend className="w-auto" style={{ fontSize: 'large' }}>Date/Time Filter:</legend>
