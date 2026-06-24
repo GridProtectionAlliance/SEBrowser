@@ -3,7 +3,7 @@
     "baseUrl": ".",
     "downlevelIteration": true,
     "jsx": "react",
-    "lib": [ "dom", "es5", "scripthost", "es2015", "es6" ],
+    "lib": [ "dom", "es5", "scripthost", "es2019", "es6", "es2020" ],
     "noEmitOnError": true,
     "noImplicitAny": false,
     "removeComments": false,
