@@ -56,10 +56,34 @@ namespace SEBrowser.Controllers.OpenXDA
     public class OpenXDALocationController : ReadOnlyModelController<DetailedLocation>;
 
     [Route("api/openXDA/Widget")]
-    public class WidgetController : ModelController<WidgetView>;
+    public class WidgetController : ControllerBase
+    {
+        [HttpGet, Route("{categoryID:int}")]
+        public IActionResult GetWidgetsForCategory(int categoryID)
+        {
+            using AdoDataConnection connection = new(Gemstone.Configuration.Settings.Default);
+
+            IEnumerable<WidgetView> records = new TableOperations<WidgetView>(connection)
+                .QueryRecords(new RecordRestriction("CategoryID = {0}", categoryID));
+
+            return Ok(records);
+        }
+    }
 
     [Route("api/OpenXDA/WidgetCategory")]
-    public class WidgetCategoryController : ModelController<WidgetCategory>;
+    public class WidgetCategoryController : ControllerBase
+    {
+        [HttpGet]
+        public IActionResult GetWidgetCategories()
+        {
+            using AdoDataConnection connection = new(Gemstone.Configuration.Settings.Default);
+
+            IEnumerable<WidgetCategory> records = new TableOperations<WidgetCategory>(connection)
+                .QueryRecords("OrderBy");
+
+            return Ok(records);
+        }
+    }
 
     [Route("api/openXDA/AdditionalField")]
     public class AdditionalFieldController : ControllerBase
