@@ -32,6 +32,7 @@ import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 
 interface IProps {
     LinePlot: IMultiCheckboxOption[],
+    SetLinePlotOptions: (options: IMultiCheckboxOption[]) => void,
     SetShowFilter: (filterType: FilterType) => void,
     SetTrendFilter: React.Dispatch<React.SetStateAction<ITrendDataFilter | null>>,
     TrendFilter: ITrendDataFilter | null,
@@ -44,14 +45,7 @@ interface IProps {
 }
 
 const TrendChannelFilters = (props: IProps) => {
-    const [linePlotOptions, setLinePlotOptions] = React.useState<IMultiCheckboxOption[]>(props.LinePlot);
-
     const { MeterList, AssetList } = props.TrendFilter ?? { MeterList: [], AssetList: [] };
-
-    // Update Default Values
-    React.useEffect(() => {
-        setLinePlotOptions(props.LinePlot);
-    }, [props.LinePlot]);
 
     function multiCheckboxUpdate(filterField: keyof ITrendDataFilter, newOptions: IMultiCheckboxOption[], oldOptions: IMultiCheckboxOption[], setOptions: (options: IMultiCheckboxOption[]) => void) {
         const options: IMultiCheckboxOption[] = [];
@@ -131,15 +125,15 @@ const TrendChannelFilters = (props: IProps) => {
             <div className="row">
                 <div className="col">
                     <MultiCheckBoxSelect
-                        Options={linePlotOptions}
+                        Options={props.LinePlot}
                         Label={''}
                         OnChange={(evt, newOptions: IMultiCheckboxOption[]) => {
                             const options: IMultiCheckboxOption[] = [];
-                            linePlotOptions.forEach(item => {
+                            props.LinePlot.forEach(item => {
                                 const selected: boolean = item.Selected != (newOptions.findIndex(option => item.Value === option.Value) > -1);
                                 options.push({ ...item, Selected: selected });
                             })
-                            setLinePlotOptions(options);
+                            props.SetLinePlotOptions(options);
                         }}
                     />
                 </div>

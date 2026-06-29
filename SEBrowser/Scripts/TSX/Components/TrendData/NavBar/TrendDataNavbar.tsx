@@ -77,7 +77,8 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         setPhaseOptions,
         channelGroupOptions,
         setChannelGroupOptions,
-        linePlotOptions
+        linePlotOptions,
+        setLinePlotOptions
     } = useTrendDataNavbar({ TimeFilter: props.TimeFilter, LinePlot: props.LinePlot });
 
     const tableHeight = timeOffsetHeight > filtOffsetHeight ? timeOffsetHeight : filtOffsetHeight;
@@ -175,6 +176,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                             TrendFilter={trendFilter}
                             SetTrendFilter={setTrendFilter}
                             LinePlot={linePlotOptions}
+                            SetLinePlotOptions={setLinePlotOptions}
                             PhaseStatus={phaseStatus}
                             PhaseOptions={phaseOptions}
                             SetPhaseOptions={setPhaseOptions}

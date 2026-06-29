@@ -34,10 +34,10 @@ interface IProps {
 }
 
 interface IQuery {
-    phaseIds: Set<number>,
-    groupIds: Set<number>,
-    assetIds: Set<number>,
-    meterIds: Set<number>
+    phaseIds?: Set<number>,
+    groupIds?: Set<number>,
+    assetIds?: Set<number>,
+    meterIds?: Set<number>
 }
 
 /**
@@ -70,7 +70,7 @@ export const useTrendDataNavbar = (props: IProps) => {
     const [trendChannelStatus, setTrendChannelStatus] = React.useState<Application.Types.Status>('uninitiated');
     const [selectedSet, setSelectedSet] = React.useState<Set<string>>(new Set<string>());
 
-    const queryRef = React.useRef<IQuery>({ phaseIds: new Set<number>(), groupIds: new Set<number>(), assetIds: new Set<number>(), meterIds: new Set<number>() });
+    const queryRef = React.useRef<IQuery>({});
     const [queryReady, setQueryReady] = React.useState<boolean>(false);
 
     // Parsing URL Params
@@ -216,8 +216,8 @@ export const useTrendDataNavbar = (props: IProps) => {
         setTrendFilter({
             Phases: makeKeyValuePairs(allPhases, queryRef.current.phaseIds, new Set(["AB", "BC", "CA"])),
             ChannelGroups: makeKeyValuePairs(allChannelGroups, queryRef.current.groupIds, new Set(["Voltage"])),
-            MeterList: queryRef.current.meterIds == null ? [] : allMeters.filter(meter => queryRef.current.meterIds.has(meter.ID)),
-            AssetList: queryRef.current.assetIds == null ? [] : allAssets?.filter(asset => queryRef.current.assetIds.has(asset.ID)) ?? []
+            MeterList: queryRef.current.meterIds == null ? [] : allMeters.filter(meter => queryRef.current.meterIds?.has(meter.ID)),
+            AssetList: queryRef.current.assetIds == null ? [] : allAssets.filter(asset => queryRef.current.assetIds?.has(asset.ID))
         });
     }, [channelGroupStatus, phaseStatus, meterStatus, assetStatus, queryReady]);
 
