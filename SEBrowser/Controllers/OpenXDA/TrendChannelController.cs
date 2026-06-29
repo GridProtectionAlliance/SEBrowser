@@ -88,8 +88,8 @@ namespace SEBrowser.Controllers.OpenXDA
         {
             using (AdoDataConnection connection = new(Settings.Default))
             {
-                string phaseFilter = GetKeyValueFilter((JArray) postData["Phases"], "Phase.ID");
-                string channelGroupFilter = GetKeyValueFilter((JArray) postData["ChannelGroups"], "ChannelGroup.ID");
+                string phaseFilter = GetKeyValueFilter((JArray)postData["Phases"], "Phase.ID");
+                string channelGroupFilter = GetKeyValueFilter((JArray)postData["ChannelGroups"], "ChannelGroup.ID");
                 string assetFilter = GetIDFilter(postData["AssetList"], "Asset.ID");
                 string meterFilter = GetIDFilter(postData["MeterList"], "Meter.ID");
                 // Meters must be selected
@@ -134,44 +134,14 @@ namespace SEBrowser.Controllers.OpenXDA
         }
 
         [Route("GetLineChartData"), HttpPost]
-        public Task<HttpResponseMessage> GetLineChartData([FromBody] JObject postData)
-        {
-            XDAAPIHelper.TryRefreshSettings();
-            return XDAAPIHelper.GetResponseTask("api/HIDS/QueryPoints", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
-        }
-
+        public Task<IActionResult> GetLineChartData([FromBody] JObject postData) => ProxyPostToXDA("api/HIDS/QueryPoints", postData);
+        
         [Route("GetMetaData"), HttpPost]
-        public Task<HttpResponseMessage> GetCyclicMetaData([FromBody] JObject postData)
-        {
-            XDAAPIHelper.TryRefreshSettings();
-            return XDAAPIHelper.GetResponseTask("api/HIDS/QueryHistogramMetadata", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
-        }
-
+        public Task<IActionResult> GetCyclicMetaData([FromBody] JObject postData) => ProxyPostToXDA("api/HIDS/QueryHistogramMetadata", postData);
+        
         [Route("GetChartData/{type}"), HttpPost]
-        public Task<HttpResponseMessage> GetCyclicChartData([FromBody] JObject postData, string type)
-        {
-            string typeUncased = type.ToLower();
-            string route;
-            switch (typeUncased)
-            {
-                case "cyclic":
-                    route = "QueryCyclicHistogramData";
-                    break;
-                case "residual":
-                    route = "QueryResidualHistogramData";
-                    break;
-                case "frequency":
-                    route = "QueryFrequencyHistogramData";
-                    break;
-                case "rms":
-                    route = "QueryRMSHistogramData";
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unknown type parameter: {type}");
-            }
-            // Read metadata into list
-            return XDAAPIHelper.GetResponseTask($"api/HIDS/{route}", new StringContent(postData.ToString(), Encoding.UTF8, "application/json"));
-        }
+        public Task<IActionResult> GetCyclicChartData([FromBody] JObject postData, string type) => ProxyPostToXDA($"api/HIDS/{GetHIDSRouteFromType(type)}", postData);
+        
         #endregion
 
         #region [ Private Methods ]
@@ -179,7 +149,7 @@ namespace SEBrowser.Controllers.OpenXDA
         {
             //Note: we're only gonna filter out ones that have been explicitly exluded
             List<int> validIds = keyValuePairs
-                .SelectMany(pair => ((JObject) pair).Properties())
+                .SelectMany(pair => ((JObject)pair).Properties())
                 .Where(pair => !pair.Value.ToObject<bool>())
                 .Select(pair => int.Parse(pair.Name))
                 .ToList();
@@ -194,6 +164,40 @@ namespace SEBrowser.Controllers.OpenXDA
             if (ids.Count == 0) return null;
             return $"{fieldName} IN ({string.Join(", ", ids)})";
         }
+
+        private async Task<IActionResult> ProxyPostToXDA(string route, JObject postData)
+        {
+            XDAAPIHelper.TryRefreshSettings();
+
+            using HttpResponseMessage response = await XDAAPIHelper
+                .GetResponseTask(route, new StringContent(postData.ToString(), Encoding.UTF8, "application/json"))
+                .ConfigureAwait(false);
+
+            string content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string contentType = response.Content.Headers.ContentType?.ToString() ?? "text/plain; charset=utf-8";
+
+            return new ContentResult
+            {
+                StatusCode = (int)response.StatusCode,
+                ContentType = contentType,
+                Content = content
+            };
+        }
+        
+        private string GetHIDSRouteFromType(string type)
+        {
+            string typeUncased = type.ToLower();
+            string route = typeUncased switch
+            {
+                "cyclic" => "QueryCyclicHistogramData",
+                "residual" => "QueryResidualHistogramData",
+                "frequency" => "QueryFrequencyHistogramData",
+                "rms" => "QueryRMSHistogramData",
+                _ => throw new InvalidOperationException($"Unknown type parameter: {type}"),
+            };
+            return route;
+        }
+
         #endregion
     }
 }
