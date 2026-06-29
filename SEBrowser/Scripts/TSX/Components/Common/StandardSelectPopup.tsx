@@ -160,6 +160,7 @@ const SelectPopup = <T,>(props: IProps<T>) => {
                             BtnClass={'btn-danger'}
                             Size="std"
                             ShowToolTip={true}
+                            TooltipLocation="bottom"
                             TooltipContent={<p className='mb-0'>Removes the records on this page from your selection.</p>}
                         />
                     </div>
