@@ -139,35 +139,34 @@ const EventSearchNavbar = () => {
             <div className="row">
                 <div className={"col-4"}>
                     <form>
-                        <div className="form-group">
-                            <Select<SEBrowser.IEventCharacteristicFilters>
-                                Record={newEventCharacteristicFilter}
-                                Label='Mag-Dur:'
-                                Field='curveID'
-                                Setter={setNewEventCharacteristicFilter}
-                                Options={MagDurOptions}
-                            />
-                            <RadioButtons<{ curveType: string }>
-                                Record={{
-                                    curveType: newEventCharacteristicFilter.curveInside
-                                        ? (newEventCharacteristicFilter.curveOutside ? 'both' : 'inside')
-                                        : 'outside'
-                                }}
-                                Label=''
-                                Field='curveType'
-                                Setter={({ curveType }) => setNewEventCharacteristicFilter({
-                                    ...newEventCharacteristicFilter,
-                                    curveInside: curveType != 'outside',
-                                    curveOutside: curveType != 'inside'
-                                })}
-                                Options={[
-                                    { Label: 'Inside', Value: 'inside' },
-                                    { Label: 'Outside', Value: 'outside' },
-                                    { Label: 'Both', Value: 'both' }
-                                ]}
-                                Style={{ marginBottom: 0 }}
-                            />
-                        </div>
+                        <label style={{ margin: 0 }}>Mag-Dur:</label>
+                        <Select<SEBrowser.IEventCharacteristicFilters>
+                            Record={newEventCharacteristicFilter}
+                            Label=''
+                            Field='curveID'
+                            Setter={setNewEventCharacteristicFilter}
+                            Options={MagDurOptions}
+                        />
+                        <RadioButtons<{ curveType: string }>
+                            Record={{
+                                curveType: newEventCharacteristicFilter.curveInside
+                                    ? (newEventCharacteristicFilter.curveOutside ? 'both' : 'inside')
+                                    : 'outside'
+                            }}
+                            Label=''
+                            Field='curveType'
+                            Setter={({ curveType }) => setNewEventCharacteristicFilter({
+                                ...newEventCharacteristicFilter,
+                                curveInside: curveType != 'outside',
+                                curveOutside: curveType != 'inside'
+                            })}
+                            Options={[
+                                { Label: 'Inside', Value: 'inside' },
+                                { Label: 'Outside', Value: 'outside' },
+                                { Label: 'Both', Value: 'both' }
+                            ]}
+                            Style={{ marginBottom: 0 }}
+                        />
                     </form>
                 </div>
                 <div className={"col-4"}>
@@ -262,9 +261,11 @@ const EventSearchNavbar = () => {
                     </form>
                 </div>
                 <div className={"col-4"}>
+                    <form>
+                    <label style={{ margin: 0 }}>Phases</label>
                     <MultiCheckBoxSelect
                         Options={newPhases}
-                        Label={'Phases'}
+                        Label={''}
                         OnChange={
                             (_evt, Options: { Value: number | string; Label: string | JSX.Element; Selected: boolean; }[]) => {
                                 const phaseList: { Value: number; Label: string; Selected: boolean; }[] = [];
@@ -279,6 +280,7 @@ const EventSearchNavbar = () => {
                             }
                         }
                     />
+                    </form>
                 </div>
 
                 <div className={"col-4"}>
