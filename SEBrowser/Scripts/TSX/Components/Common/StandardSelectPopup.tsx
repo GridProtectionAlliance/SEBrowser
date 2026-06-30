@@ -183,11 +183,21 @@ const SelectPopup = <T,>(props: IProps<T>) => {
                                 setAscending(true);
                             }
                         }}
-                        OnClick={(d) => {
-                            if (props.Type === undefined || props.Type === 'single')
-                                setSelectedData([d.row])
-                            else
-                                setSelectedData((s) => [...s.filter(item => item[props.PrimaryKey] !== d.row[props.PrimaryKey]), d.row])
+                        OnClick={(d, e) => {
+                            //the table fires OnClick for both the clicked cell and the bubbled row, so stop
+                            //propagation to avoid a double toggle that would immediately deselect the row
+                            e.stopPropagation();
+                            setSelectedData((s) => {
+                                const isSelected = s.findIndex(item => item[props.PrimaryKey] === d.row[props.PrimaryKey]) > -1;
+
+                                if (isSelected)
+                                    return s.filter(item => item[props.PrimaryKey] !== d.row[props.PrimaryKey]);
+
+                                if (props.Type === undefined || props.Type === 'single')
+                                    return [d.row]
+
+                                return [...s, d.row]
+                            })
                         }}
                         Selected={(item) => selectedData.findIndex(d => d[props.PrimaryKey] === item[props.PrimaryKey]) > -1}
                         KeySelector={item => item[props.PrimaryKey] as string | number}
