@@ -37,14 +37,14 @@ using Gemstone.Web.APIController;
 namespace SEBrowser.Controllers.OpenXDA
 {
     [Route("api/openXDA/AssetGroup")]
-    public class OpenXDAAssetGroupController : ModelController<AssetGroupView>;
+    public class OpenXDAAssetGroupController : ReadOnlyModelController<AssetGroupView>;
 
     [RootQueryRestriction("ShowInFilter = 1")]
     [UseEscapedName, TableName("EventType")]
     public class SEbrowserEventType : EventType;
 
     [Route("api/openXDA/EventType")]
-    public class EventTypeController : ModelController<SEbrowserEventType>;
+    public class EventTypeController : ReadOnlyModelController<SEbrowserEventType>;
 
     [Route("api/openXDA/Asset")]
     public class OpenXDAAssetController : ReadOnlyModelController<DetailedAsset>;
@@ -118,10 +118,10 @@ namespace SEBrowser.Controllers.OpenXDA
     public class SEBrowserValueListController : ValueListController;
 
     [Route("api/openXDA/Phase")]
-    public class PhaseController : ModelController<Phase>;
+    public class PhaseController : ReadOnlyModelController<Phase>;
 
     [Route("api/openXDA/ChannelGroup")]
-    public class ChannelGroupController : ModelController<ChannelGroup>;
+    public class ChannelGroupController : ReadOnlyModelController<ChannelGroup>;
 
     [Route("api/openXDA/StandardMagDurCurve")]
     public class StandardMagDurCurveController : ControllerBase
