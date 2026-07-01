@@ -21,13 +21,12 @@
 //
 //******************************************************************************************************
 
-import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
+import { OpenXDA } from '@gpa-gemstone/application-typings';
 import { ReadWriteGenericSlice_Gemstone } from "@gpa-gemstone/common-pages";
 import { configureStore } from '@reduxjs/toolkit';
 import EventSearchReducer from './EventSearchSlice';
 import { SettingsReducer } from './SettingsSlice';
 import GroupSlice from './ValueListGroupSlice'
-import { TrendSearch } from '../global';
 import { EventTypeControllerPath } from './ControllerFunctions';
 
 //Dispatch and Selector Typed
