@@ -23,16 +23,15 @@
 
 using Gemstone.Data;
 using Gemstone.Data.Model;
-using Gemstone.Identity;
-using Gemstone.Web;
+using Gemstone.Web.APIController;
+using Microsoft.AspNetCore.Mvc;
 using openXDA.Model;
-using SystemCenter.Model;
+using SEBrowser.Model;
+using SEBrowser.Security;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using SEBrowser.Model;
-using Microsoft.AspNetCore.Mvc;
-using Gemstone.Web.APIController;
+using SystemCenter.Model;
 
 namespace SEBrowser.Controllers.OpenXDA
 {
@@ -107,7 +106,7 @@ namespace SEBrowser.Controllers.OpenXDA
             IEnumerable<AdditionalField> records = new TableOperations<AdditionalField>(connection)
                 .QueryRecords(orderByExpression, restriction);
 
-            if (!User.IsInRole("Administrator"))
+            if (!AuthenticationSetup.CanViewSecureAdditionalFields(User))
                 records = records.Where(x => !x.IsSecure);
 
             return Ok(records);

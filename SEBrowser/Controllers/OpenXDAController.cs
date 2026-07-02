@@ -25,6 +25,7 @@ using Gemstone.Configuration;
 using Gemstone.Data;
 using Gemstone.Data.Model;
 using Gemstone.EnumExtensions;
+using Gemstone.Security.AccessControl;
 using Microsoft.AspNetCore.Mvc;
 using openXDA.Model;
 using System;
@@ -165,7 +166,8 @@ namespace SEBrowser.Controllers
             public bool ABCG { get; set; }
         }
 
-        [Route("GetEventSearchData"), HttpPost]
+        // Read-style POST; without this, Gemstone's verb mapping would require Create access.
+        [Route("GetEventSearchData"), HttpPost, ResourceAccess(ResourceAccessType.Read)]
         public DataTable GetEventSearchData([FromBody] EventSearchPostData postData)
         {
             if(postData is null)

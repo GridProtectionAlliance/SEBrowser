@@ -100,7 +100,6 @@ public class Program
             OAuthAuthenticationProvider.DefineSettings(settings);
             WindowsAuthenticationProvider.DefineSettings(settings);
             DefineWebHotSettings(settings);
-            DefineSecurityProviderSettings(settings);
             DefineAdditionalSystemSettings(settings);
         }
     }
@@ -190,13 +189,5 @@ public class Program
     {
         if (databaseSettings.TryGetValue(databaseKey, out string value) && !string.IsNullOrWhiteSpace(value))
             settings[settingKey] = value;
-    }
-
-    private static void DefineSecurityProviderSettings(Settings settings)
-    {
-        dynamic section = settings[SecurityProviderCategory];
-
-        section.PasswordRequirementsRegex = (@"^.*(?=.{8,})(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).*$", "Regular expression used to validate new passwords for database users");
-        section.PasswordRequirementsError = ("Invalid Password: Password must be at least 8 characters; must contain at least 1 number, 1 upper case letter, and 1 lower case letter", "Error message to display when a new database user password fails validation");
     }
 }

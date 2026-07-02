@@ -24,6 +24,7 @@
 using Gemstone.Configuration;
 using Gemstone.Data;
 using Gemstone.Data.Model;
+using Gemstone.Security.AccessControl;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using openXDA.APIAuthentication;
@@ -83,7 +84,8 @@ namespace SEBrowser.Controllers.OpenXDA
         }
 
         #region [ Http Methods ]
-        [Route("GetTrendSearchData"), HttpPost]
+        // Read-style POSTs; without this, Gemstone's verb mapping would require Create access.
+        [Route("GetTrendSearchData"), HttpPost, ResourceAccess(ResourceAccessType.Read)]
         public IActionResult GetTrendSearchData([FromBody] JObject postData)
         {
             using (AdoDataConnection connection = new(Settings.Default))
@@ -133,13 +135,13 @@ namespace SEBrowser.Controllers.OpenXDA
             }
         }
 
-        [Route("GetLineChartData"), HttpPost]
+        [Route("GetLineChartData"), HttpPost, ResourceAccess(ResourceAccessType.Read)]
         public Task<IActionResult> GetLineChartData([FromBody] JObject postData) => ProxyPostToXDA("api/HIDS/QueryPoints", postData);
         
-        [Route("GetMetaData"), HttpPost]
+        [Route("GetMetaData"), HttpPost, ResourceAccess(ResourceAccessType.Read)]
         public Task<IActionResult> GetCyclicMetaData([FromBody] JObject postData) => ProxyPostToXDA("api/HIDS/QueryHistogramMetadata", postData);
         
-        [Route("GetChartData/{type}"), HttpPost]
+        [Route("GetChartData/{type}"), HttpPost, ResourceAccess(ResourceAccessType.Read)]
         public Task<IActionResult> GetCyclicChartData([FromBody] JObject postData, string type) => ProxyPostToXDA($"api/HIDS/{GetHIDSRouteFromType(type)}", postData);
         
         #endregion

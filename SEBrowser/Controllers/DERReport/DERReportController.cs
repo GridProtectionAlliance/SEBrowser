@@ -26,6 +26,7 @@ using Gemstone.Configuration;
 using Gemstone.Data;
 using Gemstone.Data.Model;
 using Gemstone.EnumExtensions;
+using Gemstone.Security.AccessControl;
 using Microsoft.AspNetCore.Mvc;
 using openXDA.Model;
 using System;
@@ -161,7 +162,8 @@ namespace SEBrowser.Controllers.DERReport
             public List<int> SubstationIDs { get; set; }
         }
 
-        [Route("DER"), HttpPost]
+        // Read-style POSTs; without this, Gemstone's verb mapping would require Create access.
+        [Route("DER"), HttpPost, ResourceAccess(ResourceAccessType.Read)]
         public IActionResult GetDER([FromBody] DERPostRequest content)
         {
             using AdoDataConnection connection = new(Settings.Default);
@@ -215,7 +217,7 @@ namespace SEBrowser.Controllers.DERReport
 
         }
 
-        [Route(""), HttpPost]
+        [Route(""), HttpPost, ResourceAccess(ResourceAccessType.Read)]
         public IActionResult Post([FromBody] DERReportPostRequest content)
         {
             using AdoDataConnection connection = new(Settings.Default);

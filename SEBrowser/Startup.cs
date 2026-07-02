@@ -77,62 +77,63 @@ public class Startup
 
         services.AddTransient<IAPICredentialRetriever, XDAAPICredentialRetriever>();
 
-        // services.AddTransient<WindowsAuthenticationProviderOptions>(_ => new()
-        // {
-        //     LDAPPath = Settings.Default[WindowsAuthenticationProvider.SettingsSection].LDAPPath,
-        //     AllowLocalAccounts = (bool?)(Settings.Default[WindowsAuthenticationProvider.SettingsSection].AllowLocalAccounts) ?? false
-        // });
+        services.AddTransient<WindowsAuthenticationProviderOptions>(_ => new()
+        {
+            LDAPPath = Settings.Default[WindowsAuthenticationProvider.SettingsSection].LDAPPath,
+            AllowLocalAccounts = (bool?)(Settings.Default[WindowsAuthenticationProvider.SettingsSection].AllowLocalAccounts) ?? false
+        });
 
-        // AuthenticationBuilder authenticationBuilder = services.ConfigureGemstoneWebAuthentication<AuthenticationSetup>();
+        AuthenticationBuilder authenticationBuilder = services.ConfigureGemstoneWebAuthentication<AuthenticationSetup>();
 
-        // dynamic oauthSection = Settings.Instance[OAuthAuthenticationProvider.SettingsSection];
+        dynamic oauthSection = Settings.Instance[OAuthAuthenticationProvider.SettingsSection];
 
-        // if (oauthSection.Enabled)
-        // {
-        //     OAuthAuthenticationProviderOptions oauthOptions = new()
-        //     {
-        //         UserIdClaim = oauthSection.UserIdClaim,
-        //         Authority = oauthSection.Authority,
-        //         ClientId = oauthSection.ClientId,
-        //         ClientSecret = oauthSection.ClientSecret,
-        //         Scopes = oauthSection.Scopes
-        //     };
+        if (oauthSection.Enabled)
+        {
+            OAuthAuthenticationProviderOptions oauthOptions = new()
+            {
+                UserIdClaim = oauthSection.UserIdClaim,
+                Authority = oauthSection.Authority,
+                ClientId = oauthSection.ClientId,
+                ClientSecret = oauthSection.ClientSecret,
+                Scopes = oauthSection.Scopes
+            };
 
-        //     authenticationBuilder.ConfigureOAuthProvider(oauthOptions);
-        // }
+            authenticationBuilder.ConfigureOAuthProvider(oauthOptions);
+        }
 
-        // services.AddTransient<IClaimsTransformation, OAuthClaimsTransformation>();
+        services.AddTransient<IClaimsTransformation, OAuthClaimsTransformation>();
 
-        // services
-        //     .AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
-        //     .Configure(options =>
-        //     {
-        //         double ticketTimeout = Settings.Default.WebHosting.AuthenticationTicketTimeout;
-        //         options.ExpireTimeSpan = TimeSpan.FromHours(ticketTimeout);
-        //     });
+        services
+            .AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
+            .Configure(options =>
+            {
+                double ticketTimeout = Settings.Default.WebHosting.AuthenticationTicketTimeout;
+                options.ExpireTimeSpan = TimeSpan.FromHours(ticketTimeout);
+            });
 
-        // services
-        //     .AddOptions<SessionCacheOptions>()
-        //     .Configure(options =>
-        //     {
-        //         double sessionTimeout = Settings.Default.WebHosting.AuthenticationSessionTimeout;
-        //         options.SlidingExpiration = TimeSpan.FromMinutes(sessionTimeout);
-        //     });
+        services
+            .AddOptions<SessionCacheOptions>()
+            .Configure(options =>
+            {
+                double sessionTimeout = Settings.Default.WebHosting.AuthenticationSessionTimeout;
+                options.SlidingExpiration = TimeSpan.FromMinutes(sessionTimeout);
+            });
 
-        // services.AddAuthorization(options =>
-        // {
-        //     AuthorizationPolicy controllerAccessPolicy = new AuthorizationPolicyBuilder()
-        //         .RequireControllerAccess()
-        //         .RequireAuthenticatedUser()
-        //         .Build();
+        services.AddAuthorization(options =>
+        {
+            AuthorizationPolicy controllerAccessPolicy =
+                new AuthorizationPolicyBuilder(CookieAuthenticationDefaults.AuthenticationScheme)
+                    .RequireControllerAccess()
+                    .RequireAuthenticatedUser()
+                    .Build();
 
-        //     options.AddPolicy(Policies.Authenticated, policy => policy.RequireAuthenticatedUser());
-        //     options.AddPolicy(Policies.ControllerAccess, controllerAccessPolicy);
-        //     options.DefaultPolicy = controllerAccessPolicy;
-        //     options.FallbackPolicy = controllerAccessPolicy;
-        // });
+            options.AddPolicy(Policies.Authenticated, policy => policy.RequireAuthenticatedUser());
+            options.AddPolicy(Policies.ControllerAccess, controllerAccessPolicy);
+            options.DefaultPolicy = controllerAccessPolicy;
+            options.FallbackPolicy = controllerAccessPolicy;
+        });
 
-        // services.AddSingleton<IAuthorizationHandler, ControllerAccessHandler>();
+        services.AddSingleton<IAuthorizationHandler, ControllerAccessHandler>();
 
         services.AddMvc();
     }
@@ -161,14 +162,14 @@ public class Startup
             ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost
         });
 
-        // app.UseGemstoneAuthentication();
+        app.UseGemstoneAuthentication();
 
         app.UseStaticFiles(Gemstone.Web.WebExtensions.StaticFileEmbeddedResources());
         app.UseStaticFiles();
 
         app.UseRouting();
 
-        // app.UseAuthorization();
+        app.UseAuthorization();
 
         app.UseEndpoints(endpoints =>
         {
