@@ -28,10 +28,11 @@ import { SelectTrendDataSettings, SelectGeneralSettings } from '../../../Store/S
 import { useAppSelector } from './../../../hooks';
 import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
-import { LoadingIcon, ToolTip } from '@gpa-gemstone/react-interactive';
+import { LoadingIcon } from '@gpa-gemstone/react-interactive';
 import { HeatMapChart, Plot } from '@gpa-gemstone/react-graph';
 import { HexToHsv } from '@gpa-gemstone/helper-functions';
 import { Warning } from '@gpa-gemstone/gpa-symbols';
+import { ToolTip } from '@gpa-gemstone/react-forms';
 
 interface IProps {
     ID: string,
@@ -154,7 +155,7 @@ const CyclicHistogram = React.memo((props: IProps) => {
     React.useEffect(() => {
         if (props.ChannelInfo?.Settings?.Color == null) return;
         const color = HexToHsv(props.ChannelInfo.Settings.Color as string);
-        setBarColor({ Hue: color.h, Saturation: color.s})
+        setBarColor({ Hue: color.h, Saturation: color.s })
     }, [props.ChannelInfo?.Settings?.Color]);
 
     React.useEffect(() => {
@@ -237,10 +238,10 @@ const CyclicHistogram = React.memo((props: IProps) => {
                 <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'uninitiated'} Size={29} />
                 <h4 ref={titleRef} style={{ textAlign: "center", width: `${props.Width}px`, marginBottom: '0px' }}>
                     {props?.Title ?? ''}
-                        {(chartData?.Series?.length == null || chartData.Series.length === 0) ?
-                            <span data-tooltip={props.ID} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>{Warning}</span>
-                            : null
-                        }
+                    {(chartData?.Series?.length == null || chartData.Series.length === 0) ?
+                        <span data-tooltip={props.ID} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>{Warning}</span>
+                        : null
+                    }
                 </h4>
                 <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2} menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
                     defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}

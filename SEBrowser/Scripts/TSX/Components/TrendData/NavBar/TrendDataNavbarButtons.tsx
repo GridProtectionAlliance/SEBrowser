@@ -18,7 +18,7 @@
 import React from 'react';
 import { SEBrowser, TrendSearch, IMultiCheckboxOption } from '../../../global';
 import { ToolTip } from '@gpa-gemstone/react-forms';
-import { CrossMark, SVGIcons } from '@gpa-gemstone/gpa-symbols';
+import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { CreateGuid } from '@gpa-gemstone/helper-functions';
 import html2canvas from 'html2canvas';
 import jspdf from 'jspdf';
@@ -47,7 +47,7 @@ const TrendDataNavbarButtons = (props: IProps) => {
             <div className="navbar-nav ml-auto" >
                 <button type="button" className={`btn btn-primary btn-sm`} onClick={() => props.ToggleVis()}
                     data-tooltip='Show' onMouseEnter={() => setHover('Show')} onMouseLeave={() => setHover('None')}>
-                    <span>{SVGIcons.ArrowDropDown}</span>
+                    <ReactIcons.ArrowDropDown />
                 </button>
                 <ToolTip Show={hover === 'Show'} Position={'left'} Target={"Show"}>
                     Shows Navbar
@@ -64,7 +64,7 @@ const TrendDataNavbarButtons = (props: IProps) => {
                     onMouseEnter={() => setHover('Hide')}
                     onMouseLeave={() => setHover('None')}
                 >
-                    <span>{SVGIcons.ArrowDropUp}</span>
+                    <ReactIcons.ArrowDropUp />
                 </button>
                 <ToolTip Show={hover === 'Hide'} Position={'left'} Target={"Hide"}>
                     Hides Navbar
@@ -73,11 +73,12 @@ const TrendDataNavbarButtons = (props: IProps) => {
                     onClick={() => { props.SetShowAllSettings(true); }}
                     data-tooltip='Cog'
                     onMouseEnter={() => setHover('Cog')}
-                    onMouseLeave={() => setHover('None')}>
-                    <span>{SVGIcons.Settings}</span>
+                    onMouseLeave={() => setHover('None')}
+                >
+                    <ReactIcons.Settings />
                 </button>
                 <ToolTip Show={hover === 'Cog'} Position={'left'} Target={"Cog"}>
-                    {<p>Settings for All Current and/or Future Plots</p>}
+                    <p>Settings for All Current and/or Future Plots</p>
                 </ToolTip>
                 <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${props.Movable ? 'Warning' : 'primary'} btn-sm${props.PlotIds.length === 0 ? ' disabled' : ''}`}
                     onClick={() => {
@@ -86,12 +87,15 @@ const TrendDataNavbarButtons = (props: IProps) => {
                     }}
                     data-tooltip='Move'
                     onMouseEnter={() => setHover('Move')}
-                    onMouseLeave={() => setHover('None')}>
-                    <span>{SVGIcons.DataContainer}</span>
+                    onMouseLeave={() => setHover('None')}
+                >
+                    <ReactIcons.DataContainer />
                 </button>
                 <ToolTip Show={hover === 'Move'} Position={'left'} Target={"Move"}>
-                    {<p>Drag-and-Drop Reorder Plots</p>}
-                    {props.PlotIds.length === 0 ? <p>{CrossMark} {'Requires an Active Plot'}</p> : null}
+                    <p>Drag-and-Drop Reorder Plots</p>
+                    {props.PlotIds.length === 0 ?
+                        <p><ReactIcons.CrossMark Color='var(--danger)'/> {'Requires an Active Plot'}</p>
+                        : null}
                 </ToolTip>
                 <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${props.TrendChannels.length === 0 ? ' disabled' : ''}`}
                     onClick={() => {
@@ -105,11 +109,11 @@ const TrendDataNavbarButtons = (props: IProps) => {
                     onMouseEnter={() => setHover('Select')}
                     onMouseLeave={() => setHover('None')}
                 >
-                    <span>{SVGIcons.Alert}</span>
+                    <ReactIcons.Alert />
                 </button>
                 <ToolTip Show={hover === 'Select'} Position={'left'} Target={"Select"}>
                     <p>Select All Channels in Table</p>
-                    {(props.TrendChannels.length === 0) ? <p>{CrossMark} {'Table has no Channels to Select'}</p> : null}
+                    {(props.TrendChannels.length === 0) ? <p><ReactIcons.CrossMark Color='var(--danger)'/> {'Table has no Channels to Select'}</p> : null}
                 </ToolTip>
                 <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${props.Movable ? 'Warning' : 'primary'} btn-sm${props.PlotIds.length === 0 ? ' disabled' : ''}`}
                     onClick={() => {
@@ -161,11 +165,11 @@ const TrendDataNavbarButtons = (props: IProps) => {
                         }
                     }}
                     data-tooltip='Capture' onMouseEnter={() => setHover('Capture')} onMouseLeave={() => setHover('None')}>
-                    <span>{SVGIcons.Folder}</span>
+                    <ReactIcons.Folder />
                 </button>
                 <ToolTip Show={hover === 'Capture'} Position={'left'} Target={"Capture"}>
-                    {<p>Save All Plots to PDF</p>}
-                    {props.PlotIds.length === 0 ? <p>{CrossMark} {'Requires an Active Plot'}</p> : null}
+                    <p>Save All Plots to PDF</p>
+                    {props.PlotIds.length === 0 ? <p><ReactIcons.CrossMark Color='var(--danger)'/> {'Requires an Active Plot'}</p> : null}
                 </ToolTip>
             </div>
             <div className="btn-group-vertical float-right">
@@ -178,11 +182,11 @@ const TrendDataNavbarButtons = (props: IProps) => {
                     onMouseEnter={() => setHover('Trash')}
                     onMouseLeave={() => setHover('None')}
                 >
-                    <span>{SVGIcons.TrashCan}</span>
+                    <ReactIcons.TrashCan />
                 </button>
                 <ToolTip Show={hover === 'Trash'} Position={'left'} Target={"Trash"}>
-                    {<p>Remove All Plots</p>}
-                    {props.PlotIds.length === 0 ? <p>{CrossMark} {'Requires an Active Plot'}</p> : null}
+                    <p>Remove All Plots</p>
+                    {props.PlotIds.length === 0 ? <p><ReactIcons.CrossMark Color='var(--danger)'/> {'Requires an Active Plot'}</p> : null}
                 </ToolTip>
                 <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${props.SelectedSet.size === 0 ? ' disabled' : ''}`}
                     data-tooltip='Single-Line'
@@ -196,11 +200,11 @@ const TrendDataNavbarButtons = (props: IProps) => {
                             PlotFilter: props.LinePlot
                         }]);
                     }}>
-                    <span>{SVGIcons.Document}</span>
+                    <ReactIcons.Document />
                 </button>
                 <ToolTip Show={hover === 'Single-Line'} Position={'left'} Target={"Single-Line"}>
-                    {<p>Add All Selected Channels to Single Plot</p>}
-                    {props.SelectedSet.size === 0 ? <p>{CrossMark} {'Requires a Selected Channel'}</p> : null}
+                    <p>Add All Selected Channels to Single Plot</p>
+                    {props.SelectedSet.size === 0 ? <p><ReactIcons.CrossMark Color='var(--danger)'/> {'Requires a Selected Channel'}</p> : null}
                 </ToolTip>
                 <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${props.SelectedSet.size === 0 ? ' disabled' : ''}`}
                     data-tooltip='Multi-Line'
@@ -226,11 +230,11 @@ const TrendDataNavbarButtons = (props: IProps) => {
                             })
                         );
                     }}>
-                    <span>{SVGIcons.House}</span>
+                    <ReactIcons.House />
                 </button>
                 <ToolTip Show={hover === 'Multi-Line'} Position={'left'} Target={"Multi-Line"}>
-                    {<p>Add Selected Channels to New Plots Separated by Meter</p>}
-                    {props.SelectedSet.size === 0 ? <p>{CrossMark} Requires a Selected Channel </p> : null}
+                    <p>Add Selected Channels to New Plots Separated by Meter</p>
+                    {props.SelectedSet.size === 0 ? <p><ReactIcons.CrossMark Color='var(--danger)'/> Requires a Selected Channel </p> : null}
                 </ToolTip>
                 <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${props.SelectedSet.size === 0 ? ' disabled' : ''}`}
                     data-tooltip='Group-Line'
@@ -256,11 +260,11 @@ const TrendDataNavbarButtons = (props: IProps) => {
                             })
                         );
                     }}>
-                    <span>{SVGIcons.Filter}</span>
+                    <ReactIcons.Filter />
                 </button>
                 <ToolTip Show={hover === 'Group-Line'} Position={'left'} Target={"Group-Line"}>
-                    {<p>Add Selected Channels to New Plots Separated by Channel Group</p>}
-                    {props.SelectedSet.size === 0 ? <p>{CrossMark} Requires a Selected Channel</p> : null}
+                    <p>Add Selected Channels to New Plots Separated by Channel Group</p>
+                    {props.SelectedSet.size === 0 ? <p><ReactIcons.CrossMark Color='var(--danger)'/> Requires a Selected Channel</p> : null}
                 </ToolTip>
                 <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm ${props.SelectedSet.size !== 1 ? ' disabled' : ''}`}
                     data-tooltip='Cyclic'
@@ -274,11 +278,11 @@ const TrendDataNavbarButtons = (props: IProps) => {
                             PlotFilter: props.LinePlot
                         }]);
                     }}>
-                    <span>{SVGIcons.Cube}</span>
+                    <ReactIcons.Cube />
                 </button>
                 <ToolTip Show={hover === 'Cyclic'} Position={'left'} Target={"Cyclic"}>
-                    {<p>Add Selected Channel to New Cyclic Histogram Plot</p>}
-                    {props.SelectedSet.size !== 1 ? <p>{CrossMark} Requires a Single Channel Selection</p> : null}
+                    <p>Add Selected Channel to New Cyclic Histogram Plot</p>
+                    {props.SelectedSet.size !== 1 ? <p><ReactIcons.CrossMark Color='var(--danger)'/> Requires a Single Channel Selection</p> : null}
                 </ToolTip>
             </div>
         </>

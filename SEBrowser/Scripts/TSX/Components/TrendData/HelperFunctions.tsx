@@ -21,7 +21,8 @@
 //
 //******************************************************************************************************
 
-import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
+import React from 'react';
+import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import moment from 'moment';
 import { TrendSearch } from '../../global';
 import { momentDateFormat } from '../ReportTimeFilter';
@@ -130,6 +131,7 @@ export function storeMarkerSettings(bundle: TrendSearch.IMarkerSettingsBundle): 
 export function getMarkerSettingsOrDefault(): TrendSearch.IMarkerSettingsBundle {
     if (Object.prototype.hasOwnProperty.call(localStorage, markerSettings))
         return JSON.parse(localStorage.getItem(markerSettings));
+
     return {
         Symb: {
             Default: {
@@ -141,7 +143,7 @@ export function getMarkerSettingsOrDefault(): TrendSearch.IMarkerSettingsBundle 
                 xBox: undefined,
                 yBox: undefined,
                 // Symbol
-                symbol: SVGIcons.ArrowDropDown,
+                symbol: <ReactIcons.ArrowDropDown />,
                 radius: 12,
                 color: "#000000",
                 // Note

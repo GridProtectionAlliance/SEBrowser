@@ -24,7 +24,7 @@ import { Input, Select } from '@gpa-gemstone/react-forms';
 import { Table, Column } from '@gpa-gemstone/react-table';
 import React from 'react';
 import { TrendSearch } from '../../../../global';
-import { TrashCan, UpArrow, DownArrow } from '@gpa-gemstone/gpa-symbols';
+import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { BlockPicker } from 'react-color';
 import _ from 'lodash';
 
@@ -67,7 +67,7 @@ const ColorTab = React.memo((props: IColorTabProps) => {
 
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
-            <div className="col" style={{ width: '40%', height: 'calc(100vh - 264px)'}}>
+            <div className="col" style={{ width: '40%', height: 'calc(100vh - 264px)' }}>
                 <br />
                 <div className="alert alert-primary">These settings will only apply to line plots. Changes to these settings will persist across sessions.</div>
                 <div className="row">
@@ -98,17 +98,19 @@ const ColorTab = React.memo((props: IColorTabProps) => {
                                 AllowSort={false}
                                 HeaderStyle={{ width: 'auto' }}
                                 RowStyle={{ width: 'auto' }}
-                                Content={({ index }) => <>
-                                    <button className="btn btn-sm" onClick={(evt) => setOrder(evt, index, "remove")}>
-                                        <span>{TrashCan}</span>
-                                    </button>
-                                    <button className="btn btn-sm" onClick={(evt) => setOrder(evt, index, "up")} disabled={index === 0}>
-                                        <span>{UpArrow}</span>
-                                    </button>
-                                    <button className="btn btn-sm" onClick={(evt) => setOrder(evt, index, "down")} disabled={index === props.Colors.Colors.length - 1} >
-                                        <span>{DownArrow}</span>
-                                    </button>
-                                </>}
+                                Content={({ index }) =>
+                                    <>
+                                        <button className="btn btn-sm" onClick={(evt) => setOrder(evt, index, "remove")}>
+                                            <ReactIcons.TrashCan Color='var(--danger)'/>
+                                        </button>
+                                        <button className="btn btn-sm" onClick={(evt) => setOrder(evt, index, "up")} disabled={index === 0}>
+                                            <ReactIcons.ArrowDropUp />
+                                        </button>
+                                        <button className="btn btn-sm" onClick={(evt) => setOrder(evt, index, "down")} disabled={index === props.Colors.Colors.length - 1} >
+                                            <ReactIcons.ArrowDropDown />
+                                        </button>
+                                    </>
+                                }
                             > <p></p>
                             </Column>
                         </Table>

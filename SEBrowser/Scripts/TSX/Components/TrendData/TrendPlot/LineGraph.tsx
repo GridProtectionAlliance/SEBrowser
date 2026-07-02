@@ -28,9 +28,10 @@ import { SelectTrendDataSettings, SelectGeneralSettings } from '../../../Store/S
 import { useAppSelector } from './../../../hooks';
 import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
-import { LoadingIcon, ToolTip } from '@gpa-gemstone/react-interactive';
+import { LoadingIcon } from '@gpa-gemstone/react-interactive';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
+import { ToolTip } from '@gpa-gemstone/react-forms';
 
 interface IProps {
     ID: string,
@@ -86,7 +87,7 @@ const LineGraph = React.memo((props: IProps) => {
     // Graph Consts
     const [timeLimits, setTimeLimits] = React.useState<[number, number]>([0, 1]);
     const [hover, setHover] = React.useState<boolean>(false);
-    const [allChartData, setAllChartData] = React.useState<Map<string,IChartData>>(new Map<string,IChartData>());
+    const [allChartData, setAllChartData] = React.useState<Map<string, IChartData>>(new Map<string, IChartData>());
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('uninitiated');
     // Height mangement
     const [titleHeight, setTitleHeight] = React.useState<number>(0);
@@ -107,14 +108,14 @@ const LineGraph = React.memo((props: IProps) => {
         const endTime: string = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
 
         let newChannels: number[] = _.uniq(props.ChannelInfo.map(chan => chan.Channel.ChannelID));
-        let keptOldData: Map<string,IChartData> = new Map<string,IChartData>();
+        let keptOldData: Map<string, IChartData> = new Map<string, IChartData>();
         // If the time filter is the same, we only need to ask for information on channels we have not yet seen
         if (_.isEqual(props.TimeFilter, oldValues.current.TimeFilter)) {
             newChannels = newChannels.filter(channel => oldValues.current.ChannelInfo.findIndex(oldChannel => oldChannel.Channel.ChannelID === channel) === -1);
             // This represents data we already have and still need (only makes sense if we aren't changing our time window)
             keptOldData = allChartData;
             keptOldData.forEach((_, channelID) => {
-                if (props.ChannelInfo.findIndex(channel => channel.Channel.ChannelID === Number("0x"+channelID)) < 0)
+                if (props.ChannelInfo.findIndex(channel => channel.Channel.ChannelID === Number("0x" + channelID)) < 0)
                     keptOldData.delete(channelID);
             }
             );
@@ -223,12 +224,12 @@ const LineGraph = React.memo((props: IProps) => {
             <GraphError Height={props.Height} Title={props.Title}>
                 {props.AlwaysRender}
             </GraphError>
-            );
+        );
     else
         return (
             <div className="row">
                 <LoadingIcon Show={graphStatus === 'loading' || graphStatus === 'uninitiated'} Size={29} />
-                <h4 ref={titleRef} style={{ textAlign: "center", width: `${props.Width}px`, marginBottom: '0px'}}>
+                <h4 ref={titleRef} style={{ textAlign: "center", width: `${props.Width}px`, marginBottom: '0px' }}>
                     {props?.Title ?? ''}
                     {props?.ChannelInfo == null || props.ChannelInfo.findIndex(info => Object.keys(info.Settings).some(key => !info.Settings[key].HasData)) != -1 ?
                         <span data-tooltip={props.ID} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}><ReactIcons.Warning Color="var(--warning)" /></span>

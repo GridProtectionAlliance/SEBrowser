@@ -277,7 +277,7 @@ export namespace TrendSearch {
     interface ISymbolic extends IMarker {
         // Symbolic marker
         format: string,
-        symbol: JSX.Element,
+        symbol: React.ReactNode,
         xPos: number,
         yPos: number,
         radius: number,
