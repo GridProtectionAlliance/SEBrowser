@@ -29,6 +29,7 @@ import EventPreviewPane from './EventSearchPreviewPane';
 import queryString from 'querystring';
 import { ProcessQuery, SelectEventSearchRequest, SelectQueryParam, SelectTimeFilter } from '../../Store/EventSearchSlice';
 import { SelectEventSearchSettings } from '../../Store/SettingsSlice';
+import { SelectWidgetAuthorization } from '../../Store/WidgetAuthorizationSlice';
 import { EventTypeSlice, MeterSlice, AssetSlice, LocationSlice, AssetGroupSlice } from '../../Store/Store';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
@@ -62,6 +63,7 @@ const EventSearch = () => {
     const eventRequest = useAppSelector(SelectEventSearchRequest);
     const timeRange = useAppSelector(SelectTimeFilter);
     const eventSearchSettings = useAppSelector(SelectEventSearchSettings);
+    const widgetAuthorization = useAppSelector(SelectWidgetAuthorization);
 
     const eventTypeStatus = useAppSelector(EventTypeSlice.FetchStatus);
     const meterStatus = useAppSelector(MeterSlice.FetchStatus);
@@ -195,7 +197,7 @@ const EventSearch = () => {
                                 EventID={eventId}
                                 Callback={handleEventSelect}
                                 HomePath={homePath}
-                                Roles={[]}
+                                WidgetAuthorization={widgetAuthorization}
                             />
                         </div>
                     </div>

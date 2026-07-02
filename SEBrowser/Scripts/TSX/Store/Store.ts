@@ -26,6 +26,7 @@ import { ReadOnlyGenericSlice_Gemstone } from "@gpa-gemstone/common-pages";
 import { configureStore } from '@reduxjs/toolkit';
 import EventSearchReducer from './EventSearchSlice';
 import { SettingsReducer } from './SettingsSlice';
+import { WidgetAuthorizationReducer } from './WidgetAuthorizationSlice';
 import GroupSlice from './ValueListGroupSlice'
 import { EventTypeControllerPath, MeterController, AssetController, LocationController, AssetGroupController } from './ControllerFunctions';
 
@@ -48,7 +49,8 @@ const reducer = {
     Asset: AssetSlice.Reducer,
     Location: LocationSlice.Reducer,
     AssetGroup: AssetGroupSlice.Reducer,
-    ValueList: ValueListGroupSlice.Reducer
+    ValueList: ValueListGroupSlice.Reducer,
+    WidgetAuthorization: WidgetAuthorizationReducer
 }
 
 const store = configureStore({ reducer });

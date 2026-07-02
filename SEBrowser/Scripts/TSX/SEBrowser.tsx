@@ -39,6 +39,7 @@ import Settings from './Store/Settings';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { useAppDispatch, useAppSelector } from './hooks';
 import { LoadSettings } from './Store/SettingsSlice';
+import { FetchWidgetAuthorization } from './Store/WidgetAuthorizationSlice';
 
 const SEBrowserMainPage = () => {
     const dispatch = useAppDispatch();
@@ -85,6 +86,7 @@ const SEBrowserMainPage = () => {
     //Effect to load settings/ custom reports on app mount
     React.useEffect(() => {
         dispatch(LoadSettings());
+        dispatch(FetchWidgetAuthorization());
 
         const handle = getCustomReports();
 

@@ -21,6 +21,7 @@
 //
 //******************************************************************************************************
 import { SystemCenter, OpenXDA as XDA, Application } from '@gpa-gemstone/application-typings';
+import { EventWidget } from '../../EventWidgets/TSX/global';
 
 declare global {
     let homePath: string;
@@ -51,7 +52,13 @@ export namespace Redux {
         EventSearch: EventSearchState,
         Settings: SettingsState,
         EventType: ReadOnlyGenericSlice_Gemstone<XDA.Types.EventType>,
-        ValueList: IValueListSliceState
+        ValueList: IValueListSliceState,
+        WidgetAuthorization: IWidgetAuthorizationState
+    }
+
+    interface IWidgetAuthorizationState {
+        WidgetAuthorization: EventWidget.IWidgetAuthorization,
+        Status: Application.Types.Status
     }
 
     interface EventSearchState {

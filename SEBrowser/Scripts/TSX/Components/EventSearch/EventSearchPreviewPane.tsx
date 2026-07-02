@@ -28,6 +28,7 @@ import { EventWidget } from '../../../../EventWidgets/TSX/global';
 import WidgetRouter from '../../../../EventWidgets/TSX/WidgetWrapper';
 import { useAppSelector } from '../../hooks';
 import { SelectWidgetCategories } from '../../Store/SettingsSlice';
+import { SelectWidgetAuthorization } from '../../Store/WidgetAuthorizationSlice';
 import { EventTypeSlice } from '../../Store/Store';
 import { Application } from '@gpa-gemstone/application-typings';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
@@ -46,25 +47,7 @@ export default function EventPreviewPane(props: IProps) {
     const [tab, setTab] = React.useState<string>(props.InitialTab == null || props.InitialTab == undefined ? '' : props.InitialTab);
     const [widgets, setWidgets] = React.useState<EventWidget.IWidgetView[]>([]);
     const [widgetStatus, setWidgetsStatus] = React.useState<Application.Types.Status>('uninitiated');
-    const [roles, setRoles] = React.useState<string[]>([]);
-    const [rolesStatus, setRolesStatus] = React.useState<Application.Types.Status>('uninitiated');
-
-    React.useEffect(() => {
-        setRolesStatus('loading');
-        const handle = getRoles();
-
-        handle.done(d => {
-            setRoles(d);
-            setRolesStatus('idle');
-        });
-
-        handle.fail(() => setRolesStatus('error'));
-
-        return () => {
-            if (handle?.abort != null)
-                handle.abort();
-        }
-    }, [])
+    const widgetAuthorization = useAppSelector(SelectWidgetAuthorization);
 
     React.useEffect(() => {
         if (tab == null) return;
@@ -115,7 +98,7 @@ export default function EventPreviewPane(props: IProps) {
                             FaultID={props.Event?.FaultID ?? 0}
                             Height={props.Height}
                             HomePath={`${homePath}`}
-                            Roles={roles}
+                            WidgetAuthorization={widgetAuthorization}
                             key={widget.ID}
                             EventTypes={eventTypes}
                         />
@@ -136,13 +119,3 @@ const loadWidgets = (tab: string) => {
     });
 }
 
-const getRoles = () => {
-    return $.ajax({
-        type: "GET",
-        url: `${homePath}api/SEBrowser/SecurityRoles`,
-        contentType: "application/json; charset=utf-8",
-        dataType: 'json',
-        cache: true,
-        async: true
-    });
-}
