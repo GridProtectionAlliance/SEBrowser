@@ -25,6 +25,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { cloneDeep } from 'lodash';
 import { Redux } from '../global';
+import type { RootState } from './Store';
 
 declare let homePath: string;
 
@@ -146,9 +147,9 @@ function loadWidgetCategories() {
 
 export const SettingsReducer = settingsSlice.reducer
 export const { SetEventSearch, SetTrendData, SetGeneral } = settingsSlice.actions
-export const SelectEventSearchSettings = (state: Redux.StoreState) => state.Settings.eventSearch
-export const SelectTrendDataSettings = (state: Redux.StoreState) => state.Settings.trendData
-export const SelectGeneralSettings = (state: Redux.StoreState) => state.Settings.general
-export const SelectTimeZone = (state: Redux.StoreState) => state.Settings.timeZone
-export const SelectWidgetCategories = (state: Redux.StoreState) => state.Settings.eventSearch.WidgetCategories
-export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.general.DateTime
+export const SelectEventSearchSettings = (state: RootState) => state.Settings.eventSearch
+export const SelectTrendDataSettings = (state: RootState) => state.Settings.trendData
+export const SelectGeneralSettings = (state: RootState) => state.Settings.general
+export const SelectTimeZone = (state: RootState) => state.Settings.timeZone
+export const SelectWidgetCategories = (state: RootState) => state.Settings.eventSearch.WidgetCategories
+export const SelectDateTimeSetting = (state: RootState) => state.Settings.general.DateTime

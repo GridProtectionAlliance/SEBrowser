@@ -48,14 +48,6 @@ export interface IMultiCheckboxOption {
 }
 
 export namespace Redux {
-    interface StoreState { // TODO: this needs to be removed we already have a type in the store and we are just duplicating it here
-        EventSearch: EventSearchState,
-        Settings: SettingsState,
-        EventType: ReadOnlyGenericSlice_Gemstone<XDA.Types.EventType>,
-        ValueList: IValueListSliceState,
-        WidgetAuthorization: IWidgetAuthorizationState
-    }
-
     interface IWidgetAuthorizationState {
         WidgetAuthorization: EventWidget.IWidgetAuthorization,
         Status: Application.Types.Status

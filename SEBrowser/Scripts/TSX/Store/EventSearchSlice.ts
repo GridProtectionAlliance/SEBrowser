@@ -28,6 +28,7 @@ import queryString from 'querystring';
 import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
 import { BuildDynamicEventSearchRequest } from '../Components/EventSearch/EventSearchData';
 import { EventTypeSlice } from './Store';
+import type { RootState } from './Store';
 
 const momentDateFormat = "MM/DD/YYYY";
 
@@ -213,35 +214,35 @@ export const EventSearchsSlice = createSlice({
 // #region [ Selectors ]
 export default EventSearchsSlice.reducer;
 export const { ProcessQuery } = EventSearchsSlice.actions;
-export const SelectTimeFilter = (state: Redux.StoreState) => state.EventSearch.TimeRange;
-export const SelectTypeFilter = (state: Redux.StoreState) => state.EventSearch.EventType;
-export const SelectCharacteristicFilter = (state: Redux.StoreState) => state.EventSearch.EventCharacteristic;
-export const SelectReset = (state: Redux.StoreState) => state.EventSearch.isReset;
-export const SelectMeterList = (state: Redux.StoreState) => state.EventSearch.SelectedMeters;
-export const SelectAssetList = (state: Redux.StoreState) => state.EventSearch.SelectedAssets;
-export const SelectAssetGroupList = (state: Redux.StoreState) => state.EventSearch.SelectedGroups;
-export const SelectStationList = (state: Redux.StoreState) => state.EventSearch.SelectedStations;
+export const SelectTimeFilter = (state: RootState) => state.EventSearch.TimeRange;
+export const SelectTypeFilter = (state: RootState) => state.EventSearch.EventType;
+export const SelectCharacteristicFilter = (state: RootState) => state.EventSearch.EventCharacteristic;
+export const SelectReset = (state: RootState) => state.EventSearch.isReset;
+export const SelectMeterList = (state: RootState) => state.EventSearch.SelectedMeters;
+export const SelectAssetList = (state: RootState) => state.EventSearch.SelectedAssets;
+export const SelectAssetGroupList = (state: RootState) => state.EventSearch.SelectedGroups;
+export const SelectStationList = (state: RootState) => state.EventSearch.SelectedStations;
 
 export const SelectQueryParam = createSelector(
-    (state: Redux.StoreState) => state.EventSearch.EventCharacteristic,
-    (state: Redux.StoreState) => state.EventSearch.EventType,
-    (state: Redux.StoreState) => state.EventSearch.TimeRange,
-    (state: Redux.StoreState) => state.EventSearch.SelectedAssets,
-    (state: Redux.StoreState) => state.EventSearch.SelectedGroups,
-    (state: Redux.StoreState) => state.EventSearch.SelectedMeters,
-    (state: Redux.StoreState) => state.EventSearch.SelectedStations,
+    (state: RootState) => state.EventSearch.EventCharacteristic,
+    (state: RootState) => state.EventSearch.EventType,
+    (state: RootState) => state.EventSearch.TimeRange,
+    (state: RootState) => state.EventSearch.SelectedAssets,
+    (state: RootState) => state.EventSearch.SelectedGroups,
+    (state: RootState) => state.EventSearch.SelectedMeters,
+    (state: RootState) => state.EventSearch.SelectedStations,
     GenerateQueryParams
 );
 
 export const SelectEventSearchRequest = createSelector(
-    (state: Redux.StoreState) => state.EventSearch.TimeRange,
-    (state: Redux.StoreState) => state.EventSearch.EventType,
-    (state: Redux.StoreState) => state.EventSearch.EventCharacteristic,
-    (state: Redux.StoreState) => state.EventSearch.SelectedMeters,
-    (state: Redux.StoreState) => state.EventSearch.SelectedAssets,
-    (state: Redux.StoreState) => state.EventSearch.SelectedStations,
-    (state: Redux.StoreState) => state.EventSearch.SelectedGroups,
-    (state: Redux.StoreState) => state.Settings.eventSearch.NumberResults,
+    (state: RootState) => state.EventSearch.TimeRange,
+    (state: RootState) => state.EventSearch.EventType,
+    (state: RootState) => state.EventSearch.EventCharacteristic,
+    (state: RootState) => state.EventSearch.SelectedMeters,
+    (state: RootState) => state.EventSearch.SelectedAssets,
+    (state: RootState) => state.EventSearch.SelectedStations,
+    (state: RootState) => state.EventSearch.SelectedGroups,
+    (state: RootState) => state.Settings.eventSearch.NumberResults,
     BuildDynamicEventSearchRequest
 );
 // #endregion

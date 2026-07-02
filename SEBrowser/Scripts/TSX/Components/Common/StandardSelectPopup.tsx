@@ -50,7 +50,6 @@ const SelectPopup = <T,>(props: IProps<T>) => {
     const [ascending, setAscending] = React.useState<boolean>(true);
 
     const [activePage, setActivePage] = React.useState<number>(0);
-    const [pageInfo, setPageInfo] = React.useState<Gemstone.Types.IPageInfo>({ TotalCount: 0, PageCount: 0, PageSize: 0 });
     const [bulkLoading, setBulkLoading] = React.useState<boolean>(false);
 
     const [selectedData, setSelectedData] = React.useState<T[]>(props.Selection);
@@ -58,7 +57,7 @@ const SelectPopup = <T,>(props: IProps<T>) => {
     const [sortKeySelected, setSortKeySelected] = React.useState<string>('');
     const [ascendingSelected, setAscendingSelected] = React.useState<boolean>(false);
 
-    const { SearchResults: data, SearchStatus: searchStatus } = useSearchData_Gemstone<T>(activePage, sortField, filters, ascending, props.ControllerAPIPath, setPageInfo);
+    const { SearchResults: data, SearchStatus: searchStatus, PageInfo } = useSearchData_Gemstone<T>(activePage, sortField, filters, ascending, props.ControllerAPIPath);
 
     const searchStatusEffective: Application.Types.Status = bulkLoading || searchStatus === 'loading' ? 'loading' : searchStatus;
 
@@ -67,9 +66,9 @@ const SelectPopup = <T,>(props: IProps<T>) => {
 
     //keep the active page valid when the filtered result set shrinks
     React.useEffect(() => {
-        if (pageInfo.PageCount > 0 && activePage >= pageInfo.PageCount)
-            setActivePage(pageInfo.PageCount - 1);
-    }, [pageInfo.PageCount, activePage]);
+        if (PageInfo.PageCount > 0 && activePage >= PageInfo.PageCount)
+            setActivePage(PageInfo.PageCount - 1);
+    }, [PageInfo.PageCount, activePage]);
 
     React.useEffect(() => {
         setSelectedData(props.Selection);
@@ -127,7 +126,7 @@ const SelectPopup = <T,>(props: IProps<T>) => {
                                 }
                                 return null;
                             })}
-                        </>, setFilters, searchStatusEffective, pageInfo.TotalCount)}
+                        </>, setFilters, searchStatusEffective, PageInfo.TotalCount)}
                 </div>
                 {props.Type === 'multiple' ? <div className="col" style={{ width: '40%', borderLeft: '1px solid #dee2e6' }}>
                     <h3> Current Selection </h3>
@@ -236,7 +235,7 @@ const SelectPopup = <T,>(props: IProps<T>) => {
                 <div className="col" style={{ width: (props.Type === undefined || props.Type === 'single' ? '100%' : '60%') }}>
                     <Paging
                         Current={activePage + 1}
-                        Total={pageInfo.PageCount}
+                        Total={PageInfo.PageCount}
                         SetPage={(p) => setActivePage(p - 1)}
                     />
                 </div>

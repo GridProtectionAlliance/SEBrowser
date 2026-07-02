@@ -23,7 +23,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { EventWidget } from '../../../EventWidgets/TSX/global';
 import { WidgetRequirements } from './WidgetRequirements';
-import { Redux } from '../global';
+import type { RootState } from './Store';
 
 declare let homePath: string;
 
@@ -83,6 +83,6 @@ const widgetAuthorizationSlice = createSlice({
 });
 
 export const WidgetAuthorizationReducer = widgetAuthorizationSlice.reducer;
-export const SelectWidgetAuthorization = (state: Redux.StoreState) => state.WidgetAuthorization.WidgetAuthorization;
-export const SelectNoteAuthorization = (state: Redux.StoreState) => state.WidgetAuthorization.WidgetAuthorization.Notes;
-export const SelectWidgetAuthorizationStatus = (state: Redux.StoreState) => state.WidgetAuthorization.Status;
+export const SelectWidgetAuthorization = (state: RootState) => state.WidgetAuthorization.WidgetAuthorization;
+export const SelectNoteAuthorization = (state: RootState) => state.WidgetAuthorization.WidgetAuthorization.Notes;
+export const SelectWidgetAuthorizationStatus = (state: RootState) => state.WidgetAuthorization.Status;
