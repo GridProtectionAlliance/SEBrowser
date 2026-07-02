@@ -67,9 +67,9 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const generalSettings = useAppSelector(SelectGeneralSettings);
 
-    const [evtSearch, setEvtSearch] = React.useState<Redux.IEventSearchSettings>();
-    const [trendData, setTrendData] = React.useState<Redux.ITrendDataSettings>();
-    const [general, setGeneral] = React.useState<Redux.IGeneralSettings>();
+    const [evtSearch, setEvtSearch] = React.useState<Redux.IEventSearchSettings>(evtSearchsettings);
+    const [trendData, setTrendData] = React.useState<Redux.ITrendDataSettings>(trendDatasettings);
+    const [general, setGeneral] = React.useState<Redux.IGeneralSettings>(generalSettings);
 
     React.useEffect(() => {
         setEvtSearch(evtSearchsettings);
