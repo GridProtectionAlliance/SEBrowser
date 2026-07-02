@@ -12,7 +12,7 @@ public class SEBrowserController : ControllerBase
     const string SettingsCategory = "systemSettings";
     #endregion
 
-    #region [ Event Search ]
+    #region [ Methods ]
     [Route("GetEventPreviewPaneSettings"), HttpGet]
     public IActionResult GetEventPreviewPaneSettings()
     {
@@ -33,6 +33,12 @@ public class SEBrowserController : ControllerBase
             return Ok(0);
 
         return Ok(systemTime);
+    }
+
+    [Route("HeartBeat"), HttpGet]
+    public IActionResult HeartBeat()
+    {
+        return Ok();
     }
     #endregion
 

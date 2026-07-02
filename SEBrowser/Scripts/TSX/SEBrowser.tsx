@@ -40,6 +40,7 @@ import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { useAppDispatch, useAppSelector } from './hooks';
 import { LoadSettings } from './Store/SettingsSlice';
 import { FetchWidgetAuthorization } from './Store/WidgetAuthorizationSlice';
+import { HeartBeatCheck } from '@gpa-gemstone/common-pages';
 
 const SEBrowserMainPage = () => {
     const dispatch = useAppDispatch();
@@ -96,6 +97,7 @@ const SEBrowserMainPage = () => {
 
     return (
         <>
+            <HeartBeatCheck IntervalMS={30000} HeartBeat={heartBeatCheck} />
             <Application
                 HomePath={homePath} DefaultPath={"eventsearch"}
                 Logo={homePath + "Images/PQBrowserLight.png"}
@@ -163,6 +165,15 @@ const createWidget = (item: string) => {
         return <CapBankReport />
     if (item === "derreport")
         return <DERAnalysisReport />
+}
+
+const heartBeatCheck = () => {
+    return $.ajax({
+        url: `${homePath}api/OpenSEE/HeartBeat`,
+        method: 'GET',
+        cache: false,
+        async: true
+    });
 }
 
 ReactDOM.render(<Provider store={store}><SEBrowserMainPage /></Provider>, document.getElementById('pageBody'));
