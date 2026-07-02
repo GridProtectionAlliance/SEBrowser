@@ -33,11 +33,10 @@ import BreakerReport from './Components/BreakerReport/BreakerReport';
 import RelayReport from './Components/RelayReport/RelayReport';
 import CapBankReport from './Components/CapBankReport/CapBankReport';
 import DERAnalysisReport from './Components/DERAnalysisReport/DERAnalysisReport';
-
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { Application, Page, Section } from '@gpa-gemstone/react-interactive';
 import Settings from './Store/Settings';
-import { SVGIcons } from '@gpa-gemstone/gpa-symbols'; //replace with ReacttIcons
+import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { useAppDispatch, useAppSelector } from './hooks';
 import { LoadSettings } from './Store/SettingsSlice';
 
@@ -110,7 +109,7 @@ const SEBrowserMainPage = () => {
                                 }}
                                 onClick={() => setShowSettings(true)}
                             >
-                                {SVGIcons.Settings}
+                                <ReactIcons.Settings />
                             </button>
                         </li>
                     </ul>
