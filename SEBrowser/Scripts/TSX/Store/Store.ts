@@ -21,26 +21,33 @@
 //
 //******************************************************************************************************
 
-import { OpenXDA } from '@gpa-gemstone/application-typings';
-import { ReadWriteGenericSlice_Gemstone } from "@gpa-gemstone/common-pages";
+import { OpenXDA, SystemCenter } from '@gpa-gemstone/application-typings';
+import { ReadOnlyGenericSlice_Gemstone } from "@gpa-gemstone/common-pages";
 import { configureStore } from '@reduxjs/toolkit';
 import EventSearchReducer from './EventSearchSlice';
 import { SettingsReducer } from './SettingsSlice';
 import GroupSlice from './ValueListGroupSlice'
-import { EventTypeControllerPath } from './ControllerFunctions';
+import { EventTypeControllerPath, MeterController, AssetController, LocationController, AssetGroupController } from './ControllerFunctions';
 
 //Dispatch and Selector Typed
 export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>
 
-export const EventTypeSlice = new ReadWriteGenericSlice_Gemstone<OpenXDA.Types.EventType>("EventType", "Category", true, EventTypeControllerPath);
-
+export const EventTypeSlice = new ReadOnlyGenericSlice_Gemstone<OpenXDA.Types.EventType>("EventType", "Category", true, EventTypeControllerPath);
+export const MeterSlice = new ReadOnlyGenericSlice_Gemstone<SystemCenter.Types.DetailedMeter>("Meter", "Name", true, MeterController);
+export const AssetSlice = new ReadOnlyGenericSlice_Gemstone<SystemCenter.Types.DetailedAsset>("Asset", "AssetName", true, AssetController);
+export const LocationSlice = new ReadOnlyGenericSlice_Gemstone<SystemCenter.Types.DetailedLocation>("Location", "LocationKey", true, LocationController);
+export const AssetGroupSlice = new ReadOnlyGenericSlice_Gemstone<OpenXDA.Types.AssetGroup>("AssetGroup", "Name", true, AssetGroupController);
 export const ValueListGroupSlice = new GroupSlice();
 
 const reducer = {
     EventSearch: EventSearchReducer,
     Settings: SettingsReducer,
     EventType: EventTypeSlice.Reducer,
+    Meter: MeterSlice.Reducer,
+    Asset: AssetSlice.Reducer,
+    Location: LocationSlice.Reducer,
+    AssetGroup: AssetGroupSlice.Reducer,
     ValueList: ValueListGroupSlice.Reducer
 }
 

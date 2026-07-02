@@ -47,23 +47,14 @@ export interface IMultiCheckboxOption {
 }
 
 export namespace Redux {
-    interface StoreState {
+    interface StoreState { // TODO: this needs to be removed we already have a type in the store and we are just duplicating it here
         EventSearch: EventSearchState,
         Settings: SettingsState,
-        EventType: ReadWriteGenericSlice_Gemstone<XDA.Types.EventType>,
-        ValueList: iValueListSliceState
+        EventType: ReadOnlyGenericSlice_Gemstone<XDA.Types.EventType>,
+        ValueList: IValueListSliceState
     }
 
-    interface State<T> {
-        Status: Application.Types.Status,
-        Data: T[],
-        Error: null | string,
-        SortField: string,
-        Ascending: boolean,
-        Record?: T,
-    }
-
-    interface EventSearchState extends Redux.State<any> {
+    interface EventSearchState {
         TimeRange: SEBrowser.IReportTimeFilter,
         EventType: number[],
         EventCharacteristic: SEBrowser.IEventCharacteristicFilters,
@@ -71,8 +62,7 @@ export namespace Redux {
         SelectedAssets: SystemCenter.Types.DetailedAsset[],
         SelectedStations: SystemCenter.Types.DetailedLocation[],
         SelectedGroups: XDA.Types.AssetGroup[],
-        isReset: boolean,
-        ActiveFetchID: string[]
+        isReset: boolean
     }
 
     interface SettingsState {

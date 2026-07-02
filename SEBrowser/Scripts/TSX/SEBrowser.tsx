@@ -22,7 +22,7 @@
 //******************************************************************************************************
 
 import { Provider } from 'react-redux';
-import store, { EventTypeSlice } from './Store/Store';
+import store, { EventTypeSlice, MeterSlice, AssetSlice, LocationSlice, AssetGroupSlice } from './Store/Store';
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -48,12 +48,40 @@ const SEBrowserMainPage = () => {
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
 
     const evtTypeStatus = useAppSelector(EventTypeSlice.FetchStatus);
+    const meterStatus = useAppSelector(MeterSlice.FetchStatus);
+    const assetStatus = useAppSelector(AssetSlice.FetchStatus);
+    const locationStatus = useAppSelector(LocationSlice.FetchStatus);
+    const assetGroupStatus = useAppSelector(AssetGroupSlice.FetchStatus);
 
     //Effect to fetch event types
     React.useEffect(() => {
         if (evtTypeStatus == 'changed' || evtTypeStatus == 'uninitiated')
             dispatch(EventTypeSlice.Fetch({}));
     }, [evtTypeStatus]);
+
+    //Effect to fetch meters
+    React.useEffect(() => {
+        if (meterStatus == 'changed' || meterStatus == 'uninitiated')
+            dispatch(MeterSlice.Fetch({}));
+    }, [meterStatus]);
+
+    //Effect to fetch assets
+    React.useEffect(() => {
+        if (assetStatus == 'changed' || assetStatus == 'uninitiated')
+            dispatch(AssetSlice.Fetch({}));
+    }, [assetStatus]);
+
+    //Effect to fetch locations
+    React.useEffect(() => {
+        if (locationStatus == 'changed' || locationStatus == 'uninitiated')
+            dispatch(LocationSlice.Fetch({}));
+    }, [locationStatus]);
+
+    //Effect to fetch asset groups
+    React.useEffect(() => {
+        if (assetGroupStatus == 'changed' || assetGroupStatus == 'uninitiated')
+            dispatch(AssetGroupSlice.Fetch({}));
+    }, [assetGroupStatus]);
 
     //Effect to load settings/ custom reports on app mount
     React.useEffect(() => {

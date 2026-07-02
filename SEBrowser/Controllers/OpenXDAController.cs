@@ -57,6 +57,7 @@ namespace SEBrowser.Controllers
                             WHERE TABLE_NAME = 'SEBrowser.EventSearchEventView'
                                 OR TABLE_NAME = 'SEBrowser.EventSearchDetailsView' 
                                 AND COLUMN_NAME NOT LIKE 'Sort.%'");
+
                         m_collumns = String.Join(",", collumns.Select()
                             .Select(r => r["TABLE_NAME"].ToString() == "SEBrowser.EventSearchDetailsView" && r["COLUMN_NAME"].ToString() == "EventID"
                                 ? $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}] AS [EventID1]"
@@ -80,11 +81,11 @@ namespace SEBrowser.Controllers
                             WHERE (TABLE_NAME = 'SEBrowser.EventSearchEventView'
                                 OR TABLE_NAME = 'SEBrowser.EventSearchDetailsView') 
                                 AND COLUMN_NAME LIKE 'Sort.%'");
+
                         m_sortCollumns = collumns.Select()
                             .ToDictionary(
                             r => r["COLUMN_NAME"].ToString().Split('.')[1],
-                            r => $"[{r["TABLE_NAME"]}.{r["COLUMN_NAME"]}]");
-                        ;
+                            r => $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}]");
                     }
                 return m_sortCollumns;
             }
@@ -135,6 +136,7 @@ namespace SEBrowser.Controllers
             public int? numberResults { get; set; }
             public bool ascending { get; set; }
             public string sortKey { get; set; }
+            public int? eventID { get; set; }
         }
 
         enum TimeWindowUnits
@@ -171,22 +173,38 @@ namespace SEBrowser.Controllers
 
             using AdoDataConnection connection = new(Settings.Default);
             {
-                DateTime dateTime = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+                // When an eventID is provided, the request targets that single event and the time/characteristic filters are skipped
+                object queryParameter;
+                string recordFilter;
+                string filters = "";
 
-                string eventType = (postData.typeIDs is null) ? null : getEventTypeFilter(postData);
-                string phase = (postData.phases is null) ? null : getPhaseFilter(postData);
-                string eventCharacteristic = getEventCharacteristicFilter(postData);
-                string asset = getAssetFilters(postData);
+                //If eventID is provided no filters are needed this is a 1-1 lookup
+                if (postData.eventID is not null)
+                {
+                    queryParameter = postData.eventID;
+                    recordFilter = "Event.ID = {0}";
+                }
+                else
+                {
+                    queryParameter = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+                    recordFilter = getTimeFilter(postData);
 
-                string filters = $"{(string.IsNullOrEmpty(eventType) ? "" : $"AND ({eventType})")} ";
-                filters += $"{(string.IsNullOrEmpty(phase) ? "" : $"AND ({phase})")}  ";
-                filters += $"{(string.IsNullOrEmpty(eventCharacteristic) ? "" : $"AND {eventCharacteristic}")} ";
-                filters += $"{(string.IsNullOrEmpty(asset) ? "" : $"AND {asset}")}";
+                    string eventType = (postData.typeIDs is null) ? null : getEventTypeFilter(postData);
+                    string phase = (postData.phases is null) ? null : getPhaseFilter(postData);
+                    string eventCharacteristic = getEventCharacteristicFilter(postData);
+                    string asset = getAssetFilters(postData);
 
-                string sortBy = postData.sortKey ?? "Time";
-                if (!SortColumns.TryGetValue(sortBy, out sortBy))
-                    sortBy = postData.sortKey ?? "Time";
-                sortBy = $"ORDER BY [{sortBy}] {(postData.ascending ? "ASC" : "DESC")}";
+                    filters = $"{(string.IsNullOrEmpty(eventType) ? "" : $"AND ({eventType})")} ";
+                    filters += $"{(string.IsNullOrEmpty(phase) ? "" : $"AND ({phase})")}  ";
+                    filters += $"{(string.IsNullOrEmpty(eventCharacteristic) ? "" : $"AND {eventCharacteristic}")} ";
+                    filters += $"{(string.IsNullOrEmpty(asset) ? "" : $"AND {asset}")}";
+                }
+
+                // Sort keys map to the views' "Sort.<key>" columns; unknown keys fall back to Time to keep user input out of the SQL
+                if (!SortColumns.TryGetValue(postData.sortKey ?? "Time", out string sortColumn))
+                    sortColumn = "[Time]";
+
+                string sortBy = $"ORDER BY {sortColumn} {(postData.ascending ? "ASC" : "DESC")}";
 
                 string query =
                     $"""
@@ -219,7 +237,7 @@ namespace SEBrowser.Controllers
                                     ) AND
                                     EventType.Name IN ('Fault', 'RecloseIntoFault')
                             WHERE
-                                ({getTimeFilter(postData)}) AND
+                                ({recordFilter}) AND
                                 (
                                     EventWorstDisturbance.ID IS NOT NULL OR
                                     FaultSummary.ID IS NOT NULL OR
@@ -237,7 +255,7 @@ namespace SEBrowser.Controllers
                             ) {sortBy}
                     """;
 
-                DataTable table = connection.RetrieveData(query, dateTime);
+                DataTable table = connection.RetrieveData(query, queryParameter);
 
                 return table;
             }

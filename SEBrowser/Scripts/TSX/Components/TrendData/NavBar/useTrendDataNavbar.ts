@@ -22,11 +22,13 @@
 //******************************************************************************************************
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AssetController, MeterController, PhaseController, ChannelGroupController } from '../../../Store/ControllerFunctions';
+import { PhaseController, ChannelGroupController } from '../../../Store/ControllerFunctions';
 import { SEBrowser, TrendSearch, IMultiCheckboxOption } from '../../../global';
-import { Application, OpenXDA, SystemCenter } from '@gpa-gemstone/application-typings';
+import { Application, OpenXDA } from '@gpa-gemstone/application-typings';
 import queryString from 'querystring';
 import { IKeyValuePair, ITrendDataFilter } from './Types';
+import { MeterSlice, AssetSlice } from '../../../Store/Store';
+import { useAppSelector } from '../../../hooks';
 
 interface IProps {
     TimeFilter: SEBrowser.IReportTimeFilter,
@@ -53,11 +55,11 @@ export const useTrendDataNavbar = (props: IProps) => {
     const [channelGroupStatus, setChannelGroupStatus] = React.useState<Application.Types.Status>('uninitiated');
     const [allChannelGroups, setAllChannelGroups] = React.useState<TrendSearch.ChannelGroup[]>([]);
 
-    const [meterStatus, setMeterStatus] = React.useState<Application.Types.Status>('uninitiated');
-    const [allMeters, setAllMeters] = React.useState<SystemCenter.Types.DetailedMeter[]>([]);
+    const meterStatus = useAppSelector(MeterSlice.FetchStatus);
+    const allMeters = useAppSelector(MeterSlice.Data);
 
-    const [assetStatus, setAssetStatus] = React.useState<Application.Types.Status>('uninitiated');
-    const [allAssets, setAllAssets] = React.useState<SystemCenter.Types.DetailedAsset[]>([]);
+    const assetStatus = useAppSelector(AssetSlice.FetchStatus);
+    const allAssets = useAppSelector(AssetSlice.Data);
 
     const [timeFilter, setTimeFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.TimeFilter);
 
@@ -136,22 +138,6 @@ export const useTrendDataNavbar = (props: IProps) => {
     }, []);
 
     React.useEffect(() => {
-        setMeterStatus('loading');
-        const handle = MeterController.GetAll('Name', true)
-            .done((data) => { setAllMeters(data); setMeterStatus('idle'); })
-            .fail(() => setMeterStatus('error'));
-        return () => { if (handle?.abort != null) handle.abort(); };
-    }, []);
-
-    React.useEffect(() => {
-        setAssetStatus('loading');
-        const handle = AssetController.GetAll('AssetName', true)
-            .done((data) => { setAllAssets(data); setAssetStatus('idle'); })
-            .fail(() => setAssetStatus('error'));
-        return () => { if (handle?.abort != null) handle.abort(); };
-    }, []);
-
-    React.useEffect(() => {
         if (trendFilter === null) return;
         // Get the data from the filter
         setTrendChannelStatus('loading');
@@ -198,9 +184,7 @@ export const useTrendDataNavbar = (props: IProps) => {
 
     React.useEffect(() => {
         // Todo: get filters from memory
-        if (trendFilter !== null ||
-            channelGroupStatus !== 'idle' || phaseStatus !== 'idle' || meterStatus !== 'idle' || assetStatus !== 'idle' ||
-            !queryReady) return;
+        if (trendFilter !== null || channelGroupStatus !== 'idle' || phaseStatus !== 'idle' || meterStatus !== 'idle' || assetStatus !== 'idle' || !queryReady) return;
 
         // Note: the different arguements of startingArray and fallBack need different types since we don't know Id's at compile time and don't know names at query parse time
         function makeKeyValuePairs(allKeys: { ID: number, Name: string, Description: string }[], startingTrueSet: Set<number> | undefined, fallBackTrueSet: Set<string>): IKeyValuePair[] {

@@ -22,7 +22,7 @@
 //******************************************************************************************************
 
 import { Application, SystemCenter } from '@gpa-gemstone/application-typings';
-import { AsyncThunk, createAsyncThunk, createSlice, Draft, PayloadAction, SerializedError, Slice } from '@reduxjs/toolkit';
+import { AsyncThunk, createAsyncThunk, createSlice, Draft, PayloadAction, Reducer, SerializedError, Slice } from '@reduxjs/toolkit';
 import { WritableDraft } from 'immer/dist/types/types-external';
 import { Redux } from '../global';
 import { RootState } from './Store';
@@ -32,7 +32,7 @@ export default class ValueListGroupSlice {
     public Name = "ValueList";
 
     public Slice: Slice<Redux.IValueListSliceState>;
-    public Reducer: any;
+    public Reducer: Reducer<Redux.IValueListSliceState>;
 
     public Fetch: (AsyncThunk<SystemCenter.Types.ValueListItem[], string, any>);
     private fetchHandles: {

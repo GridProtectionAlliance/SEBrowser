@@ -24,15 +24,24 @@
 //******************************************************************************************************
 
 import React from 'react';
-import EventSearchList from './EventSearchList';
 import EventSearchNavbar from './Navbar/EventSearchNavbar';
 import EventPreviewPane from './EventSearchPreviewPane';
 import queryString from 'querystring';
-import EventSearchMagDur from './MagDurChart/MagDurChart';
-import { ProcessQuery, SelectEventList, SelectQueryParam } from '../../Store/EventSearchSlice';
+import { ProcessQuery, SelectEventSearchRequest, SelectQueryParam, SelectTimeFilter } from '../../Store/EventSearchSlice';
+import { SelectEventSearchSettings } from '../../Store/SettingsSlice';
+import { EventTypeSlice, MeterSlice, AssetSlice, LocationSlice, AssetGroupSlice } from '../../Store/Store';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { SplitSection, VerticalSplit } from '@gpa-gemstone/react-interactive';
+import { OpenXDA } from '@gpa-gemstone/application-typings';
+import { DynamicEventSearchRow, GetDynamicEventSearchData, GetEventSearchRecord, IDynamicEventSearchQuery } from './EventSearchData';
+import { getMoment, getStartEndTime } from './TimeWindowUtils';
+import { EventWidget } from '../../../../EventWidgets/TSX/global';
+import DynamicEventSearch from '../../../../EventWidgets/TSX/CollectionWidget/DynamicEventTable/DynamicEventSearch';
+import DynamicMagDurChart from '../../../../EventWidgets/TSX/CollectionWidget/DynamicMagDurChart/DynamicMagDurChart';
+import CollectionWidgetRouter from '../../../../EventWidgets/TSX/CollectionWidgetWrapper';
+
+const availableWidgets: EventWidget.ICollectionWidget<any, any, any>[] = [DynamicEventSearch, DynamicMagDurChart];
 
 type tab = 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All' | undefined;
 
@@ -42,48 +51,123 @@ const EventSearch = () => {
     const dispatch = useAppDispatch();
 
     const [eventId, setEventId] = React.useState<number>(-1);
+    const [selectedEvent, setSelectedEvent] = React.useState<DynamicEventSearchRow | undefined>(undefined);
     const [initialTab, setInitialTab] = React.useState<tab>(undefined);
     const [showMagDur, setShowMagDur] = React.useState<boolean>(false);
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
     const [navHeight, setNavHeight] = React.useState<number>(0);
+    const [queryReady, setQueryReady] = React.useState<boolean>(false);
 
     const queryParam = useAppSelector(SelectQueryParam);
-    const evtList = useAppSelector(SelectEventList);
+    const eventRequest = useAppSelector(SelectEventSearchRequest);
+    const timeRange = useAppSelector(SelectTimeFilter);
+    const eventSearchSettings = useAppSelector(SelectEventSearchSettings);
+
+    const eventTypeStatus = useAppSelector(EventTypeSlice.FetchStatus);
+    const meterStatus = useAppSelector(MeterSlice.FetchStatus);
+    const assetStatus = useAppSelector(AssetSlice.FetchStatus);
+    const locationStatus = useAppSelector(LocationSlice.FetchStatus);
+    const assetGroupStatus = useAppSelector(AssetGroupSlice.FetchStatus);
+    const typeIDs = useAppSelector(EventTypeSlice.Data);
+    const meters = useAppSelector(MeterSlice.Data);
+    const assets = useAppSelector(AssetSlice.Data);
+    const locations = useAppSelector(LocationSlice.Data);
+    const groups = useAppSelector(AssetGroupSlice.Data);
+
+    const referenceDataReady = [eventTypeStatus, meterStatus, assetStatus, locationStatus, assetGroupStatus]
+        .every(status => status !== 'uninitiated' && status !== 'loading');
+    const hasProcessedQuery = React.useRef(false);
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
 
-        dispatch(ProcessQuery(query));
         setInitialTab(query['tab'] != undefined ? query['tab'].toString() as any : undefined);
         setShowMagDur(query['magDur'] != undefined ? query['magDur'] == 'true' : false);
         setEventId(query['eventid'] != undefined ? parseInt(query['eventid'].toString()) : -1);
     }, []);
 
+    // Effect to process the URL query string once the app-root reference data (meters/assets/locations/groups/event types) is ready
     React.useEffect(() => {
+        if (hasProcessedQuery.current || !referenceDataReady)
+            return;
+
+        hasProcessedQuery.current = true;
+        const query = queryString.parse(history.search.replace("?", ""), "&", "=");
+        dispatch(ProcessQuery({ query, assets, groups, locations, meters, typeIDs }));
+        setQueryReady(true);
+    }, [referenceDataReady]);
+
+    const getEventData = React.useCallback((query: IDynamicEventSearchQuery) =>
+        GetDynamicEventSearchData({ ...eventRequest, sortKey: query?.SortField, ascending: query?.Ascending ?? true }, `${homePath}api/OpenXDA/GetEventSearchData`)
+            .done((data) => {
+                localStorage.setItem('SEbrowser.EventSearch.EventIDs', data.map(d => d.EventID).join(','));
+            }),
+        [eventRequest]);
+
+    // Effect to load the selected event's record directly by ID (e.g. deep-linked from the URL) so selection does not depend on the current filter results
+    React.useEffect(() => {
+        if (eventId < 0 || selectedEvent?.EventID === eventId)
+            return;
+
+        const handle = GetEventSearchRecord(eventId);
+        handle.done((records) => {
+            if (records.length > 0)
+                setSelectedEvent(records[0]);
+        });
+
+        return () => {
+            if (handle?.abort != null)
+                handle.abort();
+        };
+    }, [eventId, selectedEvent]);
+
+    const currentFilter = React.useMemo<EventWidget.ICollectionFilter>(() => {
+        const center = getMoment(timeRange.date, timeRange.time);
+        const [start, end] = getStartEndTime(center, timeRange.windowSize, timeRange.timeWindowUnits);
+        return {
+            TimeFilter: {
+                StartTime: start.format(OpenXDA.Consts.DateTimeFormat),
+                EndTime: end.format(OpenXDA.Consts.DateTimeFormat)
+            }
+        };
+    }, [timeRange]);
+
+    const handleEventSelect = React.useCallback((id: number, disturbanceID?: number, faultID?: number) => {
+        setEventId(id);
+        setSelectedEvent({ EventID: id, DisturbanceID: disturbanceID, FaultID: faultID });
+    }, []);
+
+    const magDurSettings = React.useMemo(() => ({
+        ...DynamicMagDurChart.DefaultSettings,
+        Aggregate: eventSearchSettings.AggregateMagDur,
+        NumberResults: eventSearchSettings.NumberResults
+    }), [eventSearchSettings.AggregateMagDur, eventSearchSettings.NumberResults]);
+
+    const eventSearchListSettings = React.useMemo(() => ({
+        ...DynamicEventSearch.DefaultSettings,
+        NumberResults: eventSearchSettings.NumberResults
+    }), [eventSearchSettings.NumberResults]);
+
+    const magDurWidgetView = React.useMemo<EventWidget.IWidgetView>(() => ({
+        ID: 0, Name: DynamicMagDurChart.Name, Type: DynamicMagDurChart.Name, Setting: JSON.stringify(magDurSettings)
+    }), [magDurSettings]);
+
+    const eventSearchWidgetView = React.useMemo<EventWidget.IWidgetView>(() => ({
+        ID: 0, Name: DynamicEventSearch.Name, Type: DynamicEventSearch.Name, Setting: JSON.stringify(eventSearchListSettings)
+    }), [eventSearchListSettings]);
+
+    React.useEffect(() => {
+        if (!queryReady)
+            return;
+
         const q = queryString.stringify(queryParam, "&", "=");
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
-    }, [queryParam])
+    }, [queryParam, queryReady])
 
     React.useEffect(() => {
         localStorage.setItem('SEbrowser.EventSearch.ShowNav', showNav.toString())
     }, [showNav])
-
-    React.useEffect(() => {
-        localStorage.setItem('SEbrowser.EventSearch.EventIDs', evtList)
-    }, [evtList])
-
-
-    function getShowNav(): boolean {
-        if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.EventSearch.ShowNav')) {
-            const value = localStorage.getItem('SEbrowser.EventSearch.ShowNav');
-            if (value == null)
-                return true;
-            return JSON.parse(value);
-        }
-        else
-            return true;
-    }
 
     return (
         <div style={{ width: '100%', height: '100%' }} data-drawer={'eventPreviewPane'}>
@@ -102,22 +186,24 @@ const EventSearch = () => {
                                 View As {showMagDur ? 'List' : 'Mag/Dur'}
                             </button>
                         </div>
-                        {showMagDur ?
-                            <EventSearchMagDur
-                                Height={window.innerHeight - ((showNav ? navHeight : 52) + 120)}
+                        <div style={{ width: '100%', height: window.innerHeight - ((showNav ? navHeight : 52) + 120) }}>
+                            <CollectionWidgetRouter
+                                Widget={showMagDur ? magDurWidgetView : eventSearchWidgetView}
+                                AvailableWidgets={availableWidgets}
+                                EventFilter={currentFilter}
+                                GetEventData={getEventData}
                                 EventID={eventId}
-                                SelectEvent={setEventId}
-                            /> :
-                            <EventSearchList eventid={eventId}
-                                selectEvent={setEventId}
-                                height={window.innerHeight - ((showNav ? navHeight : 52) + 120)} />
-                        }
+                                Callback={handleEventSelect}
+                                HomePath={homePath}
+                                Roles={[]}
+                            />
+                        </div>
                     </div>
                 </SplitSection>
                 <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
                     <div style={{ width: '100%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
                         <EventPreviewPane
-                            EventID={eventId}
+                            Event={selectedEvent}
                             InitialTab={initialTab}
                             Height={window.innerHeight - ((showNav ? navHeight : 52) + 62)}
                         />
@@ -126,6 +212,17 @@ const EventSearch = () => {
             </VerticalSplit>
         </div>
     );
+}
+
+const getShowNav = (): boolean  => {
+    if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.EventSearch.ShowNav')) {
+        const value = localStorage.getItem('SEbrowser.EventSearch.ShowNav');
+        if (value == null)
+            return true;
+        return JSON.parse(value);
+    }
+    else
+        return true;
 }
 
 export default EventSearch;

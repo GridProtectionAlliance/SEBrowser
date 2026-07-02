@@ -26,7 +26,6 @@ import { CheckBox, Input, Select } from '@gpa-gemstone/react-forms';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { SelectEventSearchSettings, SelectTrendDataSettings, SelectGeneralSettings, SetEventSearch, SetTrendData, SetGeneral } from './SettingsSlice';
 import { Redux } from '../global';
-import { FetchEventSearches } from './EventSearchSlice';
 
 const searchSettingsOptions = [
     {
@@ -96,7 +95,6 @@ const Settings = (props: { Show: boolean, Close: () => void }) => {
         dispatch(SetEventSearch(evtSearch));
         dispatch(SetTrendData(trendData));
         dispatch(SetGeneral(general));
-        dispatch(FetchEventSearches());
     }
 
     return (

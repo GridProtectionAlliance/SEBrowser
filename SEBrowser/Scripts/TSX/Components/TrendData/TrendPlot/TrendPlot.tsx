@@ -33,6 +33,7 @@ import { SEBrowser, TrendSearch } from '../../../global';
 import { SelectTrendDataSettings, SelectGeneralSettings } from '../../../Store/SettingsSlice';
 import { useAppSelector } from './../../../hooks';
 import { GenerateQueryParams } from '../../../Store/EventSearchSlice';
+import { GetDynamicEventSearchData } from '../../../../../EventWidgets/TSX/CollectionWidget/DynamicEventTable/DynamicEventSearchData';
 import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
 import { SettingsModal } from '../Settings/SettingsModal';
 import { CyclicHistogram } from './CyclicHistogram';
@@ -400,21 +401,13 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         if (assets.length === 0 || meters.length === 0) {
             return null;
         }
-        return $.ajax({
-            type: "POST",
-            url: `${homePath}api/OpenXDA/GetEventSearchData`,
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify({
+        return GetDynamicEventSearchData({
                 date: timeFilter.date, time: timeFilter.time,
                 windowSize: timeFilter.windowSize, timeWindowUnits: timeFilter.timeWindowUnits,
                 meterIDs: meters, assetIDs: assets, locationIDs: [], groupIDs: [],
                 curveOutside: true, curveInside: true,
                 numberResults: 15,
-            }),
-            dataType: 'json',
-            cache: true,
-            async: true
-        }).done((data: any[]) => {
+            }, `${homePath}api/OpenXDA/GetEventSearchData`).done((data: any[]) => {
             setEventMarkers(data.map(datum => {
                 const meterID = props.Plot.Channels.find(channel => channel.MeterKey === datum["Meter Key"]).MeterID;
                 return { value: moment.utc(datum.Time, eventFormat).valueOf(), meterID: meterID, eventID: datum["EventID"]}

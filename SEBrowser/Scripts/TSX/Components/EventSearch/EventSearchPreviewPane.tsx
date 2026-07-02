@@ -26,27 +26,21 @@ import { TabSelector } from '@gpa-gemstone/react-interactive';
 import React from 'react';
 import { EventWidget } from '../../../../EventWidgets/TSX/global';
 import WidgetRouter from '../../../../EventWidgets/TSX/WidgetWrapper';
-import { Redux } from '../../global';
 import { useAppSelector } from '../../hooks';
-import { SelectEventSearchByID } from '../../Store/EventSearchSlice';
 import { SelectWidgetCategories } from '../../Store/SettingsSlice';
 import { EventTypeSlice } from '../../Store/Store';
 import { Application } from '@gpa-gemstone/application-typings';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
+import { DynamicEventSearchRow } from '../../../../EventWidgets/TSX/CollectionWidget/DynamicEventTable/DynamicEventSearchData';
 
 interface IProps {
-    EventID: number,
+    Event?: DynamicEventSearchRow,
     InitialTab?: string,
     Height: number
 }
 
-const widgetStore = {
-    EventTypeSlice
-}
-
 export default function EventPreviewPane(props: IProps) {
     const categories = useAppSelector(SelectWidgetCategories);
-    const event: any = useAppSelector((state: Redux.StoreState) => SelectEventSearchByID(state, props.EventID));
     const eventTypes = useAppSelector(EventTypeSlice.Data);
 
     const [tab, setTab] = React.useState<string>(props.InitialTab == null || props.InitialTab == undefined ? '' : props.InitialTab);
@@ -97,7 +91,7 @@ export default function EventPreviewPane(props: IProps) {
     }, [tab, categories])
 
 
-    if (event == undefined || categories.length == 0)
+    if (props.Event == null || categories.length == 0)
         return <></>;
 
     return (
@@ -116,9 +110,9 @@ export default function EventPreviewPane(props: IProps) {
                     widgets.map((widget) => {
                         return <WidgetRouter
                             Widget={widget}
-                            DisturbanceID={0}
-                            EventID={props.EventID}
-                            FaultID={0}
+                            DisturbanceID={props.Event?.DisturbanceID ?? 0}
+                            EventID={props.Event?.EventID ?? 0}
+                            FaultID={props.Event?.FaultID ?? 0}
                             Height={props.Height}
                             HomePath={`${homePath}`}
                             Roles={roles}
