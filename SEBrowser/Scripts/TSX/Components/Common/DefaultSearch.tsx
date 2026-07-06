@@ -220,7 +220,6 @@ const defaultLocationSearchCols: Search.IField<SystemCenter.Types.DetailedLocati
     { label: 'Meter Key', key: 'Meter', type: 'string', isPivotField: false },
     { label: 'Number of Assets', key: 'Assets', type: 'integer', isPivotField: false },
     { label: 'Number of Meters', key: 'Meters', type: 'integer', isPivotField: false },
-    { label: 'Description', key: 'Description', type: 'string', isPivotField: false },
 ];
 
 const defaultLocationSearch: Search.IField<SystemCenter.Types.DetailedLocation> = { label: 'Name', key: 'Name', type: 'string', isPivotField: false };
