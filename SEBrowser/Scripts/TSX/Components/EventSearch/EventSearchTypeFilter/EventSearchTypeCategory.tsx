@@ -29,7 +29,7 @@ import { CheckBox } from '@gpa-gemstone/react-forms';
 
 interface IProps {
     Label: string | null,
-    SetHeight: (h: number) => void,
+    SetHeight: (label: string | null, h: number) => void,
     Data: OpenXDA.Types.EventType[],
     SelectedID: number[],
     OnChange: (record: OpenXDA.Types.EventType, selected: boolean) => void
@@ -41,8 +41,8 @@ const EventSearchTypeCategory = (props: IProps) => {
     const { offsetHeight } = useGetContainerPosition(formRef); //the ref typing for this needs to be more loose to accept a ref like HTMLFieldSetElement
 
     React.useEffect(() => {
-        props.SetHeight(offsetHeight);
-    }, [offsetHeight, props.SetHeight]);
+        props.SetHeight(props.Label, offsetHeight);
+    }, [offsetHeight, props.Label, props.SetHeight]);
 
     return <fieldset className="border" style={{ padding: '10px' }} ref={formRef as unknown as React.RefObject<HTMLFieldSetElement>}>
         <legend className="w-auto" style={{ fontSize: 'large' }}>{(props.Label != null && props.Label.length > 0 ? props.Label : 'Other Types')}:

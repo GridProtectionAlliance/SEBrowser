@@ -52,7 +52,13 @@ const EventSearchNavbar = (props: IProps) => {
     const dispatch = useAppDispatch();
 
     const navRef = React.useRef(null);
+    const timeRef = React.useRef<HTMLDivElement | null>(null);
+    const characteristicsRef = React.useRef<HTMLDivElement | null>(null);
+    const otherFiltersRef = React.useRef<HTMLDivElement | null>(null);
     const { offsetHeight: navHeight } = useGetContainerPosition(navRef);
+    const { offsetHeight: timeOffsetHeight } = useGetContainerPosition(timeRef);
+    const { offsetHeight: characteristicsOffsetHeight } = useGetContainerPosition(characteristicsRef);
+    const { offsetHeight: otherFiltersOffsetHeight } = useGetContainerPosition(otherFiltersRef);
 
     const timeFilter = useAppSelector(SelectTimeFilter);
     const timeZone = useAppSelector(SelectTimeZone);
@@ -65,6 +71,8 @@ const EventSearchNavbar = (props: IProps) => {
 
     const [timeRange, setTimeRange] = React.useState<string>('');
     const [showFilter, setFilter] = React.useState<('None' | 'Meter' | 'Asset' | 'AssetGroup' | 'Station')>('None');
+
+    const typeFilterHeight = Math.max(timeOffsetHeight, characteristicsOffsetHeight, otherFiltersOffsetHeight);
 
     React.useEffect(() => props.setHeight(navHeight), [navHeight])
 
@@ -194,19 +202,19 @@ const EventSearchNavbar = (props: IProps) => {
             <nav className="navbar navbar-expand-xl navbar-light bg-light" ref={navRef}>
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
-                        <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
+                        <li className="nav-item" style={{ width: '30%', paddingRight: 10 }} ref={timeRef as unknown as React.RefObject<HTMLLIElement>}>
                             <ReportTimeFilter
                                 filter={timeFilter}
                                 setFilter={(f) => dispatch(SetFilters({ time: f }))}
                                 showQuickSelect={true}
                             />
                         </li>
-                        <EventSearchTypeFilters Height={navHeight} />
-                        <li className="nav-item" style={{ width: '45%', paddingRight: 10 }}>
+                        <EventSearchTypeFilters Height={typeFilterHeight} />
+                        <li className="nav-item" style={{ width: '45%', paddingRight: 10 }} ref={characteristicsRef as unknown as React.RefObject<HTMLLIElement>}>
                             <EventCharacteristics />
                         </li>
 
-                        <li className="nav-item" style={{ width: '15%', paddingRight: 10 }}>
+                        <li className="nav-item" style={{ width: '15%', paddingRight: 10 }} ref={otherFiltersRef as unknown as React.RefObject<HTMLLIElement>}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                                 <legend className="w-auto" style={{ fontSize: 'large' }}>Other Filters:</legend>
                                 <div className={"row"}>

@@ -85,14 +85,22 @@ const EventSearchTypeFilters = (props: IProps) => {
     }, [eventTypeCategories, props.Height]);
 
     const setHeight = React.useCallback((label: string | null, height: number) => {
-        const index = eventTypeCategories.findIndex(c => c.label == label)
-        if (index > -1 && eventTypeCategories[index].height != height)
-            setEventTypeCategories((d) => {
-                const u = _.cloneDeep(d);
-                u[index].height = height;
-                return u;
-            })
-    }, [eventTypeCategories])
+        setEventTypeCategories((categories) => {
+            const index = categories.findIndex(c => c.label === label);
+
+            if (index === -1 || categories[index].height === height) {
+                return categories;
+            }
+
+            const next = [...categories];
+            next[index] = {
+                ...next[index],
+                height,
+            };
+
+            return next;
+        });
+    }, []);
 
     function generateCollumn(colIndex: number) {
         const flts: ICategory[] = [];
@@ -145,7 +153,7 @@ const EventSearchTypeFilters = (props: IProps) => {
                                 types: (selected ? [...eventTypeFilter, record.ID] : eventTypeFilter.filter(t => t != record.ID))
                             }));
                         }}
-                        SetHeight={(h) => setHeight(c.label, h)}
+                        SetHeight={setHeight}
                     />
                 )}
             </li>
