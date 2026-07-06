@@ -69,6 +69,7 @@ const TrendChannelFilters = (props: IProps) => {
                     <NavbarFilterButton<SystemCenter.Types.DetailedMeter>
                         Type={'Meter'}
                         OnClick={() => props.SetShowFilter('Meter')}
+                        OnDelete={(meter) => props.SetTrendFilter(prev => prev != null ? ({ ...prev, MeterList: prev.MeterList.filter(item => item.ID !== meter.ID) }) : null)}
                         Data={MeterList}
                         AlternateColors={{ normal: "#3840B5", selected: "#FF9B4B" }}
                     />
@@ -79,6 +80,7 @@ const TrendChannelFilters = (props: IProps) => {
                     <NavbarFilterButton<SystemCenter.Types.DetailedAsset>
                         Type={'Asset'}
                         OnClick={() => props.SetShowFilter('Asset')}
+                        OnDelete={(asset) => props.SetTrendFilter(prev => prev != null ? ({ ...prev, AssetList: prev.AssetList.filter(item => item.ID !== asset.ID) }) : null)}
                         Data={AssetList}
                     />
                 </div>

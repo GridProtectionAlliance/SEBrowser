@@ -222,6 +222,7 @@ const EventSearchNavbar = (props: IProps) => {
                                         <NavbarFilterButton<SystemCenter.Types.DetailedMeter>
                                             Type={'Meter'}
                                             OnClick={() => setFilter('Meter')}
+                                            OnDelete={(meter) => dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: meterList.filter(item => item.ID !== meter.ID), Stations: locationList }))}
                                             Data={meterList}
                                         />
                                     </div>
@@ -231,6 +232,7 @@ const EventSearchNavbar = (props: IProps) => {
                                         <NavbarFilterButton<SystemCenter.Types.DetailedAsset>
                                             Type={'Asset'}
                                             OnClick={() => setFilter('Asset')}
+                                            OnDelete={(asset) => dispatch(SetFilterLists({ Assets: assetList.filter(item => item.ID !== asset.ID), Groups: assetGroupList, Meters: meterList, Stations: locationList }))}
                                             Data={assetList}
                                         />
                                     </div>
@@ -240,6 +242,7 @@ const EventSearchNavbar = (props: IProps) => {
                                         <NavbarFilterButton<OpenXDA.Types.AssetGroup>
                                             Type={'AssetGroup'}
                                             OnClick={() => setFilter('AssetGroup')}
+                                            OnDelete={(assetGroup) => dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList.filter(item => item.ID !== assetGroup.ID), Meters: meterList, Stations: locationList }))}
                                             Data={assetGroupList}
                                         />
                                     </div>
@@ -249,6 +252,7 @@ const EventSearchNavbar = (props: IProps) => {
                                         <NavbarFilterButton<SystemCenter.Types.DetailedLocation>
                                             Type={'Station'}
                                             OnClick={() => setFilter('Station')}
+                                            OnDelete={(location) => dispatch(SetFilterLists({ Assets: assetList, Groups: assetGroupList, Meters: meterList, Stations: locationList.filter(item => item.ID !== location.ID) }))}
                                             Data={locationList}
                                         />
                                     </div>

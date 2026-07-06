@@ -21,6 +21,7 @@
 //
 //******************************************************************************************************
 import React from 'react';
+import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import 'moment';
 
 
@@ -29,6 +30,7 @@ interface IProps<T extends S> {
     Data: T[],
     Type: ('Meter' | 'Asset' | 'AssetGroup' | 'Station'),
     OnClick: () => void,
+    OnDelete: (row: T) => void,
     AlternateColors?: { normal: string, selected: string }
 }
 
@@ -38,22 +40,39 @@ function NavbarFilterButton<T extends S>(props: IProps<T>) {
     const [rows, setRows] = React.useState<React.ReactNode[]>([]);
     const [header, setHeader] = React.useState<React.ReactNode>(null);
 
+    const deleteCell = React.useCallback((row: T) => (
+        <td>
+            <button
+                type="button"
+                className="btn btn-sm"
+                title={`Delete ${typeToString(props.Type)} filter`}
+                aria-label={`Delete ${typeToString(props.Type)} filter`}
+                onClick={(evt) => {
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                    props.OnDelete(row);
+                }}
+            >
+                <ReactIcons.TrashCan Color="var(--danger)" />
+            </button>
+        </td>
+    ), [props.OnDelete, props.Type]);
+
     React.useEffect(() => {
         switch (props.Type) {
             case ('Meter'):
-                setHeader(< tr ><th>Name</th><th>Key</th><th>Substation</th><th>Make</th><th>Model</th></tr >);
+                setHeader(< tr ><th>Name</th><th>Key</th><th>Substation</th><th>Make</th><th>Model</th><th>{' '}</th></tr >);
                 break;
             case ('Asset'):
-                setHeader(<tr><th>Key</th><th>Name</th><th>Asset Type</th><th>Voltage (kV)</th></tr>);
+                setHeader(<tr><th>Key</th><th>Name</th><th>Asset Type</th><th>Voltage (kV)</th><th>{' '}</th></tr>);
                 break;
             case ('AssetGroup'):
-                setHeader(<tr><th>Name</th><th>Assets</th><th>Meters</th></tr>);
+                setHeader(<tr><th>Name</th><th>Assets</th><th>Meters</th><th>{' '}</th></tr>);
                 break;
             default:
-                setHeader(<tr><th>Name</th><th>Key</th><th>Meters</th><th>Assets</th></tr>);
+                setHeader(<tr><th>Name</th><th>Key</th><th>Meters</th><th>Assets</th><th>{' '}</th></tr>);
         }
     }, [props.Type]);
-
 
     React.useEffect(() => {
         switch (props.Type) {
@@ -64,6 +83,7 @@ function NavbarFilterButton<T extends S>(props: IProps<T>) {
                     <td>{d['Location']}</td>
                     <td>{d['Make']}</td>
                     <td>{d['Model']}</td>
+                    {deleteCell(d)}
                 </tr>));
                 break;
             case ('Asset'):
@@ -72,6 +92,7 @@ function NavbarFilterButton<T extends S>(props: IProps<T>) {
                     <td>{d['AssetName']}</td>
                     <td>{d['AssetType']}</td>
                     <td>{d['VoltageKV']}</td>
+                    {deleteCell(d)}
                 </tr>));
                 break;
             case ('AssetGroup'):
@@ -79,6 +100,7 @@ function NavbarFilterButton<T extends S>(props: IProps<T>) {
                     <td>{d['Name']}</td>
                     <td>{d['Assets']}</td>
                     <td>{d['Meters']}</td>
+                    {deleteCell(d)}
                 </tr>));
                 break;
             default:
@@ -87,10 +109,11 @@ function NavbarFilterButton<T extends S>(props: IProps<T>) {
                     <td>{d['LocationKey']}</td>
                     <td>{d['Meters']}</td>
                     <td>{d['Assets']}</td>
+                    {deleteCell(d)}
                 </tr>));
         }
 
-    }, [props.Data, props.Type])
+    }, [props.Data, props.Type, deleteCell])
 
     return (
         <>
@@ -134,7 +157,8 @@ function NavbarFilterButton<T extends S>(props: IProps<T>) {
         </>
     );
 }
-function typeToString(Type: 'Meter' | 'Asset' | 'AssetGroup' | 'Station'): string {
+
+const typeToString = (Type: 'Meter' | 'Asset' | 'AssetGroup' | 'Station'): string => {
     switch (Type) {
         case 'Meter':
             return 'Meter';
@@ -148,7 +172,5 @@ function typeToString(Type: 'Meter' | 'Asset' | 'AssetGroup' | 'Station'): strin
             return Type;
     }
 }
-
-
 
 export default NavbarFilterButton;
