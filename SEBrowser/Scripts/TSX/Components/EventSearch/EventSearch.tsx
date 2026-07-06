@@ -41,6 +41,7 @@ import { EventWidget } from '../../../../EventWidgets/TSX/global';
 import DynamicEventSearch from '../../../../EventWidgets/TSX/CollectionWidget/DynamicEventTable/DynamicEventSearch';
 import DynamicMagDurChart from '../../../../EventWidgets/TSX/CollectionWidget/DynamicMagDurChart/DynamicMagDurChart';
 import CollectionWidgetRouter from '../../../../EventWidgets/TSX/CollectionWidgetWrapper';
+import { ToggleSwitch } from '@gpa-gemstone/react-forms';
 
 const availableWidgets: EventWidget.ICollectionWidget<any, any, any>[] = [DynamicEventSearch, DynamicMagDurChart];
 
@@ -183,10 +184,13 @@ const EventSearch = () => {
                     <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
                         <div style={{ width: 'calc(100% - 300px)', padding: 10, float: 'left' }}>
                         </div>
-                        <div style={{ width: 160, float: 'right', padding: 10 }}>
-                            <button className='btn btn-danger' onClick={() => setShowMagDur((c) => !c)} >
-                                View As {showMagDur ? 'List' : 'Mag/Dur'}
-                            </button>
+                        <div style={{ float: 'right', padding: 10 }}>
+                            <ToggleSwitch<{ UseMagDur: boolean }>
+                                Record={{ UseMagDur: showMagDur }}
+                                Field="UseMagDur"
+                                Label={showMagDur ? 'List' : 'Mag/Dur'}
+                                Setter={(rec) => setShowMagDur(rec.UseMagDur)}
+                            />
                         </div>
                         <div style={{ width: '100%', height: window.innerHeight - ((showNav ? navHeight : 52) + 120) }}>
                             <CollectionWidgetRouter
@@ -216,7 +220,7 @@ const EventSearch = () => {
     );
 }
 
-const getShowNav = (): boolean  => {
+const getShowNav = (): boolean => {
     if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.EventSearch.ShowNav')) {
         const value = localStorage.getItem('SEbrowser.EventSearch.ShowNav');
         if (value == null)
