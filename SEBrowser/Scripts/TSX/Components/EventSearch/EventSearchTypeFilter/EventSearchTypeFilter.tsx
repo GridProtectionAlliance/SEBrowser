@@ -47,8 +47,6 @@ const EventSearchTypeFilters = (props: IProps) => {
 
     const [eventTypeCategories, setEventTypeCategories] = React.useState<ICategory[]>([]);
 
-    const [nCol, setnCol] = React.useState<number>(1);
-
     //Effect to set eventTypeCategories when eventTypes change
     React.useEffect(() => {
         setEventTypeCategories(
@@ -59,7 +57,7 @@ const EventSearchTypeFilters = (props: IProps) => {
         );
     }, [eventTypes]);
 
-    React.useEffect(() => {
+    const nCol = React.useMemo(() => {
         let navHeight = props.Height;
         const heights = eventTypeCategories.map(h => h.height);
         if (heights.some(h => h > navHeight)) {
@@ -67,7 +65,7 @@ const EventSearchTypeFilters = (props: IProps) => {
         }
 
         let nCollumn = 0;
-        heights.sort();
+        heights.sort((a, b) => a - b);
 
         while (heights.length > 0) {
             nCollumn = nCollumn + 1;
@@ -81,26 +79,31 @@ const EventSearchTypeFilters = (props: IProps) => {
                 index = heights.findIndex(h => h <= (navHeight - hc))
             }
         }
-        setnCol(nCollumn);
+        return Math.max(nCollumn, 1);
     }, [eventTypeCategories, props.Height]);
 
     const setHeight = React.useCallback((label: string | null, height: number) => {
-        setEventTypeCategories((categories) => {
-            const index = categories.findIndex(c => c.label === label);
+        const index = eventTypeCategories.findIndex(c => c.label === label);
 
-            if (index === -1 || categories[index].height === height) {
+        if (height <= 0 || index === -1 || eventTypeCategories[index].height === height)
+            return;
+
+        setEventTypeCategories((categories) => {
+            const currentIndex = categories.findIndex(c => c.label === label);
+
+            if (currentIndex === -1 || categories[currentIndex].height === height) {
                 return categories;
             }
 
             const next = [...categories];
-            next[index] = {
-                ...next[index],
+            next[currentIndex] = {
+                ...next[currentIndex],
                 height,
             };
 
             return next;
         });
-    }, []);
+    }, [eventTypeCategories]);
 
     function generateCollumn(colIndex: number) {
         const flts: ICategory[] = [];
