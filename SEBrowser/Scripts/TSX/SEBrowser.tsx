@@ -99,8 +99,10 @@ const SEBrowserMainPage = () => {
         <>
             <HeartBeatCheck IntervalMS={30000} HeartBeat={heartBeatCheck} />
             <Application
-                HomePath={homePath} DefaultPath={"eventsearch"}
-                Logo={homePath + "Images/PQBrowserLight.png"}
+                HomePath={homePath}
+                DefaultPath={"eventsearch"}
+                OnSignOut={() => window.location.href = logoutPath}
+                Logo={homePath + "Images/PQ Browser.png"}
                 Version={version}
                 NavBarContent={
                     <ul className="navbar-nav mr-l">
@@ -118,7 +120,6 @@ const SEBrowserMainPage = () => {
                         </li>
                     </ul>
                 }
-                OnSignOut={() => { window.location.href = `${homePath}/Logout`; }}
             >
                 <Page Name={'eventsearch'} Label={'Event Search'}>
                     <EventSearch />

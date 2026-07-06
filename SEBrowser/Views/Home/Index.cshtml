@@ -21,7 +21,28 @@
 //
 //*******************************************************************************************************@
 @using Gemstone.Data
+@using Gemstone.Reflection
 @using Gemstone.Configuration;
+@using Microsoft.AspNetCore.Antiforgery
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.Extensions.Options
+@using System.Web
+@inject IOptionsMonitor<CookieAuthenticationOptions> CookieAuthenticationOptionsMonitor
+@inject IAntiforgery Antiforgery
+@{
+    CookieAuthenticationOptions cookieAuthenticationOptions =
+        CookieAuthenticationOptionsMonitor.Get(CookieAuthenticationDefaults.AuthenticationScheme);
+
+    string? antiforgeryToken = Antiforgery.GetAndStoreTokens(ViewContext.HttpContext).RequestToken;
+
+    ViewData["Title"] = "Home page";
+}
+@{
+    Layout = "";
+
+    Version assemblyVersionInfo = AssemblyInfo.EntryAssembly.Version;
+    string applicationVersion = assemblyVersionInfo.Major + "." + assemblyVersionInfo.Minor + "." + assemblyVersionInfo.Build;
+}
 @{
     Layout = "";
 
@@ -45,9 +66,6 @@
         // Failed to connect to database or find 'SEBrowser.Setting' table, validate connection string
         ViewBag.settingsException = ex;
     }
-
-    Version assemblyVersionInfo = typeof(SEBrowser.Program).Assembly.GetName().Version;
-    string applicationVersion = assemblyVersionInfo.Major + "." + assemblyVersionInfo.Minor + "." + assemblyVersionInfo.Build;
 }
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -100,6 +118,7 @@
     <div id="pageBody"></div>
     <script>
         var xdaInstance = '@Html.Raw(ViewBag.xdaInstance)';
+        var logoutPath = '@HttpUtility.JavaScriptStringEncode(Url.Content($"~{cookieAuthenticationOptions.LogoutPath}"))';
         var scInstance = '@Html.Raw(ViewBag.scInstance)';
         var openSEEInstance = '@Html.Raw(ViewBag.openSEEInstance)';
         var faultLocationInstance = '@Html.Raw(ViewBag.faultLocationInstance)';

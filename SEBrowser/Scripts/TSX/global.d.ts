@@ -25,6 +25,7 @@ import { EventWidget } from '../../EventWidgets/TSX/global';
 
 declare global {
     let homePath: string;
+    let logoutPath: string;
     let xdaInstance: string;
     let scInstance: string;
     let openSEEInstance: string;
