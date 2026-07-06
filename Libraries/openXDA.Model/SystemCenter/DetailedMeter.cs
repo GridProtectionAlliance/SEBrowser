@@ -52,7 +52,8 @@ namespace SystemCenter.Model
         {
             string fieldName = filter.FieldName["AdditionalField.".Length..];
 
-            TableOperations<DetailedMeter> tableOps = new(new AdoDataConnection(Settings.Default));
+            using AdoDataConnection connection = new(Settings.Default);
+            TableOperations<DetailedMeter> tableOps = new(connection);
             if (RecordFilter<DetailedMeter>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
                 filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
 

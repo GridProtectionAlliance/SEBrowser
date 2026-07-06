@@ -59,7 +59,8 @@ public class DetailedLocation
     {
         string fieldName = filter.FieldName["AdditionalField.".Length..];
 
-        TableOperations<DetailedLocation> tableOps = new(new AdoDataConnection(Settings.Default));
+        using AdoDataConnection connection = new(Settings.Default);
+        TableOperations<DetailedLocation> tableOps = new(connection);
         if (RecordFilter<DetailedLocation>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
             filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
 
@@ -71,7 +72,8 @@ public class DetailedLocation
     [SearchExtension("^Meter$")]
     public static RecordRestriction GetMeterRestriction(IRecordFilter filter)
     {
-        TableOperations<DetailedLocation> tableOps = new(new AdoDataConnection(Settings.Default));
+        using AdoDataConnection connection = new(Settings.Default);
+        TableOperations<DetailedLocation> tableOps = new(connection);
         if (RecordFilter<DetailedLocation>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
             filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
 
@@ -83,7 +85,8 @@ public class DetailedLocation
     [SearchExtension("^Asset$")]
     public static RecordRestriction GetAssetRestriction(IRecordFilter filter)
     {
-        TableOperations<DetailedLocation> tableOps = new(new AdoDataConnection(Settings.Default));
+        using AdoDataConnection connection = new(Settings.Default);
+        TableOperations<DetailedLocation> tableOps = new(connection);
         if (RecordFilter<DetailedLocation>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
             filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
 

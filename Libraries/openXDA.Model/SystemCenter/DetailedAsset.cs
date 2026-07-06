@@ -47,7 +47,8 @@ namespace SystemCenter.Model
         {
             string fieldName = filter.FieldName["AdditionalField.".Length..];
 
-            TableOperations<DetailedAsset> tableOps = new(new AdoDataConnection(Settings.Default));
+            using AdoDataConnection connection = new(Settings.Default);
+            TableOperations<DetailedAsset> tableOps = new(connection);
             if (RecordFilter<DetailedAsset>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
                 filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
 
@@ -59,7 +60,8 @@ namespace SystemCenter.Model
         [SearchExtension("^Meter$")]
         public static RecordRestriction GetMeterRestriction(IRecordFilter filter)
         {
-            TableOperations<DetailedAsset> tableOps = new(new AdoDataConnection(Settings.Default));
+            using AdoDataConnection connection = new(Settings.Default);
+            TableOperations<DetailedAsset> tableOps = new(connection);
             if (RecordFilter<DetailedAsset>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
                 filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
 
@@ -71,7 +73,8 @@ namespace SystemCenter.Model
         [SearchExtension("^Location$")]
         public static RecordRestriction GetLocationRestriction(IRecordFilter filter)
         {
-            TableOperations<DetailedAsset> tableOps = new(new AdoDataConnection(Settings.Default));
+            using AdoDataConnection connection = new(Settings.Default);
+            TableOperations<DetailedAsset> tableOps = new(connection);
             if (RecordFilter<DetailedAsset>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
                 filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
 
