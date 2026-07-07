@@ -31,7 +31,7 @@ import { ResetFilters, SetFilters } from '../../../Store/EventSearchSlice';
 import { AssetGroupControllerPath, AssetControllerPath, LocationControlerPath, MeterControllerPath } from '../../../Store/ControllerFunctions';
 import { DefaultSelects } from '../../Common/DefaultSelects';
 import NavbarFilterButton from '../../Common/NavbarFilterButton';
-import { SystemCenter, OpenXDA } from '@gpa-gemstone/application-typings';
+import { SystemCenter, OpenXDA, Gemstone } from '@gpa-gemstone/application-typings';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { Column } from '@gpa-gemstone/react-table';
 import EventSearchTypeFilters from '../EventSearchTypeFilter/EventSearchTypeFilter';
@@ -413,7 +413,7 @@ const EventSearchNavbar = (props: IProps) => {
     );
 }
 
-function getAdditionalAssetFields(setFields) {
+const getAdditionalAssetFields = (setFields: (filters: Search.IField<SystemCenter.Types.DetailedAsset>[]) => void) => {
     const handle = $.ajax({
         type: "GET",
         url: `${homePath}api/openXDA/AdditionalField/ParentTable/Asset/FieldName/0`,
@@ -431,7 +431,7 @@ function getAdditionalAssetFields(setFields) {
     };
 }
 
-function getAdditionalMeterFields(setFields) {
+const getAdditionalMeterFields = (setFields: (filters: Search.IField<SystemCenter.Types.DetailedMeter>[]) => void) => {
     const handle = $.ajax({
         type: "GET",
         url: `${homePath}api/openXDA/AdditionalField/ParentTable/Meter/FieldName/0`,
@@ -449,7 +449,7 @@ function getAdditionalMeterFields(setFields) {
     };
 }
 
-function orderAdditionalFields<T>(fields: SystemCenter.Types.AdditionalField[]): Search.IField<T>[] {
+const orderAdditionalFields = <T,>(fields: SystemCenter.Types.AdditionalField[]): Search.IField<T>[] => {
     return _.orderBy(
         fields
             .filter(item => item.Searchable)
@@ -464,7 +464,7 @@ function orderAdditionalFields<T>(fields: SystemCenter.Types.AdditionalField[]):
     );
 }
 
-function getEnum(setOptions, field) {
+const getEnum = (setOptions: (options: Gemstone.TSX.Interfaces.ILabelValue<string>[]) => void, field: Search.IField<SystemCenter.Types.DetailedMeter>) => {
     if (field.type != 'enum' || field.enum == undefined || field.enum.length != 1)
         return () => {/*Do Nothing*/ };
 
@@ -485,7 +485,7 @@ function getEnum(setOptions, field) {
 }
 
 
-function ConvertType(type: string) {
+const ConvertType = (type: string) => {
     if (type == 'string' || type == 'integer' || type == 'number' || type == 'datetime' || type == 'boolean')
         return { type: type }
     return {
