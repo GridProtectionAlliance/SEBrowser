@@ -42,7 +42,24 @@ import { LoadSettings } from './Store/SettingsSlice';
 import { FetchWidgetAuthorization } from './Store/WidgetAuthorizationSlice';
 import { HeartBeatCheck } from '@gpa-gemstone/common-pages';
 
-const SEBrowserMainPage = () => {
+let isRedirecting = false;
+
+//Intercept requests at the XHR level to redirect 401 response to the login page
+const originalXHRSend = XMLHttpRequest.prototype.send;
+
+XMLHttpRequest.prototype.send = function(...args) {
+    this.addEventListener('load', function() {
+        if (this.status === 401 && !isRedirecting) {
+            isRedirecting = true;
+            const returnPath = encodeURIComponent(window.location.pathname);
+            window.location.assign(`${homePath}Login?redir=${returnPath}`);
+        }
+    });
+    
+    return originalXHRSend.apply(this, args);
+};
+
+const PQBrowser = () => {
     const dispatch = useAppDispatch();
 
     const [links, setLinks] = React.useState<SystemCenter.Types.ValueListItem[]>([]);
@@ -177,4 +194,4 @@ const heartBeatCheck = () => {
     });
 }
 
-ReactDOM.render(<Provider store={store}><SEBrowserMainPage /></Provider>, document.getElementById('pageBody'));
+ReactDOM.render(<Provider store={store}><PQBrowser /></Provider>, document.getElementById('pageBody'));
