@@ -385,7 +385,7 @@ const ReportTimeFilter = (props: IProps) => {
                         <DatePicker< ITimeFilter > Record={filter} Field="startTime" Help={`All times are in system time. System time is currently set to ${timeZone}. `}
                                 Setter={(r) => {
                                     const startTime = getMoment(r.startTime);
-                                    let window = filter.windowSize;
+                                    let window = filter.halfWindowSize;
                                     let unit = filter.timeWindowUnits;
                                     if (dateTimeSetting === 'startEnd') {
                                         [unit, window] = findAppropriateUnit(startTime, getMoment(filter.endTime),undefined, true);
@@ -419,7 +419,7 @@ const ReportTimeFilter = (props: IProps) => {
                         <DatePicker<ITimeFilter> Record={filter} Field="endTime" Help={`All times are in system time. System time is currently set to ${timeZone}. `}
                                 Setter={(r) => {
                                     const endTime = getMoment(r.endTime);
-                                    let window = filter.windowSize;
+                                    let window = filter.halfWindowSize;
                                     let unit = filter.timeWindowUnits;
                                     if (dateTimeSetting === 'startEnd') {
                                         [unit, window] = findAppropriateUnit(getMoment(filter.startTime), endTime, undefined, true);
