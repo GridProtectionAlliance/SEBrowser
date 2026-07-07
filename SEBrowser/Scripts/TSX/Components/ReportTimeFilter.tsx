@@ -305,14 +305,14 @@ const ReportTimeFilter = (props: IProps) => {
         startTime: getMoment(props.filter.date, props.filter.time)
             .subtract(props.filter.windowSize, momentUnit(props.filter.timeWindowUnits))
             .format(momentDateFormat + ' ' + momentTimeFormat),
-        endTime: getMoment(props.filter.date,props.filter.time)
+        endTime: getMoment(props.filter.date, props.filter.time)
             .add(props.filter.windowSize, momentUnit(props.filter.timeWindowUnits))
             .format(momentDateFormat + ' ' + momentTimeFormat),
         timeWindowUnits: props.filter.timeWindowUnits,
-        windowSize: props.filter.windowSize*2,
+        windowSize: props.filter.windowSize * 2,
         halfWindowSize: props.filter.windowSize,
     });
-    
+
     React.useEffect(() => {
         if (isEqual(filter, props.filter))
             return;
@@ -340,10 +340,10 @@ const ReportTimeFilter = (props: IProps) => {
 
         const centerTime = getMoment(props.filter.date, props.filter.time);
         const [startTime, endTime] = getStartEndTime(centerTime, durationValue, dUnits);
-        
+
         setFilter(prevState => ({
             ...prevState,
-            centerTime: centerTime.format('MM/DD/YYYY HH:mm:ss.SSS') ,
+            centerTime: centerTime.format('MM/DD/YYYY HH:mm:ss.SSS'),
             startTime: startTime.format('MM/DD/YYYY HH:mm:ss.SSS'),
             endTime: endTime.format('MM/DD/YYYY HH:mm:ss.SSS'),
             timeWindowUnits: dUnits,
@@ -352,11 +352,11 @@ const ReportTimeFilter = (props: IProps) => {
         }));
 
     }, [props.filter]);
-   
+
     return (
         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
             <legend className="w-auto" style={{ fontSize: 'large' }}>Date/Time Filter:</legend>
-                {dateTimeSetting === 'center' ?
+            {dateTimeSetting === 'center' ?
                 <div className="row">
                     <div className='col-12'>
                         <DatePicker< ITimeFilter > Record={filter} Field="centerTime" Help={`All times are in system time. System time is currently set to ${timeZone}. `}
@@ -372,81 +372,81 @@ const ReportTimeFilter = (props: IProps) => {
                                 }));
                                 setActiveQP(-1);
                             }}
-                                Label='Time Window Center:'
+                            Label='Time Window Center:'
                             Type='datetime-local'
                             Valid={(record) => { return true; }} Format={momentDateFormat + ' ' + momentTimeFormat} />
-                        </div>
                     </div>
-                            : null
-                        }
+                </div>
+                : null
+            }
             {dateTimeSetting === 'startWindow' || dateTimeSetting === 'startEnd' ?
-                <div className="row"> 
+                <div className="row">
                     <div className='col-12'>
                         <DatePicker< ITimeFilter > Record={filter} Field="startTime" Help={`All times are in system time. System time is currently set to ${timeZone}. `}
-                                Setter={(r) => {
-                                    const startTime = getMoment(r.startTime);
-                                    let window = filter.halfWindowSize;
-                                    let unit = filter.timeWindowUnits;
-                                    if (dateTimeSetting === 'startEnd') {
-                                        [unit, window] = findAppropriateUnit(startTime, getMoment(filter.endTime),undefined, true);
-                                    }
+                            Setter={(r) => {
+                                const startTime = getMoment(r.startTime);
+                                let window = filter.halfWindowSize;
+                                let unit = filter.timeWindowUnits;
+                                if (dateTimeSetting === 'startEnd') {
+                                    [unit, window] = findAppropriateUnit(startTime, getMoment(filter.endTime), undefined, true);
+                                }
 
-                                    const d = moment.duration(window, momentUnit(unit));
-                                    const centerTime = startTime.clone().add(d);
-                                    const endTime = centerTime.clone().add(d);
-                                    setFilter({
-                                        centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
-                                        startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat),
-                                        endTime: endTime.format(momentDateFormat + ' ' + momentTimeFormat),
-                                        windowSize: window* 2,
-                                        halfWindowSize: window,
-                                        timeWindowUnits: unit
+                                const d = moment.duration(window, momentUnit(unit));
+                                const centerTime = startTime.clone().add(d);
+                                const endTime = centerTime.clone().add(d);
+                                setFilter({
+                                    centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                    startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                    endTime: endTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                    windowSize: window * 2,
+                                    halfWindowSize: window,
+                                    timeWindowUnits: unit
 
-                                    });
-                                    setActiveQP(-1);
-                                }}
-                                Label='Start of Time Window:'
-                                Type='datetime-local'
-                                Valid={() => true} Format={momentDateFormat + ' ' + momentTimeFormat}
-                            />
-                    </div> 
-                </div>
-                            : null
-                        }
-            {dateTimeSetting === 'endWindow' || dateTimeSetting === 'startEnd' ?
-                    <div className="row"> 
-                        <div className='col-12'>
-                        <DatePicker<ITimeFilter> Record={filter} Field="endTime" Help={`All times are in system time. System time is currently set to ${timeZone}. `}
-                                Setter={(r) => {
-                                    const endTime = getMoment(r.endTime);
-                                    let window = filter.halfWindowSize;
-                                    let unit = filter.timeWindowUnits;
-                                    if (dateTimeSetting === 'startEnd') {
-                                        [unit, window] = findAppropriateUnit(getMoment(filter.startTime), endTime, undefined, true);
-                                    }
-                                    const d = moment.duration(window, momentUnit(unit));
-                                    const centerTime = endTime.clone().subtract(d);
-                                    const startTime = centerTime.clone().subtract(d);
-                                    setFilter({
-                                        centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
-                                        startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat),
-                                        endTime: endTime.format(momentDateFormat + ' ' + momentTimeFormat),
-                                        windowSize: window*2,
-                                        halfWindowSize: window,
-                                        timeWindowUnits: unit
-
-                                    });
-                                    setActiveQP(-1);
-                                }}
-                                Label='End of Time Window :'
+                                });
+                                setActiveQP(-1);
+                            }}
+                            Label='Start of Time Window:'
                             Type='datetime-local'
-                                Valid={() =>  true } Format={momentDateFormat + ' ' + momentTimeFormat}
-                            />
+                            Valid={() => true} Format={momentDateFormat + ' ' + momentTimeFormat}
+                        />
                     </div>
-                    </div>
+                </div>
                 : null
-                }
-                {dateTimeSetting === 'center' ?
+            }
+            {dateTimeSetting === 'endWindow' || dateTimeSetting === 'startEnd' ?
+                <div className="row">
+                    <div className='col-12'>
+                        <DatePicker<ITimeFilter> Record={filter} Field="endTime" Help={`All times are in system time. System time is currently set to ${timeZone}. `}
+                            Setter={(r) => {
+                                const endTime = getMoment(r.endTime);
+                                let window = filter.halfWindowSize;
+                                let unit = filter.timeWindowUnits;
+                                if (dateTimeSetting === 'startEnd') {
+                                    [unit, window] = findAppropriateUnit(getMoment(filter.startTime), endTime, undefined, true);
+                                }
+                                const d = moment.duration(window, momentUnit(unit));
+                                const centerTime = endTime.clone().subtract(d);
+                                const startTime = centerTime.clone().subtract(d);
+                                setFilter({
+                                    centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                    startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                    endTime: endTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                    windowSize: window * 2,
+                                    halfWindowSize: window,
+                                    timeWindowUnits: unit
+
+                                });
+                                setActiveQP(-1);
+                            }}
+                            Label='End of Time Window :'
+                            Type='datetime-local'
+                            Valid={() => true} Format={momentDateFormat + ' ' + momentTimeFormat}
+                        />
+                    </div>
+                </div>
+                : null
+            }
+            {dateTimeSetting === 'center' ?
                 <>
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+/-): </label>
                     <div className="row">
@@ -475,7 +475,7 @@ const ReportTimeFilter = (props: IProps) => {
                                     const [startTime, endTime] = getStartEndTime(centerTime, filter.halfWindowSize, r.timeWindowUnits);
                                     setFilter(prevFilter => ({
                                         ...prevFilter,
-                                        timeWindowUnits: r.timeWindowUnits,              
+                                        timeWindowUnits: r.timeWindowUnits,
                                         startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat),
                                         endTime: endTime.format(momentDateFormat + ' ' + momentTimeFormat)
                                     }));
@@ -495,8 +495,8 @@ const ReportTimeFilter = (props: IProps) => {
                     </div>
                 </>
                 : null
-                }
-                {dateTimeSetting === 'startWindow' ?
+            }
+            {dateTimeSetting === 'startWindow' ?
                 <>
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(+): </label>
                     <div className="row">
@@ -547,9 +547,9 @@ const ReportTimeFilter = (props: IProps) => {
                     </div>
                 </>
                 : null
-                }
-                {dateTimeSetting === 'endWindow' ?
-                    <>
+            }
+            {dateTimeSetting === 'endWindow' ?
+                <>
                     <label style={{ width: '100%', position: 'relative', float: "left" }}>Time Window(-): </label>
                     <div className="row">
                         <div className='col-6'>
@@ -561,7 +561,7 @@ const ReportTimeFilter = (props: IProps) => {
                                 setFilter(prevFilter => ({
                                     ...prevFilter,
                                     windowSize: r.windowSize,
-                                    halfWindowSize: r.windowSize/2,
+                                    halfWindowSize: r.windowSize / 2,
                                     centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
                                     startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat)
                                 }));
@@ -571,20 +571,20 @@ const ReportTimeFilter = (props: IProps) => {
                         </div>
                         <div className='col-6'>
                             <Select<ITimeFilter> Record={filter} Label=''
-                                Field='timeWindowUnits' 
-                            Setter={(r) => {
-                                const endTime = getMoment(filter.endTime);
-                                const d = moment.duration(filter.halfWindowSize, momentUnit(r.timeWindowUnits));
-                                const centerTime = endTime.clone().subtract(d);
-                                const startTime = centerTime.clone().subtract(d);
-                                setFilter(prevFilter => ({
-                                    ...prevFilter,
-                                    timeWindowUnits: r.timeWindowUnits,
-                                    centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
-                                    startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat)
-                                }));
-                                setActiveQP(-1);
-                            }}
+                                Field='timeWindowUnits'
+                                Setter={(r) => {
+                                    const endTime = getMoment(filter.endTime);
+                                    const d = moment.duration(filter.halfWindowSize, momentUnit(r.timeWindowUnits));
+                                    const centerTime = endTime.clone().subtract(d);
+                                    const startTime = centerTime.clone().subtract(d);
+                                    setFilter(prevFilter => ({
+                                        ...prevFilter,
+                                        timeWindowUnits: r.timeWindowUnits,
+                                        centerTime: centerTime.format(momentDateFormat + ' ' + momentTimeFormat),
+                                        startTime: startTime.format(momentDateFormat + ' ' + momentTimeFormat)
+                                    }));
+                                    setActiveQP(-1);
+                                }}
                                 Options={[
                                     { Value: '7', Label: 'Year' },
                                     { Value: '6', Label: 'Month' },
@@ -599,7 +599,7 @@ const ReportTimeFilter = (props: IProps) => {
                     </div>
                 </>
                 : null
-                }
+            }
 
             {props.showQuickSelect ?
                 <div className="row" style={{ width: '100%' }}>
