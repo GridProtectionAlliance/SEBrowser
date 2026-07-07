@@ -41,7 +41,8 @@ import { EventWidget } from '../../../../EventWidgets/TSX/global';
 import DynamicEventSearch from '../../../../EventWidgets/TSX/CollectionWidget/DynamicEventTable/DynamicEventSearch';
 import DynamicMagDurChart from '../../../../EventWidgets/TSX/CollectionWidget/DynamicMagDurChart/DynamicMagDurChart';
 import CollectionWidgetRouter from '../../../../EventWidgets/TSX/CollectionWidgetWrapper';
-import { ToggleSwitch } from '@gpa-gemstone/react-forms';
+import { HelpIcon, ToggleSwitch } from '@gpa-gemstone/react-forms';
+import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 
 const availableWidgets: EventWidget.ICollectionWidget<any, any, any>[] = [DynamicEventSearch, DynamicMagDurChart];
 
@@ -56,9 +57,11 @@ const EventSearch = () => {
     const [selectedEvent, setSelectedEvent] = React.useState<DynamicEventSearchRow | undefined>(undefined);
     const [initialTab, setInitialTab] = React.useState<tab>(undefined);
     const [showMagDur, setShowMagDur] = React.useState<boolean>(false);
-    const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
-    const [navHeight, setNavHeight] = React.useState<number>(0);
     const [queryReady, setQueryReady] = React.useState<boolean>(false);
+    const [resultCount, setResultCount] = React.useState<number | null>(null);
+
+    const previewPaneRef = React.useRef<HTMLDivElement | null>(null);
+    const { height: previewPaneHeight } = useGetContainerPosition(previewPaneRef);
 
     const queryParam = useAppSelector(SelectQueryParam);
     const eventRequest = useAppSelector(SelectEventSearchRequest);
@@ -140,24 +143,26 @@ const EventSearch = () => {
         setSelectedEvent({ EventID: id, DisturbanceID: disturbanceID, FaultID: faultID });
     }, []);
 
-    const magDurSettings = React.useMemo(() => ({
-        ...DynamicMagDurChart.DefaultSettings,
-        Aggregate: eventSearchSettings.AggregateMagDur,
-        NumberResults: eventSearchSettings.NumberResults
+    const magDurWidgetView = React.useMemo<EventWidget.IWidgetView>(() => ({
+        ID: 0,
+        Name: DynamicMagDurChart.Name,
+        Type: DynamicMagDurChart.Name,
+        Setting: JSON.stringify({
+            ...DynamicMagDurChart.DefaultSettings,
+            Aggregate: eventSearchSettings.AggregateMagDur,
+            NumberResults: eventSearchSettings.NumberResults
+        })
     }), [eventSearchSettings.AggregateMagDur, eventSearchSettings.NumberResults]);
 
-    const eventSearchListSettings = React.useMemo(() => ({
-        ...DynamicEventSearch.DefaultSettings,
-        NumberResults: eventSearchSettings.NumberResults
-    }), [eventSearchSettings.NumberResults]);
-
-    const magDurWidgetView = React.useMemo<EventWidget.IWidgetView>(() => ({
-        ID: 0, Name: DynamicMagDurChart.Name, Type: DynamicMagDurChart.Name, Setting: JSON.stringify(magDurSettings)
-    }), [magDurSettings]);
-
     const eventSearchWidgetView = React.useMemo<EventWidget.IWidgetView>(() => ({
-        ID: 0, Name: DynamicEventSearch.Name, Type: DynamicEventSearch.Name, Setting: JSON.stringify(eventSearchListSettings)
-    }), [eventSearchListSettings]);
+        ID: 1,
+        Name: DynamicEventSearch.Name,
+        Type: DynamicEventSearch.Name,
+        Setting: JSON.stringify({
+            ...DynamicEventSearch.DefaultSettings,
+            NumberResults: eventSearchSettings.NumberResults
+        })
+    }), [eventSearchSettings.NumberResults]);
 
     React.useEffect(() => {
         if (!queryReady)
@@ -168,36 +173,38 @@ const EventSearch = () => {
         return (() => { clearTimeout(handle); })
     }, [queryParam, queryReady])
 
-    React.useEffect(() => {
-        localStorage.setItem('SEbrowser.EventSearch.ShowNav', showNav.toString())
-    }, [showNav])
-
     return (
-        <div style={{ width: '100%', height: '100%' }} data-drawer={'eventPreviewPane'}>
-            <EventSearchNavbar
-                toggleVis={() => setShowNav((c) => !c)}
-                showNav={showNav}
-                setHeight={setNavHeight}
-            />
-            <VerticalSplit style={{ width: '100%', height: (showNav ? 'calc(100% - ' + navHeight + 'px)' : 'calc( 100% - 52px)') }}>
+        <div className="d-flex flex-column" style={{ width: '100%', height: '100%' }} data-drawer={'eventPreviewPane'}>
+            <EventSearchNavbar />
+            <VerticalSplit style={{ width: '100%', flex: 1, minHeight: 0 }}>
                 <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
-                    <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'left', overflowY: 'hidden' }}>
-                        <div style={{ width: 'calc(100% - 300px)', padding: 10, float: 'left' }}>
+                    <div className="d-flex flex-column" style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
+                        <div className='row m-0 flex-shrink-0'>
+                            <div className='col-6 pl-1 d-flex justify-content-start'>
+                                {resultCount != null ?
+                                    <p className="d-flex align-items-center">
+                                        Results: {resultCount}
+                                        {resultCount === eventSearchSettings.NumberResults ?
+                                            <HelpIcon Help={`${showMagDur ? 'Events without a magnitude and duration are not displayed on the chart. ' : ''}Only the first ${resultCount} results are shown - please narrow your search or increase the number of results in the application settings.`} />
+                                            : null}
+                                    </p> : null}
+                            </div>
+                            <div className='col-6 pr-1 p-0 d-flex justify-content-end'>
+                                <ToggleSwitch<{ UseMagDur: boolean }>
+                                    Record={{ UseMagDur: showMagDur }}
+                                    Field="UseMagDur"
+                                    Label={showMagDur ? 'List' : 'Mag/Dur'}
+                                    Setter={(rec) => setShowMagDur(rec.UseMagDur)}
+                                />
+                            </div>
                         </div>
-                        <div style={{ float: 'right', padding: 10 }}>
-                            <ToggleSwitch<{ UseMagDur: boolean }>
-                                Record={{ UseMagDur: showMagDur }}
-                                Field="UseMagDur"
-                                Label={showMagDur ? 'List' : 'Mag/Dur'}
-                                Setter={(rec) => setShowMagDur(rec.UseMagDur)}
-                            />
-                        </div>
-                        <div style={{ width: '100%', height: window.innerHeight - ((showNav ? navHeight : 52) + 120) }}>
+                        <div style={{ width: '100%', flex: 1, minHeight: 0 }}>
                             <CollectionWidgetRouter
                                 Widget={showMagDur ? magDurWidgetView : eventSearchWidgetView}
                                 AvailableWidgets={availableWidgets}
                                 EventFilter={currentFilter}
                                 GetEventData={getEventData}
+                                OnDataLoaded={setResultCount}
                                 EventID={eventId}
                                 Callback={handleEventSelect}
                                 HomePath={homePath}
@@ -207,28 +214,17 @@ const EventSearch = () => {
                     </div>
                 </SplitSection>
                 <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
-                    <div style={{ width: '100%', height: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
+                    <div ref={previewPaneRef} style={{ width: '100%', height: '100%', position: 'relative', overflowY: 'hidden' }}>
                         <EventPreviewPane
                             Event={selectedEvent}
                             InitialTab={initialTab}
-                            Height={window.innerHeight - ((showNav ? navHeight : 52) + 62)}
+                            Height={previewPaneHeight}
                         />
                     </div>
                 </SplitSection>
             </VerticalSplit>
         </div>
     );
-}
-
-const getShowNav = (): boolean => {
-    if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.EventSearch.ShowNav')) {
-        const value = localStorage.getItem('SEbrowser.EventSearch.ShowNav');
-        if (value == null)
-            return true;
-        return JSON.parse(value);
-    }
-    else
-        return true;
 }
 
 export default EventSearch;

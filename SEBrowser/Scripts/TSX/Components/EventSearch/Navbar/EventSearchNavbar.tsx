@@ -40,16 +40,12 @@ import { getMoment, getStartEndTime, readableUnit } from '../TimeWindowUtils';
 import EventCharacteristics from './EventCharacteristics';
 import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 
-interface IProps {
-    toggleVis: () => void,
-    showNav: boolean,
-    setHeight: (h: number) => void
-}
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 
-const EventSearchNavbar = (props: IProps) => {
+const EventSearchNavbar = () => {
     const dispatch = useAppDispatch();
+    const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
 
     const navRef = React.useRef(null);
     const { offsetHeight: navHeight } = useGetContainerPosition(navRef);
@@ -64,8 +60,6 @@ const EventSearchNavbar = (props: IProps) => {
     const reset = useAppSelector(SelectReset);
 
     const [showFilter, setFilter] = React.useState<('None' | 'Meter' | 'Asset' | 'AssetGroup' | 'Station')>('None');
-
-    React.useEffect(() => props.setHeight(navHeight), [navHeight])
 
     const timeRange = React.useMemo(() => {
         let r = "";
@@ -93,9 +87,13 @@ const EventSearchNavbar = (props: IProps) => {
         return r
     }, [timeFilter, dateTimeSetting, timeZone])
 
+    React.useEffect(() => {
+        localStorage.setItem('SEbrowser.EventSearch.ShowNav', showNav.toString())
+    }, [showNav])
+
     if (timeFilter === null) return null;
 
-    if (!props.showNav)
+    if (!showNav)
         return (
             <nav className="navbar navbar-expand-xl navbar-light bg-light">
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
@@ -105,7 +103,7 @@ const EventSearchNavbar = (props: IProps) => {
                         </span>
                     </div>
                     <div className="navbar-nav ml-auto" >
-                        <button type="button" className={`btn btn-${(!reset ? 'warning' : 'primary')} btn-sm`} onClick={() => props.toggleVis()}>Show Filters</button>
+                        <button type="button" className={`btn btn-${(!reset ? 'warning' : 'primary')} btn-sm`} onClick={() => setShowNav(true)}>Show Filters</button>
                     </div>
                 </div>
             </nav>
@@ -175,7 +173,7 @@ const EventSearchNavbar = (props: IProps) => {
                         </li>
                     </ul>
                     <div className="btn-group-vertical float-right">
-                        <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${(!reset ? 'warning' : 'primary')} btn-sm`} onClick={() => props.toggleVis()}>
+                        <button type="button" style={{ marginBottom: 5 }} className={`btn btn-${(!reset ? 'warning' : 'primary')} btn-sm`} onClick={() => setShowNav(false)}>
                             Hide Filters
                         </button>
                         <button type="button" className="btn btn-danger btn-sm" disabled={reset} onClick={() => dispatch(ResetFilters())}>
@@ -491,6 +489,17 @@ const ConvertType = (type: string) => {
     return {
         type: 'enum', enum: [{ Label: type, Value: type }]
     }
+}
+
+const getShowNav = (): boolean => {
+    if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.EventSearch.ShowNav')) {
+        const value = localStorage.getItem('SEbrowser.EventSearch.ShowNav');
+        if (value == null)
+            return true;
+        return JSON.parse(value);
+    }
+    else
+        return true;
 }
 
 export default EventSearchNavbar;
