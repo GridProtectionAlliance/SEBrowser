@@ -203,7 +203,7 @@ const EventSearchNavbar = () => {
                     <form>
                         <label style={{ margin: 0 }}>Sags (p.u.):</label>
                         <div className="form-group">
-                            <div className="row" style={{ width: '100%' }}>
+                            <div className="row m-0" style={{ width: '100%' }}>
                                 <div className='input-group input-group-sm'>
                                     <div className='col' style={{ width: '45%', paddingLeft: 0, paddingRight: 0 }}>
                                         <Input<SEBrowser.IEventCharacteristicFilters>
@@ -282,7 +282,7 @@ const EventSearchNavbar = () => {
                         <label style={{ margin: 0 }}>Transients (p.u.):</label>
                         <div className="form-group">
                             <div className='input-group input-group-sm'>
-                                <div className="row" style={{ width: '100%' }}>
+                                <div className="row m-0" style={{ width: '100%' }}>
                                     <div className='col' style={{ width: '45%', paddingLeft: 0, paddingRight: 0 }}>
                                         <Input<SEBrowser.IEventCharacteristicFilters>
                                             Record={newEventCharacteristicFilter} Label=''
@@ -332,10 +332,9 @@ const EventSearchNavbar = () => {
                 </div>
                 <div className="col-4">
                     <form>
-
                         <label style={{ margin: 0 }}>Swells (p.u.):</label>
                         <div className="form-group">
-                            <div className="row" style={{ width: '100%' }}>
+                            <div className="row m-0" style={{ width: '100%' }}>
                                 <div className='input-group input-group-sm'>
                                     <div className='col' style={{ width: '45%', paddingLeft: 0, paddingRight: 0 }}>
                                         <Input<SEBrowser.IEventCharacteristicFilters>
