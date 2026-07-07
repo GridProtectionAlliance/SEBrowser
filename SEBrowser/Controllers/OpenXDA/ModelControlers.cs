@@ -28,6 +28,7 @@ using Microsoft.AspNetCore.Mvc;
 using openXDA.Model;
 using SEBrowser.Model;
 using SEBrowser.Security;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -94,8 +95,6 @@ namespace SEBrowser.Controllers.OpenXDA
             if (openXDAParentTable == "CapacitorBank")
                 openXDAParentTable = "CapBank";
 
-            string orderByExpression = $"{sort} {(ascending == 1 ? "ASC" : "DESC")}";
-
             // Asset additional fields are stored under the individual asset-type tables, not a single "Asset" table.
             RecordRestriction restriction = openXDAParentTable == "Asset"
                 ? new RecordRestriction("ParentTable IN ('Line', 'Transformer', 'Breaker', 'CapBank', 'Bus', 'Generation', 'StationAux', 'StationBattery')")
@@ -103,7 +102,18 @@ namespace SEBrowser.Controllers.OpenXDA
 
             using AdoDataConnection connection = new(Gemstone.Configuration.Settings.Default);
 
-            IEnumerable<AdditionalField> records = new TableOperations<AdditionalField>(connection)
+            TableOperations<AdditionalField> tableOperations = new(connection);
+
+            // Validate sort against actual column names to prevent SQL injection via the ORDER BY clause
+            string? sortField = tableOperations.GetFieldNames(false)
+                .FirstOrDefault(field => string.Equals(field, sort, StringComparison.OrdinalIgnoreCase));
+
+            if (sortField is null)
+                return BadRequest($"Invalid sort field: {sort}");
+
+            string orderByExpression = $"{sortField} {(ascending == 1 ? "ASC" : "DESC")}";
+
+            IEnumerable<AdditionalField> records = tableOperations
                 .QueryRecords(orderByExpression, restriction);
 
             if (!AuthenticationSetup.CanViewSecureAdditionalFields(User))
@@ -125,11 +135,19 @@ namespace SEBrowser.Controllers.OpenXDA
     [Route("api/openXDA/StandardMagDurCurve")]
     public class StandardMagDurCurveController : ControllerBase
     {
+        private static readonly string[] s_sortableColumns = { "ID", "Name", "Color" };
+
         [HttpGet, Route("{sort}/{ascending:int}")]
         public IActionResult GetStandardMagDurCurves(string sort, int ascending)
         {
-            string[] allowedSortColumns = { "ID", "Name", "Color", "Area" };
-            string orderByExpression = $"{(allowedSortColumns.Contains(sort) ? sort : "Name")} {(ascending == 1 ? "ASC" : "DESC")}";
+            // Validate sort against known column names to prevent SQL injection via the ORDER BY clause
+            string? sortField = s_sortableColumns
+                .FirstOrDefault(column => string.Equals(column, sort, StringComparison.OrdinalIgnoreCase));
+
+            if (sortField is null)
+                return BadRequest($"Invalid sort field: {sort}");
+
+            string orderByExpression = $"{sortField} {(ascending == 1 ? "ASC" : "DESC")}";
 
             using AdoDataConnection connection = new(Gemstone.Configuration.Settings.Default);
 
