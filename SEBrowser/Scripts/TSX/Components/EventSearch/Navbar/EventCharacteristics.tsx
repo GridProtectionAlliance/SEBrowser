@@ -31,14 +31,8 @@ import { EventTypeSlice } from '../../../Store/Store';
 import { OpenXDA, Application } from '@gpa-gemstone/application-typings';
 import { Input, Select, MultiCheckBoxSelect, RadioButtons } from '@gpa-gemstone/react-forms';
 import { SEBrowser } from '../../../global';
-import { SelectDateTimeSetting, SelectTimeZone } from '../../../Store/SettingsSlice';
-import { getMoment, getStartEndTime, readableUnit } from '../TimeWindowUtils';
-import { FetchMagDurCurves } from '../FetchMagDurCurves';
-
-const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 
 const EventSearchNavbar = () => {
-
     const dispatch = useAppDispatch();
     const eventCharacteristicFilter = useAppSelector(SelectCharacteristicFilter);
     const timeFilter = useAppSelector(SelectTimeFilter);
@@ -454,5 +448,14 @@ function validMinMax(field: keyof SEBrowser.IEventCharacteristicFilters, newEven
 
     return true;
 }
+
+const FetchMagDurCurves = (): JQuery.jqXHR<OpenXDA.Types.MagDurCurve[]> => $.ajax({
+    type: 'GET',
+    url: `${homePath}api/openXDA/StandardMagDurCurve/Name/1`,
+    contentType: 'application/json; charset=utf-8',
+    dataType: 'json',
+    cache: true,
+    async: true
+});
 
 export default EventSearchNavbar;

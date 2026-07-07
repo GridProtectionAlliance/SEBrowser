@@ -63,12 +63,11 @@ const EventSearchNavbar = (props: IProps) => {
     const dateTimeSetting = useAppSelector(SelectDateTimeSetting)
     const reset = useAppSelector(SelectReset);
 
-    const [timeRange, setTimeRange] = React.useState<string>('');
     const [showFilter, setFilter] = React.useState<('None' | 'Meter' | 'Asset' | 'AssetGroup' | 'Station')>('None');
 
     React.useEffect(() => props.setHeight(navHeight), [navHeight])
 
-    React.useEffect(() => {
+    const timeRange = React.useMemo(() => {
         let r = "";
         const center = getMoment(timeFilter.date, timeFilter.time);
         const [start, end] = getStartEndTime(center, timeFilter.windowSize, timeFilter.timeWindowUnits);
@@ -91,85 +90,8 @@ const EventSearchNavbar = (props: IProps) => {
         else if (dateTimeSetting == 'endWindow')
             r += ` - ${2 * timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
 
-        setTimeRange(r);
+        return r
     }, [timeFilter, dateTimeSetting, timeZone])
-
-    function getEnum(setOptions, field) {
-        if (field.type != 'enum' || field.enum == undefined || field.enum.length != 1)
-            return () => {/*Do Nothing*/ };
-
-        const handle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/ValueList/Group/${field.enum[0].Value}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: true,
-            async: true
-        });
-
-        handle.done(d => setOptions(d.map(item => ({ Value: item.Value.toString(), Label: item.Text }))))
-        return () => {
-            if (handle != null && handle.abort == null) handle.abort();
-        }
-    }
-
-    function getAdditionalMeterFields(setFields) {
-        const handle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/openXDA/AdditionalField/ParentTable/Meter/FieldName/0`,
-            contentType: "application/json; charset=utf-8",
-            cache: false,
-            async: true
-        });
-
-        function ConvertType(type: string) {
-            if (type == 'string' || type == 'integer' || type == 'number' || type == 'datetime' || type == 'boolean')
-                return { type: type }
-            return {
-                type: 'enum', enum: [{ Label: type, Value: type }]
-            }
-        }
-
-        handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
-            const ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
-                { label: `[AF${item.ExternalDBTableID != undefined ? " " + item.ExternalDBTableID : ''}] ${item.FieldName}`, key: `AdditionalField.${item.FieldName}`, ...ConvertType(item.Type), isPivotField: false } as Search.IField<SystemCenter.Types.DetailedMeter>
-            )), ['label'], ["asc"]);
-            setFields(ordered)
-        });
-
-        return () => {
-            if (handle != null && handle.abort == null) handle.abort();
-        };
-    }
-
-    function getAdditionalAssetFields(setFields) {
-        const handle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/openXDA/AdditionalField/ParentTable/Asset/FieldName/0`,
-            contentType: "application/json; charset=utf-8",
-            cache: false,
-            async: true
-        });
-
-        function ConvertType(type: string) {
-            if (type == 'string' || type == 'integer' || type == 'number' || type == 'datetime' || type == 'boolean')
-                return { type: type }
-            return {
-                type: 'enum', enum: [{ Label: type, Value: type }]
-            }
-        }
-
-        handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
-
-            const ordered = _.orderBy(d.filter(item => item.Searchable).map(item => (
-                { label: `[AF${item.ExternalDBTableID != undefined ? " " + item.ExternalDBTableID : ''}] ${item.FieldName}`, key: `AdditionalField.${item.FieldName}`, ...ConvertType(item.Type), isPivotField: false } as Search.IField<SystemCenter.Types.DetailedAsset>
-            )), ['label'], ["asc"]);
-            setFields(ordered);
-        });
-        return () => {
-            if (handle != null && handle.abort == null) handle.abort();
-        };
-    }
 
     if (timeFilter === null) return null;
 
@@ -489,6 +411,86 @@ const EventSearchNavbar = (props: IProps) => {
             </DefaultSelects.AssetGroup>
         </>
     );
+}
+
+function getAdditionalAssetFields(setFields) {
+    const handle = $.ajax({
+        type: "GET",
+        url: `${homePath}api/openXDA/AdditionalField/ParentTable/Asset/FieldName/0`,
+        contentType: "application/json; charset=utf-8",
+        cache: false,
+        async: true
+    });
+
+    handle.done((d: SystemCenter.Types.AdditionalField[]) => {
+        setFields(orderAdditionalFields<SystemCenter.Types.DetailedAsset>(d));
+    });
+
+    return () => {
+        if (handle != null && handle.abort != null) handle.abort();
+    };
+}
+
+function getAdditionalMeterFields(setFields) {
+    const handle = $.ajax({
+        type: "GET",
+        url: `${homePath}api/openXDA/AdditionalField/ParentTable/Meter/FieldName/0`,
+        contentType: "application/json; charset=utf-8",
+        cache: false,
+        async: true
+    });
+
+    handle.done((d: Array<SystemCenter.Types.AdditionalField>) => {
+        setFields(orderAdditionalFields<SystemCenter.Types.DetailedMeter>(d));
+    });
+
+    return () => {
+        if (handle != null && handle.abort != null) handle.abort();
+    };
+}
+
+function orderAdditionalFields<T>(fields: SystemCenter.Types.AdditionalField[]): Search.IField<T>[] {
+    return _.orderBy(
+        fields
+            .filter(item => item.Searchable)
+            .map(item => ({
+                label: `[AF${item.ExternalDBTableID != undefined ? " " + item.ExternalDBTableID : ""}] ${item.FieldName}`,
+                key: `AdditionalField.${item.FieldName}`,
+                ...ConvertType(item.Type),
+                isPivotField: false
+            } as Search.IField<T>)),
+        ["label"],
+        ["asc"]
+    );
+}
+
+function getEnum(setOptions, field) {
+    if (field.type != 'enum' || field.enum == undefined || field.enum.length != 1)
+        return () => {/*Do Nothing*/ };
+
+    const handle = $.ajax({
+        type: "GET",
+        url: `${homePath}api/ValueList/Group/${field.enum[0].Value}`,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        cache: true,
+        async: true
+    });
+
+    handle.done(d => setOptions(d.map(item => ({ Value: item.Value.toString(), Label: item.Text }))))
+
+    return () => {
+        if (handle != null && handle.abort != null) handle.abort();
+    }
+}
+
+
+function ConvertType(type: string) {
+    if (type == 'string' || type == 'integer' || type == 'number' || type == 'datetime' || type == 'boolean')
+        return { type: type }
+    return {
+        type: 'enum', enum: [{ Label: type, Value: type }]
+    }
 }
 
 export default EventSearchNavbar;
