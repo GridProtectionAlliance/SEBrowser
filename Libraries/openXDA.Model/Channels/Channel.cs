@@ -501,13 +501,13 @@ namespace openXDA.Model
         [SearchExtension("^VoltageKV$")]
         public static RecordRestriction GetVoltageKVRestriction(IRecordFilter filter)
         {
-            return GetSearchRestriction("(SELECT VoltageKV FROM Asset WHERE Asset.ID = FullTbl.AssetID)", filter);
+            return SearchRestrictionHelper.GetSearchRestriction("(SELECT VoltageKV FROM Asset WHERE Asset.ID = FullTbl.AssetID)", filter);
         }
 
         [SearchExtension("^ChannelGroupTypeID$")]
         public static RecordRestriction GetChannelGroupTypeRestriction(IRecordFilter filter)
         {
-            RecordRestriction restriction = GetSearchRestriction("ID", filter);
+            RecordRestriction restriction = SearchRestrictionHelper.GetSearchRestriction("ID", filter);
 
             return new RecordRestriction(
                 $"EXISTS(SELECT * FROM ChannelGroupType WHERE {restriction.FilterExpression} AND MeasurementTypeID = FullTbl.MeasurementTypeID AND MeasurementCharacteristicID = FullTbl.MeasurementCharacteristicID)",
@@ -517,36 +517,12 @@ namespace openXDA.Model
         [SearchExtension("^SeriesID$")]
         public static RecordRestriction GetSeriesRestriction(IRecordFilter filter)
         {
-            RecordRestriction restriction = GetSearchRestriction("Series.SeriesTypeID", filter);
+            RecordRestriction restriction = SearchRestrictionHelper.GetSearchRestriction("Series.SeriesTypeID", filter);
 
             return new RecordRestriction(
                 $"(SELECT COUNT(Series.ID) FROM SERIES WHERE Series.ChannelID = FullTbl.ID AND {restriction.FilterExpression}) > 0",
                 restriction.Parameters);
         }
-
-        private static RecordRestriction GetSearchRestriction(string fieldExpression, IRecordFilter filter)
-        {
-            if (!string.Equals(filter.Operator, "IN", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(filter.Operator, "NOT IN", StringComparison.OrdinalIgnoreCase))
-                return new RecordRestriction($"{fieldExpression} {filter.Operator} {{0}}", filter.SearchParameter);
-
-            object[] parameters = GetSearchParameters(filter.SearchParameter).ToArray();
-            string placeholders = string.Join(", ", parameters.Select((_, index) => $"{{{index}}}"));
-
-            return new RecordRestriction($"{fieldExpression} {filter.Operator} ({placeholders})", parameters);
-        }
-
-        private static IEnumerable<object> GetSearchParameters(object searchParameter)
-        {
-            if (searchParameter is string searchText)
-                return searchText.Trim('(', ')').Split(',').Select(value => (object)value.Trim());
-
-            if (searchParameter is System.Collections.IEnumerable parameters)
-                return parameters.Cast<object>();
-
-            return [searchParameter];
-        }
-
     }
 
     public class ChannelInfo

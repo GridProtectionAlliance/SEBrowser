@@ -44,7 +44,7 @@ namespace SEBrowser.Security;
 public class AuthenticationSetup : IAuthenticationSetup
 {
     #region [ Members ]
-    //this should be provided via options in the constructor
+    //this should be provided via the Options Pattern using DI
     public static bool OAuthEnabled
     {
         get
@@ -61,7 +61,7 @@ public class AuthenticationSetup : IAuthenticationSetup
         }
     }
 
-    //this should be provided via options in the constructor
+    //this should be provided via the Options Pattern using DI
     private static string NodeID => Settings.Default[Settings.SystemSettingsCategory].NodeID;
 
     private const string GroupRoleQuery =

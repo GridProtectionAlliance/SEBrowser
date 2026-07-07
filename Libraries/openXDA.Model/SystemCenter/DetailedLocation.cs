@@ -24,6 +24,7 @@
 using Gemstone.Configuration;
 using Gemstone.Data;
 using Gemstone.Data.Model;
+using openXDA.Model;
 
 namespace SystemCenter.Model;
 
@@ -64,9 +65,11 @@ public class DetailedLocation
         if (RecordFilter<DetailedLocation>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
             filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
 
+        RecordRestriction valueRestriction = SearchRestrictionHelper.GetSearchRestriction("Value", filter, 1);
+
         return new RecordRestriction(
-            $"ID IN (SELECT ParentTableID FROM AdditionalFieldSearch WHERE ParentTable = 'Location' AND FieldName = {{0}} AND Value {filter.Operator} {{1}})",
-            fieldName, filter.SearchParameter);
+            $"ID IN (SELECT ParentTableID FROM AdditionalFieldSearch WHERE ParentTable = 'Location' AND FieldName = {{0}} AND {valueRestriction.FilterExpression})",
+            new object[] { fieldName }.Concat(valueRestriction.Parameters).ToArray());
     }
 
     [SearchExtension("^Meter$")]
@@ -77,9 +80,11 @@ public class DetailedLocation
         if (RecordFilter<DetailedLocation>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
             filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
 
+        RecordRestriction restriction = SearchRestrictionHelper.GetSearchRestriction("Meter.AssetKey", filter);
+
         return new RecordRestriction(
-            $"ID IN (SELECT Meter.LocationID FROM Meter WHERE Meter.AssetKey {filter.Operator} {{0}})",
-            filter.SearchParameter);
+            $"ID IN (SELECT Meter.LocationID FROM Meter WHERE {restriction.FilterExpression})",
+            restriction.Parameters);
     }
 
     [SearchExtension("^Asset$")]
@@ -90,8 +95,10 @@ public class DetailedLocation
         if (RecordFilter<DetailedLocation>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
             filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
 
+        RecordRestriction restriction = SearchRestrictionHelper.GetSearchRestriction("Asset.AssetKey", filter);
+
         return new RecordRestriction(
-            $"ID IN (SELECT AssetLocation.LocationID FROM Asset JOIN AssetLocation ON AssetLocation.AssetID = Asset.ID WHERE Asset.AssetKey {filter.Operator} {{0}})",
-            filter.SearchParameter);
+            $"ID IN (SELECT AssetLocation.LocationID FROM Asset JOIN AssetLocation ON AssetLocation.AssetID = Asset.ID WHERE {restriction.FilterExpression})",
+            restriction.Parameters);
     }
 }

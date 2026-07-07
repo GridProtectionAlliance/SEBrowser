@@ -24,6 +24,7 @@
 using Gemstone.Configuration;
 using Gemstone.Data;
 using Gemstone.Data.Model;
+using openXDA.Model;
 
 namespace SystemCenter.Model
 {
@@ -57,9 +58,11 @@ namespace SystemCenter.Model
             if (RecordFilter<DetailedMeter>.WildCardOperators.Contains(filter.Operator, StringComparer.OrdinalIgnoreCase) && filter.SearchParameter is string stringVal)
                 filter.SearchParameter = stringVal.Replace("*", tableOps.WildcardChar);
 
+            RecordRestriction valueRestriction = SearchRestrictionHelper.GetSearchRestriction("Value", filter, 1);
+
             return new RecordRestriction(
-                $"ID IN (SELECT ParentTableID FROM AdditionalFieldSearch WHERE ParentTable = 'Meter' AND FieldName = {{0}} AND Value {filter.Operator} {{1}})",
-                fieldName, filter.SearchParameter);
+                $"ID IN (SELECT ParentTableID FROM AdditionalFieldSearch WHERE ParentTable = 'Meter' AND FieldName = {{0}} AND {valueRestriction.FilterExpression})",
+                new object[] { fieldName }.Concat(valueRestriction.Parameters).ToArray());
         }
     }
 }
