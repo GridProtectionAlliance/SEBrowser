@@ -29,10 +29,6 @@ import { Redux } from '../global';
 
 const searchSettingsOptions = [
     {
-        Value: 'center',
-        Label: 'Center Date/Time and Window',
-    },
-    {
         Value: 'startWindow',
         Label: 'Start Date/Time and Window',
     },

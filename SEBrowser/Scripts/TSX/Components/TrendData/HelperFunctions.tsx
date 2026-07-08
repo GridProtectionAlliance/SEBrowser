@@ -25,7 +25,7 @@ import React from 'react';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import moment from 'moment';
 import { TrendSearch } from '../../global';
-import { momentDateFormat } from '../ReportTimeFilter';
+import { momentDateFormat } from '../EventSearch/TimeWindowUtils';
 
 // Returns an array of booleans telling which components are common to all channels
 export function findCommonComponents(components: string[], channels: TrendSearch.ITrendChannel[]): boolean[] {

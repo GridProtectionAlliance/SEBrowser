@@ -24,7 +24,7 @@
 //******************************************************************************************************
 import React from 'react';
 import _ from 'lodash';
-import ReportTimeFilter from '../../ReportTimeFilter';
+import { TimeFilter } from '@gpa-gemstone/common-pages';
 import { useAppDispatch, useAppSelector } from '../../../hooks';
 import { SelectAssetGroupList, SelectAssetList, SelectMeterList, SelectReset, SelectStationList, SelectTimeFilter, SetFilterLists } from '../../../Store/EventSearchSlice';
 import { ResetFilters, SetFilters } from '../../../Store/EventSearchSlice';
@@ -36,10 +36,9 @@ import { Search } from '@gpa-gemstone/react-interactive';
 import { Column } from '@gpa-gemstone/react-table';
 import EventSearchTypeFilters from '../EventSearchTypeFilter/EventSearchTypeFilter';
 import { SelectDateTimeSetting, SelectTimeZone } from '../../../Store/SettingsSlice';
-import { getMoment, getStartEndTime, readableUnit } from '../TimeWindowUtils';
+import { getMoment, getStartEndTime, readableUnit, toGemstoneFilter, fromGemstoneFilter } from '../TimeWindowUtils';
 import EventCharacteristics from './EventCharacteristics';
 import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
-
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 
@@ -72,13 +71,9 @@ const EventSearchNavbar = () => {
             r = `${start.format(momentDateTimeFormat)} (${timeZone})`;
         else if (dateTimeSetting == 'endWindow')
             r = `${end.format(momentDateTimeFormat)} (${timeZone})`;
-        else if (dateTimeSetting == 'center')
-            r = `${center.format(momentDateTimeFormat)} (${timeZone})`;
 
         if (dateTimeSetting == 'startEnd')
             r += ` to ${end.format(momentDateTimeFormat)} (${timeZone})`;
-        else if (dateTimeSetting == 'center')
-            r += ` +/- ${timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
         else if (dateTimeSetting == 'startWindow')
             r += ` + ${2 * timeFilter.windowSize} ${readableUnit(timeFilter.timeWindowUnits)}`;
         else if (dateTimeSetting == 'endWindow')
@@ -115,10 +110,12 @@ const EventSearchNavbar = () => {
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                         <li className="nav-item" style={{ width: '30%', paddingRight: 10 }}>
-                            <ReportTimeFilter
-                                filter={timeFilter}
-                                setFilter={(f) => dispatch(SetFilters({ time: f }))}
+                            <TimeFilter
+                                filter={toGemstoneFilter(timeFilter)}
+                                setFilter={(start, end, unit, duration) => dispatch(SetFilters({ time: fromGemstoneFilter(start, end, unit, duration) }))}
                                 showQuickSelect={true}
+                                dateTimeSetting={dateTimeSetting}
+                                timeZone={timeZone}
                             />
                         </li>
                         <EventSearchTypeFilters Height={navHeight} />
@@ -481,7 +478,6 @@ const getEnum = (setOptions: (options: Gemstone.TSX.Interfaces.ILabelValue<strin
         if (handle != null && handle.abort != null) handle.abort();
     }
 }
-
 
 const ConvertType = (type: string) => {
     if (type == 'string' || type == 'integer' || type == 'number' || type == 'datetime' || type == 'boolean')

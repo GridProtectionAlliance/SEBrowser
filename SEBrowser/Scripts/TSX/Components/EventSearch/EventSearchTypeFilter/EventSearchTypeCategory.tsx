@@ -44,31 +44,34 @@ const EventSearchTypeCategory = (props: IProps) => {
         props.SetHeight(props.Label, offsetHeight);
     }, [offsetHeight, props.Label, props.SetHeight]);
 
-    return <fieldset className="border" style={{ padding: '10px' }} ref={formRef as unknown as React.RefObject<HTMLFieldSetElement>}>
-        <legend className="w-auto" style={{ fontSize: 'large' }}>{(props.Label != null && props.Label.length > 0 ? props.Label : 'Other Types')}:
-            <a style={{ fontSize: 'small', color: '#0056b3', marginLeft: 2, cursor: 'pointer' }}
-                onClick={() => {
-                    const isSelected = props.Data.filter(item => props.SelectedID.find(i => i == item.ID) == null).length == 0;
-                    props.SelectAll(isSelected);
-                }}>
-                ({props.Data.filter(item => props.SelectedID.find(i => i == item.ID) == null).length == 0 ? 'un' : ''}select all)
-            </a>
-        </legend>
-        <form>
-            <ul style={{ listStyleType: 'none', padding: 0, position: 'relative', float: 'left' }}>
-                {props.Data.map((item) =>
-                    <li key={item.ID}>
-                        <CheckBox<{ Selected: boolean }>
-                            Record={{ Selected: props.SelectedID.find(i => i == item.ID) != null }}
-                            Field='Selected'
-                            Label={item.Description}
-                            Setter={(record) => props.OnChange(item, record.Selected)}
-                        />
-                    </li>
-                )}
-            </ul>
-        </form>
-    </fieldset>
+    return (
+        <fieldset className="border" style={{ padding: '10px', flex: '1 1 auto' }} ref={formRef as unknown as React.RefObject<HTMLFieldSetElement>}>
+            <legend className="w-auto" style={{ fontSize: 'large' }}>{(props.Label != null && props.Label.length > 0 ? props.Label : 'Other Types')}:
+                <a style={{ fontSize: 'small', color: '#0056b3', marginLeft: 2, cursor: 'pointer' }}
+                    onClick={() => {
+                        const isSelected = props.Data.filter(item => props.SelectedID.find(i => i == item.ID) == null).length == 0;
+                        props.SelectAll(isSelected);
+                    }}
+                >
+                    ({props.Data.filter(item => props.SelectedID.find(i => i == item.ID) == null).length == 0 ? 'un' : ''}select all)
+                </a>
+            </legend>
+            <form>
+                <ul style={{ listStyleType: 'none', padding: 0, position: 'relative', float: 'left' }}>
+                    {props.Data.map((item) =>
+                        <li key={item.ID}>
+                            <CheckBox<{ Selected: boolean }>
+                                Record={{ Selected: props.SelectedID.find(i => i == item.ID) != null }}
+                                Field='Selected'
+                                Label={item.Description}
+                                Setter={(record) => props.OnChange(item, record.Selected)}
+                            />
+                        </li>
+                    )}
+                </ul>
+            </form>
+        </fieldset>
+    )
 }
 
 export default EventSearchTypeCategory;

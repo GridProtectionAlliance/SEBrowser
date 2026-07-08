@@ -23,7 +23,9 @@
 import React from 'react';
 import _ from 'lodash';
 import { IMultiCheckboxOption, TrendSearch } from '../../../../global';
-import ReportTimeFilter from '../../../ReportTimeFilter';
+import { TimeFilter } from '@gpa-gemstone/common-pages';
+import { toGemstoneFilter, fromGemstoneFilter } from '../../../EventSearch/TimeWindowUtils';
+import { SelectDateTimeSetting, SelectTimeZone } from '../../../../Store/SettingsSlice';
 import { CheckBox, Input, MultiCheckBoxSelect, Select } from '@gpa-gemstone/react-forms';
 import { ValueListGroupSlice } from '../../../../Store/Store'
 import { useAppSelector, useAppDispatch } from '../../../../hooks';
@@ -52,6 +54,8 @@ const PlotSettingsTab = React.memo((props: IProps) => {
     const [labelOptions, setLabelOptions] = React.useState<{ Value: string, Label: string, Selected: boolean}[] >([]);
 
     const dispatch = useAppDispatch();
+    const dateTimeSetting = useAppSelector(SelectDateTimeSetting);
+    const timeZone = useAppSelector(SelectTimeZone);
     const defaultSliceStatus = useAppSelector((state) => ValueListGroupSlice.Status(state, defaultValueList));
     const defaultSliceData = useAppSelector((state) => ValueListGroupSlice.Data(state, defaultValueList));
     const optionsSliceStatus = useAppSelector((state) => ValueListGroupSlice.Status(state, allValueList));
@@ -196,8 +200,9 @@ const PlotSettingsTab = React.memo((props: IProps) => {
                 </fieldset>
             </div>
             <div className="col" style={{ width: '50%', height: "100%" }}>
-                <ReportTimeFilter filter={props.Plot.TimeFilter} showQuickSelect={false}
-                    setFilter={newFilter => props.SetPlot({ ...props.Plot, TimeFilter: newFilter })} />
+                <TimeFilter filter={toGemstoneFilter(props.Plot.TimeFilter)} showQuickSelect={false}
+                    setFilter={(start, end, unit, duration) => props.SetPlot({ ...props.Plot, TimeFilter: fromGemstoneFilter(start, end, unit, duration) })}
+                    dateTimeSetting={dateTimeSetting} timeZone={timeZone} />
                 <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                     <legend className="w-auto" style={{ fontSize: 'large' }}>Axis Limits:</legend>
                     <div className="row">

@@ -22,7 +22,10 @@
 //******************************************************************************************************
 import * as React from 'react';
 import _ from 'lodash';
-import ReportTimeFilter from '../ReportTimeFilter';
+import { TimeFilter } from '@gpa-gemstone/common-pages';
+import { toGemstoneFilter, fromGemstoneFilter } from '../EventSearch/TimeWindowUtils';
+import { useAppSelector } from '../../hooks';
+import { SelectDateTimeSetting, SelectTimeZone } from '../../Store/SettingsSlice';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -56,6 +59,8 @@ export interface RelayReportNavBarProps {
 }
 
 const RelayReportNavBar = (props: RelayReportNavBarProps) => {
+    const dateTimeSetting = useAppSelector(SelectDateTimeSetting);
+    const timeZone = useAppSelector(SelectTimeZone);
     const [breakers, setBreakers] = React.useState<Breaker[]>([]);
     const [substations, setSubstations] = React.useState<Substation[]>([]);
     const [channels, setChannels] = React.useState<Channel[]>([]);
@@ -238,12 +243,13 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                         </li>
                         
                         <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
-                            <ReportTimeFilter filter={{ date: props.date, time: props.time, windowSize: props.windowSize, timeWindowUnits: props.timeWindowUnits }} setFilter={(f) => {
+                            <TimeFilter filter={toGemstoneFilter({ date: props.date, time: props.time, windowSize: props.windowSize, timeWindowUnits: props.timeWindowUnits })} setFilter={(start, end, unit, duration) => {
+                                const f = fromGemstoneFilter(start, end, unit, duration);
                                 setDate(f.date);
                                 setTime(f.time);
                                 setTimeWindowUnits(f.timeWindowUnits);
                                 setWindowSize(f.windowSize);
-                            }} showQuickSelect={false} />
+                            }} showQuickSelect={false} dateTimeSetting={dateTimeSetting} timeZone={timeZone} />
                         </li>
 
 

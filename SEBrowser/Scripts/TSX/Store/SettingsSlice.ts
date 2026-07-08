@@ -50,7 +50,7 @@ const defaultState = {
     general: {
         MoveOptionsLeft: false,
         ShowDataPoints: true,
-        DateTime: 'center'
+        DateTime: 'startEnd'
     }
 } as Redux.SettingsState;
 
@@ -109,6 +109,9 @@ function readSettings() {
         const serializedState = localStorage.getItem('SEBrowser.Settings');
         if (serializedState === null) throw new Error("No setting state found")
         preserved = JSON.parse(serializedState);
+        // 'center' mode was removed with the gemstone TimeFilter migration
+        if (preserved.general != null && (preserved.general.DateTime as string) === 'center')
+            preserved.general.DateTime = 'startEnd';
         return preserved;
     } catch (err) {
         return cloneDeep(defaultState);

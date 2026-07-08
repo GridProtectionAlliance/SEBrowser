@@ -25,7 +25,10 @@ import _ from 'lodash';
 
 import SEBrowserService from './../../../TS/Services/SEBrowser';
 import { Modal } from '@gpa-gemstone/react-interactive';
-import ReportTimeFilter from '../ReportTimeFilter';
+import { TimeFilter } from '@gpa-gemstone/common-pages';
+import { toGemstoneFilter, fromGemstoneFilter } from '../EventSearch/TimeWindowUtils';
+import { useAppSelector } from '../../hooks';
+import { SelectDateTimeSetting, SelectTimeZone } from '../../Store/SettingsSlice';
 import { SEBrowser } from '../../global';
 
 
@@ -70,6 +73,19 @@ interface Istate {
     capBanks: Array<CapBank>,
     subStations: Array<Substation>,
     showFilter: boolean,
+}
+
+// Wrapper so the class component below can use the Redux-based settings the gemstone TimeFilter requires
+const CapBankTimeFilter = (props: { filter: SEBrowser.IReportTimeFilter, setFilter: (f: SEBrowser.IReportTimeFilter) => void }) => {
+    const dateTimeSetting = useAppSelector(SelectDateTimeSetting);
+    const timeZone = useAppSelector(SelectTimeZone);
+    return <TimeFilter
+        filter={toGemstoneFilter(props.filter)}
+        setFilter={(start, end, unit, duration) => props.setFilter(fromGemstoneFilter(start, end, unit, duration))}
+        showQuickSelect={true}
+        dateTimeSetting={dateTimeSetting}
+        timeZone={timeZone}
+    />;
 }
 
 export default class CapBankReportNavBar extends React.Component<CapBankReportNavBarProps, Istate>{
@@ -207,7 +223,7 @@ export default class CapBankReportNavBar extends React.Component<CapBankReportNa
                             </fieldset>
                         </li>
                         <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
-                            <ReportTimeFilter filter={this.props.TimeFilter} setFilter={(f) => this.setDate(f)} showQuickSelect={true} />
+                            <CapBankTimeFilter filter={this.props.TimeFilter} setFilter={(f) => this.setDate(f)} />
                         </li>
                         <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
                             <fieldset className="border" style={{ padding: '10px', height: '100%' }}>

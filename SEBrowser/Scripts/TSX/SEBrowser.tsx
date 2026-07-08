@@ -47,15 +47,15 @@ let isRedirecting = false;
 //Intercept requests at the XHR level to redirect 401 response to the login page
 const originalXHRSend = XMLHttpRequest.prototype.send;
 
-XMLHttpRequest.prototype.send = function(...args) {
-    this.addEventListener('load', function() {
+XMLHttpRequest.prototype.send = function (...args) {
+    this.addEventListener('load', function () {
         if (this.status === 401 && !isRedirecting) {
             isRedirecting = true;
-            const returnPath = encodeURIComponent(window.location.pathname);
+            const returnPath = encodeURIComponent(window.location.pathname + window.location.search);
             window.location.assign(`${homePath}Login?redir=${returnPath}`);
         }
     });
-    
+
     return originalXHRSend.apply(this, args);
 };
 

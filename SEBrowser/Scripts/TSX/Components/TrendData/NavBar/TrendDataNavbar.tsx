@@ -31,7 +31,10 @@ import { Search } from '@gpa-gemstone/react-interactive';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { Column } from '@gpa-gemstone/react-table';
 import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
-import ReportTimeFilter from '../../ReportTimeFilter';
+import { TimeFilter } from '@gpa-gemstone/common-pages';
+import { toGemstoneFilter, fromGemstoneFilter } from '../../EventSearch/TimeWindowUtils';
+import { useAppSelector } from '../../../hooks';
+import { SelectDateTimeSetting, SelectTimeZone } from '../../../Store/SettingsSlice';
 import TrendChannelTable from '../Components/TrendChannelTable';
 import { FilterType } from './Types';
 import TrendChannelFilters from './ChannelFilters';
@@ -60,6 +63,8 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const { offsetHeight: filtOffsetHeight } = useGetContainerPosition(filtRef);
 
     const [showFilter, setShowFilter] = React.useState<FilterType>('None');
+    const dateTimeSetting = useAppSelector(SelectDateTimeSetting);
+    const timeZone = useAppSelector(SelectTimeZone);
 
     const {
         trendFilter,
@@ -165,10 +170,12 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             <>
                 <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                     <li className="nav-item" style={{ width: '30%', paddingRight: 10 }} ref={timeRef as unknown as React.RefObject<HTMLLIElement>}>
-                        <ReportTimeFilter
-                            filter={timeFilter}
-                            setFilter={setTimeFilter}
+                        <TimeFilter
+                            filter={toGemstoneFilter(timeFilter)}
+                            setFilter={(start, end, unit, duration) => setTimeFilter(fromGemstoneFilter(start, end, unit, duration))}
                             showQuickSelect={true}
+                            dateTimeSetting={dateTimeSetting}
+                            timeZone={timeZone}
                         />
                     </li>
                     <li className="nav-item" style={{ width: '15%', paddingRight: 10 }} ref={filtRef as unknown as React.RefObject<HTMLLIElement>}>

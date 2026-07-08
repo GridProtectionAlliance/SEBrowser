@@ -34,7 +34,7 @@ import { SelectTrendDataSettings, SelectGeneralSettings } from '../../../Store/S
 import { useAppSelector } from './../../../hooks';
 import { GenerateQueryParams } from '../../../Store/EventSearchSlice';
 import { GetDynamicEventSearchData } from '../../../../../EventWidgets/TSX/CollectionWidget/DynamicEventTable/DynamicEventSearchData';
-import { momentDateFormat, momentTimeFormat } from '../../ReportTimeFilter';
+import { momentDateFormat, momentTimeFormat } from '../../EventSearch/TimeWindowUtils';
 import { SettingsModal } from '../Settings/SettingsModal';
 import { CyclicHistogram } from './CyclicHistogram';
 import { findCommonComponents } from '../HelperFunctions';
