@@ -1,4 +1,4 @@
-//******************************************************************************************************
+﻿//******************************************************************************************************
 //  EventSearchsSlice.ts - Gbtc
 //
 //  Copyright © 2020, Grid Protection Alliance.  All Rights Reserved.
@@ -260,9 +260,16 @@ function computeReset(state: Redux.EventSearchState, eventTypes: OpenXDA.Types.E
     return event && types && state.SelectedAssets.length == 0 && state.SelectedStations.length == 0 && state.SelectedMeters.length == 0 && state.SelectedGroups.length == 0;
 }
 
-export function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters, type: number[],
-    time: SEBrowser.IReportTimeFilter, assets: SystemCenter.Types.DetailedAsset[], groups: OpenXDA.Types.AssetGroup[],
-    meters: SystemCenter.Types.DetailedMeter[], stations: SystemCenter.Types.DetailedLocation[], eventID: number = null): any {
+export function GenerateQueryParams(
+    event: SEBrowser.IEventCharacteristicFilters,
+    type: number[],
+    time: SEBrowser.IReportTimeFilter,
+    assets: SystemCenter.Types.DetailedAsset[],
+    groups: OpenXDA.Types.AssetGroup[],
+    meters: SystemCenter.Types.DetailedMeter[],
+    stations: SystemCenter.Types.DetailedLocation[],
+    eventID: number | null = null
+): any {
     const result: any = {};
     if (assets.length > 0 && assets.length < 100) {
         let i = 0;
@@ -373,7 +380,7 @@ export function GenerateQueryParams(event: SEBrowser.IEventCharacteristicFilters
 }
 
 function parseList(key: string, object: any) {
-    const result = [];
+    const result: any[] = [];
     let i = 0;
 
     while (object[key + i] != null) {
