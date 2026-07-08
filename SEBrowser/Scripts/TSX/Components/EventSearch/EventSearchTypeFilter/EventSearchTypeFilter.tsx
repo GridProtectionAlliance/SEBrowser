@@ -136,7 +136,9 @@ const EventSearchTypeFilters = (props: IProps) => {
                 style={{
                     width: (20 / nCol).toFixed(0) + '%',
                     paddingRight: 10,
-                    height: eventTypeCategories.some(c => c.height == 0) ? 5 : '100%',
+                    ...(eventTypeCategories.some(c => c.height == 0) ? { height: 5 } : {}),
+                    display: 'flex',
+                    flexDirection: 'column',
                     overflow: 'hidden'
                 }}
             >

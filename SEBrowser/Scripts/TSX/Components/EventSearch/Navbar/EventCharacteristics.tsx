@@ -141,26 +141,28 @@ const EventSearchNavbar = () => {
                             Setter={setNewEventCharacteristicFilter}
                             Options={MagDurOptions}
                         />
-                        <RadioButtons<{ curveType: string }>
-                            Record={{
-                                curveType: newEventCharacteristicFilter.curveInside
-                                    ? (newEventCharacteristicFilter.curveOutside ? 'both' : 'inside')
-                                    : 'outside'
-                            }}
-                            Label=''
-                            Field='curveType'
-                            Setter={({ curveType }) => setNewEventCharacteristicFilter({
-                                ...newEventCharacteristicFilter,
-                                curveInside: curveType != 'outside',
-                                curveOutside: curveType != 'inside'
-                            })}
-                            Options={[
-                                { Label: 'Inside', Value: 'inside' },
-                                { Label: 'Outside', Value: 'outside' },
-                                { Label: 'Both', Value: 'both' }
-                            ]}
-                            Style={{ marginBottom: 0 }}
-                        />
+                        <div className="row justify-content-md-center">
+                            <RadioButtons<{ curveType: string }>
+                                Record={{
+                                    curveType: newEventCharacteristicFilter.curveInside
+                                        ? (newEventCharacteristicFilter.curveOutside ? 'both' : 'inside')
+                                        : 'outside'
+                                }}
+                                Label=''
+                                Field='curveType'
+                                Setter={({ curveType }) => setNewEventCharacteristicFilter({
+                                    ...newEventCharacteristicFilter,
+                                    curveInside: curveType != 'outside',
+                                    curveOutside: curveType != 'inside'
+                                })}
+                                Options={[
+                                    { Label: 'Inside', Value: 'inside' },
+                                    { Label: 'Outside', Value: 'outside' },
+                                    { Label: 'Both', Value: 'both' }
+                                ]}
+                                Style={{ marginBottom: 0 }}
+                            />
+                        </div>
                     </form>
                 </div>
                 <div className={"col-4"}>
