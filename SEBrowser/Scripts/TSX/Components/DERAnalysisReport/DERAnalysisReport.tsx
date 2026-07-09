@@ -234,8 +234,11 @@ function DERAnalysisReport() {
                                 setTime(f.time);
                                 setTimeWindowUnits(f.timeWindowUnits);
                                 setWindowSize(f.windowSize);
-                            }} showQuickSelect={false} dateTimeSetting={dateTimeSetting} timeZone={timeZone} />
-                            <button style={{ position: 'absolute', top: 30, right: 30 }} data-toggle="modal" data-target="#epriModal">⚠</button>
+                            }} 
+                            showQuickSelect={true}
+                             dateTimeSetting={dateTimeSetting}
+                              timeZone={timeZone} 
+                              />
                         </li>
 
 

@@ -81,7 +81,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
         if (substations.findIndex(s => s.LocationID == props.StationId) == -1)
             setStation(substations[0].LocationID);
     }, [substations, props.StationId])
-   
+
     React.useEffect(() => {
         if (breakers.length == 0)
             return;
@@ -101,7 +101,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
             setChannel(channels[0].ID)
     }, [channels, props.ChannelID])
 
-    function getBreakerData(): JQuery.jqXHR<Breaker[] >{
+    function getBreakerData(): JQuery.jqXHR<Breaker[]> {
         const h = $.ajax({
             type: "GET",
             url: `${homePath}api/PQDashboard/RelayReport/GetBreakerData?locationID=${props.StationId}`,
@@ -117,11 +117,11 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
         })
 
         return h;
-       
+
     }
 
     function getSubstationData(): JQuery.jqXHR<Substation[]> {
-        const h =  $.ajax({
+        const h = $.ajax({
             type: "GET",
             url: `${homePath}api/PQDashboard/RelayReport/GetSubstationData`,
             contentType: "application/json; charset=utf-8",
@@ -135,10 +135,10 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                 setSubstations(d);
         })
         return h;
-       
+
     }
 
-    
+
     function getCoilData(): JQuery.jqXHR<Channel[]> {
         const h = $.ajax({
             type: "GET",
@@ -204,60 +204,64 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
         props.stateSetter({ searchBarProps: object });
     }
 
+    return (
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+            <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
+                <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
+                    <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
+                        <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                            <legend className="w-auto" style={{ fontSize: 'large' }}>Trip Coil:</legend>
+                            <form>
+                                <label style={{ width: '100%', position: 'relative', float: "left" }}>Substation: </label>
+                                <div className="form-group" style={{ height: 30 }}>
+                                    <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
+                                        setStation(parseInt(e.target.value.toString()));
+                                    }} value={props.StationId}>
+                                        {substations.map((item, index) => <option key={index} value={item.LocationID} > {item.AssetName} </option>)}
+                                    </select>
+                                </div>
+                                <label style={{ width: '100%', position: 'relative', float: "left" }}>Breaker: </label>
+                                <div className="form-group" style={{ height: 30 }}>
+                                    <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
+                                        setBreaker(parseInt(e.target.value.toString()));
+                                    }} value={props.BreakerID}>
+                                        {breakers.map((item, index) => <option key={index} value={item.AssetId} > {item.AssetName} </option>)}
+                                    </select>
+                                </div>
+                                <label style={{ width: '100%', position: 'relative', float: "left" }}>Trip Coil: </label>
+                                <div className="form-group" style={{ height: 30 }}>
+                                    <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
+                                        setChannel(parseInt(e.target.value.toString()));
+                                    }} value={props.ChannelID}>
+                                        {channels.map((item, index) => <option key={index} value={item.ID} > {item.Name} </option>)}
+                                    </select>
+                                </div>
+                            </form>
+                        </fieldset>
+                    </li>
 
-        return (
-            <nav className="navbar navbar-expand-lg navbar-light bg-light">
-
-                <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
-                    <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
-                        <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
-                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                <legend className="w-auto" style={{ fontSize: 'large' }}>Trip Coil:</legend>
-                                <form>
-                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Substation: </label>
-                                    <div className="form-group" style={{ height: 30 }}>
-                                        <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            setStation(parseInt(e.target.value.toString()));
-                                        }} value={props.StationId}>
-                                            {substations.map((item,index) => <option key={index} value={item.LocationID} > {item.AssetName} </option>)}
-                                        </select>
-                                    </div>
-                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Breaker: </label>
-                                    <div className="form-group" style={{ height: 30 }}>
-                                        <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            setBreaker(parseInt(e.target.value.toString()));
-                                        }} value={props.BreakerID}>
-                                            {breakers.map((item,index) => <option key={index} value={item.AssetId} > {item.AssetName} </option>)}
-                                        </select>
-                                    </div>
-                                    <label style={{ width: '100%', position: 'relative', float: "left" }}>Trip Coil: </label>
-                                    <div className="form-group" style={{ height: 30 }}>
-                                        <select  style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                            setChannel(parseInt(e.target.value.toString()));
-                                        }} value={props.ChannelID}>
-                                            {channels.map((item,index) => <option key={index} value={item.ID} > {item.Name} </option>)}
-                                        </select>
-                                    </div>
-                                </form>
-                            </fieldset>
-                        </li>
-                        
-                        <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
-                            <TimeFilter filter={toGemstoneFilter({ date: props.date, time: props.time, windowSize: props.windowSize, timeWindowUnits: props.timeWindowUnits })} setFilter={(start, end, unit, duration) => {
+                    <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
+                        <TimeFilter
+                            filter={toGemstoneFilter({ date: props.date, time: props.time, windowSize: props.windowSize, timeWindowUnits: props.timeWindowUnits })}
+                            setFilter={(start, end, unit, duration) => {
                                 const f = fromGemstoneFilter(start, end, unit, duration);
                                 setDate(f.date);
                                 setTime(f.time);
                                 setTimeWindowUnits(f.timeWindowUnits);
                                 setWindowSize(f.windowSize);
-                            }} showQuickSelect={false} dateTimeSetting={dateTimeSetting} timeZone={timeZone} />
-                        </li>
+                            }}
+                            showQuickSelect={true}
+                            dateTimeSetting={dateTimeSetting}
+                            timeZone={timeZone}
+                        />
+                    </li>
 
 
-                    </ul>
-                </div>
-            </nav>
-        );
-    
+                </ul>
+            </div>
+        </nav>
+    );
+
 }
 
 export default RelayReportNavBar;
