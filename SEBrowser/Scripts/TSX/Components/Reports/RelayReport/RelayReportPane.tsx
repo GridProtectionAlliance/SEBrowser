@@ -25,7 +25,7 @@ import moment from 'moment';
 import { RelayReportNavBarProps } from './RelayReportNavBar';
 import { Line, LineWithThreshold, Plot } from '@gpa-gemstone/react-graph';
 import { RandomColor } from '@gpa-gemstone/helper-functions';
-import { findAppropriateUnit, getMoment, getStartEndTime } from '../EventSearch/TimeWindowUtils';
+import { findAppropriateUnit, getMoment, getStartEndTime } from '../../EventSearch/TimeWindowUtils';
 
 interface IRelayPerformance {
     EventID: number,

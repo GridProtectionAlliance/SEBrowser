@@ -22,7 +22,7 @@
 //******************************************************************************************************
 
 import React from 'react';
-import BreakerReportService from './../../../TS/Services/BreakerReport'
+import BreakerReportService from '../../../../TS/Services/BreakerReport'
 
 
 export interface BreakerReportNavbarProps {

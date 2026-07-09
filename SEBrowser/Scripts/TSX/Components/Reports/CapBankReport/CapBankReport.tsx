@@ -26,7 +26,7 @@ import CapBankReportPane from './CapBankReportPane';
 import * as queryString from 'querystring';
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { SEBrowser } from '../../global';
+import { SEBrowser } from '../../../global';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";

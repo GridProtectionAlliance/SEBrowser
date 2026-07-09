@@ -23,13 +23,13 @@
 import * as React from 'react';
 import _ from 'lodash';
 
-import SEBrowserService from './../../../TS/Services/SEBrowser';
+import SEBrowserService from '../../../../TS/Services/SEBrowser';
 import { Modal } from '@gpa-gemstone/react-interactive';
 import { TimeFilter } from '@gpa-gemstone/common-pages';
-import { toGemstoneFilter, fromGemstoneFilter } from '../EventSearch/TimeWindowUtils';
-import { useAppSelector } from '../../hooks';
-import { SelectDateTimeSetting, SelectTimeZone } from '../../Store/SettingsSlice';
-import { SEBrowser } from '../../global';
+import { toGemstoneFilter, fromGemstoneFilter } from '../../EventSearch/TimeWindowUtils';
+import { useAppSelector } from '../../../hooks';
+import { SelectDateTimeSetting, SelectTimeZone } from '../../../Store/SettingsSlice';
+import { SEBrowser } from '../../../global';
 
 
 const momentDateFormat = "MM/DD/YYYY";
