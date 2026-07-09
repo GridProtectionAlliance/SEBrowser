@@ -21,19 +21,17 @@
 //
 //******************************************************************************************************
 import * as React from 'react';
-import _ from 'lodash';
 
 import SEBrowserService from '../../../../TS/Services/SEBrowser';
 import { Modal } from '@gpa-gemstone/react-interactive';
+import { Select } from '@gpa-gemstone/react-forms';
 import { TimeFilter } from '@gpa-gemstone/common-pages';
+import { Application } from '@gpa-gemstone/application-typings';
+import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { toGemstoneFilter, fromGemstoneFilter } from '../../EventSearch/TimeWindowUtils';
 import { useAppSelector } from '../../../hooks';
 import { SelectDateTimeSetting, SelectTimeZone } from '../../../Store/SettingsSlice';
 import { SEBrowser } from '../../../global';
-
-
-const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS";
 
 
 export interface Substation {
@@ -41,13 +39,13 @@ export interface Substation {
 }
 
 export interface EventFilter {
-    ResFilt: Array<number>,
-    StatFilt: Array<number>,
-    OpFilt: Array<number>,
-    RestFilt: Array<number>,
-    PISFilt: Array<number>,
-    HealthFilt: Array<number>,
-    PhaseFilter: Array<number>
+    ResFilt: number[],
+    StatFilt: number[],
+    OpFilt: number[],
+    RestFilt: number[],
+    PISFilt: number[],
+    HealthFilt: number[],
+    PhaseFilter: number[]
 }
 
 export interface CapBankReportNavBarProps extends EventFilter {
@@ -69,289 +67,246 @@ interface CapBank {
     compensated: boolean
 }
 
-interface Istate {
-    capBanks: Array<CapBank>,
-    subStations: Array<Substation>,
-    showFilter: boolean,
-}
-
-// Wrapper so the class component below can use the Redux-based settings the gemstone TimeFilter requires
-const CapBankTimeFilter = (props: { filter: SEBrowser.IReportTimeFilter, setFilter: (f: SEBrowser.IReportTimeFilter) => void }) => {
-    const dateTimeSetting = useAppSelector(SelectDateTimeSetting);
-    const timeZone = useAppSelector(SelectTimeZone);
-    return <TimeFilter
-        filter={toGemstoneFilter(props.filter)}
-        setFilter={(start, end, unit, duration) => props.setFilter(fromGemstoneFilter(start, end, unit, duration))}
-        showQuickSelect={true}
-        dateTimeSetting={dateTimeSetting}
-        timeZone={timeZone}
-    />;
-}
-
-export default class CapBankReportNavBar extends React.Component<CapBankReportNavBarProps, Istate> {
-    seBrowserService: SEBrowserService;
-
-    constructor(props: CapBankReportNavBarProps, context) {
-        super(props, context);
-        this.seBrowserService = new SEBrowserService();
-        this.state = {
-            capBanks: [],
-            subStations: [],
-            showFilter: false,
-        };
-    }
-
-    componentDidMount() {
-        this.getSubstationData();
-
-        if (this.props.StationId > -1)
-            this.getCapBankData(this.props.StationId);
-    }
-
-    componentWillReceiveProps(nextProps: CapBankReportNavBarProps) {
-
-        if (this.state.capBanks.length == 0)
-            this.getCapBankData(nextProps.StationId);
-    }
-
-    getCapBankData(LocationID: number) {
-
-        this.seBrowserService.GetCapBankData(LocationID).done(results => {
-            this.setState({ capBanks: results })
-            if (results.length > 0)
-                this.setCapBank(results[0].Id)
-            this.setBankNumber(-1);
-        });
-
-    }
-
-    setCapBank(capBankId: number) {
-
-        const object = _.clone(this.props) as CapBankReportNavBarProps;
-        object.CapBankID = capBankId;
-        object.selectedBank = -1;
-        if (this.state.capBanks.find(cB => cB.Id == capBankId) != null)
-            object.numBanks = this.state.capBanks.find(cB => cB.Id == capBankId).numBanks;
-
-        this.props.stateSetter({ searchBarProps: object });
-    }
-
-    setBankNumber(capBankNumber: number) {
-        const object = _.clone(this.props) as CapBankReportNavBarProps;
-        object.selectedBank = capBankNumber;
-        this.props.stateSetter({ searchBarProps: object });
-    }
-
-    setDate(filter: SEBrowser.IReportTimeFilter) {
-
-        const object = _.clone(this.props) as CapBankReportNavBarProps;
-        object.TimeFilter = filter;
-        this.props.stateSetter({ searchBarProps: object });
-    }
-
-    getSubstationData() {
-        this.seBrowserService.GetCapBankSubstationData().done(results => {
-            if (results == null)
-                return
-            this.setState({ subStations: results })
-
-            if (this.props.StationId == -1 && results.length > 0)
-                this.setStation(results[0].LocationID)
-
-        });
-    }
-
-    setStation(id: number) {
-        const object = _.clone(this.props) as CapBankReportNavBarProps;
-        object.StationId = id;
-        this.props.stateSetter({ searchBarProps: object });
-        this.getCapBankData(id);
-    }
-
-    render() {
-
-        const bankOptions: Array<JSX.Element> = [];
-        let i = 1;
-        let n = 1;
-        if (this.state.capBanks.find(cB => cB.Id == this.props.CapBankID) != null)
-            n = this.state.capBanks.find(cB => cB.Id == this.props.CapBankID).numBanks;
-
-        bankOptions.push(<option key={-1} value={-1}> {'System'} </option>)
-
-
-        for (i = 0; i < n; i++) {
-            bankOptions.push(<option key={i} value={i + 1}> {i + 1} </option>)
-        }
-
-        bankOptions.push(<option key={-2} value={-2}> {'Unknown'} </option>);
-
-        return (
-            <>
-                <nav className="navbar navbar-expand-lg navbar-light bg-light">
-
-                    <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
-                        <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
-                            <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
-                                <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                    <legend className="w-auto" style={{ fontSize: 'large' }}>Capacitor Bank:</legend>
-                                    <form>
-                                        <label style={{ width: '100%', position: 'relative', float: "left" }}>Substation: </label>
-                                        <div className="form-group" style={{ height: 30 }}>
-                                            <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                                this.setStation((e.target as any).value);
-                                            }} value={this.props.StationId}>
-                                                {this.state.subStations.map(item => <option key={item.LocationID} value={item.LocationID} > {item.AssetName} </option>)}
-                                            </select>
-                                        </div>
-                                        <label style={{ width: '100%', position: 'relative', float: "left" }}>Capacitor Bank Group: </label>
-                                        <div className="form-group" style={{ height: 30 }}>
-                                            <select ref="Breaker" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                                this.setCapBank(parseInt((e.target as any).value.toString()));
-                                            }} value={this.props.CapBankID}>
-                                                {this.state.capBanks.map(item => <option key={item.Id} value={item.Id} > {item.AssetName} </option>)}
-                                            </select>
-                                        </div>
-                                        <label style={{ width: '100%', position: 'relative', float: "left" }}>Bank: </label>
-                                        <div className="form-group" style={{ height: 30 }}>
-                                            <select ref="CapBankId" style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                                this.setBankNumber(parseInt((e.target as any).value.toString()));
-                                            }} value={this.props.selectedBank}>
-                                                {bankOptions}
-                                            </select>
-                                        </div>
-                                    </form>
-                                </fieldset>
-                            </li>
-                            <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
-                                <CapBankTimeFilter filter={this.props.TimeFilter} setFilter={(f) => this.setDate(f)} />
-                            </li>
-                            <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
-                                <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
-                                    <legend className="w-auto" style={{ fontSize: 'large' }}>Additional Filter:</legend>
-                                    <button className="btn btn-primary" onClick={() => this.setState({ showFilter: true })} >Edit Filter</button>
-                                </fieldset>
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
-
-                <Modal Show={this.state.showFilter} ShowX={true} ShowCancel={false} Size={'xlg'} Title={'Filter Capacitor Bank Events'} ConfirmText={'Close'} CallBack={() => this.setState({ showFilter: false })}>
-                    <div style={{ width: '100%', display: 'inline-flex' }}>
-                        <div style={{ width: '10%', paddingRight: 10 }}>
-                            <CBEventFilter activeFilter={this.props.PhaseFilter} showAll={true} Label={'Phase'} setter={(result) => {
-                                const object = _.clone(this.props) as CapBankReportNavBarProps;
-                                object.PhaseFilter = result;
-                                this.props.stateSetter({ searchBarProps: object });
-                            }}
-                                filters={[
-                                    { Label: 'AN', Values: [1] },
-                                    { Label: 'BN', Values: [2] },
-                                    { Label: 'CN', Values: [3] },
-                                ]} />
-                        </div>
-                        <div style={{ width: '15%', paddingRight: 10 }}>
-                            <CBEventFilter activeFilter={this.props.StatFilt} showAll={true} Label={'Status'} setter={(result) => {
-                                const object = _.clone(this.props) as CapBankReportNavBarProps;
-                                object.StatFilt = result;
-                                this.props.stateSetter({ searchBarProps: object });
-                            }}
-                                filters={[
-                                    { Label: 'Error', Values: [-1] },
-                                    { Label: 'Normal', Values: [0] },
-                                    { Label: '>2 cyc Between Poles', Values: [12] },
-                                    { Label: 'Abnormal Health', Values: [2] },
-                                    { Label: 'Failed Opening', Values: [3, 4] },
-                                    { Label: 'Failed Closing', Values: [10, 5] },
-                                    { Label: 'Restrike/Reignition', Values: [4, 5] },
-                                    { Label: 'Abnormal PreInsertion Switching', Values: [8] },
-                                    { Label: 'Missing Pole', Values: [11] },
-                                    { Label: 'Shorted Units', Values: [20] },
-                                    { Label: 'Blown Fuse', Values: [21] },
-                                    { Label: 'Other', Values: [6, 22, 7] }
-                                ]} />
-                        </div>
-                        <div style={{ width: '15%', paddingRight: 10 }}>
-                            <CBEventFilter activeFilter={this.props.OpFilt} showAll={true} Label={'Operation'} setter={(result) => {
-                                const object = _.clone(this.props) as CapBankReportNavBarProps;
-                                object.OpFilt = result;
-                                this.props.stateSetter({ searchBarProps: object });
-                            }}
-                                filters={[
-                                    { Label: 'Sag/Swell', Values: [-200] },
-                                    { Label: 'No Switching', Values: [-103, -102, -101] },
-                                    { Label: 'Not Determined', Values: [-1] },
-                                    { Label: 'Opening', Values: [101, 102] },
-                                    { Label: 'Closing', Values: [201, 202] }
-                                ]} />
-                        </div>
-                        <div style={{ width: '15%', paddingRight: 10 }}>
-                            <CBEventFilter activeFilter={this.props.ResFilt} showAll={false} Label={'Resonance'} setter={(result) => {
-                                const object = _.clone(this.props) as CapBankReportNavBarProps;
-                                object.ResFilt = result;
-                                this.props.stateSetter({ searchBarProps: object });
-                            }}
-                                filters={[
-                                    { Label: 'Resonance', Values: [1] },
-                                    { Label: 'No Resonance', Values: [0] }
-                                ]} />
-                        </div>
-                        <div style={{ width: '15%', paddingRight: 10 }}>
-                            <CBEventFilter activeFilter={this.props.HealthFilt} showAll={true} Label={'Capacitor Bank Health'} setter={(result) => {
-                                const object = _.clone(this.props) as CapBankReportNavBarProps;
-                                object.HealthFilt = result;
-                                this.props.stateSetter({ searchBarProps: object });
-                            }}
-                                filters={[
-                                    { Label: 'Normal', Values: [0] },
-                                    { Label: 'Shorted Units', Values: [1] },
-                                    { Label: 'Blown Fuses', Values: [2] },
-                                    { Label: 'Tap Voltages Missing', Values: [3] },
-                                ]} />
-                        </div>
-                        <div style={{ width: '15%', paddingRight: 10 }}>
-                            <CBEventFilter activeFilter={this.props.RestFilt} showAll={true} Label={'Restrike'} setter={(result) => {
-                                const object = _.clone(this.props) as CapBankReportNavBarProps;
-                                object.RestFilt = result;
-                                this.props.stateSetter({ searchBarProps: object });
-                            }}
-                                filters={[
-                                    { Label: 'No Restrike', Values: [0, 20] },
-                                    { Label: 'Possible Restrike', Values: [10] },
-                                    { Label: 'Restrike', Values: [32, 42] },
-                                    { Label: 'Reignition', Values: [31, 41] },
-                                    { Label: 'Reversed Polarity', Values: [41, 42] }
-                                ]} />
-                        </div>
-                        <div style={{ width: '15%', paddingRight: 10 }}>
-                            <CBEventFilter activeFilter={this.props.PISFilt} showAll={true} Label={'Switching Health'} setter={(result) => {
-                                const object = _.clone(this.props) as CapBankReportNavBarProps;
-                                object.PISFilt = result;
-                                this.props.stateSetter({ searchBarProps: object });
-                            }}
-                                filters={[
-                                    { Label: 'Normal', Values: [0] },
-                                    { Label: 'Transient', Values: [1] },
-                                    { Label: 'Too Short', Values: [2] },
-                                    { Label: 'Unknown', Values: [3] },
-                                ]} />
-                        </div>
-
-                    </div>
-                </Modal>
-            </>
-        );
-    }
-}
-
 interface IFilter {
     Label: string,
-    Values: Array<number>
+    Values: number[]
 }
 
-const CBEventFilter = (props: { filters: Array<IFilter>, Label: string, showAll: boolean, setter: (filter: Array<number>) => void, activeFilter: Array<number> }) => {
+interface IEventFilterConfig {
+    Field: keyof EventFilter,
+    Label: string,
+    ShowAll: boolean,
+    Width: string,
+    Filters: IFilter[]
+}
+
+const eventFilterConfigs: IEventFilterConfig[] = [
+    {
+        Field: 'PhaseFilter', Label: 'Phase', ShowAll: true, Width: '10%',
+        Filters: [
+            { Label: 'AN', Values: [1] },
+            { Label: 'BN', Values: [2] },
+            { Label: 'CN', Values: [3] },
+        ]
+    },
+    {
+        Field: 'StatFilt', Label: 'Status', ShowAll: true, Width: '15%',
+        Filters: [
+            { Label: 'Error', Values: [-1] },
+            { Label: 'Normal', Values: [0] },
+            { Label: '>2 cyc Between Poles', Values: [12] },
+            { Label: 'Abnormal Health', Values: [2] },
+            { Label: 'Failed Opening', Values: [3, 4] },
+            { Label: 'Failed Closing', Values: [10, 5] },
+            { Label: 'Restrike/Reignition', Values: [4, 5] },
+            { Label: 'Abnormal PreInsertion Switching', Values: [8] },
+            { Label: 'Missing Pole', Values: [11] },
+            { Label: 'Shorted Units', Values: [20] },
+            { Label: 'Blown Fuse', Values: [21] },
+            { Label: 'Other', Values: [6, 22, 7] }
+        ]
+    },
+    {
+        Field: 'OpFilt', Label: 'Operation', ShowAll: true, Width: '15%',
+        Filters: [
+            { Label: 'Sag/Swell', Values: [-200] },
+            { Label: 'No Switching', Values: [-103, -102, -101] },
+            { Label: 'Not Determined', Values: [-1] },
+            { Label: 'Opening', Values: [101, 102] },
+            { Label: 'Closing', Values: [201, 202] }
+        ]
+    },
+    {
+        Field: 'ResFilt', Label: 'Resonance', ShowAll: false, Width: '15%',
+        Filters: [
+            { Label: 'Resonance', Values: [1] },
+            { Label: 'No Resonance', Values: [0] }
+        ]
+    },
+    {
+        Field: 'HealthFilt', Label: 'Capacitor Bank Health', ShowAll: true, Width: '15%',
+        Filters: [
+            { Label: 'Normal', Values: [0] },
+            { Label: 'Shorted Units', Values: [1] },
+            { Label: 'Blown Fuses', Values: [2] },
+            { Label: 'Tap Voltages Missing', Values: [3] },
+        ]
+    },
+    {
+        Field: 'RestFilt', Label: 'Restrike', ShowAll: true, Width: '15%',
+        Filters: [
+            { Label: 'No Restrike', Values: [0, 20] },
+            { Label: 'Possible Restrike', Values: [10] },
+            { Label: 'Restrike', Values: [32, 42] },
+            { Label: 'Reignition', Values: [31, 41] },
+            { Label: 'Reversed Polarity', Values: [41, 42] }
+        ]
+    },
+    {
+        Field: 'PISFilt', Label: 'Switching Health', ShowAll: true, Width: '15%',
+        Filters: [
+            { Label: 'Normal', Values: [0] },
+            { Label: 'Transient', Values: [1] },
+            { Label: 'Too Short', Values: [2] },
+            { Label: 'Unknown', Values: [3] },
+        ]
+    }
+];
+
+const CapBankReportNavBar = (props: CapBankReportNavBarProps) => {
+    const dateTimeSetting = useAppSelector(SelectDateTimeSetting);
+    const timeZone = useAppSelector(SelectTimeZone);
+    const [seBrowserService] = React.useState(() => new SEBrowserService());
+    const [capBanks, setCapBanks] = React.useState<CapBank[]>([]);
+    const [subStations, setSubStations] = React.useState<Substation[]>([]);
+    const [showFilter, setShowFilter] = React.useState<boolean>(false);
+    const [subStationStatus, setSubStationStatus] = React.useState<Application.Types.Status>('uninitiated');
+    const [capBankStatus, setCapBankStatus] = React.useState<Application.Types.Status>('uninitiated');
+
+    React.useEffect(() => {
+        setSubStationStatus('loading');
+        seBrowserService.GetCapBankSubstationData().done(results => {
+            if (results != null)
+                setSubStations(results);
+            setSubStationStatus('idle');
+        }).fail(() => setSubStationStatus('error'));
+    }, []);
+
+    React.useEffect(() => {
+        if (props.StationId < 0)
+            return;
+        setCapBankStatus('loading');
+        seBrowserService.GetCapBankData(props.StationId).done(results => {
+            if (results != null)
+                setCapBanks(results);
+            setCapBankStatus('idle');
+        }).fail(() => setCapBankStatus('error'));
+    }, [props.StationId]);
+
+    // Keep the numBanks prop in sync with the selected capacitor bank group
+    React.useEffect(() => {
+        const bank = capBanks.find(cB => cB.Id == props.CapBankID);
+        if (bank != null && bank.numBanks != props.numBanks)
+            updateProps({ ...props, numBanks: bank.numBanks });
+    }, [capBanks, props.CapBankID]);
+
+    function updateProps(record: CapBankReportNavBarProps) {
+        props.stateSetter({ searchBarProps: record });
+    }
+
+    const selectedCapBank = capBanks.find(cB => cB.Id == props.CapBankID);
+    const numBanks = selectedCapBank == null ? 1 : selectedCapBank.numBanks;
+    const bankOptions: { Value: number, Label: string }[] = [{ Value: -1, Label: 'System' }];
+    for (let i = 0; i < numBanks; i++)
+        bankOptions.push({ Value: i + 1, Label: `${i + 1}` });
+    bankOptions.push({ Value: -2, Label: 'Unknown' });
+
+    return (
+        <>
+            <nav className="navbar navbar-expand-lg navbar-light bg-light">
+
+                <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
+                    <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
+                        <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
+                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                                <legend className="w-auto" style={{ fontSize: 'large' }}>Capacitor Bank:</legend>
+                                <div className="row">
+                                    <div className="col-12">
+                                        {subStationStatus === 'loading' ?
+                                            <div className='d-flex align-items-center justify-content-center'>
+                                                <ReactIcons.SpiningIcon />
+                                            </div>
+                                            :
+                                            <Select<CapBankReportNavBarProps>
+                                                Record={props}
+                                                Field='StationId'
+                                                Label='Substation:'
+                                                Setter={updateProps}
+                                                Options={subStations.map(item => ({ Value: item.LocationID, Label: item.AssetName }))}
+                                            />
+                                        }
+                                    </div>
+                                </div>
+                                <div className="row">
+                                    <div className="col-6">
+                                        {capBankStatus === 'loading' ?
+                                            <div className='d-flex align-items-center justify-content-center'>
+                                                <ReactIcons.SpiningIcon />
+                                            </div>
+                                            :
+                                            <Select<CapBankReportNavBarProps>
+                                                Record={props}
+                                                Field='CapBankID'
+                                                Label='Capacitor Bank Group:'
+                                                Setter={(record) => updateProps({ ...record, selectedBank: -1 })}
+                                                Options={capBanks.map(item => ({ Value: item.Id, Label: item.AssetName }))}
+                                            />
+                                        }
+                                    </div>
+                                    <div className="col-6">
+                                        <Select<CapBankReportNavBarProps>
+                                            Record={props}
+                                            Field='selectedBank'
+                                            Label='Bank:'
+                                            Setter={updateProps}
+                                            Options={bankOptions}
+                                        />
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </li>
+                        <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
+                            <TimeFilter
+                                filter={toGemstoneFilter(props.TimeFilter)}
+                                setFilter={(start, end, unit, duration) => updateProps({ ...props, TimeFilter: fromGemstoneFilter(start, end, unit, duration) })}
+                                showQuickSelect={true}
+                                dateTimeSetting={dateTimeSetting}
+                                timeZone={timeZone}
+                            />
+                        </li>
+                        <li className="nav-item" style={{ width: '20%', paddingRight: 10 }}>
+                            <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                                <legend className="w-auto" style={{ fontSize: 'large' }}>Additional Filter:</legend>
+                                <button className="btn btn-primary" onClick={() => setShowFilter(true)} >Edit Filter</button>
+                            </fieldset>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <Modal
+                Show={showFilter}
+                ShowX={true}
+                ShowCancel={false}
+                Size={'xlg'}
+                Title={'Filter Capacitor Bank Events'}
+                ConfirmText={'Close'}
+                CallBack={() => setShowFilter(false)}
+            >
+                <div style={{ width: '100%', display: 'inline-flex' }}>
+                    {eventFilterConfigs.map(config =>
+                        <div key={config.Field} style={{ width: config.Width, paddingRight: 10 }}>
+                            <CBEventFilter
+                                activeFilter={props[config.Field]}
+                                showAll={config.ShowAll}
+                                Label={config.Label}
+                                setter={(result) => updateProps({ ...props, [config.Field]: result })}
+                                filters={config.Filters}
+                            />
+                        </div>
+                    )}
+                </div>
+            </Modal>
+        </>
+    );
+}
+
+export default CapBankReportNavBar;
+
+const CBEventFilter = (props: { filters: IFilter[], Label: string, showAll: boolean, setter: (filter: number[]) => void, activeFilter: number[] }) => {
 
     const allSelected: boolean = props.activeFilter.includes(999);
-    const isSelected: Array<boolean> = props.filters.map(item => mapState(item));
+    const isSelected: boolean[] = props.filters.map(item => mapState(item));
 
     function FilterChanged(index: number) {
 
