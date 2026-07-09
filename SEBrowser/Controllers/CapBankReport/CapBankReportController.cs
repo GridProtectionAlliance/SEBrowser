@@ -87,6 +87,17 @@ namespace PQDashboard.Controllers.CapBankReport
 
         }
 
+        public class EventFilters
+        {
+            public string ResFilt { get; set; }
+            public string StatFilt { get; set; }
+            public string OperationFilt { get; set; }
+            public string RestrikeFilt { get; set; }
+            public string SwitchingHealthFilt { get; set; }
+            public string HealthFilt { get; set; }
+            public string PhaseFilt { get; set; }
+        }
+
         enum TimeWindowUnits
         {
             Millisecond,
@@ -184,32 +195,25 @@ namespace PQDashboard.Controllers.CapBankReport
         }
 
         [Route("GetEventTable"), HttpGet]
-        public DataTable GetEventTable()
+        public DataTable GetEventTable(int capBankId, string date, string time, int timeWindowUnits, int windowSize, int bankNum, [FromQuery] EventFilters filters)
         {
-            Dictionary<string, string> query = Request.Query.ToDictionary(item => item.Key, item => item.Value.ToString());
-            int capBankId = int.Parse(query["capBankId"]);
-            DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
-            string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
-            int windowSize = int.Parse(query["windowSize"]);
-            int selectedBank = int.Parse(query["bankNum"]);
+            DateTime dateTime = DateTime.ParseExact(date + " " + time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+            string timeWindowUnitsDescription = ((TimeWindowUnits)timeWindowUnits).GetDescription();
 
-
-            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD({timeWindowUnits}, {(-1 * windowSize)}, '{dateTime}') AND DATEADD({timeWindowUnits}, {(windowSize)},  '{dateTime}'))";
+            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD({timeWindowUnitsDescription}, {(-1 * windowSize)}, '{dateTime}') AND DATEADD({timeWindowUnitsDescription}, {(windowSize)},  '{dateTime}'))";
             string capBankRestriction = $"((SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId})";
-            string bankNumRestriction = $"(CBAnalyticResult.EnergizedBanks = {selectedBank} OR CBAnalyticResult.DeEnergizedBanks = {selectedBank})";
-            string otherFilter = ProcessFilter(query);
+            string bankNumRestriction = $"(CBAnalyticResult.EnergizedBanks = {bankNum} OR CBAnalyticResult.DeEnergizedBanks = {bankNum})";
+            string otherFilter = ProcessFilter(filters);
 
             if (string.IsNullOrEmpty(otherFilter))
                 otherFilter = "1=1";
 
-            if (selectedBank == -1)
+            if (bankNum == -1)
                 bankNumRestriction = "(1=1)";
 
-            if (selectedBank == -2)
-            {
+            if (bankNum == -2)
                 bankNumRestriction = "(CBAnalyticResult.EnergizedBanks = -1 AND CBAnalyticResult.DeEnergizedBanks = -1)";
-            }
-
+            
             using AdoDataConnection connection = new(Settings.Default);
 
             DataTable table = new();
@@ -262,23 +266,17 @@ namespace PQDashboard.Controllers.CapBankReport
         #region [ Trending Data ]
 
         [Route("GetTrend"), HttpGet]
-        public TrendingResponse GetTrendData()
+        public TrendingResponse GetTrendData(int capBankId, string date, string time, int timeWindowUnits, int windowSize, int bankNum, [FromQuery] EventFilters filters)
         {
-            Dictionary<string, string> query = Request.Query.ToDictionary(item => item.Key, item => item.Value.ToString());
-            int capBankId = int.Parse(query["capBankId"]);
-            DateTime dateTime = DateTime.ParseExact(query["date"] + " " + query["time"], "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
-            string timeWindowUnits = ((TimeWindowUnits)int.Parse(query["timeWindowUnits"])).GetDescription();
-            int windowSize = int.Parse(query["windowSize"]);
-            int selectedBank = int.Parse(query["bankNum"]);
+            DateTime dateTime = DateTime.ParseExact(date + " " + time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+            string timeWindowUnitsDescription = ((TimeWindowUnits)timeWindowUnits).GetDescription();
 
-
-            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD({timeWindowUnits}, {(-1 * windowSize)}, '{dateTime}') AND DATEADD({timeWindowUnits}, {(windowSize)},  '{dateTime}'))";
+            string timeRestriction = $"(CBAnalyticResult.Time BETWEEN DATEADD({timeWindowUnitsDescription}, {(-1 * windowSize)}, '{dateTime}') AND DATEADD({timeWindowUnitsDescription}, {(windowSize)},  '{dateTime}'))";
             string capBankRestriction = $"((SELECT AssetID FROM EVENT WHERE Event.ID = CBAnalyticResult.EventID) = {capBankId})";
-            string bankNumRestriction = $"(CBAnalyticResult.EnergizedBanks = {selectedBank} OR CBAnalyticResult.DeEnergizedBanks = {selectedBank})";
-            string bankNumAfterRestriction = $"(CBAnalyticResult.StepPost = {selectedBank})";
-            string bankNumBeforeRestriction = $"(CBAnalyticResult.StepPre = {selectedBank})";
-            string otherFilter = ProcessFilter(query);
-
+            string bankNumRestriction = $"(CBAnalyticResult.EnergizedBanks = {bankNum} OR CBAnalyticResult.DeEnergizedBanks = {bankNum})";
+            string bankNumAfterRestriction = $"(CBAnalyticResult.StepPost = {bankNum})";
+            string bankNumBeforeRestriction = $"(CBAnalyticResult.StepPre = {bankNum})";
+            string otherFilter = ProcessFilter(filters);
 
             TrendingResponse result = new()
             {
@@ -328,7 +326,7 @@ namespace PQDashboard.Controllers.CapBankReport
             {
                 string phaseRestriction = $"CBAnalyticResult.PhaseID = (SELECT ID FROM Phase WHERE Name = '{phase.Key}')";
 
-                if (selectedBank > -1)
+                if (bankNum > -1)
                 {
                     DataTable table = GettrendTable(phaseRestriction, otherFilter, capBankRestriction, bankNumRestriction, timeRestriction);
 
@@ -821,7 +819,7 @@ namespace PQDashboard.Controllers.CapBankReport
 
             totalTable = GettrendTable("", otherFilter, capBankRestriction, bankNumRestriction, timeRestriction);
 
-            if (totalTable.Rows.Count > 0 && selectedBank > -1)
+            if (totalTable.Rows.Count > 0 && bankNum > -1)
             {
                 result.DeltaQ.Add(new TrendSeries()
                 {
@@ -837,45 +835,44 @@ namespace PQDashboard.Controllers.CapBankReport
             return result;
         }
 
-        private string ProcessFilter(Dictionary<string, string> query)
+        private string ProcessFilter(EventFilters filters)
         {
             string filter = "";
-            string val;
 
-            if (query.TryGetValue("resFilt", out val))
+            if (!string.IsNullOrEmpty(filters.ResFilt))
             {
-                if (!val.Contains(","))
-                    filter = $"CBAnalyticResult.IsRes = {val}";
+                if (!filters.ResFilt.Contains(","))
+                    filter = $"CBAnalyticResult.IsRes = {filters.ResFilt}";
             }
 
-            if (query.TryGetValue("statFilt", out val))
+            if (!string.IsNullOrEmpty(filters.StatFilt))
             {
-                filter = filter + (filter == "" ? "" : " AND ") + $" ( (CBAnalyticResult.CBStatusID%100) IN  ({val}) OR ";
-                filter = filter + $"((CBAnalyticResult.CBStatusID/100)%100) IN  ({val}) OR (CBAnalyticResult.CBStatusID/10000)  IN  ({val}))";
+                filter = filter + (filter == "" ? "" : " AND ") + $" ( (CBAnalyticResult.CBStatusID%100) IN  ({filters.StatFilt}) OR ";
+                filter = filter + $"((CBAnalyticResult.CBStatusID/100)%100) IN  ({filters.StatFilt}) OR (CBAnalyticResult.CBStatusID/10000)  IN  ({filters.StatFilt}))";
             }
 
-            if (query.TryGetValue("operationFilt", out val))
+            if (!string.IsNullOrEmpty(filters.OperationFilt))
             {
-                filter = filter + (filter == "" ? "" : " AND ") + $"CBAnalyticResult.CBOperationID IN  ({val})";
+                filter = filter + (filter == "" ? "" : " AND ") + $"CBAnalyticResult.CBOperationID IN  ({filters.OperationFilt})";
             }
 
-            if (query.TryGetValue("restrikeFilt", out val))
+            if (!string.IsNullOrEmpty(filters.RestrikeFilt))
             {
-                filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBRestrikeResult.CBRestrikeTypeID,0) IN  ({val})";
+                filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBRestrikeResult.CBRestrikeTypeID,0) IN  ({filters.RestrikeFilt})";
             }
 
-            if (query.TryGetValue("switchingHealthFilt", out val))
+            if (!string.IsNullOrEmpty(filters.SwitchingHealthFilt))
             {
-                filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBSwitchHealthAnalytic.CBSwitchingConditionID,0) IN  ({val})";
+                filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBSwitchHealthAnalytic.CBSwitchingConditionID,0) IN  ({filters.SwitchingHealthFilt})";
             }
 
-            if (query.TryGetValue("healthFilt", out val))
+            if (!string.IsNullOrEmpty(filters.HealthFilt))
             {
-                filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBCapBankResult.CBBankHealthID,0) IN  ({val})";
+                filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBCapBankResult.CBBankHealthID,0) IN  ({filters.HealthFilt})";
             }
-            if (query.TryGetValue("phaseFilt", out val))
+            if (!string.IsNullOrEmpty(filters.PhaseFilt))
             {
-                List<string> PhaseName = val.Trim('[').Trim(']').Split(',').Where(s => s == "1" || s == "2" || s == "3").Select(n => { if (n == "1") return "'AN'"; if (n == "2") return "'BN'"; return "'CN'"; }).ToList();
+                List<string> PhaseName = filters.PhaseFilt.Trim('[').Trim(']').Split(',').Where(s => s == "1" || s == "2" || s == "3").Select(n => { if (n == "1") return "'AN'"; if (n == "2") return "'BN'"; return "'CN'"; }).ToList();
                 if (PhaseName.Count == 0)
                     PhaseName = new List<string>() { "'AN'", "'BN'", "'CN'" };
                 filter = filter + (filter == "" ? "" : " AND ") + $"ISNULL(CBAnalyticResult.PhaseID,0) IN  (SELECT ID FROM Phase WHERE Name IN ({String.Join(",", PhaseName)}))";
