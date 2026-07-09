@@ -24,7 +24,9 @@ import * as React from 'react';
 import moment from 'moment';
 import _ from 'lodash';
 import { ConfigurableTable, Column, GetConfigurableColumnsFromTypeEntries } from '@gpa-gemstone/react-table';
-import { Gemstone } from '@gpa-gemstone/application-typings';
+import { Application, Gemstone } from '@gpa-gemstone/application-typings';
+import { Alert } from '@gpa-gemstone/react-interactive';
+import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { RelayReportNavBarProps } from './RelayReportNavBar';
 import { Line, LineWithThreshold, Plot } from '@gpa-gemstone/react-graph';
 import { RandomColor } from '@gpa-gemstone/helper-functions';
@@ -89,6 +91,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
     const [Tend, setTend] = React.useState<number>(0);
     const [sortKey, setSortKey] = React.useState<string>('');
     const [ascending, setAscending] = React.useState<boolean>(true);
+    const [status, setStatus] = React.useState<Application.Types.Status>('uninitiated');
 
     const sortedData = React.useMemo(() => {
         if (sortKey === '')
@@ -97,18 +100,24 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
     }, [realyPerformance, sortKey, ascending]);
 
     const sortCallback = React.useCallback((d: { colKey: string, colField?: keyof IRelayPerformance, ascending: boolean }) => {
-            if (d.colField == null)
-                return;
-            if (d.colField === sortKey)
-                setAscending(!ascending);
-            else {
-                setSortKey(d.colField);
-                setAscending(true);
-            }
-        }, [sortKey, ascending]);
+        if (d.colField == null)
+            return;
+        if (d.colField === sortKey)
+            setAscending(!ascending);
+        else {
+            setSortKey(d.colField);
+            setAscending(true);
+        }
+    }, [sortKey, ascending]);
 
     React.useEffect(() => {
-        const h = getRelayPerformance()
+        setStatus('loading');
+        const h = getRelayPerformance(props);
+        h.done((d: IRelayPerformance[]) => {
+            if (d != null)
+                setRelayPerformance(d);
+            setStatus('idle');
+        }).fail(() => setStatus('error'));
 
         return () => { if (h != null && h.abort != null) h.abort(); };
     }, [props]);
@@ -119,302 +128,307 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
         setTstart(Tstart.valueOf())
     }, [props.windowSize, props.timeWindowUnits, props.time, props.date])
 
-    function getRelayPerformance(): JQuery.jqXHR<IRelayPerformance[]> {
-
-        const adjustedTime = findAppropriateUnit(getMoment(props.date, props.time),
-            getStartEndTime(getMoment(props.date, props.time), props.windowSize, props.timeWindowUnits)[1],
-            props.timeWindowUnits);
-
-        const h = $.ajax({
-            type: "GET",
-            url: `${homePath}api/PQDashboard/RelayReport/getRelayPerformance?lineID=${props.BreakerID}&channelID=${props.ChannelID}}&date=${props.date}` +
-                `&time=${props.time}&timeWindowunits=${adjustedTime[0]}&windowSize=${adjustedTime[1]}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: false,
-            async: true
-        });
-
-        h.done((d: IRelayPerformance[]) => { if (d != null) setRelayPerformance(d); })
-        return h;
-    }
-
-
-
-    return (<>
-        <div className="card">
-            <div className="card-header">Breaker Performance:</div>
-            <div className="card-body">
-                <ConfigurableTable<IRelayPerformance>
-                    Data={sortedData}
-                    SortKey={sortKey}
-                    Ascending={ascending}
-                    OnSort={sortCallback}
-                    KeySelector={(item, index) => index!}
-                    TableClass="table"
-                    LocalStorageKey="SEBrowser.RelayReportPane"
-                >
-                    <Column<IRelayPerformance>
-                        Key={'EventID'}
-                        AllowSort={true}
-                        Field={'EventID'}
-                        Content={({ item }) =>
-                            <a id="eventLink" target="_blank" href={homePath + 'Main/OpenSEE?eventid=' + item.EventID}>
-                                <div style={{ width: '100%', height: '100%' }}>{item.EventID}</div>
-                            </a>}
+    return (
+        <>
+            <div className="card">
+                <div className="card-header">Breaker Performance:</div>
+                <div className="card-body">
+                    {status === 'loading' ?
+                        <div className="d-flex align-items-center justify-content-center" style={{ height: 250 }}>
+                            <ReactIcons.SpiningIcon Size={'50%'} />
+                        </div>
+                    : status === 'error' ?
+                        <Alert Class="alert-danger">
+                            An error occurred while fetching relay performance data.
+                        </Alert>
+                    : realyPerformance.length === 0 ?
+                        <Alert Class="alert-info">
+                            No relay performance data.
+                        </Alert>
+                    :
+                    <ConfigurableTable<IRelayPerformance>
+                        Data={sortedData}
+                        SortKey={sortKey}
+                        Ascending={ascending}
+                        OnSort={sortCallback}
+                        KeySelector={(item, index) => index!}
+                        TableClass="table"
+                        LocalStorageKey="SEBrowser.RelayReportPane"
                     >
-                        Event ID
-                    </Column>
-                    {GetConfigurableColumnsFromTypeEntries<IRelayPerformance>(recordFields, 'MM/DD/YY HH:mm:ss.SSSS')}
-                </ConfigurableTable>
+                        <Column<IRelayPerformance>
+                            Key={'EventID'}
+                            AllowSort={true}
+                            Field={'EventID'}
+                            Content={({ item }) =>
+                                <a id="eventLink" target="_blank" href={homePath + 'Main/OpenSEE?eventid=' + item.EventID}>
+                                    <div style={{ width: '100%', height: '100%' }}>{item.EventID}</div>
+                                </a>}
+                        >
+                            Event ID
+                        </Column>
+                        {GetConfigurableColumnsFromTypeEntries<IRelayPerformance>(recordFields, 'MM/DD/YY HH:mm:ss.SSSS')}
+                    </ConfigurableTable>}
+                </div>
             </div>
-        </div>
-        {realyPerformance.length > 0 ? < div className="card">
-            <div className="card-header">Historic Breaker Performance</div>
-            <div className="card-body">
-                <Plot
-                    height={400}
-                    width={innerWidth - 345}
-                    showBorder={false}
-                    defaultTdomain={[Tstart, Tend]}
-                    legend={'bottom'}
-                    Tlabel={'Time'}
-                    Ylabel={'Trip (micros)'}
-                    showMouse={true}
-                    useMetricFactors={false}
-                >
-                    <LineWithThreshold
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TripTime * 0.1] as [number, number]).reverse()}
-                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].TripTimeAlert != 0 && realyPerformance[0].TripTimeAlert != undefined ? [{ Value: realyPerformance[0].TripTimeAlert, Color: '#ff0000' }] : []}
-                        legend={'Trip Time'}
-                    />
-                </Plot>
-                <Plot
-                    height={400}
-                    width={innerWidth - 345}
-                    showBorder={false}
-                    defaultTdomain={[Tstart, Tend]}
-                    legend={'bottom'}
-                    Tlabel={'Time'}
-                    Ylabel={'Pickup (micros)'}
-                    showMouse={true}
-                    useMetricFactors={false}
-                >
-                    <LineWithThreshold
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.PickupTime * 0.1] as [number, number]).reverse()}
-                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].PickupTimeAlert != 0 && realyPerformance[0].PickupTimeAlert != undefined ? [{ Value: realyPerformance[0].PickupTimeAlert, Color: '#ff0000' }] : []}
-                        legend={'Pickup Time'}
-                    />
-                </Plot>
-                <Plot
-                    height={400}
-                    width={innerWidth - 345}
-                    showBorder={false}
-                    defaultTdomain={[Tstart, Tend]}
-                    legend={'bottom'}
-                    Tlabel={'Time'}
-                    Ylabel={'TCC (A/s)'}
-                    showMouse={true}
-                    useMetricFactors={false}
-                >
-                    <LineWithThreshold
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TripCoilCondition] as [number, number]).reverse()}
-                        threshHolds={realyPerformance.length > 0 && realyPerformance[0].TripcoilConditionAlert != 0 && realyPerformance[0].TripcoilConditionAlert != undefined ? [{ Value: realyPerformance[0].TripcoilConditionAlert, Color: '#ff0000' }] : []}
-                        legend={'Trip Coil condition'}
-                    />
-                </Plot>
+            {realyPerformance.length > 0 ? < div className="card">
+                <div className="card-header">Historic Breaker Performance</div>
+                <div className="card-body">
+                    <Plot
+                        height={400}
+                        width={innerWidth - 345}
+                        showBorder={false}
+                        defaultTdomain={[Tstart, Tend]}
+                        legend={'bottom'}
+                        Tlabel={'Time'}
+                        Ylabel={'Trip (micros)'}
+                        showMouse={true}
+                        useMetricFactors={false}
+                    >
+                        <LineWithThreshold
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TripTime * 0.1] as [number, number]).reverse()}
+                            threshHolds={realyPerformance.length > 0 && realyPerformance[0].TripTimeAlert != 0 && realyPerformance[0].TripTimeAlert != undefined ? [{ Value: realyPerformance[0].TripTimeAlert, Color: '#ff0000' }] : []}
+                            legend={'Trip Time'}
+                        />
+                    </Plot>
+                    <Plot
+                        height={400}
+                        width={innerWidth - 345}
+                        showBorder={false}
+                        defaultTdomain={[Tstart, Tend]}
+                        legend={'bottom'}
+                        Tlabel={'Time'}
+                        Ylabel={'Pickup (micros)'}
+                        showMouse={true}
+                        useMetricFactors={false}
+                    >
+                        <LineWithThreshold
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.PickupTime * 0.1] as [number, number]).reverse()}
+                            threshHolds={realyPerformance.length > 0 && realyPerformance[0].PickupTimeAlert != 0 && realyPerformance[0].PickupTimeAlert != undefined ? [{ Value: realyPerformance[0].PickupTimeAlert, Color: '#ff0000' }] : []}
+                            legend={'Pickup Time'}
+                        />
+                    </Plot>
+                    <Plot
+                        height={400}
+                        width={innerWidth - 345}
+                        showBorder={false}
+                        defaultTdomain={[Tstart, Tend]}
+                        legend={'bottom'}
+                        Tlabel={'Time'}
+                        Ylabel={'TCC (A/s)'}
+                        showMouse={true}
+                        useMetricFactors={false}
+                    >
+                        <LineWithThreshold
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TripCoilCondition] as [number, number]).reverse()}
+                            threshHolds={realyPerformance.length > 0 && realyPerformance[0].TripcoilConditionAlert != 0 && realyPerformance[0].TripcoilConditionAlert != undefined ? [{ Value: realyPerformance[0].TripcoilConditionAlert, Color: '#ff0000' }] : []}
+                            legend={'Trip Coil condition'}
+                        />
+                    </Plot>
 
 
-                <Plot
-                    height={400}
-                    width={innerWidth - 345}
-                    showBorder={false}
-                    defaultTdomain={[Tstart, Tend]}
-                    legend={'bottom'}
-                    Tlabel={'Time'}
-                    Ylabel={'TCE (A)'}
-                    showMouse={true}
-                    useMetricFactors={false}
-                >
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Imax1] as [number, number]).reverse()}
-                        legend={'Plunger starts to Move'}
-                    />
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.IplungerLatch] as [number, number]).reverse()}
-                        legend={'Plunger hits Latch'}
-                    />
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.PickupTimeCurrent] as [number, number]).reverse()}
-                        legend={'Plunger hits Buffer'}
-                    />
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Imax2] as [number, number]).reverse()}
-                        legend={'maximum TCE'}
-                    />
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Idrop] as [number, number]).reverse()}
-                        legend={'A finger opens'}
-                    />
-                </Plot>
+                    <Plot
+                        height={400}
+                        width={innerWidth - 345}
+                        showBorder={false}
+                        defaultTdomain={[Tstart, Tend]}
+                        legend={'bottom'}
+                        Tlabel={'Time'}
+                        Ylabel={'TCE (A)'}
+                        showMouse={true}
+                        useMetricFactors={false}
+                    >
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Imax1] as [number, number]).reverse()}
+                            legend={'Plunger starts to Move'}
+                        />
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.IplungerLatch] as [number, number]).reverse()}
+                            legend={'Plunger hits Latch'}
+                        />
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.PickupTimeCurrent] as [number, number]).reverse()}
+                            legend={'Plunger hits Buffer'}
+                        />
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Imax2] as [number, number]).reverse()}
+                            legend={'maximum TCE'}
+                        />
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Idrop] as [number, number]).reverse()}
+                            legend={'A finger opens'}
+                        />
+                    </Plot>
 
-                <Plot
-                    height={400}
-                    width={innerWidth - 345}
-                    showBorder={false}
-                    defaultTdomain={[Tstart, Tend]}
-                    legend={'bottom'}
-                    Tlabel={'Time'}
-                    Ylabel={'Timing (micros)'}
-                    showMouse={true}
-                    useMetricFactors={false}
-                >
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Tmax1 / 10.0] as [number, number]).reverse()}
-                        legend={'Plunger starts to Move'}
-                    />
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TplungerLatch / 10.0] as [number, number]).reverse()}
-                        legend={'Plunger hits Latch'}
-                    />
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TiDrop / 10.0] as [number, number]).reverse()}
-                        legend={'A finger opens'}
-                    />
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Tend / 10.0] as [number, number]).reverse()}
-                        legend={'TCE Extinction'}
-                    />
-                </Plot>
+                    <Plot
+                        height={400}
+                        width={innerWidth - 345}
+                        showBorder={false}
+                        defaultTdomain={[Tstart, Tend]}
+                        legend={'bottom'}
+                        Tlabel={'Time'}
+                        Ylabel={'Timing (micros)'}
+                        showMouse={true}
+                        useMetricFactors={false}
+                    >
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Tmax1 / 10.0] as [number, number]).reverse()}
+                            legend={'Plunger starts to Move'}
+                        />
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TplungerLatch / 10.0] as [number, number]).reverse()}
+                            legend={'Plunger hits Latch'}
+                        />
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.TiDrop / 10.0] as [number, number]).reverse()}
+                            legend={'A finger opens'}
+                        />
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.Tend / 10.0] as [number, number]).reverse()}
+                            legend={'TCE Extinction'}
+                        />
+                    </Plot>
 
-                <Plot
-                    height={400}
-                    width={innerWidth - 345}
-                    showBorder={false}
-                    defaultTdomain={[Tstart, Tend]}
-                    legend={'bottom'}
-                    Tlabel={'Time'}
-                    Ylabel={'ArcingTime (micros)'}
-                    showMouse={true}
-                    useMetricFactors={false}
-                >
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.filter(ev => ev.ExtinctionTimeA != undefined).map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.ExtinctionTimeA / 10.0] as [number, number]).reverse()}
-                        legend={'A'}
-                    />
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.filter(ev => ev.ExtinctionTimeB != undefined).map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.ExtinctionTimeB / 10.0] as [number, number]).reverse()}
-                        legend={'B'}
-                    />
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.filter(ev => ev.ExtinctionTimeC != undefined).map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.ExtinctionTimeC / 10.0] as [number, number]).reverse()}
-                        legend={'C'}
-                    />
-                </Plot>
+                    <Plot
+                        height={400}
+                        width={innerWidth - 345}
+                        showBorder={false}
+                        defaultTdomain={[Tstart, Tend]}
+                        legend={'bottom'}
+                        Tlabel={'Time'}
+                        Ylabel={'ArcingTime (micros)'}
+                        showMouse={true}
+                        useMetricFactors={false}
+                    >
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.filter(ev => ev.ExtinctionTimeA != undefined).map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.ExtinctionTimeA! / 10.0] as [number, number]).reverse()}
+                            legend={'A'}
+                        />
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.filter(ev => ev.ExtinctionTimeB != undefined).map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.ExtinctionTimeB! / 10.0] as [number, number]).reverse()}
+                            legend={'B'}
+                        />
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.filter(ev => ev.ExtinctionTimeC != undefined).map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.ExtinctionTimeC! / 10.0] as [number, number]).reverse()}
+                            legend={'C'}
+                        />
+                    </Plot>
 
-                <Plot
-                    height={400}
-                    width={innerWidth - 345}
-                    showBorder={false}
-                    defaultTdomain={[Tstart, Tend]}
-                    legend={'bottom'}
-                    Tlabel={'Time'}
-                    Ylabel={'I2C (A2s)'}
-                    showMouse={true}
-                    useMetricFactors={false}
-                >
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.filter(ev => ev.I2CA != undefined).map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.I2CA] as [number, number]).reverse()}
-                        legend={'A'}
-                    />
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.filter(ev => ev.I2CB != undefined).map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.I2CB] as [number, number]).reverse()}
-                        legend={'B'}
-                    />
-                    <Line
-                        highlightHover={true}
-                        showPoints={true}
-                        lineStyle={'-'}
-                        color={RandomColor()}
-                        data={realyPerformance.filter(ev => ev.I2CC != undefined).map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.I2CC] as [number, number]).reverse()}
-                        legend={'C'}
-                    />
-                </Plot>
-            </div>
-        </div> : null}
-    </>
-
+                    <Plot
+                        height={400}
+                        width={innerWidth - 345}
+                        showBorder={false}
+                        defaultTdomain={[Tstart, Tend]}
+                        legend={'bottom'}
+                        Tlabel={'Time'}
+                        Ylabel={'I2C (A2s)'}
+                        showMouse={true}
+                        useMetricFactors={false}
+                    >
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.filter(ev => ev.I2CA != undefined).map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.I2CA] as [number, number]).reverse()}
+                            legend={'A'}
+                        />
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.filter(ev => ev.I2CB != undefined).map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.I2CB] as [number, number]).reverse()}
+                            legend={'B'}
+                        />
+                        <Line
+                            highlightHover={true}
+                            showPoints={true}
+                            lineStyle={'-'}
+                            color={RandomColor()}
+                            data={realyPerformance.filter(ev => ev.I2CC != undefined).map(ev => [moment.utc(ev.TripInitiate).valueOf(), ev.I2CC] as [number, number]).reverse()}
+                            legend={'C'}
+                        />
+                    </Plot>
+                </div>
+            </div> : null}
+        </>
     )
+}
 
+function getRelayPerformance(props: RelayReportNavBarProps): JQuery.jqXHR<IRelayPerformance[]> {
+    const adjustedTime = findAppropriateUnit(getMoment(props.date, props.time),
+        getStartEndTime(getMoment(props.date, props.time), props.windowSize, props.timeWindowUnits)[1],
+        props.timeWindowUnits);
+
+    return $.ajax({
+        type: "GET",
+        url: `${homePath}api/PQDashboard/RelayReport/getRelayPerformance?lineID=${props.BreakerID}&channelID=${props.ChannelID}}&date=${props.date}` +
+            `&time=${props.time}&timeWindowunits=${adjustedTime[0]}&windowSize=${adjustedTime[1]}`,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        cache: false,
+        async: true
+    });
 }
 
 export default RelayReportPane;
-
