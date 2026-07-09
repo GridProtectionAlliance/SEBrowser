@@ -73,7 +73,7 @@ const RelayReport = () => {
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
 
-    }, [BreakerID, ChannelID, StationId, date, time, windowSize, timeWindowUnits])
+    }, [BreakerID, ChannelID, StationId, date, time, windowSize, timeWindowUnits, history.pathname, navigate]);
 
     function setState(obj: IState) {
         setBreakerID(obj.searchBarProps.BreakerID);
