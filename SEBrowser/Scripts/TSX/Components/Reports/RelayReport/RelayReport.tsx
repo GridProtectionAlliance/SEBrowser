@@ -56,20 +56,24 @@ const RelayReport = () => {
         setTimeWindowUnits(query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2);
         setStationId(query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1);
 
-    }, []);
+    }, [history.search]);
 
     React.useEffect(() => {
         const state = {
-            BreakerID, ChannelID, StationId, date, time,
-            windowSize, timeWindowUnits
+            BreakerID,
+            ChannelID,
+            StationId,
+            date,
+            time,
+            windowSize,
+            timeWindowUnits
         };
 
         const q = queryString.stringify(state, "&", "=");
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
 
-    }, [BreakerID, ChannelID, StationId, date, time,
-        windowSize, timeWindowUnits])
+    }, [BreakerID, ChannelID, StationId, date, time, windowSize, timeWindowUnits])
 
     function setState(obj: IState) {
         setBreakerID(obj.searchBarProps.BreakerID);
@@ -82,8 +86,14 @@ const RelayReport = () => {
     }
 
     const searchBarProps: RelayReportNavBarProps = {
-        BreakerID, ChannelID, StationId, date, time,
-        windowSize, timeWindowUnits, stateSetter: setState
+        BreakerID,
+        ChannelID,
+        StationId,
+        date,
+        time,
+        windowSize,
+        timeWindowUnits,
+        stateSetter: setState
     };
 
     return (
