@@ -44,7 +44,7 @@ const CapBankReport = () => {
         time: '12:00:00',
         windowSize: 1,
         timeWindowUnits: 1
-        });
+    });
     const [selectedBank, setSelectedBank] = React.useState<number>(0);
     const [StationId, setStationID] = React.useState<number>(0);
     const [numBanks, setNumBanks] = React.useState<number>(0);
@@ -67,6 +67,7 @@ const CapBankReport = () => {
             windowSize: query['windowSize'] != undefined ? parseInt(query['windowSize'].toString()) : 10,
             timeWindowUnits: query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'].toString()) : 2
         }
+
         setTime(time);
         setSelectedBank(query['selectedBank'] != undefined ? parseInt(query['selectedBank'].toString()) : -1);
         setStationID(query['StationId'] != undefined ? parseInt(query['StationId'] as string) : -1);
@@ -78,23 +79,32 @@ const CapBankReport = () => {
         setPISFilt([999]);
         setHealthFilt([999]);
         setPhaseFilter([999]);
-        
-    }, []);
+    }, [history.search]);
 
     React.useEffect(() => {
         const state = {
             CapBankID,
-            date: time.date, time: time.time, windowSize: time.windowSize, timeWindowUnits: time.timeWindowUnits,
-            selectedBank, StationId, numBanks, ResFilt, StatFilt,
-            OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter };
+            date: time.date,
+            time: time.time,
+            windowSize: time.windowSize,
+            timeWindowUnits: time.timeWindowUnits,
+            selectedBank,
+            StationId,
+            numBanks,
+            ResFilt,
+            StatFilt,
+            OpFilt,
+            RestFilt,
+            PISFilt,
+            HealthFilt,
+            PhaseFilter
+        };
 
         const q = queryString.stringify(state, "&", "=");
         const handle = setTimeout(() => navigate(history.pathname + '?' + q), 500);
         return (() => { clearTimeout(handle); })
 
-    }, [CapBankID, time,
-        selectedBank, StationId, numBanks, ResFilt, StatFilt,
-        OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter])
+    }, [CapBankID, time, selectedBank, StationId, numBanks, ResFilt, StatFilt, OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter, history.pathname, navigate])
 
     function setState(a: IState) {
         setCapBankID(a.searchBarProps.CapBankID);
@@ -112,9 +122,18 @@ const CapBankReport = () => {
     }
 
     const searchBarProps: CapBankReportNavBarProps = {
-        CapBankID, TimeFilter: time, 
-        selectedBank, StationId, numBanks, ResFilt, StatFilt,
-        OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter,
+        CapBankID,
+        TimeFilter: time,
+        selectedBank,
+        StationId,
+        numBanks,
+        ResFilt,
+        StatFilt,
+        OpFilt,
+        RestFilt,
+        PISFilt,
+        HealthFilt,
+        PhaseFilter,
         stateSetter: setState
     }
 
