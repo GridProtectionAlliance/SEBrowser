@@ -129,20 +129,21 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
     }, [props.windowSize, props.timeWindowUnits, props.time, props.date])
 
     return (
-        <>
-            <div className="card">
+        <div className="d-flex flex-column flex-grow-1" style={{ overflowY: 'auto', minHeight: 0 }}>
+            {status === 'error' ?
+                <Alert Class="alert-danger">
+                    An error occurred while fetching relay performance data.
+                </Alert>
+            : null}
+            <div className="card flex-grow-1">
                 <div className="card-header">Breaker Performance:</div>
-                <div className="card-body">
+                <div className="card-body d-flex flex-column">
                     {status === 'loading' ?
-                        <div className="d-flex align-items-center justify-content-center" style={{ height: 250 }}>
+                        <div className="d-flex align-items-center justify-content-center flex-grow-1">
                             <ReactIcons.SpiningIcon Size={'50%'} />
                         </div>
-                    : status === 'error' ?
-                        <Alert Class="alert-danger">
-                            An error occurred while fetching relay performance data.
-                        </Alert>
                     : realyPerformance.length === 0 ?
-                        <Alert Class="alert-info">
+                        <Alert Class="alert-info" Style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             No relay performance data.
                         </Alert>
                     :
@@ -411,7 +412,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
                     </Plot>
                 </div>
             </div> : null}
-        </>
+        </div>
     )
 }
 

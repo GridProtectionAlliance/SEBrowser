@@ -97,13 +97,9 @@ const RelayReport = () => {
     };
 
     return (
-        <div style={{ width: '100%', height: '100%' }}>
+        <div className="d-flex flex-column" style={{ width: '100%', height: '100%' }}>
             <RelayReportNavBar {...searchBarProps} />
-            <div style={{ width: '100%', height: 'calc( 100% - 250px)' }}>
-                <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
-                    <RelayReportPane {...searchBarProps} />
-                </div>
-            </div>
+            <RelayReportPane {...searchBarProps} />
         </div>
     );
 }
