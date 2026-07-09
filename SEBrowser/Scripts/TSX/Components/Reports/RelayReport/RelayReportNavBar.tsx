@@ -21,15 +21,13 @@
 //
 //******************************************************************************************************
 import * as React from 'react';
-import _ from 'lodash';
+import { Select } from '@gpa-gemstone/react-forms';
 import { TimeFilter } from '@gpa-gemstone/common-pages';
+import { Application } from '@gpa-gemstone/application-typings';
+import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { toGemstoneFilter, fromGemstoneFilter } from '../../EventSearch/TimeWindowUtils';
 import { useAppSelector } from '../../../hooks';
 import { SelectDateTimeSetting, SelectTimeZone } from '../../../Store/SettingsSlice';
-
-const momentDateFormat = "MM/DD/YYYY";
-const momentTimeFormat = "HH:mm:ss.SSS";
-
 
 interface Substation {
     LocationID: number, AssetKey: string, AssetName: string
@@ -64,144 +62,48 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
     const [breakers, setBreakers] = React.useState<Breaker[]>([]);
     const [substations, setSubstations] = React.useState<Substation[]>([]);
     const [channels, setChannels] = React.useState<Channel[]>([]);
+    const [substationStatus, setSubstationStatus] = React.useState<Application.Types.Status>('uninitiated');
+    const [breakerStatus, setBreakerStatus] = React.useState<Application.Types.Status>('uninitiated');
+    const [channelStatus, setChannelStatus] = React.useState<Application.Types.Status>('uninitiated');
 
     React.useEffect(() => {
+        setSubstationStatus('loading');
         const handle = getSubstationData();
+        handle.done((d: Substation[]) => {
+            if (d != null)
+                setSubstations(d);
+            setSubstationStatus('idle');
+        }).fail(() => setSubstationStatus('error'));
+
         return () => { if (handle != null && handle.abort != null) handle.abort(); }
     }, [])
 
     React.useEffect(() => {
-        const handle = getBreakerData();
+        setBreakerStatus('loading');
+        const handle = getBreakerData(props.StationId);
+        handle.done((d: Breaker[]) => {
+            if (d != null)
+                setBreakers(d);
+            setBreakerStatus('idle');
+        }).fail(() => setBreakerStatus('error'));
+
         return () => { if (handle != null && handle.abort != null) handle.abort(); }
     }, [props.StationId]);
 
     React.useEffect(() => {
-        if (substations.length == 0)
-            return;
-        if (substations.findIndex(s => s.LocationID == props.StationId) == -1)
-            setStation(substations[0].LocationID);
-    }, [substations, props.StationId])
+        setChannelStatus('loading');
+        const handle = getCoilData(props.BreakerID);
+        handle.done((d: Channel[]) => {
+            if (d != null)
+                setChannels(d);
+            setChannelStatus('idle');
+        }).fail(() => setChannelStatus('error'));
 
-    React.useEffect(() => {
-        if (breakers.length == 0)
-            return;
-        if (breakers.findIndex(s => s.AssetId == props.BreakerID) == -1)
-            setBreaker(breakers[0].AssetId)
-    }, [breakers, props.BreakerID])
-
-    React.useEffect(() => {
-        const handle = getCoilData();
         return () => { if (handle != null && handle.abort != null) handle.abort(); }
     }, [props.BreakerID]);
 
-    React.useEffect(() => {
-        if (channels.length == 0)
-            return;
-        if (channels.findIndex(s => s.ID == props.ChannelID) == -1)
-            setChannel(channels[0].ID)
-    }, [channels, props.ChannelID])
-
-    function getBreakerData(): JQuery.jqXHR<Breaker[]> {
-        const h = $.ajax({
-            type: "GET",
-            url: `${homePath}api/PQDashboard/RelayReport/GetBreakerData?locationID=${props.StationId}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: true,
-            async: true
-        });
-
-        h.done((d: Breaker[]) => {
-            if (d != null)
-                setBreakers(d);
-        })
-
-        return h;
-
-    }
-
-    function getSubstationData(): JQuery.jqXHR<Substation[]> {
-        const h = $.ajax({
-            type: "GET",
-            url: `${homePath}api/PQDashboard/RelayReport/GetSubstationData`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: true,
-            async: true
-        });
-
-        h.done((d: Substation[]) => {
-            if (d != null)
-                setSubstations(d);
-        })
-        return h;
-
-    }
-
-
-    function getCoilData(): JQuery.jqXHR<Channel[]> {
-        const h = $.ajax({
-            type: "GET",
-            url: `${homePath}api/PQDashboard/RelayReport/GetCoilData?lineID=${props.BreakerID}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: true,
-            async: true
-        });
-
-        h.done((d: Channel[]) => {
-            if (d != null)
-                setChannels(d);
-        })
-        return h;
-    }
-
-    function setStation(id: number) {
-        const object = _.clone(props) as RelayReportNavBarProps;
-        object.StationId = id;
-        props.stateSetter({ searchBarProps: object });
-    }
-
-
-    function setBreaker(id: number) {
-        const object = _.clone(props) as RelayReportNavBarProps;
-        object.BreakerID = id;
-        props.stateSetter({ searchBarProps: object });
-    }
-
-
-    function setChannel(id: number) {
-        const object = _.clone(props) as RelayReportNavBarProps;
-        object.ChannelID = id;
-        props.stateSetter({ searchBarProps: object });
-    }
-
-    function setDate(date: string) {
-
-        const object = _.clone(props) as RelayReportNavBarProps;
-        object.date = date;
-        props.stateSetter({ searchBarProps: object });
-    }
-
-    function setTime(time: string) {
-
-        const object = _.clone(props) as RelayReportNavBarProps;
-        object.time = time;
-        props.stateSetter({ searchBarProps: object });
-    }
-
-    function setTimeWindowUnits(timeWindowUnits: number) {
-
-        const object = _.clone(props) as RelayReportNavBarProps;
-        object.timeWindowUnits = timeWindowUnits;
-        props.stateSetter({ searchBarProps: object });
-    }
-
-    function setWindowSize(windowSize: number) {
-
-        const object = _.clone(this.props) as RelayReportNavBarProps;
-        object.windowSize = windowSize;
-        props.stateSetter({ searchBarProps: object });
+    function updateProps(record: RelayReportNavBarProps) {
+        props.stateSetter({ searchBarProps: record });
     }
 
     return (
@@ -211,32 +113,45 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                     <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
                         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                             <legend className="w-auto" style={{ fontSize: 'large' }}>Trip Coil:</legend>
-                            <form>
-                                <label style={{ width: '100%', position: 'relative', float: "left" }}>Substation: </label>
-                                <div className="form-group" style={{ height: 30 }}>
-                                    <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                        setStation(parseInt(e.target.value.toString()));
-                                    }} value={props.StationId}>
-                                        {substations.map((item, index) => <option key={index} value={item.LocationID} > {item.AssetName} </option>)}
-                                    </select>
+                            {substationStatus === 'loading' ?
+                                <div className='d-flex align-items-center justify-content-center'>
+                                    <ReactIcons.SpiningIcon />
                                 </div>
-                                <label style={{ width: '100%', position: 'relative', float: "left" }}>Breaker: </label>
-                                <div className="form-group" style={{ height: 30 }}>
-                                    <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                        setBreaker(parseInt(e.target.value.toString()));
-                                    }} value={props.BreakerID}>
-                                        {breakers.map((item, index) => <option key={index} value={item.AssetId} > {item.AssetName} </option>)}
-                                    </select>
+                                :
+                                <Select<RelayReportNavBarProps>
+                                    Record={props}
+                                    Field='StationId'
+                                    Label='Substation:'
+                                    Setter={updateProps}
+                                    Options={substations.map(item => ({ Value: item.LocationID, Label: item.AssetName }))}
+                                />
+                            }
+                            {breakerStatus === 'loading' ?
+                                <div className='d-flex align-items-center justify-content-center'>
+                                    <ReactIcons.SpiningIcon />
                                 </div>
-                                <label style={{ width: '100%', position: 'relative', float: "left" }}>Trip Coil: </label>
-                                <div className="form-group" style={{ height: 30 }}>
-                                    <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                        setChannel(parseInt(e.target.value.toString()));
-                                    }} value={props.ChannelID}>
-                                        {channels.map((item, index) => <option key={index} value={item.ID} > {item.Name} </option>)}
-                                    </select>
+                                :
+                                <Select<RelayReportNavBarProps>
+                                    Record={props}
+                                    Field='BreakerID'
+                                    Label='Breaker:'
+                                    Setter={updateProps}
+                                    Options={breakers.map(item => ({ Value: item.AssetId, Label: item.AssetName }))}
+                                />
+                            }
+                            {channelStatus === 'loading' ?
+                                <div className='d-flex align-items-center justify-content-center'>
+                                    <ReactIcons.SpiningIcon />
                                 </div>
-                            </form>
+                                :
+                                <Select<RelayReportNavBarProps>
+                                    Record={props}
+                                    Field='ChannelID'
+                                    Label='Trip Coil:'
+                                    Setter={updateProps}
+                                    Options={channels.map(item => ({ Value: item.ID, Label: item.Name }))}
+                                />
+                            }
                         </fieldset>
                     </li>
 
@@ -245,10 +160,7 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                             filter={toGemstoneFilter({ date: props.date, time: props.time, windowSize: props.windowSize, timeWindowUnits: props.timeWindowUnits })}
                             setFilter={(start, end, unit, duration) => {
                                 const f = fromGemstoneFilter(start, end, unit, duration);
-                                setDate(f.date);
-                                setTime(f.time);
-                                setTimeWindowUnits(f.timeWindowUnits);
-                                setWindowSize(f.windowSize);
+                                updateProps({ ...props, date: f.date, time: f.time, timeWindowUnits: f.timeWindowUnits, windowSize: f.windowSize });
                             }}
                             showQuickSelect={true}
                             dateTimeSetting={dateTimeSetting}
@@ -262,6 +174,39 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
         </nav>
     );
 
+}
+
+function getSubstationData(): JQuery.jqXHR<Substation[]> {
+    return $.ajax({
+        type: "GET",
+        url: `${homePath}api/PQDashboard/RelayReport/GetSubstationData`,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        cache: true,
+        async: true
+    });
+}
+
+function getBreakerData(locationID: number): JQuery.jqXHR<Breaker[]> {
+    return $.ajax({
+        type: "GET",
+        url: `${homePath}api/PQDashboard/RelayReport/GetBreakerData?locationID=${locationID}`,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        cache: true,
+        async: true
+    });
+}
+
+function getCoilData(lineID: number): JQuery.jqXHR<Channel[]> {
+    return $.ajax({
+        type: "GET",
+        url: `${homePath}api/PQDashboard/RelayReport/GetCoilData?lineID=${lineID}`,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        cache: true,
+        async: true
+    });
 }
 
 export default RelayReportNavBar;
