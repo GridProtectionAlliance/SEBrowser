@@ -93,7 +93,6 @@ const RelayReport = () => {
                 <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
                     <RelayReportPane {...searchBarProps} />
                 </div>
-
             </div>
         </div>
     );
