@@ -24,6 +24,7 @@ import * as React from 'react';
 import queryString from 'querystring';
 import moment from 'moment';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Alert } from '@gpa-gemstone/react-interactive';
 import DERReportNavBar, { ISelectableOption } from './DERReportNavBar';
 import DERReportPane from './DERReportPane';
 
@@ -40,6 +41,16 @@ function DERReport() {
     const [timeWindowUnits, setTimeWindowUnits] = React.useState<number>(4);
     const [regulations, setRegulations] = React.useState<ISelectableOption[]>([])
     const [ders, setDERs] = React.useState<ISelectableOption[]>([]);
+    const [configured, setConfigured] = React.useState<boolean | null>(null);
+
+    React.useEffect(() => {
+        const handle = getTableExists();
+        handle.done(d => setConfigured(d)).fail(() => setConfigured(false));
+
+        return () => {
+            if (handle.abort != undefined) handle.abort();
+        };
+    }, []);
 
     React.useEffect(() => {
         const query = queryString.parse(history.search.replace("?", ""), "&", "=");
@@ -62,6 +73,13 @@ function DERReport() {
         return (() => { clearTimeout(handle); })
     }, [time, date, windowSize, timeWindowUnits])
 
+    if (configured === false)
+        return (
+            <Alert Class="alert-danger" Style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                DER Report is not properly configured.
+            </Alert>
+        );
+
     return (
         <div className="d-flex flex-column" style={{ width: '100%', height: '100%' }}>
             <DERReportNavBar
@@ -76,16 +94,29 @@ function DERReport() {
                 setRegulations={setRegulations}
                 setDERs={setDERs}
             />
-            <DERReportPane
-                date={date}
-                time={time}
-                windowSize={windowSize}
-                timeWindowUnits={timeWindowUnits}
-                regulations={regulations}
-                ders={ders}
-            />
+            {configured === true ?
+                <DERReportPane
+                    date={date}
+                    time={time}
+                    windowSize={windowSize}
+                    timeWindowUnits={timeWindowUnits}
+                    regulations={regulations}
+                    ders={ders}
+                />
+            : null}
         </div>
     );
+}
+
+function getTableExists(): JQuery.jqXHR<boolean> {
+    return $.ajax({
+        type: "GET",
+        url: `${homePath}api/DERReport/TableExists`,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        cache: false,
+        async: true
+    });
 }
 
 export default DERReport;

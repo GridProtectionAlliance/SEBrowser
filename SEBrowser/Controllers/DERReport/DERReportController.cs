@@ -192,6 +192,16 @@ namespace SEBrowser.Controllers.DERReport
             return Ok(table);
         }
 
+        [Route("TableExists"), HttpGet]
+        public IActionResult GetTableExists()
+        {
+            using AdoDataConnection connection = new(Settings.Default);
+
+            int count = connection.ExecuteScalar<int>("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'DERAnalyticResult'");
+
+            return Ok(count > 0);
+        }
+
         [Route("Regulation"), HttpGet]
         public IActionResult GetRegulations()
         {
