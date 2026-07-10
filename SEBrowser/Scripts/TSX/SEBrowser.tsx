@@ -187,7 +187,7 @@ const createWidget = (item: string) => {
 
 const heartBeatCheck = () => {
     return $.ajax({
-        url: `${homePath}api/OpenSEE/HeartBeat`,
+        url: `${homePath}api/SEBrowser/HeartBeat`,
         method: 'GET',
         cache: false,
         async: true
