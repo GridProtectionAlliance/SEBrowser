@@ -113,45 +113,55 @@ const RelayReportNavBar = (props: RelayReportNavBarProps) => {
                     <li className="nav-item" style={{ width: '50%', paddingRight: 10 }}>
                         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                             <legend className="w-auto" style={{ fontSize: 'large' }}>Trip Coil:</legend>
-                            {substationStatus === 'loading' ?
-                                <div className='d-flex align-items-center justify-content-center'>
-                                    <ReactIcons.SpiningIcon />
+                            <div className="row">
+                                <div className="col-6">
+                                    {substationStatus === 'loading' ?
+                                        <div className='d-flex align-items-center justify-content-center'>
+                                            <ReactIcons.SpiningIcon />
+                                        </div>
+                                        :
+                                        <Select<RelayReportNavBarProps>
+                                            Record={props}
+                                            Field='StationId'
+                                            Label='Substation:'
+                                            Setter={updateProps}
+                                            Options={substations.map(item => ({ Value: item.LocationID, Label: item.AssetName }))}
+                                        />
+                                    }
                                 </div>
-                                :
-                                <Select<RelayReportNavBarProps>
-                                    Record={props}
-                                    Field='StationId'
-                                    Label='Substation:'
-                                    Setter={updateProps}
-                                    Options={substations.map(item => ({ Value: item.LocationID, Label: item.AssetName }))}
-                                />
-                            }
-                            {breakerStatus === 'loading' ?
-                                <div className='d-flex align-items-center justify-content-center'>
-                                    <ReactIcons.SpiningIcon />
+                                <div className="col-6">
+                                    {breakerStatus === 'loading' ?
+                                        <div className='d-flex align-items-center justify-content-center'>
+                                            <ReactIcons.SpiningIcon />
+                                        </div>
+                                        :
+                                        <Select<RelayReportNavBarProps>
+                                            Record={props}
+                                            Field='BreakerID'
+                                            Label='Breaker:'
+                                            Setter={updateProps}
+                                            Options={breakers.map(item => ({ Value: item.AssetId, Label: item.AssetName }))}
+                                        />
+                                    }
                                 </div>
-                                :
-                                <Select<RelayReportNavBarProps>
-                                    Record={props}
-                                    Field='BreakerID'
-                                    Label='Breaker:'
-                                    Setter={updateProps}
-                                    Options={breakers.map(item => ({ Value: item.AssetId, Label: item.AssetName }))}
-                                />
-                            }
-                            {channelStatus === 'loading' ?
-                                <div className='d-flex align-items-center justify-content-center'>
-                                    <ReactIcons.SpiningIcon />
+                            </div>
+                            <div className="row">
+                                <div className="col-12">
+                                    {channelStatus === 'loading' ?
+                                        <div className='d-flex align-items-center justify-content-center'>
+                                            <ReactIcons.SpiningIcon />
+                                        </div>
+                                        :
+                                        <Select<RelayReportNavBarProps>
+                                            Record={props}
+                                            Field='ChannelID'
+                                            Label='Trip Coil:'
+                                            Setter={updateProps}
+                                            Options={channels.map(item => ({ Value: item.ID, Label: item.Name }))}
+                                        />
+                                    }
                                 </div>
-                                :
-                                <Select<RelayReportNavBarProps>
-                                    Record={props}
-                                    Field='ChannelID'
-                                    Label='Trip Coil:'
-                                    Setter={updateProps}
-                                    Options={channels.map(item => ({ Value: item.ID, Label: item.Name }))}
-                                />
-                            }
+                            </div>
                         </fieldset>
                     </li>
 
