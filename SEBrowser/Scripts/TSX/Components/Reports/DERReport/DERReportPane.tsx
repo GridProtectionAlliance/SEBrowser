@@ -27,7 +27,7 @@ import { orderBy } from 'lodash';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
 import { Modal } from '@gpa-gemstone/react-interactive';
 import { findAppropriateUnit, getMoment, getStartEndTime } from '../../EventSearch/TimeWindowUtils';
-import { ISelectableOption } from './DERAnalysisReportNavBar';
+import { ISelectableOption } from './DERReportNavBar';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";

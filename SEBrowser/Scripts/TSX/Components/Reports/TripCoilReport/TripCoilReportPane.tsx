@@ -27,7 +27,7 @@ import { ConfigurableTable, Column, GetConfigurableColumnsFromTypeEntries } from
 import { Application, Gemstone } from '@gpa-gemstone/application-typings';
 import { Alert } from '@gpa-gemstone/react-interactive';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
-import { RelayReportNavBarProps } from './RelayReportNavBar';
+import { RelayReportNavBarProps } from './TripCoilReportNavBar';
 import { Line, LineWithThreshold, Plot } from '@gpa-gemstone/react-graph';
 import { RandomColor } from '@gpa-gemstone/helper-functions';
 import { findAppropriateUnit, getMoment, getStartEndTime } from '../../EventSearch/TimeWindowUtils';

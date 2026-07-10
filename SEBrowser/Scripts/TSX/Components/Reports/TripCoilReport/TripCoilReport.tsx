@@ -21,8 +21,8 @@
 //******************************************************************************************************
 
 import * as React from 'react';
-import RelayReportNavBar, { RelayReportNavBarProps } from './RelayReportNavBar';
-import RelayReportPane from './RelayReportPane';
+import RelayReportNavBar, { RelayReportNavBarProps } from './TripCoilReportNavBar';
+import RelayReportPane from './TripCoilReportPane';
 import * as queryString from 'querystring';
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';

@@ -1,4 +1,4 @@
-//******************************************************************************************************
+﻿//******************************************************************************************************
 //  DERAnalysisReport.tsx - Gbtc
 //
 //  Copyright © 2019, Grid Protection Alliance.  All Rights Reserved.
@@ -24,8 +24,8 @@ import * as React from 'react';
 import queryString from 'querystring';
 import moment from 'moment';
 import { useNavigate, useLocation } from 'react-router-dom';
-import DERAnalysisReportNavBar, { ISelectableOption } from './DERAnalysisReportNavBar';
-import DERAnalysisReportPane from './DERAnalysisReportPane';
+import DERAnalysisReportNavBar, { ISelectableOption } from './DERReportNavBar';
+import DERAnalysisReportPane from './DERReportPane';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -49,7 +49,6 @@ function DERAnalysisReport() {
         setWindowSize(query['windowSize'] != undefined ? parseInt(query['windowSize'] as string) : 1);
         setTimeWindowUnits(query['timeWindowUnits'] != undefined ? parseInt(query['timeWindowUnits'] as string) : 4);
     }, []);
-
 
     React.useEffect(() => {
         const queryParam = {
