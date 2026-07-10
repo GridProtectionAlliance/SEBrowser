@@ -25,7 +25,8 @@ import moment from 'moment';
 import _ from 'lodash';
 
 import { CapBankReportNavBarProps } from './CapBankReportNavBar';
-import { Warning, Modal } from '@gpa-gemstone/react-interactive';
+import { Warning, Modal, Alert } from '@gpa-gemstone/react-interactive';
+import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { Select } from '@gpa-gemstone/react-forms';
 import { Table, ConfigurableTable, Column, GetConfigurableColumnsFromTypeEntries } from '@gpa-gemstone/react-table';
 import { Application, Gemstone } from '@gpa-gemstone/application-typings';
@@ -287,6 +288,8 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
         return null;
 
     const bankOptions = Array.from({ length: props.numBanks }, (_, i) => ({ Value: i + 1, Label: `${i + 1}` }));
+    const noTrendData = trendStatus === 'idle' && plotConfigs.every(cfg => trendData[cfg.field].length === 0);
+    const noEventData = eventTableStatus === 'idle' && eventData.length === 0;
 
     return (
         <>
@@ -357,7 +360,36 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
                 Message={'The Capacitor Bank manually assigned to this event can not be changed in the future. Are you sure you want to continue?'}
                 CallBack={(confirmed) => { setShowWarning(false); if (confirmed) updateCapBank(); else setShowCapBankEdit(true); }}
             />
-            <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
+            <div className="d-flex flex-column flex-grow-1" style={{ overflowY: 'auto', minHeight: 0 }}>
+                {eventTableStatus === 'error' ?
+                    <Alert Class="alert-danger">
+                        An error occurred while fetching capacitor bank event data.
+                    </Alert>
+                : null}
+                {trendStatus === 'error' ?
+                    <Alert Class="alert-danger">
+                        An error occurred while fetching capacitor bank trend data.
+                    </Alert>
+                : null}
+                {updateCapBankStatus === 'error' ?
+                    <Alert Class="alert-danger">
+                        An error occurred while assigning the event to a capacitor bank.
+                    </Alert>
+                : null}
+                {noTrendData && noEventData ?
+                    <Alert Class="alert-info" Style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        No trend data or capacitor bank events found.
+                    </Alert>
+                : <>
+                {trendStatus === 'loading' ?
+                    <div className="d-flex align-items-center justify-content-center" style={{ height: 250 }}>
+                        <ReactIcons.SpiningIcon Size={'25%'} />
+                    </div>
+                : noTrendData ?
+                    <Alert Class="alert-info">
+                        No capacitor bank trend data.
+                    </Alert>
+                : null}
                 {plotConfigs.map(cfg =>
                     trendData[cfg.field].length > 0 ?
                         <div className="card" key={cfg.field}>
@@ -392,6 +424,15 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
                 <div className="card">
                     <div className="card-header">Capacitor Bank Analytic Event Overview</div>
                     <div className="card-body">
+                        {eventTableStatus === 'loading' ?
+                            <div className="d-flex align-items-center justify-content-center" style={{ height: 250 }}>
+                                <ReactIcons.SpiningIcon Size={'25%'} />
+                            </div>
+                        : noEventData ?
+                            <Alert Class="alert-info">
+                                No capacitor bank events found.
+                            </Alert>
+                        :
                         <ConfigurableTable<ICBEvent>
                             Data={sortedEventData}
                             SortKey={sortKey}
@@ -410,9 +451,10 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
                                     {' '}
                                 </Column> : null}
                             {GetConfigurableColumnsFromTypeEntries<ICBEvent>(recordFields, 'MM/DD/YY HH:mm:ss.SSS')}
-                        </ConfigurableTable>
+                        </ConfigurableTable>}
                     </div>
                 </div>
+                </>}
             </div>
         </>
     );
