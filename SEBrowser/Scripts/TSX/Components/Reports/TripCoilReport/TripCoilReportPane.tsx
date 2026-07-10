@@ -134,7 +134,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
                 <Alert Class="alert-danger">
                     An error occurred while fetching relay performance data.
                 </Alert>
-            : null}
+                : null}
             <div className="card flex-grow-1">
                 <div className="card-header">Breaker Performance:</div>
                 <div className="card-body d-flex flex-column">
@@ -142,33 +142,33 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
                         <div className="d-flex align-items-center justify-content-center flex-grow-1">
                             <ReactIcons.SpiningIcon Size={'50%'} />
                         </div>
-                    : realyPerformance.length === 0 ?
-                        <Alert Class="alert-info" Style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            No relay performance data.
-                        </Alert>
-                    :
-                    <ConfigurableTable<IRelayPerformance>
-                        Data={sortedData}
-                        SortKey={sortKey}
-                        Ascending={ascending}
-                        OnSort={sortCallback}
-                        KeySelector={(item, index) => index!}
-                        TableClass="table"
-                        LocalStorageKey="SEBrowser.RelayReportPane"
-                    >
-                        <Column<IRelayPerformance>
-                            Key={'EventID'}
-                            AllowSort={true}
-                            Field={'EventID'}
-                            Content={({ item }) =>
-                                <a id="eventLink" target="_blank" href={homePath + 'Main/OpenSEE?eventid=' + item.EventID}>
-                                    <div style={{ width: '100%', height: '100%' }}>{item.EventID}</div>
-                                </a>}
-                        >
-                            Event ID
-                        </Column>
-                        {GetConfigurableColumnsFromTypeEntries<IRelayPerformance>(recordFields, 'MM/DD/YY HH:mm:ss.SSSS')}
-                    </ConfigurableTable>}
+                        : realyPerformance.length === 0 ?
+                            <Alert Class="alert-info" Style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                No relay performance data.
+                            </Alert>
+                            :
+                            <ConfigurableTable<IRelayPerformance>
+                                Data={sortedData}
+                                SortKey={sortKey}
+                                Ascending={ascending}
+                                OnSort={sortCallback}
+                                KeySelector={(item, index) => index!}
+                                TableClass="table"
+                                LocalStorageKey="SEBrowser.RelayReportPane"
+                            >
+                                <Column<IRelayPerformance>
+                                    Key={'EventID'}
+                                    AllowSort={true}
+                                    Field={'EventID'}
+                                    Content={({ item }) =>
+                                        <a id="eventLink" target="_blank" href={homePath + 'Main/OpenSEE?eventid=' + item.EventID}>
+                                            <div style={{ width: '100%', height: '100%' }}>{item.EventID}</div>
+                                        </a>}
+                                >
+                                    Event ID
+                                </Column>
+                                {GetConfigurableColumnsFromTypeEntries<IRelayPerformance>(recordFields, 'MM/DD/YY HH:mm:ss.SSSS')}
+                            </ConfigurableTable>}
                 </div>
             </div>
             {realyPerformance.length > 0 ? < div className="card">
@@ -184,6 +184,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
                         Ylabel={'Trip (micros)'}
                         showMouse={true}
                         useMetricFactors={false}
+                        yDomain="AutoValue"
                     >
                         <LineWithThreshold
                             highlightHover={true}
@@ -205,6 +206,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
                         Ylabel={'Pickup (micros)'}
                         showMouse={true}
                         useMetricFactors={false}
+                        yDomain="AutoValue"
                     >
                         <LineWithThreshold
                             highlightHover={true}
@@ -226,6 +228,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
                         Ylabel={'TCC (A/s)'}
                         showMouse={true}
                         useMetricFactors={false}
+                        yDomain="AutoValue"
                     >
                         <LineWithThreshold
                             highlightHover={true}
@@ -249,6 +252,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
                         Ylabel={'TCE (A)'}
                         showMouse={true}
                         useMetricFactors={false}
+                        yDomain="AutoValue"
                     >
                         <Line
                             highlightHover={true}
@@ -302,6 +306,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
                         Ylabel={'Timing (micros)'}
                         showMouse={true}
                         useMetricFactors={false}
+                        yDomain="AutoValue"
                     >
                         <Line
                             highlightHover={true}
@@ -347,6 +352,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
                         Ylabel={'ArcingTime (micros)'}
                         showMouse={true}
                         useMetricFactors={false}
+                        yDomain="AutoValue"
                     >
                         <Line
                             highlightHover={true}
@@ -384,6 +390,7 @@ const RelayReportPane = (props: RelayReportNavBarProps) => {
                         Ylabel={'I2C (A2s)'}
                         showMouse={true}
                         useMetricFactors={false}
+                        yDomain="AutoValue"
                     >
                         <Line
                             highlightHover={true}
