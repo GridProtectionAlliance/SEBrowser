@@ -106,50 +106,59 @@ const DERAnalysisReportNavBar = (props: DERAnalysisReportNavBarProps) => {
                         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
                             <legend className="w-auto" style={{ fontSize: 'large' }}>DER:</legend>
                             <form>
-                                <div className="form-group" style={{ height: 60, width: '100%' }}>
-                                    {stationStatus === 'loading' ?
-                                        <div className='d-flex align-items-center justify-content-center'>
-                                            <ReactIcons.SpiningIcon />
+                                <div className="row">
+                                    <div className="col-6">
+                                        <div className="form-group" style={{ height: 60, width: '100%' }}>
+                                            {stationStatus === 'loading' ?
+                                                <div className='d-flex align-items-center justify-content-center'>
+                                                    <ReactIcons.SpiningIcon />
+                                                </div>
+                                                : <MultiCheckBoxSelect Label={'Substation:'} Options={stations} OnChange={(evt, options) => {
+                                                const records = [...stations]
+                                                for (const option of options) {
+                                                    const index = records.findIndex(r => r.Value == option.Value)
+                                                    records[index].Selected = !records[index].Selected
+                                                }
+                                                setStations(records)
+                                            }} />}
                                         </div>
-                                        : <MultiCheckBoxSelect Label={'Substation:'} Options={stations} OnChange={(evt, options) => {
-                                        const records = [...stations]
-                                        for (const option of options) {
-                                            const index = records.findIndex(r => r.Value == option.Value)
-                                            records[index].Selected = !records[index].Selected
-                                        }
-                                        setStations(records)
-                                    }} />}
-
+                                    </div>
+                                    <div className="col-6">
+                                        <div className="form-group" style={{ height: 60, width: '100%' }}>
+                                            {derStatus === 'loading' ?
+                                                <div className='d-flex align-items-center justify-content-center'>
+                                                    <ReactIcons.SpiningIcon />
+                                                </div>
+                                                : <MultiCheckBoxSelect Label={'DER:'} Options={ders} OnChange={(evt, options) => {
+                                                const records = [...ders]
+                                                for (const option of options) {
+                                                    const index = records.findIndex(r => r.Value == option.Value)
+                                                    records[index].Selected = !records[index].Selected
+                                                }
+                                                setDERs(records)
+                                                props.setDERs(records)
+                                            }} />}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="form-group" style={{ height: 60, width: '100%' }}>
-                                    {derStatus === 'loading' ?
-                                        <div className='d-flex align-items-center justify-content-center'>
-                                            <ReactIcons.SpiningIcon />
+                                <div className="row">
+                                    <div className="col-12">
+                                        <div className="form-group" style={{ height: 60, width: '100%' }}>
+                                            {regulationStatus === 'loading' ?
+                                                <div className='d-flex align-items-center justify-content-center'>
+                                                    <ReactIcons.SpiningIcon />
+                                                </div>
+                                                : <MultiCheckBoxSelect Label={'Regulations:'} Options={regulations} OnChange={(evt, options) => {
+                                                const records = [...regulations]
+                                                for (const option of options) {
+                                                    const index = records.findIndex(r => r.Value == option.Value)
+                                                    records[index].Selected = !records[index].Selected
+                                                }
+                                                setRegulations(records)
+                                                props.setRegulations(records)
+                                            }} />}
                                         </div>
-                                        : <MultiCheckBoxSelect Label={'DER:'} Options={ders} OnChange={(evt, options) => {
-                                        const records = [...ders]
-                                        for (const option of options) {
-                                            const index = records.findIndex(r => r.Value == option.Value)
-                                            records[index].Selected = !records[index].Selected
-                                        }
-                                        setDERs(records)
-                                        props.setDERs(records)
-                                    }} />}
-                                </div>
-                                <div className="form-group" style={{ height: 60, width: '100%' }}>
-                                    {regulationStatus === 'loading' ?
-                                        <div className='d-flex align-items-center justify-content-center'>
-                                            <ReactIcons.SpiningIcon />
-                                        </div>
-                                        : <MultiCheckBoxSelect Label={'Regulations:'} Options={regulations} OnChange={(evt, options) => {
-                                        const records = [...regulations]
-                                        for (const option of options) {
-                                            const index = records.findIndex(r => r.Value == option.Value)
-                                            records[index].Selected = !records[index].Selected
-                                        }
-                                        setRegulations(records)
-                                        props.setRegulations(records)
-                                    }} />}
+                                    </div>
                                 </div>
                             </form>
                         </fieldset>
