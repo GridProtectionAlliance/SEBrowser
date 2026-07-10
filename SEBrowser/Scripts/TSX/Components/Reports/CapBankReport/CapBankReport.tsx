@@ -106,7 +106,7 @@ const CapBankReport = () => {
 
     }, [CapBankID, time, selectedBank, StationId, numBanks, ResFilt, StatFilt, OpFilt, RestFilt, PISFilt, HealthFilt, PhaseFilter, history.pathname, navigate])
 
-    function setState(a: IState) {
+    const setState = (a: IState) => {
         setCapBankID(a.searchBarProps.CapBankID);
         setTime(a.searchBarProps.TimeFilter);
         setSelectedBank(a.searchBarProps.selectedBank);

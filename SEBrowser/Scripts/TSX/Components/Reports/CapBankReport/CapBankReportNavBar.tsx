@@ -190,7 +190,7 @@ const CapBankReportNavBar = (props: CapBankReportNavBarProps) => {
             updateProps({ ...props, numBanks: bank.numBanks });
     }, [capBanks, props.CapBankID]);
 
-    function updateProps(record: CapBankReportNavBarProps) {
+    const updateProps = (record: CapBankReportNavBarProps) => {
         props.stateSetter({ searchBarProps: record });
     }
 
@@ -204,7 +204,6 @@ const CapBankReportNavBar = (props: CapBankReportNavBarProps) => {
     return (
         <>
             <nav className="navbar navbar-expand-lg navbar-light bg-light">
-
                 <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{ width: '100%' }}>
                     <ul className="navbar-nav mr-auto" style={{ width: '100%' }}>
                         <li className="nav-item" style={{ width: '40%', paddingRight: 10 }}>
@@ -306,9 +305,19 @@ export default CapBankReportNavBar;
 const CBEventFilter = (props: { filters: IFilter[], Label: string, showAll: boolean, setter: (filter: number[]) => void, activeFilter: number[] }) => {
 
     const allSelected: boolean = props.activeFilter.includes(999);
+    const mapState = (filter: IFilter) => {
+        let state = true;
+
+        filter.Values.forEach(item => {
+            if (!props.activeFilter.includes(item))
+                state = false;
+        })
+
+        return state;
+    }
     const isSelected: boolean[] = props.filters.map(item => mapState(item));
 
-    function FilterChanged(index: number) {
+    const FilterChanged = (index: number) => {
 
         let updatedStat = isSelected.map((item, i) => (i === index ? !item : item));
 
@@ -325,17 +334,6 @@ const CBEventFilter = (props: { filters: IFilter[], Label: string, showAll: bool
             result.push(999);
 
         props.setter(result)
-    }
-
-    function mapState(filter: IFilter) {
-        let state = true;
-
-        filter.Values.forEach(item => {
-            if (!props.activeFilter.includes(item))
-                state = false;
-        })
-
-        return state;
     }
 
     return (
