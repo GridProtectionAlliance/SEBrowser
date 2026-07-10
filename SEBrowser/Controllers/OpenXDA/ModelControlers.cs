@@ -96,9 +96,10 @@ namespace SEBrowser.Controllers.OpenXDA
                 openXDAParentTable = "CapBank";
 
             // Asset additional fields are stored under the individual asset-type tables, not a single "Asset" table.
+            // Only searchable fields are returned; this endpoint exists to populate search filter dropdowns.
             RecordRestriction restriction = openXDAParentTable == "Asset"
-                ? new RecordRestriction("ParentTable IN ('Line', 'Transformer', 'Breaker', 'CapBank', 'Bus', 'Generation', 'StationAux', 'StationBattery')")
-                : new RecordRestriction("ParentTable = {0}", openXDAParentTable);
+                ? new RecordRestriction("Searchable <> 0 AND ParentTable IN ('Line', 'Transformer', 'Breaker', 'CapBank', 'Bus', 'Generation', 'StationAux', 'StationBattery')")
+                : new RecordRestriction("Searchable <> 0 AND ParentTable = {0}", openXDAParentTable);
 
             using AdoDataConnection connection = new(Gemstone.Configuration.Settings.Default);
 
