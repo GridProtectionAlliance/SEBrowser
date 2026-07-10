@@ -25,6 +25,7 @@ import moment from 'moment';
 
 import { CapBankReportNavBarProps } from './CapBankReportNavBar';
 import { Warning, Modal } from '@gpa-gemstone/react-interactive';
+import { Select } from '@gpa-gemstone/react-forms';
 import { Plot, Line } from '@gpa-gemstone/react-graph'
 import { findAppropriateUnit, getMoment, getStartEndTime } from '../../EventSearch/TimeWindowUtils';
 
@@ -315,14 +316,10 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
         setPointTable({ title, content });
     };
 
-    if (props.CapBankID == -1) return <div></div>;
+    if (props.CapBankID == -1)
+         return null;
 
-
-        const bankOptions = [];
-        let i;
-        for (i = 0; i < props.numBanks; i++) {
-            bankOptions.push(<option key={i} value={i + 1}> {i + 1} </option>)
-        }
+    const bankOptions = Array.from({ length: props.numBanks }, (_, i) => ({ Value: i + 1, Label: `${i + 1}` }));
 
     return (
             <>
@@ -339,16 +336,13 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
                     ShowCancel={false}
                     ConfirmText={'Update'}
                 >
-                    <form>
-                        <label style={{ width: '100%', position: 'relative', float: "left" }}>Capacitor Bank: </label>
-                        <div className="form-group" style={{ height: 30 }}>
-                            <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                setSelectedCapBank(Number(e.target.value));
-                            }} value={selectedCapBank}>
-                                {bankOptions}
-                            </select>
-                        </div>
-                    </form>
+                    <Select<{ selectedCapBank: number }>
+                        Record={{ selectedCapBank }}
+                        Field='selectedCapBank'
+                        Label='Capacitor Bank:'
+                        Setter={(record) => setSelectedCapBank(record.selectedCapBank)}
+                        Options={bankOptions}
+                    />
                 </Modal>
                 <Modal
                     Title={pointTable == null ? '' : pointTable.title}
