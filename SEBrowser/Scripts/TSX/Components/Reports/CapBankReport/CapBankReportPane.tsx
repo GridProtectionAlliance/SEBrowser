@@ -26,6 +26,7 @@ import moment from 'moment';
 import { CapBankReportNavBarProps } from './CapBankReportNavBar';
 import { Warning, Modal } from '@gpa-gemstone/react-interactive';
 import { Select } from '@gpa-gemstone/react-forms';
+import { Application } from '@gpa-gemstone/application-typings';
 import { Plot, Line } from '@gpa-gemstone/react-graph'
 import { findAppropriateUnit, getMoment, getStartEndTime } from '../../EventSearch/TimeWindowUtils';
 
@@ -160,37 +161,37 @@ const plotConfigs: IPlotConfig[] = [
 ];
 
 const getFilterString = (props: CapBankReportNavBarProps) => {
-        let filter = "";
+    let filter = "";
 
-        //First Filter is Resonance
-        if (props.ResFilt.length > 0)
-            filter = `&resFilt=${props.ResFilt.join(',')}`
+    //First Filter is Resonance
+    if (props.ResFilt.length > 0)
+        filter = `&resFilt=${props.ResFilt.join(',')}`
 
-        //Next Filter is CapBankStatus
-        if ((props.StatFilt.length > 0) && (!props.StatFilt.includes(999)))
-            filter = filter + `&statFilt=${props.StatFilt.join(',')}`
+    //Next Filter is CapBankStatus
+    if ((props.StatFilt.length > 0) && (!props.StatFilt.includes(999)))
+        filter = filter + `&statFilt=${props.StatFilt.join(',')}`
 
-        //Next Filter is Operation
-        if ((props.OpFilt.length > 0) && (!props.OpFilt.includes(999)))
-            filter = filter + `&operationFilt=${props.OpFilt.join(',')}`
+    //Next Filter is Operation
+    if ((props.OpFilt.length > 0) && (!props.OpFilt.includes(999)))
+        filter = filter + `&operationFilt=${props.OpFilt.join(',')}`
 
-        //Next Filter is Restrike Filter
-        if ((props.RestFilt.length > 0) && (!props.RestFilt.includes(999)))
-            filter = filter + `&restrikeFilt=${props.RestFilt.join(',')}`
+    //Next Filter is Restrike Filter
+    if ((props.RestFilt.length > 0) && (!props.RestFilt.includes(999)))
+        filter = filter + `&restrikeFilt=${props.RestFilt.join(',')}`
 
-        //Next Filter is Switching Health Filter
-        if ((props.PISFilt.length > 0) && (!props.PISFilt.includes(999)))
-            filter = filter + `&switchingHealthFilt=${props.PISFilt.join(',')}`
+    //Next Filter is Switching Health Filter
+    if ((props.PISFilt.length > 0) && (!props.PISFilt.includes(999)))
+        filter = filter + `&switchingHealthFilt=${props.PISFilt.join(',')}`
 
-        //Next Filter is CB Health Filter
-        if ((props.HealthFilt.length > 0) && (!props.HealthFilt.includes(999)))
-            filter = filter + `&healthFilt=${props.HealthFilt.join(',')}`
+    //Next Filter is CB Health Filter
+    if ((props.HealthFilt.length > 0) && (!props.HealthFilt.includes(999)))
+        filter = filter + `&healthFilt=${props.HealthFilt.join(',')}`
 
-        //Next Filter is Phase Filter
-        if ((props.PhaseFilter.length > 0) && (!props.PhaseFilter.includes(999)))
-            filter = filter + `&phaseFilt=${props.PhaseFilter.join(',')}`
-        
-        return filter;
+    //Next Filter is Phase Filter
+    if ((props.PhaseFilter.length > 0) && (!props.PhaseFilter.includes(999)))
+        filter = filter + `&phaseFilt=${props.PhaseFilter.join(',')}`
+
+    return filter;
 };
 
 const CapBankReportPane = (props: CapBankReportNavBarProps) => {
@@ -202,8 +203,9 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
     const [selectedEvent, setSelectedEvent] = React.useState<number>(0);
     const [pointTable, setPointTable] = React.useState<{ title: string, content: JSX.Element }>(null);
     const [refreshKey, setRefreshKey] = React.useState<number>(0);
-    const eventTableHandle = React.useRef<JQuery.jqXHR>(null);
-    const trendHandle = React.useRef<JQuery.jqXHR>(null);
+    const [eventTableStatus, setEventTableStatus] = React.useState<Application.Types.Status>('uninitiated');
+    const [trendStatus, setTrendStatus] = React.useState<Application.Types.Status>('uninitiated');
+    const [updateCapBankStatus, setUpdateCapBankStatus] = React.useState<Application.Types.Status>('uninitiated');
 
     const { date, time, windowSize, timeWindowUnits } = props.TimeFilter;
     const filterString = getFilterString(props);
@@ -212,77 +214,49 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
         return [start.valueOf(), end.valueOf()];
     }, [date, time, windowSize, timeWindowUnits]);
 
-    const getData = React.useCallback(() => {
-        if (eventTableHandle.current != null)
-            eventTableHandle.current.abort();
-        if (trendHandle.current != null)
-            trendHandle.current.abort();
-
-        const eventTimeFrame = findAppropriateUnit(getMoment(date),
-            getStartEndTime(getMoment(date, time), windowSize, timeWindowUnits)[1], timeWindowUnits);
-        const trendTimeFrame = findAppropriateUnit(getMoment(date, time),
-            getStartEndTime(getMoment(date, time), windowSize, timeWindowUnits)[0], timeWindowUnits);
-
-        const eventRequest = $.ajax({
-            type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${props.CapBankID}&date=${date}` +
-                `&time=${time}&timeWindowunits=${eventTimeFrame[0]}&windowSize=${eventTimeFrame[1]}` +
-                `&bankNum=${props.selectedBank}` + filterString,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: false,
-            async: true
-        });
-        eventTableHandle.current = eventRequest;
-        eventRequest.done((data: ICBEvent[]) => {
-            if (eventTableHandle.current === eventRequest)
-                setEventData(data == null ? [] : data);
-        });
-
-        const trendRequest = $.ajax({
-            type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/GetTrend?capBankId=${props.CapBankID}&date=${date}` +
-                `&time=${time}&timeWindowunits=${trendTimeFrame[0]}&windowSize=${trendTimeFrame[1]}` +
-                `&bankNum=${props.selectedBank}` + filterString,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: false,
-            async: true
-        });
-        trendHandle.current = trendRequest;
-        trendRequest.done((data: ITrendDataSet) => {
-            if (data != null && trendHandle.current === trendRequest)
-                setTrendData(data);
-        });
-    }, [props.CapBankID, props.selectedBank, date, time, windowSize, timeWindowUnits, filterString]);
-
     React.useEffect(() => {
         if (props.CapBankID < 0)
             return;
 
-        getData();
+        const eventTimeFrame = findAppropriateUnit(getMoment(date), getStartEndTime(getMoment(date, time), windowSize, timeWindowUnits)[1], timeWindowUnits);
+        const trendTimeFrame = findAppropriateUnit(getMoment(date, time), getStartEndTime(getMoment(date, time), windowSize, timeWindowUnits)[0], timeWindowUnits);
 
-        return () => {
-            if (eventTableHandle.current != null)
-                eventTableHandle.current.abort();
-            if (trendHandle.current != null)
-                trendHandle.current.abort();
-        };
-    }, [props.CapBankID, getData, refreshKey]);
-
-    const updateCapBank = React.useCallback(() => {
-        const h = $.ajax({
-            type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/SetCapBank/${selectedEvent}/${selectedCapBank}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: false,
-            async: true
+        setEventTableStatus('loading');
+        const eventRequest = getEventTable(props.CapBankID, date, time, eventTimeFrame[0], eventTimeFrame[1], props.selectedBank, filterString);
+        eventRequest.done((data: ICBEvent[]) => {
+            setEventData(data == null ? [] : data);
+            setEventTableStatus('idle');
+        });
+        eventRequest.fail(() => {
+            setEventTableStatus('error');
         });
 
-        h.then(() => {
+        setTrendStatus('loading');
+        const trendRequest = getTrend(props.CapBankID, date, time, trendTimeFrame[0], trendTimeFrame[1], props.selectedBank, filterString);
+        trendRequest.done((data: ITrendDataSet) => {
+            if (data != null)
+                setTrendData(data);
+            setTrendStatus('idle');
+        });
+
+        trendRequest.fail(() => {
+            setTrendStatus('error');
+        });
+
+        return () => {
+            eventRequest?.abort();
+            trendRequest?.abort();
+        };
+    }, [props.CapBankID, props.selectedBank, date, time, windowSize, timeWindowUnits, filterString, refreshKey]);
+
+    const updateCapBank = React.useCallback(() => {
+        setUpdateCapBankStatus('loading');
+        const request = setCapBank(selectedEvent, selectedCapBank);
+        request.done(() => {
+            setUpdateCapBankStatus('idle');
             setRefreshKey(key => key + 1);
-        })
+        });
+        request.fail(() => setUpdateCapBankStatus('error'));
     }, [selectedEvent, selectedCapBank]);
 
     const createPointTable = (d: ITrendSeries[], title: string, unit: string) => {
@@ -317,98 +291,97 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
     };
 
     if (props.CapBankID == -1)
-         return null;
+        return null;
 
     const bankOptions = Array.from({ length: props.numBanks }, (_, i) => ({ Value: i + 1, Label: `${i + 1}` }));
 
     return (
-            <>
-                <Modal
-                    Title='Assign Event to a Capacitor Bank'
-                    ShowX={true}
-                    CallBack={(confirmed) => {
-                        setShowCapBankEdit(false);
-                        if (confirmed)
-                            setShowWarning(true);
-                    }}
-                    Show={showCapBankEdit}
-                    Size={'sm'}
-                    ShowCancel={false}
-                    ConfirmText={'Update'}
-                >
-                    <Select<{ selectedCapBank: number }>
-                        Record={{ selectedCapBank }}
-                        Field='selectedCapBank'
-                        Label='Capacitor Bank:'
-                        Setter={(record) => setSelectedCapBank(record.selectedCapBank)}
-                        Options={bankOptions}
-                    />
-                </Modal>
-                <Modal
-                    Title={pointTable == null ? '' : pointTable.title}
-                    Show={pointTable != null}
-                    ShowX={true}
-                    CallBack={() => setPointTable(null)}
-                    ShowCancel={false}
-                    ConfirmText={'Close'}
-                    Size={'xlg'}
-                >
-                    {pointTable == null ? null : pointTable.content}
-                </Modal>
-                <Warning
-                    Show={showWarning}
-                    Title={'Confirm Capacitor Bank Assignment'}
-                    Message={'The Capacitor Bank manually assigned to this event can not be changed in the future. Are you sure you want to continue?'}
-                    CallBack={(confirmed) => { setShowWarning(false); if (confirmed) updateCapBank(); else setShowCapBankEdit(true); }}
+        <>
+            <Modal
+                Title='Assign Event to a Capacitor Bank'
+                ShowX={true}
+                CallBack={(confirmed) => {
+                    setShowCapBankEdit(false);
+                    if (confirmed)
+                        setShowWarning(true);
+                }}
+                Show={showCapBankEdit}
+                Size={'sm'}
+                ShowCancel={false}
+                ConfirmText={'Update'}
+            >
+                <Select<{ selectedCapBank: number }>
+                    Record={{ selectedCapBank }}
+                    Field='selectedCapBank'
+                    Label='Capacitor Bank:'
+                    Setter={(record) => setSelectedCapBank(record.selectedCapBank)}
+                    Options={bankOptions}
                 />
-                <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
-                    {plotConfigs.map(cfg =>
-                        trendData[cfg.field].length > 0 ?
-                            <div className="card" key={cfg.field}>
-                                <div className="card-header">{cfg.title}</div>
-                                <div className="card-body">
-                                    <Plot
-                                        height={250}
-                                        width={innerWidth - 345}
-                                        showBorder={false}
-                                        defaultTdomain={[Tstart, Tend]}
-                                        legend={'bottom'}
-                                        Tlabel={'Time'}
-                                        Ylabel={cfg.ylabel}
-                                        showMouse={true}
-                                        useMetricFactors={cfg.useMetricFactors}
-                                        onDataInspect={() => createPointTable(trendData[cfg.field], cfg.title, cfg.unit)}
-                                    >
-                                        {trendData[cfg.field].map((s, i) => <Line
-                                            highlightHover={true}
-                                            showPoints={true}
-                                            lineStyle={s.lineStyle}
-                                            color={s.color}
-                                            data={s.data}
-                                            legend={s.label}
-                                            key={i}
-                                        />)}
-                                    </Plot>
-                                </div>
-                            </div> : null
-                    )}
+            </Modal>
+            <Modal
+                Title={pointTable == null ? '' : pointTable.title}
+                Show={pointTable != null}
+                ShowX={true}
+                CallBack={() => setPointTable(null)}
+                ShowCancel={false}
+                ConfirmText={'Close'}
+                Size={'xlg'}
+            >
+                {pointTable == null ? null : pointTable.content}
+            </Modal>
+            <Warning
+                Show={showWarning}
+                Title={'Confirm Capacitor Bank Assignment'}
+                Message={'The Capacitor Bank manually assigned to this event can not be changed in the future. Are you sure you want to continue?'}
+                CallBack={(confirmed) => { setShowWarning(false); if (confirmed) updateCapBank(); else setShowCapBankEdit(true); }}
+            />
+            <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
+                {plotConfigs.map(cfg =>
+                    trendData[cfg.field].length > 0 ?
+                        <div className="card" key={cfg.field}>
+                            <div className="card-header">{cfg.title}</div>
+                            <div className="card-body">
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={cfg.ylabel}
+                                    showMouse={true}
+                                    useMetricFactors={cfg.useMetricFactors}
+                                    onDataInspect={() => createPointTable(trendData[cfg.field], cfg.title, cfg.unit)}
+                                >
+                                    {trendData[cfg.field].map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
+                                </Plot>
+                            </div>
+                        </div> : null
+                )}
 
-
-                    <div className="card">
-                        <div className="card-header">Capacitor Bank Analytic Event Overview</div>
-                        <div className="card-body">
-                            <table className="table">
-                                <thead>
-                                    <EventHeader showEdit={props.selectedBank == -2} />
-                                </thead>
-                                <tbody>
-                                    {eventData.map(row => EventRow(row, props.selectedBank == -2, (eventID) => { setShowCapBankEdit(true); setSelectedEvent(eventID); setSelectedCapBank(1); }))}
-                                </tbody>
-                            </table>
-                        </div>
+                <div className="card">
+                    <div className="card-header">Capacitor Bank Analytic Event Overview</div>
+                    <div className="card-body">
+                        <table className="table">
+                            <thead>
+                                <EventHeader showEdit={props.selectedBank == -2} />
+                            </thead>
+                            <tbody>
+                                {eventData.map(row => EventRow(row, props.selectedBank == -2, (eventID) => { setShowCapBankEdit(true); setSelectedEvent(eventID); setSelectedCapBank(1); }))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </>
+            </div>
+        </>
     );
 };
 
@@ -435,7 +408,7 @@ const EventRow = (row: ICBEvent, showEdit: boolean, onEdit: (eventID: number) =>
 const EventHeader = (props: { showEdit: boolean }) => {
     return (
         <tr key='Header'>
-            {props.showEdit? <th key="Edit"> </th> : null}
+            {props.showEdit ? <th key="Edit"> </th> : null}
             <th key='Time'>Time</th>
             <th key='Phase'>Phase</th>
             <th key='Status'>Analysis Status</th>
@@ -447,3 +420,37 @@ const EventHeader = (props: { showEdit: boolean }) => {
         </tr>
     );
 }
+
+const getEventTable = (capBankId: number, date: string, time: string, timeWindowUnits: number, windowSize: number, bankNum: number, filterString: string): JQuery.jqXHR<ICBEvent[]> =>
+    $.ajax({
+        type: "GET",
+        url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${capBankId}&date=${date}` +
+            `&time=${time}&timeWindowunits=${timeWindowUnits}&windowSize=${windowSize}` +
+            `&bankNum=${bankNum}` + filterString,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        cache: false,
+        async: true
+    });
+
+const getTrend = (capBankId: number, date: string, time: string, timeWindowUnits: number, windowSize: number, bankNum: number, filterString: string): JQuery.jqXHR<ITrendDataSet> =>
+    $.ajax({
+        type: "GET",
+        url: `${homePath}api/PQDashboard/CapBankReport/GetTrend?capBankId=${capBankId}&date=${date}` +
+            `&time=${time}&timeWindowunits=${timeWindowUnits}&windowSize=${windowSize}` +
+            `&bankNum=${bankNum}` + filterString,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        cache: false,
+        async: true
+    });
+
+const setCapBank = (eventId: number, capBankId: number): JQuery.jqXHR =>
+    $.ajax({
+        type: "GET",
+        url: `${homePath}api/PQDashboard/CapBankReport/SetCapBank/${eventId}/${capBankId}`,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        cache: false,
+        async: true
+    });
