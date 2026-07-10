@@ -121,30 +121,46 @@ const DERAnalysisReportPane = (props: DERAnalysisReportPaneProps) => {
                     >
                         <Column<DERAnalyticResult>
                             Key="Time" Field="Time"
-                            Content={row => moment(row.item.Time).format(momentDateFormat + ' ' + momentTimeFormat) }
-                        >Time</Column>
+                            Content={row => moment(row.item.Time).format(momentDateFormat + ' ' + momentTimeFormat)}
+                        >
+                            Time
+                        </Column>
                         <Column<DERAnalyticResult>
                             Key="Meter" Field="Meter"
-                        >Meter</Column>
+                        >
+                            Meter
+                        </Column>
                         <Column<DERAnalyticResult>
                             Key="Asset" Field="Asset"
-                        >Asset</Column>
+                        >
+                            Asset
+                        </Column>
                         <Column<DERAnalyticResult>
                             Key="Channel" Field="Channel"
-                        >Channel</Column>
+                        >
+                            Channel
+                        </Column>
                         <Column<DERAnalyticResult>
                             Key="Regulation" Field="Regulation"
-                        >Regulation</Column>
+                        >
+                            Regulation
+                        </Column>
                         <Column<DERAnalyticResult>
                             Key="Parameter" Field="Parameter"
-                        >Parameter</Column>
+                        >
+                            Parameter
+                        </Column>
                         <Column<DERAnalyticResult>
                             Key="Threshold" Field="Threshold"
-                        >Threshold</Column>
+                        >
+                            Threshold
+                        </Column>
                         <Column<DERAnalyticResult>
                             Key="Value" Field="Value"
                             Content={row => row.item.Value.toFixed(2)}
-                        >Value</Column>
+                        >
+                            Value
+                        </Column>
                     </Table>
                 </div>
             </div>
@@ -162,46 +178,12 @@ const DERAnalysisReportPane = (props: DERAnalysisReportPaneProps) => {
                 <div><h6>Parameter: {selectedData?.Parameter ?? ''}</h6></div>
                 <Graph {...selectedData} />
             </Modal>
-
-            <div className="modal" id="epriModal">
-                <div className="modal-dialog modal-lg">
-                    <div className="modal-content">
-
-                        <div className="modal-header">
-                            <button type="button" className="close" data-dismiss="modal">&times;</button>
-                        </div>
-                        <div className="modal-body">
-                            <img src={`${homePath}Images/EPRILogo.jpeg` }/>
-                            <div>Software Title DER Operation Version #0</div>
-                            <div>Electric Power Research Institute (EPRI)</div>
-                            <div>3420 Hillview Ave.</div>
-                            <div>Palo Alto, CA 94304</div>
-                            <br/>
-                            <div>Copyright © 2021 Electric Power Research Institute, Inc. All rights reserved.</div>
-                            <br />
-                            <div>As a user of this EPRI preproduction software, you accept and acknowledge that:</div>
-                            <ul>
-                                <li>This software is a preproduction version which may have problems that could potentially harm your system</li>
-                                <li>To satisfy the terms and conditions of the Master License Agreement or Preproduction License Agreement between EPRI and your company, you understand what to do with this preproduction product after the preproduction review period has expired</li>
-                                <li>Reproduction or distribution of this preproduction software is in violation of the terms and conditions of the Master License Agreement or Preproduction License Agreement currently in place between EPRI and your company</li>
-                                <li>Your company's funding will determine if you have the rights to the final production release of this product</li>
-                                <li>EPRI will evaluate all tester suggestions and recommendations, but does not guarantee they will be incorporated into the final production product</li>
-                                <li>As a preproduction tester, you agree to provide feedback as a condition of obtaining the preproduction software</li>
-                            </ul>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-danger" data-dismiss="modal">Close</button>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
         </>
     );
 }
 
 const Graph = (props: DERAnalyticResult) => {
-    const [data, setData] = React.useState<[number,number][]>([]);
+    const [data, setData] = React.useState<[number, number][]>([]);
 
     React.useEffect(() => {
         if (props.ID == undefined) return;
