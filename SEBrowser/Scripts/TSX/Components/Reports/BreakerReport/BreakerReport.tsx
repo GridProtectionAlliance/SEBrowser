@@ -26,6 +26,7 @@ import * as queryString from 'querystring';
 const momentDateFormat = "MM/DD/YYYY";
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Alert } from '@gpa-gemstone/react-interactive';
 
 declare let homePath: string;
 
@@ -67,13 +68,12 @@ const BreakerReport = () => {
     }
 
     const link = `${homePath}api/BreakerReport/${(breaker == '0' ? `AllBreakersReport?` : `IndividualBreakerReport?breakerId=${breaker}&`)}startDate=${fromDate}&endDate=${toDate}`;
+    // The PDF generation library used by this report is not supported on .NET 9, so the report is
+    // disabled until a replacement is found.
     return (
-        <div style={{ width: '100%', height: '100%' }}>
-            <BreakerReportNavbar toDate={toDate} fromDate={fromDate} breaker={breaker} stateSetter={setState} />
-            <div style={{ width: '100%', height: 'calc( 100% - 163px)' }}>
-                <embed style={{ width: 'inherit', height: 'inherit', position: 'absolute' }} id="pdfContent" src={link} key={link} type="application/pdf" />
-            </div>
-        </div>
+        <Alert Class="alert-danger" Style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            Breaker Report is currently unavailable.
+        </Alert>
     );
 }
 
