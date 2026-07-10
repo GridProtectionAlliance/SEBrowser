@@ -24,7 +24,6 @@ import * as React from 'react';
 import moment from 'moment';
 
 import { CapBankReportNavBarProps } from './CapBankReportNavBar';
-import _, { cloneDeep } from 'lodash';
 import { Warning, Modal } from '@gpa-gemstone/react-interactive';
 import { Plot, Line } from '@gpa-gemstone/react-graph'
 import { findAppropriateUnit, getMoment, getStartEndTime } from '../../EventSearch/TimeWindowUtils';
@@ -72,21 +71,6 @@ interface ITrendDataSet {
     Unbalance: Array<ITrendSeries>,
 }
 
-interface ICapBankReportPaneState {
-    EventData: Array<ICBEvent>,
-    TrendData: ITrendDataSet,
-    Tstart: number,
-    Tend: number,
-    ShowWarning: boolean,
-    ShowCapBankEdit: boolean,
-    SelectedCapBank: number,
-    SelectedEvent: number,
-    ShowTable: boolean,
-    TableContent: JSX.Element,
-    TableTitle: string
-}
-
-
 interface ICBEvent {
     ID: number,
     Time: string
@@ -100,163 +84,154 @@ interface ICBEvent {
     PreInsertionSwitch: string
 }
 
+const emptyTrendData: ITrendDataSet = {
+    DeltaQ: [],
+    Irms: [],
+    DeltaIrms: [],
+    Vrms: [],
+    DeltaVrms: [],
+    Q: [],
+    Freq: [],
+    THDI: [],
+    DeltaTHDI: [],
+    THDV: [],
+    DeltaTHDV: [],
+    SwitchingFreq: [],
+    PeakV: [],
+    Xcap: [],
+    DeltaXcap: [],
+    RestrikeDuration: [],
+    RestrikeI: [],
+    RestrikeV: [],
+    PISDuration: [],
+    PISZ: [],
+    PISI: [],
+    KFactor: [],
+    RelaydV: [],
+    RelayXLV: [],
+    RelayV: [],
+    RelayXV: [],
+    Ineutral: [],
+    BusZ: [],
+    BusV: [],
+    Unbalance: []
+};
 
-export default class CapBankReportPane extends React.Component<CapBankReportNavBarProps, ICapBankReportPaneState> {
-   
-    eventTableHandle: JQuery.jqXHR;
-    trendHandle: JQuery.jqXHR;
-
-    constructor(props, context) {
-        super(props, context);
-
-        this.state = {
-            EventData: [],
-            TrendData: {
-                DeltaQ: [],
-                Irms: [],
-                DeltaIrms: [],
-                Vrms: [],
-                DeltaVrms: [],
-                Q: [],
-                Freq: [],
-                THDI: [],
-                DeltaTHDI: [],
-                THDV: [],
-                DeltaTHDV: [],
-                SwitchingFreq: [],
-                PeakV: [],
-                Xcap: [],
-                DeltaXcap: [],
-                RestrikeDuration: [],
-                RestrikeI: [],
-                RestrikeV: [],
-                PISDuration: [],
-                PISZ: [],
-                PISI: [],
-                KFactor: [],
-                RelaydV: [],
-                RelayXLV: [],
-                RelayV: [],
-                RelayXV: [],
-                Ineutral: [],
-                BusZ: [],
-                BusV: [],
-                Unbalance: []
-
-            },
-            Tstart: 0,
-            Tend: 0,
-            ShowWarning: false,
-            ShowCapBankEdit: false,
-            SelectedCapBank: 1,
-            SelectedEvent: 0,
-            ShowTable: false,
-            TableContent: null,
-            TableTitle: ''
-        };
-
-        
-    }
-
-
-    componentDidMount() {
-        if (this.props.CapBankID >= 0)
-            this.getData();
-    }
-
-    componentDidUpdate(oldProps: CapBankReportNavBarProps) {
-        const newProps = _.clone(this.props);
-        if (!_.isEqual(newProps, oldProps) && newProps.CapBankID >= 0) {
-            this.getData();
-            this.getTimeLimits()
-        }
-            
-    }
-
-    getFilterString() {
+const getFilterString = (props: CapBankReportNavBarProps) => {
         let filter = "";
 
         //First Filter is Resonance
-        if (this.props.ResFilt.length > 0)
-            filter = `&resFilt=${this.props.ResFilt.join(',')}`
+        if (props.ResFilt.length > 0)
+            filter = `&resFilt=${props.ResFilt.join(',')}`
 
         //Next Filter is CapBankStatus
-        if ((this.props.StatFilt.length > 0) && (!this.props.StatFilt.includes(999)))
-            filter = filter + `&statFilt=${this.props.StatFilt.join(',')}`
+        if ((props.StatFilt.length > 0) && (!props.StatFilt.includes(999)))
+            filter = filter + `&statFilt=${props.StatFilt.join(',')}`
 
         //Next Filter is Operation
-        if ((this.props.OpFilt.length > 0) && (!this.props.OpFilt.includes(999)))
-            filter = filter + `&operationFilt=${this.props.OpFilt.join(',')}`
+        if ((props.OpFilt.length > 0) && (!props.OpFilt.includes(999)))
+            filter = filter + `&operationFilt=${props.OpFilt.join(',')}`
 
         //Next Filter is Restrike Filter
-        if ((this.props.RestFilt.length > 0) && (!this.props.RestFilt.includes(999)))
-            filter = filter + `&restrikeFilt=${this.props.RestFilt.join(',')}`
+        if ((props.RestFilt.length > 0) && (!props.RestFilt.includes(999)))
+            filter = filter + `&restrikeFilt=${props.RestFilt.join(',')}`
 
         //Next Filter is Switching Health Filter
-        if ((this.props.PISFilt.length > 0) && (!this.props.PISFilt.includes(999)))
-            filter = filter + `&switchingHealthFilt=${this.props.PISFilt.join(',')}`
+        if ((props.PISFilt.length > 0) && (!props.PISFilt.includes(999)))
+            filter = filter + `&switchingHealthFilt=${props.PISFilt.join(',')}`
 
         //Next Filter is CB Health Filter
-        if ((this.props.HealthFilt.length > 0) && (!this.props.HealthFilt.includes(999)))
-            filter = filter + `&healthFilt=${this.props.HealthFilt.join(',')}`
+        if ((props.HealthFilt.length > 0) && (!props.HealthFilt.includes(999)))
+            filter = filter + `&healthFilt=${props.HealthFilt.join(',')}`
 
         //Next Filter is Phase Filter
-        if ((this.props.PhaseFilter.length > 0) && (!this.props.PhaseFilter.includes(999)))
-            filter = filter + `&phaseFilt=${this.props.PhaseFilter.join(',')}`
+        if ((props.PhaseFilter.length > 0) && (!props.PhaseFilter.includes(999)))
+            filter = filter + `&phaseFilt=${props.PhaseFilter.join(',')}`
         
         return filter;
-    }
+};
 
-    getEventTableData(): JQuery.jqXHR {
-        if (this.eventTableHandle !== undefined)
-            this.eventTableHandle.abort();
+const CapBankReportPane = (props: CapBankReportNavBarProps) => {
+    const [eventData, setEventData] = React.useState<ICBEvent[]>([]);
+    const [trendData, setTrendData] = React.useState<ITrendDataSet>(emptyTrendData);
+    const [showWarning, setShowWarning] = React.useState<boolean>(false);
+    const [showCapBankEdit, setShowCapBankEdit] = React.useState<boolean>(false);
+    const [selectedCapBank, setSelectedCapBank] = React.useState<number>(1);
+    const [selectedEvent, setSelectedEvent] = React.useState<number>(0);
+    const [pointTable, setPointTable] = React.useState<{ title: string, content: JSX.Element }>(null);
+    const [refreshKey, setRefreshKey] = React.useState<number>(0);
+    const eventTableHandle = React.useRef<JQuery.jqXHR>(null);
+    const trendHandle = React.useRef<JQuery.jqXHR>(null);
 
-        const adjustedTimeFrame = findAppropriateUnit(getMoment(this.props.TimeFilter.date),
-            getStartEndTime(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time), this.props.TimeFilter.windowSize, this.props.TimeFilter.timeWindowUnits)[1],
-            this.props.TimeFilter.timeWindowUnits);
+    const { date, time, windowSize, timeWindowUnits } = props.TimeFilter;
+    const filterString = getFilterString(props);
+    const [Tstart, Tend] = React.useMemo(() => {
+        const [start, end] = getStartEndTime(getMoment(date, time), windowSize, timeWindowUnits);
+        return [start.valueOf(), end.valueOf()];
+    }, [date, time, windowSize, timeWindowUnits]);
 
-        this.eventTableHandle = $.ajax({
+    const getData = React.useCallback(() => {
+        if (eventTableHandle.current != null)
+            eventTableHandle.current.abort();
+        if (trendHandle.current != null)
+            trendHandle.current.abort();
+
+        const eventTimeFrame = findAppropriateUnit(getMoment(date),
+            getStartEndTime(getMoment(date, time), windowSize, timeWindowUnits)[1], timeWindowUnits);
+        const trendTimeFrame = findAppropriateUnit(getMoment(date, time),
+            getStartEndTime(getMoment(date, time), windowSize, timeWindowUnits)[0], timeWindowUnits);
+
+        const eventRequest = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${this.props.CapBankID}&date=${this.props.TimeFilter.date}` +
-                `&time=${this.props.TimeFilter.time}&timeWindowunits=${adjustedTimeFrame[0]}&windowSize=${adjustedTimeFrame[1]}` +
-                `&bankNum=${this.props.selectedBank}` + this.getFilterString(),
+            url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${props.CapBankID}&date=${date}` +
+                `&time=${time}&timeWindowunits=${eventTimeFrame[0]}&windowSize=${eventTimeFrame[1]}` +
+                `&bankNum=${props.selectedBank}` + filterString,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,
             async: true
         });
-
-        return this.eventTableHandle;
-    }
-
-   
-    getData() {
-        this.getEventTableData().then(data => {
-            
-            if (data == null) {
-                this.setState({EventData: []})
-                return;
-            }
-            this.setState({ EventData: data })
+        eventTableHandle.current = eventRequest;
+        eventRequest.done((data: ICBEvent[]) => {
+            if (eventTableHandle.current === eventRequest)
+                setEventData(data == null ? [] : data);
         });
 
-        
-
-        this.getTrendData().then(data => {
-
-            if (data == null) {
-                return;
-            }
-            this.setState({ TrendData: data });
+        const trendRequest = $.ajax({
+            type: "GET",
+            url: `${homePath}api/PQDashboard/CapBankReport/GetTrend?capBankId=${props.CapBankID}&date=${date}` +
+                `&time=${time}&timeWindowunits=${trendTimeFrame[0]}&windowSize=${trendTimeFrame[1]}` +
+                `&bankNum=${props.selectedBank}` + filterString,
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            cache: false,
+            async: true
         });
+        trendHandle.current = trendRequest;
+        trendRequest.done((data: ITrendDataSet) => {
+            if (data != null && trendHandle.current === trendRequest)
+                setTrendData(data);
+        });
+    }, [props.CapBankID, props.selectedBank, date, time, windowSize, timeWindowUnits, filterString]);
 
-       
-    }
+    React.useEffect(() => {
+        if (props.CapBankID < 0)
+            return;
 
-    updateCapBank() {
+        getData();
+
+        return () => {
+            if (eventTableHandle.current != null)
+                eventTableHandle.current.abort();
+            if (trendHandle.current != null)
+                trendHandle.current.abort();
+        };
+    }, [props.CapBankID, getData, refreshKey]);
+
+    const updateCapBank = React.useCallback(() => {
         const h = $.ajax({
             type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/SetCapBank/${this.state.SelectedEvent}/${this.state.SelectedCapBank}`,
+            url: `${homePath}api/PQDashboard/CapBankReport/SetCapBank/${selectedEvent}/${selectedCapBank}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             cache: false,
@@ -264,11 +239,11 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
         });
 
         h.then(() => {
-            this.getData();
+            setRefreshKey(key => key + 1);
         })
-    }
+    }, [selectedEvent, selectedCapBank]);
 
-    createPointTable(d: ITrendSeries[], title: string, unit: string) {
+    const createPointTable = (d: ITrendSeries[], title: string, unit: string) => {
 
         let indices = d.map(() => 0);
         const rows = [];
@@ -296,345 +271,887 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
             </table>
         </div>
 
-        this.setState({ ShowTable: true, TableTitle: title, TableContent: content });
-    }
+        setPointTable({ title, content });
+    };
 
-    render() {
-        if (this.props.CapBankID == -1) return <div></div>;
+    if (props.CapBankID == -1) return <div></div>;
 
 
         const bankOptions = [];
         let i;
-        for (i = 0; i < this.props.numBanks; i++) {
+        for (i = 0; i < props.numBanks; i++) {
             bankOptions.push(<option key={i} value={i + 1}> {i + 1} </option>)
         }
 
-        return (
+    return (
             <>
-                <Modal Title='Assign Event to a Capacitor Bank' ShowX={true} CallBack={(confirmed) => { if (!confirmed) this.setState({ ShowCapBankEdit: false }); else this.setState({ ShowCapBankEdit: false, ShowWarning: true }); }} Show={this.state.ShowCapBankEdit} Size={'sm'} ShowCancel={false} ConfirmText={'Update'} >
+                <Modal
+                    Title='Assign Event to a Capacitor Bank'
+                    ShowX={true}
+                    CallBack={(confirmed) => {
+                        setShowCapBankEdit(false);
+                        if (confirmed)
+                            setShowWarning(true);
+                    }}
+                    Show={showCapBankEdit}
+                    Size={'sm'}
+                    ShowCancel={false}
+                    ConfirmText={'Update'}
+                >
                     <form>
                         <label style={{ width: '100%', position: 'relative', float: "left" }}>Capacitor Bank: </label>
                         <div className="form-group" style={{ height: 30 }}>
                             <select style={{ height: 35, width: 'calc(98%)', position: 'relative', float: "left", border: '1px solid #ced4da', borderRadius: '.25em' }} onChange={(e) => {
-                                this.setState({ SelectedCapBank: (e.target as any).value });
-                            }} value={this.state.SelectedCapBank}>
+                                setSelectedCapBank(Number(e.target.value));
+                            }} value={selectedCapBank}>
                                 {bankOptions}
                             </select>
                         </div>
                     </form>
                 </Modal>
-                <Modal Title={this.state.TableTitle} Show={this.state.ShowTable} ShowX={true} CallBack={() => this.setState({ ShowTable: false })} ShowCancel={false} ConfirmText={'Close'} Size={'xlg'}>
-                    {this.state.TableContent}
+                <Modal
+                    Title={pointTable == null ? '' : pointTable.title}
+                    Show={pointTable != null}
+                    ShowX={true}
+                    CallBack={() => setPointTable(null)}
+                    ShowCancel={false}
+                    ConfirmText={'Close'}
+                    Size={'xlg'}
+                >
+                    {pointTable == null ? null : pointTable.content}
                 </Modal>
-                <Warning Show={this.state.ShowWarning} Title={'Confirm Capacitor Bank Assignment'} Message={'The Capacitor Bank manually assigned to this event can not be changed in the future. Are you sure you want to continue?'}
-                    CallBack={(confirmed) => { this.setState({ ShowWarning: false }); if (confirmed) this.updateCapBank(); else this.setState({ ShowCapBankEdit: true });}} />
+                <Warning
+                    Show={showWarning}
+                    Title={'Confirm Capacitor Bank Assignment'}
+                    Message={'The Capacitor Bank manually assigned to this event can not be changed in the future. Are you sure you want to continue?'}
+                    CallBack={(confirmed) => { setShowWarning(false); if (confirmed) updateCapBank(); else setShowCapBankEdit(true); }}
+                />
                 <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'scroll' }}>
-                    {(this.state.TrendData.Q.length > 0 ?
+                    {(trendData.Q.length > 0 ?
                         <div className="card">
                             <div className="card-header">Short Circuit Power</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'Short Circuit Power (MVA)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.Q, 'Short Circuit Power', '(MVA)')}>
-                                    {this.state.TrendData.Q.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Short Circuit Power (MVA)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.Q, 'Short Circuit Power', '(MVA)')}
+                                >
+                                    {trendData.Q.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
 
-                    {(this.state.TrendData.DeltaQ.length > 0?
+                    {(trendData.DeltaQ.length > 0?
                     <div className="card">
                         <div className="card-header">Change in Q</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'Delta Q (kVAR)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaQ, 'Change in Q','(MVA)')}>
-                                    {this.state.TrendData.DeltaQ.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Delta Q (kVAR)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.DeltaQ, 'Change in Q','(MVA)')}
+                                >
+                                    {trendData.DeltaQ.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
 
 
-                    {(this.state.TrendData.Irms.length > 0 ?
+                    {(trendData.Irms.length > 0 ?
                         <div className="card">
                             <div className="card-header">RMS Current</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'I RMS (A)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.Irms, 'RMS Current','(A)')}>
-                                    {this.state.TrendData.Irms.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'I RMS (A)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.Irms, 'RMS Current','(A)')}
+                                >
+                                    {trendData.Irms.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.DeltaIrms.length > 0 ?
+                    {(trendData.DeltaIrms.length > 0 ?
                         <div className="card">
                             <div className="card-header">Change in RMS Current</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'Delta I RMS (A)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaIrms, 'Change in RMS Current','(A)')}>
-                                    {this.state.TrendData.DeltaIrms.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Delta I RMS (A)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.DeltaIrms, 'Change in RMS Current','(A)')}
+                                >
+                                    {trendData.DeltaIrms.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.Vrms.length > 0 ?
+                    {(trendData.Vrms.length > 0 ?
                         <div className="card">
                             <div className="card-header">RMS Voltage</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'V RMS (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.Vrms, 'RMS Voltage','(%)')}>
-                                    {this.state.TrendData.Vrms.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'V RMS (%)'}
+                                    showMouse={true}
+                                    useMetricFactors={false}
+                                    onDataInspect={() => createPointTable(trendData.Vrms, 'RMS Voltage','(%)')}
+                                >
+                                    {trendData.Vrms.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.DeltaVrms.length > 0 ?
+                    {(trendData.DeltaVrms.length > 0 ?
                         <div className="card">
                             <div className="card-header">Change in RMS Voltage</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Delta V RMS (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaVrms, 'Change in RMS Voltage','(%)')}>
-                                    {this.state.TrendData.DeltaVrms.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Delta V RMS (%)'}
+                                    showMouse={true}
+                                    useMetricFactors={false}
+                                    onDataInspect={() => createPointTable(trendData.DeltaVrms, 'Change in RMS Voltage','(%)')}
+                                >
+                                    {trendData.DeltaVrms.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.Freq.length > 0 ?
+                    {(trendData.Freq.length > 0 ?
                         <div className="card">
                             <div className="card-header">Resonance Frequency</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Res. Freq. (Hz)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.Freq, 'Resonance Frequency','(Hz)')}>
-                                    {this.state.TrendData.Freq.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Res. Freq. (Hz)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.Freq, 'Resonance Frequency','(Hz)')}
+                                >
+                                    {trendData.Freq.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
 
-                    {(this.state.TrendData.PeakV.length > 0 ?
+                    {(trendData.PeakV.length > 0 ?
                         <div className="card">
                             <div className="card-header">Peak Voltage</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'Voltage peak (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.PeakV, 'Peak Voltage','(%)')}>
-                                    {this.state.TrendData.PeakV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Voltage peak (%)'}
+                                    showMouse={true}
+                                    useMetricFactors={false}
+                                    onDataInspect={() => createPointTable(trendData.PeakV, 'Peak Voltage','(%)')}
+                                >
+                                    {trendData.PeakV.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.THDV.length > 0 ?
+                    {(trendData.THDV.length > 0 ?
                         <div className="card">
                             <div className="card-header">Voltage THD</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'THD (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.THDV, 'Voltage THD','(%)')}>
-                                    {this.state.TrendData.THDV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'THD (%)'}
+                                    showMouse={true}
+                                    useMetricFactors={false}
+                                    onDataInspect={() => createPointTable(trendData.THDV, 'Voltage THD','(%)')}
+                                >
+                                    {trendData.THDV.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
 
-                    {(this.state.TrendData.DeltaTHDV.length > 0 ?
+                    {(trendData.DeltaTHDV.length > 0 ?
                         <div className="card">
                             <div className="card-header">Change in Voltage THD</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'Delta THD (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaTHDV, 'Change in Voltage THD','(%)')}>
-                                    {this.state.TrendData.DeltaTHDV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Delta THD (%)'}
+                                    showMouse={true}
+                                    useMetricFactors={false}
+                                    onDataInspect={() => createPointTable(trendData.DeltaTHDV, 'Change in Voltage THD','(%)')}
+                                >
+                                    {trendData.DeltaTHDV.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.THDI.length > 0 ?
+                    {(trendData.THDI.length > 0 ?
                         <div className="card">
                             <div className="card-header">Current THD</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'THD (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.THDI, 'Current THD','(%)')}>
-                                    {this.state.TrendData.THDI.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'THD (%)'}
+                                    showMouse={true}
+                                    useMetricFactors={false}
+                                    onDataInspect={() => createPointTable(trendData.THDI, 'Current THD','(%)')}
+                                >
+                                    {trendData.THDI.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
 
-                    {(this.state.TrendData.DeltaTHDI.length > 0 ?
+                    {(trendData.DeltaTHDI.length > 0 ?
                         <div className="card">
                             <div className="card-header">Change in Current THD</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Delta THD (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.THDI, 'Change in Current THD','(%)')}>
-                                    {this.state.TrendData.DeltaTHDI.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Delta THD (%)'}
+                                    showMouse={true}
+                                    useMetricFactors={false}
+                                    onDataInspect={() => createPointTable(trendData.THDI, 'Change in Current THD','(%)')}
+                                >
+                                    {trendData.DeltaTHDI.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.SwitchingFreq.length > 0 ?
+                    {(trendData.SwitchingFreq.length > 0 ?
                         <div className="card">
                             <div className="card-header">Switching Frequency</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Switching Freq. (Hz)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.SwitchingFreq, 'Switching Frequency','(Hz)')}>
-                                    {this.state.TrendData.SwitchingFreq.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Switching Freq. (Hz)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.SwitchingFreq, 'Switching Frequency','(Hz)')}
+                                >
+                                    {trendData.SwitchingFreq.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.Xcap.length > 0 ?
+                    {(trendData.Xcap.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Impedance</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Impedance (Ohm)'}
-                                    showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.Xcap, 'Capacitor Bank Impedance','(Ohm)')}>
-                                    {this.state.TrendData.Xcap.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Impedance (Ohm)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.Xcap, 'Capacitor Bank Impedance','(Ohm)')}
+                                >
+                                    {trendData.Xcap.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.DeltaXcap.length > 0 ?
+                    {(trendData.DeltaXcap.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Impedance Change</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Impedance (Ohm)'}
-                                    showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.DeltaXcap, 'Capacitor Bank Impedance Change','(Ohm)')}>
-                                    {this.state.TrendData.DeltaXcap.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Impedance (Ohm)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.DeltaXcap, 'Capacitor Bank Impedance Change','(Ohm)')}
+                                >
+                                    {trendData.DeltaXcap.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
 
-                    {(this.state.TrendData.RestrikeDuration.length > 0 ?
+                    {(trendData.RestrikeDuration.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Restrike Duration</div>
                                 <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Duration (cycles)'}
-                                    onDataInspect={() => this.createPointTable(this.state.TrendData.RestrikeDuration, 'Capacitor Bank Restrike Duration','(cycles)')} showMouse={true}>
-                                    {this.state.TrendData.RestrikeDuration.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Duration (cycles)'}
+                                    onDataInspect={() => createPointTable(trendData.RestrikeDuration, 'Capacitor Bank Restrike Duration','(cycles)')}
+                                    showMouse={true}
+                                >
+                                    {trendData.RestrikeDuration.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.RestrikeI.length > 0 ?
+                    {(trendData.RestrikeI.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Restrike Current Peak</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Current Peak (kA)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RestrikeI, 'Capacitor Bank Restrike Current Peak','(kA)')}>
-                                    {this.state.TrendData.RestrikeI.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Current Peak (kA)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.RestrikeI, 'Capacitor Bank Restrike Current Peak','(kA)')}
+                                >
+                                    {trendData.RestrikeI.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.RestrikeV.length > 0 ?
+                    {(trendData.RestrikeV.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Restrike Voltage Peak</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Voltage Peak (kV)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RestrikeV, 'Capacitor Bank Restrike Voltage Peak','(kV)')}>
-                                    {this.state.TrendData.RestrikeV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Voltage Peak (kV)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.RestrikeV, 'Capacitor Bank Restrike Voltage Peak','(kV)')}
+                                >
+                                    {trendData.RestrikeV.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                           </div>
                         </div> : null)}
 
-                    {(this.state.TrendData.PISDuration.length > 0 ?
+                    {(trendData.PISDuration.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Pre-Insertion Switching Duration</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Duration (cycles)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.PISDuration, 'Capacitor Bank Pre-Insertion Switching Duration','(cycles)')}>
-                                    {this.state.TrendData.PISDuration.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Duration (cycles)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.PISDuration, 'Capacitor Bank Pre-Insertion Switching Duration','(cycles)')}
+                                >
+                                    {trendData.PISDuration.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.PISZ.length > 0 ?
+                    {(trendData.PISZ.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Pre-Insertion Switching Impedance</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Impedance (Ohm)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.PISZ, 'Capacitor Bank Pre-Insertion Switching Impedance','(Ohm)')}>
-                                    {this.state.TrendData.PISZ.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Impedance (Ohm)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.PISZ, 'Capacitor Bank Pre-Insertion Switching Impedance','(Ohm)')}
+                                >
+                                    {trendData.PISZ.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.PISI.length > 0 ?
+                    {(trendData.PISI.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Pre-Insertion Switching Current</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Current (kA)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.PISI, 'Capacitor Bank Pre-Insertion Switching Current','(kA)')}>
-                                    {this.state.TrendData.PISI.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Current (kA)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.PISI, 'Capacitor Bank Pre-Insertion Switching Current','(kA)')}
+                                >
+                                    {trendData.PISI.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
 
-                    {(this.state.TrendData.KFactor.length > 0 ?
+                    {(trendData.KFactor.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank K Factor</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'K Factor'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.KFactor, 'Capacitor Bank k Factor','')}>
-                                    {this.state.TrendData.KFactor.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'K Factor'}
+                                    showMouse={true}
+                                    useMetricFactors={false}
+                                    onDataInspect={() => createPointTable(trendData.KFactor, 'Capacitor Bank k Factor','')}
+                                >
+                                    {trendData.KFactor.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.RelaydV.length > 0 ?
+                    {(trendData.RelaydV.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Relay Differential Voltage</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Diff. Voltage (V)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RelaydV, 'Capacitor Bank Relay Differential Voltage','(V)')}>
-                                    {this.state.TrendData.RelaydV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Diff. Voltage (V)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.RelaydV, 'Capacitor Bank Relay Differential Voltage','(V)')}
+                                >
+                                    {trendData.RelaydV.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.RelayV.length > 0 ?
+                    {(trendData.RelayV.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Relay Voltage</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Voltage (V)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RelayV, 'Capacitor Bank Relay Voltage','(V)')}>
-                                    {this.state.TrendData.RelayV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Voltage (V)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.RelayV, 'Capacitor Bank Relay Voltage','(V)')}
+                                >
+                                    {trendData.RelayV.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.RelayXV.length > 0 ?
+                    {(trendData.RelayXV.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Voltage-Impedance Ratio Missmatch</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'ratio missmatch (%)'} showMouse={true} useMetricFactors={false}>  onDataInspect={() => this.createPointTable(this.state.TrendData.RelayXV, 'Capacitor Bank Voltage-Impedance Ratio Missmatch','(%)')}
-                                    {this.state.TrendData.RelayXV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'ratio missmatch (%)'}
+                                    showMouse={true}
+                                    useMetricFactors={false}
+                                >  onDataInspect={() => createPointTable(trendData.RelayXV, 'Capacitor Bank Voltage-Impedance Ratio Missmatch','(%)')}
+                                    {trendData.RelayXV.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.RelayXLV.length > 0 ?
+                    {(trendData.RelayXLV.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank LV Cap Reactance or Midstack Reactances</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'}
-                                    Tlabel={'Time'} Ylabel={'Reactance (Ohm)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.RelayXLV, 'Capacitor Bank LV Cap Reactance or Midstack Reactances','(Ohm)')}>
-                                    {this.state.TrendData.RelayXLV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Reactance (Ohm)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.RelayXLV, 'Capacitor Bank LV Cap Reactance or Midstack Reactances','(Ohm)')}
+                                >
+                                    {trendData.RelayXLV.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.Ineutral.length > 0 ?
+                    {(trendData.Ineutral.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Neutral Current</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'} Ylabel={'Current (A)'}
-                                    showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.Ineutral, 'Capacitor Bank Neutral Current','(A)')}>
-                                    {this.state.TrendData.Ineutral.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Current (A)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.Ineutral, 'Capacitor Bank Neutral Current','(A)')}
+                                >
+                                    {trendData.Ineutral.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.Unbalance.length > 0 ?
+                    {(trendData.Unbalance.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Unbalance Factors</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Unbalance (%)'} showMouse={true} useMetricFactors={false} onDataInspect={() => this.createPointTable(this.state.TrendData.Unbalance, 'Capacitor Bank Unbalance Factors','(%)')}>
-                                    {this.state.TrendData.Unbalance.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Unbalance (%)'}
+                                    showMouse={true}
+                                    useMetricFactors={false}
+                                    onDataInspect={() => createPointTable(trendData.Unbalance, 'Capacitor Bank Unbalance Factors','(%)')}
+                                >
+                                    {trendData.Unbalance.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.BusV.length > 0 ?
+                    {(trendData.BusV.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Zero Sequence Voltage</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Voltage (V)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.BusV, 'Capacitor Bank Zero Sequence Voltage','(V)')} >
-                                    {this.state.TrendData.BusV.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Voltage (V)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.BusV, 'Capacitor Bank Zero Sequence Voltage','(V)')}
+                                >
+                                    {trendData.BusV.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
-                    {(this.state.TrendData.BusZ.length > 0 ?
+                    {(trendData.BusZ.length > 0 ?
                         <div className="card">
                             <div className="card-header">Capacitor Bank Zero Sequence Impedance</div>
                             <div className="card-body">
-                                <Plot height={250} width={innerWidth - 345} showBorder={false} defaultTdomain={[this.state.Tstart, this.state.Tend]} legend={'bottom'} Tlabel={'Time'}
-                                    Ylabel={'Impedance (Ohm)'} showMouse={true} onDataInspect={() => this.createPointTable(this.state.TrendData.BusZ, 'Capacitor Bank Zero Sequence Impedance','(Ohm)')}>
-                                    {this.state.TrendData.BusZ.map((s, i) => <Line highlightHover={true} showPoints={true} lineStyle={s.lineStyle} color={s.color} data={s.data} legend={s.label} key={i} />)}
+                                <Plot
+                                    height={250}
+                                    width={innerWidth - 345}
+                                    showBorder={false}
+                                    defaultTdomain={[Tstart, Tend]}
+                                    legend={'bottom'}
+                                    Tlabel={'Time'}
+                                    Ylabel={'Impedance (Ohm)'}
+                                    showMouse={true}
+                                    onDataInspect={() => createPointTable(trendData.BusZ, 'Capacitor Bank Zero Sequence Impedance','(Ohm)')}
+                                >
+                                    {trendData.BusZ.map((s, i) => <Line
+                                        highlightHover={true}
+                                        showPoints={true}
+                                        lineStyle={s.lineStyle}
+                                        color={s.color}
+                                        data={s.data}
+                                        legend={s.label}
+                                        key={i}
+                                    />)}
                                 </Plot>
                             </div>
                         </div> : null)}
@@ -645,55 +1162,25 @@ export default class CapBankReportPane extends React.Component<CapBankReportNavB
                         <div className="card-body">
                             <table className="table">
                                 <thead>
-                                    <EventHeader showEdit={this.props.selectedBank == -2} />
+                                    <EventHeader showEdit={props.selectedBank == -2} />
                                 </thead>
                                 <tbody>
-                                    {this.state.EventData.map(row => EventRow(row, this.props.selectedBank == -2, (obj) => this.setState(obj)))}
+                                    {eventData.map(row => EventRow(row, props.selectedBank == -2, (eventID) => { setShowCapBankEdit(true); setSelectedEvent(eventID); setSelectedCapBank(1); }))}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </>
-        )
-        
-    }
+    );
+};
 
-    getTimeLimits() {
-        const [Tstart, Tend] = getStartEndTime(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time),
-            this.props.TimeFilter.windowSize, this.props.TimeFilter.timeWindowUnits);
-        this.setState({ Tstart: Tstart.valueOf(), Tend: Tend.valueOf()})
-    }
+export default CapBankReportPane;
 
-    getTrendData() {
-        if (this.trendHandle !== undefined)
-            this.trendHandle.abort();
-
-        const adjustedTimeFrame = findAppropriateUnit(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time),
-            getStartEndTime(getMoment(this.props.TimeFilter.date, this.props.TimeFilter.time), this.props.TimeFilter.windowSize, this.props.TimeFilter.timeWindowUnits)[0],
-            this.props.TimeFilter.timeWindowUnits);
-
-        this.trendHandle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/PQDashboard/CapBankReport/GetTrend?capBankId=${this.props.CapBankID}&date=${this.props.TimeFilter.date}` +
-                `&time=${this.props.TimeFilter.time}&timeWindowunits=${adjustedTimeFrame[0]}&windowSize=${adjustedTimeFrame[1]}` +
-                `&bankNum=${this.props.selectedBank}` + this.getFilterString(),
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: false,
-            async: true
-        });
-
-        return this.trendHandle;
-    }
-
-    
-}
-
-const EventRow = (row: ICBEvent, showEdit: boolean, stateSetter: (obj: any) => void) => {
+const EventRow = (row: ICBEvent, showEdit: boolean, onEdit: (eventID: number) => void) => {
     return (
         <tr key={row.ID}>
-            {showEdit ? <td key={'Edit' + row.ID}> <i className='fa fa-edit fa-2x' onClick={() => stateSetter({ ShowCapBankEdit: true, SelectedEvent: row.ID, SelectedCapBank: 1})}></i></td> : null}
+            {showEdit ? <td key={'Edit' + row.ID}> <i className='fa fa-edit fa-2x' onClick={() => onEdit(row.ID)}></i></td> : null}
             <td key={'Time' + row.ID}><a target="_blank"
                 href={'./eventsearch?line=true&date=' + moment.utc(row.Time).format('MM/DD/YYYY') + '&time=' + moment.utc(row.Time).format('HH:mm:ss.SSS') + '&windowSize=10&timeWindowUnits=2&tab=All&eventid=' + row.EventId}
             > {moment.utc(row.Time).format('MM/DD/YY HH:mm:ss.SSS')}</a></td>
