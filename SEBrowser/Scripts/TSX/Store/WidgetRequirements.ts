@@ -20,6 +20,7 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
+import type { EventWidget } from '../../../EventWidgets/TSX/global';
 
 export enum ResourceAccessType {
     Create = 0,
@@ -34,15 +35,27 @@ export interface IResourceAccessEntry {
     Access: ResourceAccessType
 }
 
+export interface IWidgetRequirement {
+    Label: keyof EventWidget.IMutationAuthorization,
+    RequiredResources: IResourceAccessEntry[]
+}
+
 const noteControllers = ['OpenXDAEventNote', 'OpenXDAMeterNote', 'OpenXDAAssetNote', 'OpenXDALocationNote'];
 
 const noteResources = (access: ResourceAccessType): IResourceAccessEntry[] => noteControllers.map((name) => ({ ResourceType: 'Controller', ResourceName: name, Access: access }));
 
 // Resources required for each named widget permission. A permission is granted
 // only if the user has access to every resource in its list.
-export const WidgetRequirements = {
-    Notes: {
-        Add: noteResources(ResourceAccessType.Create),
-        Edit: noteResources(ResourceAccessType.Update)
-    }
+export const WidgetRequirements: Record<keyof EventWidget.IWidgetAuthorization, IWidgetRequirement[]> = {
+    Notes: [
+        { Label: 'Create', RequiredResources: noteResources(ResourceAccessType.Create) },
+        { Label: 'Update', RequiredResources: noteResources(ResourceAccessType.Update) },
+        { Label: 'Delete', RequiredResources: noteResources(ResourceAccessType.Delete) }
+    ],
+    EventInfo: [
+        {
+            Label: 'Update',
+            RequiredResources: [{ ResourceType: 'Controller', ResourceName: 'EventInfo', Access: ResourceAccessType.Update }]
+        }
+    ]
 };

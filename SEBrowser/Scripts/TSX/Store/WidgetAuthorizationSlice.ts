@@ -27,43 +27,27 @@ import type { RootState } from './Store';
 
 declare let homePath: string;
 
-const defaultAuthorization: EventWidget.IWidgetAuthorization = {
+const getDefaultAuthorization = (): EventWidget.IWidgetAuthorization => ({
     Notes: {
-        CanAdd: false,
-        CanEdit: false,
-        CanModify: false
+        Create: false,
+        Update: false,
+        Delete: false
+    },
+    EventInfo: {
+        Create: false,
+        Update: false,
+        Delete: false
     }
-};
+});
 
 export const FetchWidgetAuthorization = createAsyncThunk('WidgetAuthorization/FetchThunk', async () => {
-    const resources = [...WidgetRequirements.Notes.Add, ...WidgetRequirements.Notes.Edit];
-
-    const access: boolean[] = await $.ajax({
-        type: 'POST',
-        url: `${homePath}api/authorization/access`,
-        contentType: 'application/json; charset=utf-8',
-        dataType: 'json',
-        data: JSON.stringify(resources),
-        cache: false,
-        async: true
-    });
-
-    const canAdd = access.slice(0, WidgetRequirements.Notes.Add.length).every((granted) => granted);
-    const canEdit = access.slice(WidgetRequirements.Notes.Add.length).every((granted) => granted);
-
-    return {
-        Notes: {
-            CanAdd: canAdd,
-            CanEdit: canEdit,
-            CanModify: canAdd && canEdit
-        }
-    };
+    return loadWidgetAuthorization();
 });
 
 const widgetAuthorizationSlice = createSlice({
     name: 'WidgetAuthorization',
     initialState: {
-        WidgetAuthorization: defaultAuthorization,
+        WidgetAuthorization: getDefaultAuthorization(),
         Status: 'uninitiated'
     },
     reducers: {},
@@ -72,7 +56,7 @@ const widgetAuthorizationSlice = createSlice({
             state.Status = 'loading';
         });
         builder.addCase(FetchWidgetAuthorization.rejected, (state) => {
-            state.WidgetAuthorization = defaultAuthorization;
+            state.WidgetAuthorization = getDefaultAuthorization();
             state.Status = 'error';
         });
         builder.addCase(FetchWidgetAuthorization.fulfilled, (state, action) => {
@@ -81,6 +65,39 @@ const widgetAuthorizationSlice = createSlice({
         });
     }
 });
+
+const loadWidgetAuthorization = async (): Promise<EventWidget.IWidgetAuthorization> => {
+    const authorization = getDefaultAuthorization();
+
+    for (const [widget, requirements] of Object.entries(WidgetRequirements)) {
+        const resources = requirements.flatMap((requirement) => requirement.RequiredResources);
+        const access: boolean[] = await $.ajax({
+            type: 'POST',
+            url: `${homePath}api/authorization/access`,
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify(resources),
+            cache: false,
+            async: true
+        });
+
+        const resultMap: Record<string, boolean> = {};
+
+        requirements.forEach((requirement, index, widgetRequirements) => {
+            const start = widgetRequirements
+                .slice(0, index)
+                .reduce((count, current) => count + current.RequiredResources.length, 0);
+
+            resultMap[requirement.Label] = access
+                .slice(start, start + requirement.RequiredResources.length)
+                .every((granted) => granted);
+        });
+
+        Object.assign(authorization[widget as keyof EventWidget.IWidgetAuthorization], resultMap);
+    }
+
+    return authorization;
+};
 
 export const WidgetAuthorizationReducer = widgetAuthorizationSlice.reducer;
 export const SelectWidgetAuthorization = (state: RootState) => state.WidgetAuthorization.WidgetAuthorization;

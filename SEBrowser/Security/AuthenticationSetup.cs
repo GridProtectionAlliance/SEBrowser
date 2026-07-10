@@ -34,6 +34,7 @@ using System.Linq;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Principal;
+using Widgets.API.Model;
 
 namespace SEBrowser.Security;
 
@@ -222,7 +223,10 @@ public class AuthenticationSetup : IAuthenticationSetup
         yield return new(ResourceAccessDefaultClaim, ResourceAccessType.Read.ToString());
 
         if (roleName == "Administrator")
+        {
             yield return new(ResourceActionAllowClaim, GetControllerActionClaimValue(typeof(AdditionalFieldController), ViewSecureFieldsAction));
+            yield return new(ResourceAccessAllowClaim, $"Controller {GetControllerResourceName(typeof(EventInfoController))} {ResourceAccessType.Update}");
+        }
 
         // Gemstone maps POST -> Create by verb and Default: Read does not satisfy a Create
         // check, so note creation requires an explicit Allow claim for every role.
