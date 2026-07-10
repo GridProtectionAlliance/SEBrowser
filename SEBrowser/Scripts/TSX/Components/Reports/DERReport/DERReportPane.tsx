@@ -1,5 +1,5 @@
 //******************************************************************************************************
-//  DERAnalysisReportPane.tsx - Gbtc
+//  DERReportPane.tsx - Gbtc
 //
 //  Copyright © 2019, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -25,7 +25,9 @@ import { Table, Column } from '@gpa-gemstone/react-table';
 import moment from 'moment';
 import { orderBy } from 'lodash';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
-import { Modal } from '@gpa-gemstone/react-interactive';
+import { Modal, Alert } from '@gpa-gemstone/react-interactive';
+import { Application } from '@gpa-gemstone/application-typings';
+import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { findAppropriateUnit, getMoment, getStartEndTime } from '../../EventSearch/TimeWindowUtils';
 import { ISelectableOption } from './DERReportNavBar';
 
@@ -46,7 +48,7 @@ interface DERAnalyticResult {
     DataType: string
 }
 
-export interface DERAnalysisReportPaneProps {
+export interface DERReportPaneProps {
     date: string,
     time: string,
     windowSize: number,
@@ -55,51 +57,49 @@ export interface DERAnalysisReportPaneProps {
     ders: ISelectableOption[]
 }
 
-const DERAnalysisReportPane = (props: DERAnalysisReportPaneProps) => {
+const DERReportPane = (props: DERReportPaneProps) => {
     const [data, setData] = React.useState<DERAnalyticResult[]>([]);
     const [ascending, setAscending] = React.useState<boolean>(true);
     const [sortKey, setSortKey] = React.useState<keyof DERAnalyticResult>('Time');
     const [selectedData, setSelectedData] = React.useState<DERAnalyticResult | null>(null);
+    const [status, setStatus] = React.useState<Application.Types.Status>('uninitiated');
+
+    const sortedData = React.useMemo(() => orderBy(data, [sortKey], [ascending ? 'asc' : 'desc']), [data, sortKey, ascending]);
 
     React.useEffect(() => {
-        const sorted = orderBy(data, [sortKey], [ascending]);
-        setData(sorted);
-    }, [sortKey, ascending]);
-
-    React.useEffect(() => {
-
-        const adjustedTime = findAppropriateUnit(getMoment(props.date, props.time),
-            getStartEndTime(getMoment(props.date, props.time), props.windowSize, props.timeWindowUnits)[1],
-            props.timeWindowUnits);
-
-        const handle1 = $.ajax({
-            type: "POST",
-            url: `${homePath}api/DERReport`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            data: JSON.stringify({
-                DERIDs: props.ders.filter(s => s.Selected).map(s => s.Value),
-                Time: props.date + ' ' + props.time,
-                Window: adjustedTime[1],
-                TimeWindowUnit: adjustedTime[0],
-                Regulations: props.regulations.filter(s => s.Selected).map(s => s.Label)
-            }),
-            cache: false,
-            async: true
-        }) as JQuery.jqXHR<DERAnalyticResult[]>;
-
-        handle1.done(d => setData(d))
+        setStatus('loading');
+        const handle = getDERAnalyticData(props);
+        handle.done(d => {
+            if (d != null)
+                setData(d);
+            setStatus('idle');
+        }).fail(() => setStatus('error'));
 
         return () => {
-            if (handle1.abort != undefined) handle1.abort();
-
+            if (handle.abort != undefined) handle.abort();
         };
     }, [props.ders, props.date, props.time, props.windowSize, props.timeWindowUnits, props.regulations]);
 
     return (
         <>
-            <div style={{ width: '100%', height: 'calc( 100% - 250px)' }}>
-                <div style={{ width: '100%', height: '100%', maxHeight: '100%', position: 'relative', float: 'right', overflowY: 'hidden' }}>
+            <div className="d-flex flex-column flex-grow-1" style={{ overflowY: 'auto', minHeight: 0 }}>
+                {status === 'error' ?
+                    <Alert Class="alert-danger">
+                        An error occurred while fetching DER analytic data.
+                    </Alert>
+                : null}
+                <div className="card flex-grow-1">
+                    <div className="card-header">DER Analytics:</div>
+                    <div className="card-body d-flex flex-column">
+                    {status === 'loading' ?
+                        <div className="d-flex align-items-center justify-content-center flex-grow-1">
+                            <ReactIcons.SpiningIcon Size={'25%'} />
+                        </div>
+                    : data.length === 0 ?
+                        <Alert Class="alert-info" Style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            No DER analytic data.
+                        </Alert>
+                    :
                     <Table<DERAnalyticResult>
                         TableClass='table table-hover'
                         Ascending={ascending}
@@ -110,13 +110,10 @@ const DERAnalysisReportPane = (props: DERAnalysisReportPaneProps) => {
                             else
                                 setSortKey(data.colField as keyof DERAnalyticResult);
                         }}
-                        Data={data}
+                        Data={sortedData}
                         OnClick={(d) => {
                             setSelectedData(d.row);
                         }}
-                        TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
-                        TbodyStyle={{ display: 'block', overflowY: 'scroll', maxHeight: window.innerHeight - 343, width: '100%' }}
-                        RowStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
                         KeySelector={item => item.ID}
                     >
                         <Column<DERAnalyticResult>
@@ -161,7 +158,8 @@ const DERAnalysisReportPane = (props: DERAnalysisReportPaneProps) => {
                         >
                             Value
                         </Column>
-                    </Table>
+                    </Table>}
+                    </div>
                 </div>
             </div>
 
@@ -176,7 +174,7 @@ const DERAnalysisReportPane = (props: DERAnalysisReportPaneProps) => {
             >
                 <div><h6>Regulation: {selectedData?.Regulation ?? ''}</h6></div>
                 <div><h6>Parameter: {selectedData?.Parameter ?? ''}</h6></div>
-                <Graph {...selectedData} />
+                {selectedData != null ? <Graph {...selectedData} /> : null}
             </Modal>
         </>
     );
@@ -188,22 +186,13 @@ const Graph = (props: DERAnalyticResult) => {
     React.useEffect(() => {
         if (props.ID == undefined) return;
 
-        const handle = $.ajax({
-            type: "GET",
-            url: `${homePath}api/DERReport/Data/${props.ID}`,
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            cache: false,
-            async: true
-        }) as JQuery.jqXHR<[number, number][]>;
-
+        const handle = getGraphData(props.ID);
         handle.done(d => {
             setData(d);
         })
 
         return () => {
             if (handle.abort != undefined) handle.abort();
-
         };
 
     }, [props.ID]);
@@ -245,4 +234,37 @@ const Graph = (props: DERAnalyticResult) => {
 
 }
 
-export default DERAnalysisReportPane;
+function getDERAnalyticData(props: DERReportPaneProps): JQuery.jqXHR<DERAnalyticResult[]> {
+    const adjustedTime = findAppropriateUnit(getMoment(props.date, props.time),
+        getStartEndTime(getMoment(props.date, props.time), props.windowSize, props.timeWindowUnits)[1],
+        props.timeWindowUnits);
+
+    return $.ajax({
+        type: "POST",
+        url: `${homePath}api/DERReport`,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        data: JSON.stringify({
+            DERIDs: props.ders.filter(s => s.Selected).map(s => s.Value),
+            Time: props.date + ' ' + props.time,
+            Window: adjustedTime[1],
+            TimeWindowUnit: adjustedTime[0],
+            Regulations: props.regulations.filter(s => s.Selected).map(s => s.Label)
+        }),
+        cache: false,
+        async: true
+    });
+}
+
+function getGraphData(id: number): JQuery.jqXHR<[number, number][]> {
+    return $.ajax({
+        type: "GET",
+        url: `${homePath}api/DERReport/Data/${id}`,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        cache: false,
+        async: true
+    });
+}
+
+export default DERReportPane;

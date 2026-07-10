@@ -1,5 +1,5 @@
 //******************************************************************************************************
-//  DERAnalysisReportNavBar.tsx - Gbtc
+//  DERReportNavBar.tsx - Gbtc
 //
 //  Copyright © 2019, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -35,7 +35,7 @@ export interface ISelectableOption {
     Selected: boolean
 }
 
-export interface DERAnalysisReportNavBarProps {
+export interface DERReportNavBarProps {
     date: string,
     time: string,
     windowSize: number,
@@ -48,7 +48,7 @@ export interface DERAnalysisReportNavBarProps {
     setDERs: (ders: ISelectableOption[]) => void
 }
 
-const DERAnalysisReportNavBar = (props: DERAnalysisReportNavBarProps) => {
+const DERReportNavBar = (props: DERReportNavBarProps) => {
     const dateTimeSetting = useAppSelector(SelectDateTimeSetting);
     const timeZone = useAppSelector(SelectTimeZone);
 
@@ -219,4 +219,4 @@ function getDERData(substationIDs: number[]): JQuery.jqXHR<OpenXDA.Types.Asset[]
     });
 }
 
-export default DERAnalysisReportNavBar;
+export default DERReportNavBar;

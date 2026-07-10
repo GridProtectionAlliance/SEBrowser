@@ -32,7 +32,7 @@ import TrendData from './Components/TrendData/TrendData';
 import BreakerReport from './Components/Reports/BreakerReport/BreakerReport';
 import RelayReport from './Components/Reports/TripCoilReport/TripCoilReport';
 import CapBankReport from './Components/Reports/CapBankReport/CapBankReport';
-import DERAnalysisReport from './Components/Reports/DERReport/DERReport';
+import DERReport from './Components/Reports/DERReport/DERReport';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { Application, Page, Section } from '@gpa-gemstone/react-interactive';
 import Settings from './Store/Settings';
@@ -182,7 +182,7 @@ const createWidget = (item: string) => {
     if (item === "capbankreport")
         return <CapBankReport />
     if (item === "derreport")
-        return <DERAnalysisReport />
+        return <DERReport />
 }
 
 const heartBeatCheck = () => {

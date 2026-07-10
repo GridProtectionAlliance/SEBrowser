@@ -1,5 +1,5 @@
 ﻿//******************************************************************************************************
-//  DERAnalysisReport.tsx - Gbtc
+//  DERReport.tsx - Gbtc
 //
 //  Copyright © 2019, Grid Protection Alliance.  All Rights Reserved.
 //
@@ -24,13 +24,13 @@ import * as React from 'react';
 import queryString from 'querystring';
 import moment from 'moment';
 import { useNavigate, useLocation } from 'react-router-dom';
-import DERAnalysisReportNavBar, { ISelectableOption } from './DERReportNavBar';
-import DERAnalysisReportPane from './DERReportPane';
+import DERReportNavBar, { ISelectableOption } from './DERReportNavBar';
+import DERReportPane from './DERReportPane';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
 
-function DERAnalysisReport() {
+function DERReport() {
     const history = useLocation();
     const navigate = useNavigate();
 
@@ -63,8 +63,8 @@ function DERAnalysisReport() {
     }, [time, date, windowSize, timeWindowUnits])
 
     return (
-        <div style={{ width: '100%', height: '100%' }}>
-            <DERAnalysisReportNavBar
+        <div className="d-flex flex-column" style={{ width: '100%', height: '100%' }}>
+            <DERReportNavBar
                 date={date}
                 time={time}
                 windowSize={windowSize}
@@ -76,7 +76,7 @@ function DERAnalysisReport() {
                 setRegulations={setRegulations}
                 setDERs={setDERs}
             />
-            <DERAnalysisReportPane
+            <DERReportPane
                 date={date}
                 time={time}
                 windowSize={windowSize}
@@ -88,4 +88,4 @@ function DERAnalysisReport() {
     );
 }
 
-export default DERAnalysisReport;
+export default DERReport;
