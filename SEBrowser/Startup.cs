@@ -108,6 +108,7 @@ public class Startup
             .Configure(options =>
             {
                 double ticketTimeout = Settings.Default.WebHosting.AuthenticationTicketTimeout;
+                options.Cookie.Name = "x-sebrowser-auth";
                 options.ExpireTimeSpan = TimeSpan.FromHours(ticketTimeout);
             });
 
