@@ -22,11 +22,13 @@
 //******************************************************************************************************
 import * as React from 'react';
 import moment from 'moment';
+import _ from 'lodash';
 
 import { CapBankReportNavBarProps } from './CapBankReportNavBar';
 import { Warning, Modal } from '@gpa-gemstone/react-interactive';
 import { Select } from '@gpa-gemstone/react-forms';
-import { Application } from '@gpa-gemstone/application-typings';
+import { Table, ConfigurableTable, Column, GetConfigurableColumnsFromTypeEntries } from '@gpa-gemstone/react-table';
+import { Application, Gemstone } from '@gpa-gemstone/application-typings';
 import { Plot, Line } from '@gpa-gemstone/react-graph'
 import { findAppropriateUnit, getMoment, getStartEndTime } from '../../EventSearch/TimeWindowUtils';
 
@@ -86,6 +88,11 @@ interface ICBEvent {
     PreInsertionSwitch: string
 }
 
+interface IPointRow {
+    Time: number,
+    Values: Array<number | null>
+}
+
 const emptyTrendData: ITrendDataSet = {
     DeltaQ: [],
     Irms: [],
@@ -117,6 +124,21 @@ const emptyTrendData: ITrendDataSet = {
     BusZ: [],
     BusV: [],
     Unbalance: []
+};
+
+const recordFields: Gemstone.TSX.Interfaces.IRecordFields<ICBEvent> = {
+    Time: {
+        AllowSort: true, IsDefaultColumn: true, Label: 'Time', Content: (item) => <a target="_blank"
+            href={'./eventsearch?line=true&date=' + moment.utc(item.Time).format('MM/DD/YYYY') + '&time=' + moment.utc(item.Time).format('HH:mm:ss.SSS') + '&windowSize=10&timeWindowUnits=2&tab=All&eventid=' + item.EventId}
+        > {moment.utc(item.Time).format('MM/DD/YY HH:mm:ss.SSS')}</a>
+    },
+    Phase: { AllowSort: true, IsDefaultColumn: true, Label: 'Phase' },
+    Status: { AllowSort: true, IsDefaultColumn: true, Label: 'Analysis Status' },
+    Operation: { AllowSort: true, IsDefaultColumn: true, Label: 'Capacitor Bank Operation' },
+    Resonance: { AllowSort: true, IsDefaultColumn: true, Label: 'Resonance', Content: (item) => <>{item.Resonance ? 'Yes' : 'No'}</> },
+    CapBankHealth: { AllowSort: true, IsDefaultColumn: true, Label: 'Capacitor Bank Health' },
+    Restrike: { AllowSort: true, IsDefaultColumn: true, Label: 'Restrike', Content: (item) => <>{item.Restrike == undefined ? 'N/A' : item.Restrike}</> },
+    PreInsertionSwitch: { AllowSort: true, IsDefaultColumn: true, Label: 'PreInsertionSwitching Condition', Content: (item) => <>{item.PreInsertionSwitch == undefined ? 'N/A' : item.PreInsertionSwitch}</> },
 };
 
 interface IPlotConfig {
@@ -160,40 +182,6 @@ const plotConfigs: IPlotConfig[] = [
     { field: 'BusZ', title: 'Capacitor Bank Zero Sequence Impedance', ylabel: 'Impedance (Ohm)', unit: '(Ohm)' },
 ];
 
-const getFilterString = (props: CapBankReportNavBarProps) => {
-    let filter = "";
-
-    //First Filter is Resonance
-    if (props.ResFilt.length > 0)
-        filter = `&resFilt=${props.ResFilt.join(',')}`
-
-    //Next Filter is CapBankStatus
-    if ((props.StatFilt.length > 0) && (!props.StatFilt.includes(999)))
-        filter = filter + `&statFilt=${props.StatFilt.join(',')}`
-
-    //Next Filter is Operation
-    if ((props.OpFilt.length > 0) && (!props.OpFilt.includes(999)))
-        filter = filter + `&operationFilt=${props.OpFilt.join(',')}`
-
-    //Next Filter is Restrike Filter
-    if ((props.RestFilt.length > 0) && (!props.RestFilt.includes(999)))
-        filter = filter + `&restrikeFilt=${props.RestFilt.join(',')}`
-
-    //Next Filter is Switching Health Filter
-    if ((props.PISFilt.length > 0) && (!props.PISFilt.includes(999)))
-        filter = filter + `&switchingHealthFilt=${props.PISFilt.join(',')}`
-
-    //Next Filter is CB Health Filter
-    if ((props.HealthFilt.length > 0) && (!props.HealthFilt.includes(999)))
-        filter = filter + `&healthFilt=${props.HealthFilt.join(',')}`
-
-    //Next Filter is Phase Filter
-    if ((props.PhaseFilter.length > 0) && (!props.PhaseFilter.includes(999)))
-        filter = filter + `&phaseFilt=${props.PhaseFilter.join(',')}`
-
-    return filter;
-};
-
 const CapBankReportPane = (props: CapBankReportNavBarProps) => {
     const [eventData, setEventData] = React.useState<ICBEvent[]>([]);
     const [trendData, setTrendData] = React.useState<ITrendDataSet>(emptyTrendData);
@@ -201,11 +189,13 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
     const [showCapBankEdit, setShowCapBankEdit] = React.useState<boolean>(false);
     const [selectedCapBank, setSelectedCapBank] = React.useState<number>(1);
     const [selectedEvent, setSelectedEvent] = React.useState<number>(0);
-    const [pointTable, setPointTable] = React.useState<{ title: string, content: JSX.Element }>(null);
+    const [pointTable, setPointTable] = React.useState<{ title: string, unit: string, labels: string[], rows: IPointRow[] } | null>(null);
     const [refreshKey, setRefreshKey] = React.useState<number>(0);
     const [eventTableStatus, setEventTableStatus] = React.useState<Application.Types.Status>('uninitiated');
     const [trendStatus, setTrendStatus] = React.useState<Application.Types.Status>('uninitiated');
     const [updateCapBankStatus, setUpdateCapBankStatus] = React.useState<Application.Types.Status>('uninitiated');
+    const [sortKey, setSortKey] = React.useState<string>('');
+    const [ascending, setAscending] = React.useState<boolean>(true);
 
     const { date, time, windowSize, timeWindowUnits } = props.TimeFilter;
     const filterString = getFilterString(props);
@@ -213,6 +203,23 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
         const [start, end] = getStartEndTime(getMoment(date, time), windowSize, timeWindowUnits);
         return [start.valueOf(), end.valueOf()];
     }, [date, time, windowSize, timeWindowUnits]);
+
+    const sortedEventData = React.useMemo(() => {
+        if (sortKey === '')
+            return eventData;
+        return _.orderBy(eventData, [sortKey], [ascending ? 'asc' : 'desc']);
+    }, [eventData, sortKey, ascending]);
+
+    const sortCallback = React.useCallback((d: { colKey: string, colField?: keyof ICBEvent, ascending: boolean }) => {
+        if (d.colField == null)
+            return;
+        if (d.colField === sortKey)
+            setAscending(!ascending);
+        else {
+            setSortKey(d.colField);
+            setAscending(true);
+        }
+    }, [sortKey, ascending]);
 
     React.useEffect(() => {
         if (props.CapBankID < 0)
@@ -262,32 +269,18 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
     const createPointTable = (d: ITrendSeries[], title: string, unit: string) => {
 
         let indices = d.map(() => 0);
-        const rows = [];
+        const rows: IPointRow[] = [];
 
         while (indices.some((item, index) => item < d[index].data.length)) {
             const T = Math.min(...indices.map((item, index) => item < d[index].data.length ? d[index].data[item][0] : NaN).filter(n => !isNaN(n)));
-            rows.push(<tr onClick={() => window.open('./eventsearch?line=true&date=' + moment.utc(T).format('MM/DD/YYYY') + '&time=' + moment.utc(T).format('HH:mm:ss.SSS') + '&windowSize=1&timeWindowUnits=1&tab=All&eventid=-1', "_blank")}>
-                <td>{moment.utc(T).format('MM/DD/YY HH:mm:ss.SSS')}</td>
-                {d.map((item, index) => <td key={index}>{indices[index] < item.data.length && item.data[indices[index]][0] == T ? item.data[indices[index]][1].toPrecision(6) : 'N/A'}</td>)}
-            </tr>)
+            rows.push({
+                Time: T,
+                Values: d.map((item, index) => indices[index] < item.data.length && item.data[indices[index]][0] == T ? item.data[indices[index]][1] : null)
+            });
             indices = indices.map((item, index) => item < d[index].data.length && d[index].data[item][0] == T ? item + 1 : item);
         }
 
-        const content = <div style={{ maxHeight: innerHeight - 250 }}>
-            <table className="table table-bordered table-hover" style={{ maxHeight: innerHeight - 250, marginBottom: 0, display: 'block', overflowY: 'scroll' }} >
-                <thead>
-                    <tr>
-                        <th>Time</th>
-                        {d.map((item, index) => <th key={index}><span>{item.label} {unit}</span> </th>)}
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows}
-                </tbody>
-            </table>
-        </div>
-
-        setPointTable({ title, content });
+        setPointTable({ title, unit, labels: d.map(item => item.label), rows });
     };
 
     if (props.CapBankID == -1)
@@ -327,7 +320,36 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
                 ConfirmText={'Close'}
                 Size={'xlg'}
             >
-                {pointTable == null ? null : pointTable.content}
+                {pointTable == null ? null :
+                    <Table<IPointRow>
+                        Data={pointTable.rows}
+                        SortKey={''}
+                        Ascending={true}
+                        OnSort={() => { /* sorting not supported */ }}
+                        KeySelector={(row) => row.Time}
+                        TableClass="table table-bordered table-hover"
+                        TableStyle={{ marginBottom: 0 }}
+                        TbodyStyle={{ maxHeight: innerHeight - 250, overflowY: 'scroll' }}
+                        OnClick={({ row }) => window.open('./eventsearch?line=true&date=' + moment.utc(row.Time).format('MM/DD/YYYY') + '&time=' + moment.utc(row.Time).format('HH:mm:ss.SSS') + '&windowSize=1&timeWindowUnits=1&tab=All&eventid=-1', "_blank")}
+                    >
+                        <Column<IPointRow>
+                            Key={'Time'}
+                            AllowSort={false}
+                            Field={'Time'}
+                            Content={({ item }) => moment.utc(item.Time).format('MM/DD/YY HH:mm:ss.SSS')}
+                        >
+                            Time
+                        </Column>
+                        {pointTable.labels.map((label, i) =>
+                            <Column<IPointRow>
+                                Key={label + i}
+                                AllowSort={false}
+                                Content={({ item }) => item.Values[i] == null ? 'N/A' : item.Values[i].toPrecision(6)}
+                            >
+                                <span>{label} {pointTable.unit}</span>
+                            </Column>
+                        )}
+                    </Table>}
             </Modal>
             <Warning
                 Show={showWarning}
@@ -370,14 +392,25 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
                 <div className="card">
                     <div className="card-header">Capacitor Bank Analytic Event Overview</div>
                     <div className="card-body">
-                        <table className="table">
-                            <thead>
-                                <EventHeader showEdit={props.selectedBank == -2} />
-                            </thead>
-                            <tbody>
-                                {eventData.map(row => EventRow(row, props.selectedBank == -2, (eventID) => { setShowCapBankEdit(true); setSelectedEvent(eventID); setSelectedCapBank(1); }))}
-                            </tbody>
-                        </table>
+                        <ConfigurableTable<ICBEvent>
+                            Data={sortedEventData}
+                            SortKey={sortKey}
+                            Ascending={ascending}
+                            OnSort={sortCallback}
+                            KeySelector={(item) => item.ID}
+                            TableClass="table"
+                            LocalStorageKey="SEBrowser.CapBankReportPane"
+                        >
+                            {props.selectedBank == -2 ?
+                                <Column<ICBEvent>
+                                    Key={'Edit'}
+                                    AllowSort={false}
+                                    Content={({ item }) => <i className='fa fa-edit fa-2x' onClick={() => { setShowCapBankEdit(true); setSelectedEvent(item.ID); setSelectedCapBank(1); }}></i>}
+                                >
+                                    {' '}
+                                </Column> : null}
+                            {GetConfigurableColumnsFromTypeEntries<ICBEvent>(recordFields, 'MM/DD/YY HH:mm:ss.SSS')}
+                        </ConfigurableTable>
                     </div>
                 </div>
             </div>
@@ -387,41 +420,42 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
 
 export default CapBankReportPane;
 
-const EventRow = (row: ICBEvent, showEdit: boolean, onEdit: (eventID: number) => void) => {
-    return (
-        <tr key={row.ID}>
-            {showEdit ? <td key={'Edit' + row.ID}> <i className='fa fa-edit fa-2x' onClick={() => onEdit(row.ID)}></i></td> : null}
-            <td key={'Time' + row.ID}><a target="_blank"
-                href={'./eventsearch?line=true&date=' + moment.utc(row.Time).format('MM/DD/YYYY') + '&time=' + moment.utc(row.Time).format('HH:mm:ss.SSS') + '&windowSize=10&timeWindowUnits=2&tab=All&eventid=' + row.EventId}
-            > {moment.utc(row.Time).format('MM/DD/YY HH:mm:ss.SSS')}</a></td>
-            <td key={'Phase' + row.ID}>{row.Phase}</td>
-            <td key={'Status' + row.ID}>{row.Status}</td>
-            <td key={'Operation' + row.ID}>{row.Operation}</td>
-            <td key={'Resonance' + row.ID}>{(row.Resonance ? 'Yes' : 'No')}</td>
-            <td key={'Health' + row.ID}>{row.CapBankHealth}</td>
-            <td key={'Restrike' + row.ID}>{(row.Restrike == undefined ? 'N/A' : row.Restrike)}</td>
-            <td key={'PIS' + row.ID}>{(row.PreInsertionSwitch == undefined ? 'N/A' : row.PreInsertionSwitch)}</td>
-        </tr>
-    );
-}
+//Helper Functions
+const getFilterString = (props: CapBankReportNavBarProps) => {
+    let filter = "";
 
-const EventHeader = (props: { showEdit: boolean }) => {
-    return (
-        <tr key='Header'>
-            {props.showEdit ? <th key="Edit"> </th> : null}
-            <th key='Time'>Time</th>
-            <th key='Phase'>Phase</th>
-            <th key='Status'>Analysis Status</th>
-            <th key='Operation'>Capacitor Bank Operation</th>
-            <th key='Resonance'>Resonance</th>
-            <th key='Health'>Capacitor Bank Health</th>
-            <th key='Restrike'>Restrike</th>
-            <th key='PIS'>PreInsertionSwitching Condition</th>
-        </tr>
-    );
-}
+    //First Filter is Resonance
+    if (props.ResFilt.length > 0)
+        filter = `&resFilt=${props.ResFilt.join(',')}`
 
-const getEventTable = (capBankId: number, date: string, time: string, timeWindowUnits: number, windowSize: number, bankNum: number, filterString: string): JQuery.jqXHR<ICBEvent[]> =>
+    //Next Filter is CapBankStatus
+    if ((props.StatFilt.length > 0) && (!props.StatFilt.includes(999)))
+        filter = filter + `&statFilt=${props.StatFilt.join(',')}`
+
+    //Next Filter is Operation
+    if ((props.OpFilt.length > 0) && (!props.OpFilt.includes(999)))
+        filter = filter + `&operationFilt=${props.OpFilt.join(',')}`
+
+    //Next Filter is Restrike Filter
+    if ((props.RestFilt.length > 0) && (!props.RestFilt.includes(999)))
+        filter = filter + `&restrikeFilt=${props.RestFilt.join(',')}`
+
+    //Next Filter is Switching Health Filter
+    if ((props.PISFilt.length > 0) && (!props.PISFilt.includes(999)))
+        filter = filter + `&switchingHealthFilt=${props.PISFilt.join(',')}`
+
+    //Next Filter is CB Health Filter
+    if ((props.HealthFilt.length > 0) && (!props.HealthFilt.includes(999)))
+        filter = filter + `&healthFilt=${props.HealthFilt.join(',')}`
+
+    //Next Filter is Phase Filter
+    if ((props.PhaseFilter.length > 0) && (!props.PhaseFilter.includes(999)))
+        filter = filter + `&phaseFilt=${props.PhaseFilter.join(',')}`
+
+    return filter;
+};
+
+const getEventTable =(capBankId: number, date: string, time: string, timeWindowUnits: number, windowSize: number, bankNum: number, filterString: string): JQuery.jqXHR<ICBEvent[]> =>
     $.ajax({
         type: "GET",
         url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${capBankId}&date=${date}` +
