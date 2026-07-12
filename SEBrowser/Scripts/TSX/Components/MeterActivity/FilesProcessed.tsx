@@ -36,7 +36,7 @@ const FilesProcessed = () => {
     const [status, setStatus] = React.useState<Application.Types.Status>('loading');
     const [page, setPage] = React.useState<number>(0);
 
-    const seBrowserService = new SEBrowserService();
+    const [seBrowserService] = React.useState(() => new SEBrowserService());
 
     const pageCount = Math.ceil(meterTable.length / pageSize);
 
@@ -50,12 +50,19 @@ const FilesProcessed = () => {
 
     React.useEffect(() => {
         setStatus('loading');
-        seBrowserService.getFilesProcessedMeterActivityData(sortField).done(data => {
+        const handle = seBrowserService.getFilesProcessedMeterActivityData(sortField).done(data => {
             setMeterTable(data);
             setStatus('idle');
         })
-        .fail(() => setStatus('error'));
-    }, [sortField]);
+            .fail(() => {
+                setStatus('error');
+            });
+
+        return () => {
+            if (handle?.abort != null)
+                handle.abort();
+        };
+    }, [seBrowserService, sortField]);
 
     return (
         <div className="d-flex flex-column h-100" style={{ overflow: 'hidden' }}>

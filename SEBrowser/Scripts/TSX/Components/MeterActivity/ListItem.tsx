@@ -25,6 +25,7 @@ import React from 'react';
 import SEBrowserService from './../../../TS/Services/SEBrowser';
 import moment from 'moment';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
+import { Application } from '@gpa-gemstone/application-typings';
 
 interface IProps {
     CreationTime: string,
@@ -61,14 +62,24 @@ export interface IEventView {
 const ListItem = (props: IProps) => {
     const [isOpen, setOpen] = React.useState<boolean>(false);
     const [fileGroupEvents, setFileGroupEvents] = React.useState<IEventView[]>([]);
+    const [status, setStatus] = React.useState<Application.Types.Status>('uninitiated');
 
-    const seBrowserService = new SEBrowserService();
+    const [seBrowserService] = React.useState(() => new SEBrowserService());
 
     React.useEffect(() => {
-        seBrowserService.getFileGroupEvents(props.FileGroupID).done(data => {
+        setStatus('loading');
+        const handle = seBrowserService.getFileGroupEvents(props.FileGroupID).done(data => {
             setFileGroupEvents(data);
+            setStatus('idle');
+        }).fail(() => {
+            setStatus('error');
         });
-    }, [props.FileGroupID]);
+
+        return () => {
+            if (handle?.abort != null)
+                handle.abort();
+        };
+    }, [props.FileGroupID, seBrowserService]);
 
     return (
         <li style={{ width: '100%', borderTop: '1px solid #dee2e6' }}>
@@ -92,32 +103,38 @@ const ListItem = (props: IProps) => {
                 </div>
             </div>
             <div style={{ display: (isOpen ? 'block' : 'none'), padding: '5px 20px' }}>
-                <table className='table'>
-                    <thead>
-                        <tr>
-                            <th>Line</th>
-                            <th>Start Time</th>
-                            <th>Type</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {fileGroupEvents.map(x =>
-                            <tr key={x.ID}>
-                                <td>
-                                    <a href={openSEEInstance + '?eventid=' + x.ID} target="_blank">
-                                        {x.MeterName} - {x.AssetName}
-                                    </a>
-                                </td>
-                                <td>
-                                    {moment.utc(x.StartTime).format('MM/DD/YY HH:mm:ss')}
-                                </td>
-                                <td>
-                                    {x.EventTypeName}
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                {status === 'loading' ?
+                    <div className='d-flex align-items-center justify-content-center'>
+                        <ReactIcons.SpiningIcon />
+                    </div>
+                    : status === 'error' ?
+                        <div className='alert alert-danger'>An error occurred while fetching file group events.</div>
+                        : <table className='table'>
+                            <thead>
+                                <tr>
+                                    <th>Line</th>
+                                    <th>Start Time</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {fileGroupEvents.map(x =>
+                                    <tr key={x.ID}>
+                                        <td>
+                                            <a href={openSEEInstance + '?eventid=' + x.ID} target="_blank">
+                                                {x.MeterName} - {x.AssetName}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            {moment.utc(x.StartTime).format('MM/DD/YY HH:mm:ss')}
+                                        </td>
+                                        <td>
+                                            {x.EventTypeName}
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>}
             </div>
         </li>
     );

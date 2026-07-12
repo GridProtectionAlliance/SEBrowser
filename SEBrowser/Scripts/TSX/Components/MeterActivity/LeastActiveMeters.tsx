@@ -47,7 +47,7 @@ const LeastActiveMeters = () => {
     const [status, setStatus] = React.useState<Application.Types.Status>('loading');
     const [page, setPage] = React.useState<number>(0);
 
-    const seBrowserService = new SEBrowserService();
+    const [seBrowserService] = React.useState(() => new SEBrowserService());
 
     const pageCount = Math.ceil(meterTable.length / pageSize);
 
@@ -60,16 +60,19 @@ const LeastActiveMeters = () => {
     }, [pageCount, page]);
 
     React.useEffect(() => {
-        getMeterActivityData(sortField);
-    }, [sortField]);
-
-    const getMeterActivityData = (field: keyof (LeastActiveMeterActivityRow)) => {
         setStatus('loading');
-        seBrowserService.getLeastActiveMeterActivityData(5000, field).done(data => {
+        const handle = seBrowserService.getLeastActiveMeterActivityData(5000, sortField).done(data => {
             setMeterTable(data);
             setStatus('idle');
-        }).fail(() => setStatus('error'));
-    }
+        }).fail(() => {
+            setStatus('error');
+        });
+
+        return () => {
+            if (handle?.abort != null)
+                handle.abort();
+        };
+    }, [seBrowserService, sortField]);
 
     const createContent = (item: LeastActiveMeterActivityRow, key: keyof (LeastActiveMeterActivityRow)) => {
         let context = '';
