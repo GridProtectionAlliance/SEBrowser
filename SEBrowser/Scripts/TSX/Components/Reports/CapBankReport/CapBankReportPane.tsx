@@ -365,96 +365,105 @@ const CapBankReportPane = (props: CapBankReportNavBarProps) => {
                     <Alert Class="alert-danger">
                         An error occurred while fetching capacitor bank event data.
                     </Alert>
-                : null}
+                    : null}
                 {trendStatus === 'error' ?
                     <Alert Class="alert-danger">
                         An error occurred while fetching capacitor bank trend data.
                     </Alert>
-                : null}
+                    : null}
                 {updateCapBankStatus === 'error' ?
                     <Alert Class="alert-danger">
                         An error occurred while assigning the event to a capacitor bank.
                     </Alert>
-                : null}
+                    : null}
                 {noTrendData && noEventData ?
                     <Alert Class="alert-info" Style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         No trend data or capacitor bank events found.
                     </Alert>
-                : <>
-                {trendStatus === 'loading' ?
-                    <div className="d-flex align-items-center justify-content-center" style={{ height: 250 }}>
-                        <ReactIcons.SpiningIcon Size={'25%'} />
-                    </div>
-                : noTrendData ?
-                    <Alert Class="alert-info">
-                        No capacitor bank trend data.
-                    </Alert>
-                : null}
-                {plotConfigs.map(cfg =>
-                    trendData[cfg.field].length > 0 ?
-                        <div className="card" key={cfg.field}>
-                            <div className="card-header">{cfg.title}</div>
-                            <div className="card-body">
-                                <Plot
-                                    height={250}
-                                    width={innerWidth - 345}
-                                    showBorder={false}
-                                    defaultTdomain={[Tstart, Tend]}
-                                    legend={'bottom'}
-                                    Tlabel={'Time'}
-                                    Ylabel={cfg.ylabel}
-                                    showMouse={true}
-                                    useMetricFactors={cfg.useMetricFactors}
-                                    onDataInspect={() => createPointTable(trendData[cfg.field], cfg.title, cfg.unit)}
-                                >
-                                    {trendData[cfg.field].map((s, i) => <Line
-                                        highlightHover={true}
-                                        showPoints={true}
-                                        lineStyle={s.lineStyle}
-                                        color={s.color}
-                                        data={s.data}
-                                        legend={s.label}
-                                        key={i}
-                                    />)}
-                                </Plot>
-                            </div>
-                        </div> : null
-                )}
-
-                <div className="card">
-                    <div className="card-header">Capacitor Bank Analytic Event Overview</div>
-                    <div className="card-body">
-                        {eventTableStatus === 'loading' ?
+                    : <>
+                        {trendStatus === 'loading' ?
                             <div className="d-flex align-items-center justify-content-center" style={{ height: 250 }}>
                                 <ReactIcons.SpiningIcon Size={'25%'} />
                             </div>
-                        : noEventData ?
-                            <Alert Class="alert-info">
-                                No capacitor bank events found.
-                            </Alert>
-                        :
-                        <ConfigurableTable<ICBEvent>
-                            Data={sortedEventData}
-                            SortKey={sortKey}
-                            Ascending={ascending}
-                            OnSort={sortCallback}
-                            KeySelector={(item) => item.ID}
-                            TableClass="table"
-                            LocalStorageKey="SEBrowser.CapBankReportPane"
-                        >
-                            {props.selectedBank == -2 ?
-                                <Column<ICBEvent>
-                                    Key={'Edit'}
-                                    AllowSort={false}
-                                    Content={({ item }) => <i className='fa fa-edit fa-2x' onClick={() => { setShowCapBankEdit(true); setSelectedEvent(item.ID); setSelectedCapBank(1); }}></i>}
-                                >
-                                    {' '}
-                                </Column> : null}
-                            {GetConfigurableColumnsFromTypeEntries<ICBEvent>(recordFields, 'MM/DD/YY HH:mm:ss.SSS')}
-                        </ConfigurableTable>}
-                    </div>
-                </div>
-                </>}
+                            : noTrendData ?
+                                <Alert Class="alert-info">
+                                    No capacitor bank trend data.
+                                </Alert>
+                                : null}
+                        {plotConfigs.map(cfg =>
+                            trendData[cfg.field].length > 0 ?
+                                <div className="card" key={cfg.field}>
+                                    <div className="card-header">{cfg.title}</div>
+                                    <div className="card-body">
+                                        <Plot
+                                            height={250}
+                                            width={innerWidth - 345}
+                                            showBorder={false}
+                                            defaultTdomain={[Tstart, Tend]}
+                                            legend={'bottom'}
+                                            Tlabel={'Time'}
+                                            Ylabel={cfg.ylabel}
+                                            showMouse={true}
+                                            useMetricFactors={cfg.useMetricFactors}
+                                            onDataInspect={() => createPointTable(trendData[cfg.field], cfg.title, cfg.unit)}
+                                        >
+                                            {trendData[cfg.field].map((s, i) => <Line
+                                                highlightHover={true}
+                                                showPoints={true}
+                                                lineStyle={s.lineStyle}
+                                                color={s.color}
+                                                data={s.data}
+                                                legend={s.label}
+                                                key={i}
+                                            />)}
+                                        </Plot>
+                                    </div>
+                                </div> : null
+                        )}
+
+                        <div className="card">
+                            <div className="card-header">Capacitor Bank Analytic Event Overview</div>
+                            <div className="card-body">
+                                {eventTableStatus === 'loading' ?
+                                    <div className="d-flex align-items-center justify-content-center" style={{ height: 250 }}>
+                                        <ReactIcons.SpiningIcon Size={'25%'} />
+                                    </div>
+                                    : noEventData ?
+                                        <Alert Class="alert-info">
+                                            No capacitor bank events found.
+                                        </Alert>
+                                        :
+                                        <ConfigurableTable<ICBEvent>
+                                            Data={sortedEventData}
+                                            SortKey={sortKey}
+                                            Ascending={ascending}
+                                            OnSort={sortCallback}
+                                            KeySelector={(item) => item.ID}
+                                            TableClass="table"
+                                            LocalStorageKey="SEBrowser.CapBankReportPane"
+                                        >
+                                            {props.selectedBank == -2 ?
+                                                <Column<ICBEvent>
+                                                    Key={'Edit'}
+                                                    AllowSort={false}
+                                                    Content={({ item }) =>
+                                                        <button className='btn'
+                                                            onClick={() => {
+                                                                setShowCapBankEdit(true);
+                                                                setSelectedEvent(item.ID);
+                                                                setSelectedCapBank(1);
+                                                            }}
+                                                        >
+                                                            <ReactIcons.Pencil />
+                                                        </button>}
+                                                >
+                                                    {' '}
+                                                </Column> : null}
+                                            {GetConfigurableColumnsFromTypeEntries<ICBEvent>(recordFields, 'MM/DD/YY HH:mm:ss.SSS')}
+                                        </ConfigurableTable>}
+                            </div>
+                        </div>
+                    </>}
             </div>
         </>
     );
@@ -497,7 +506,7 @@ const getFilterString = (props: CapBankReportNavBarProps) => {
     return filter;
 };
 
-const getEventTable =(capBankId: number, date: string, time: string, timeWindowUnits: number, windowSize: number, bankNum: number, filterString: string): JQuery.jqXHR<ICBEvent[]> =>
+const getEventTable = (capBankId: number, date: string, time: string, timeWindowUnits: number, windowSize: number, bankNum: number, filterString: string): JQuery.jqXHR<ICBEvent[]> =>
     $.ajax({
         type: "GET",
         url: `${homePath}api/PQDashboard/CapBankReport/GetEventTable?capBankId=${capBankId}&date=${date}` +
