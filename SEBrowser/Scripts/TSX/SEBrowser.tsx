@@ -26,7 +26,7 @@ import store, { EventTypeSlice, MeterSlice, AssetSlice, LocationSlice, AssetGrou
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import MeterActivity from './Components/MeterActivity';
+import MeterActivity from './Components/MeterActivity/MeterActivity';
 import EventSearch from './Components/EventSearch/EventSearch';
 import TrendData from './Components/TrendData/TrendData';
 import BreakerReport from './Components/Reports/BreakerReport/BreakerReport';
