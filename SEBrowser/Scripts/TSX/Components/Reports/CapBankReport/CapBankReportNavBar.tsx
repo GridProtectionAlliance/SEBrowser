@@ -165,22 +165,32 @@ const CapBankReportNavBar = (props: CapBankReportNavBarProps) => {
 
     React.useEffect(() => {
         setSubStationStatus('loading');
-        seBrowserService.GetCapBankSubstationData().done(results => {
+        const handle = seBrowserService.GetCapBankSubstationData().done(results => {
             if (results != null)
                 setSubStations(results);
             setSubStationStatus('idle');
         }).fail(() => setSubStationStatus('error'));
+
+        return () => {
+            if (handle?.abort != null)
+                handle.abort();
+        };
     }, []);
 
     React.useEffect(() => {
         if (props.StationId < 0)
             return;
         setCapBankStatus('loading');
-        seBrowserService.GetCapBankData(props.StationId).done(results => {
+        const handle = seBrowserService.GetCapBankData(props.StationId).done(results => {
             if (results != null)
                 setCapBanks(results);
             setCapBankStatus('idle');
         }).fail(() => setCapBankStatus('error'));
+
+        return () => {
+            if (handle?.abort != null)
+                handle.abort();
+        };
     }, [props.StationId]);
 
     // Keep the numBanks prop in sync with the selected capacitor bank group
