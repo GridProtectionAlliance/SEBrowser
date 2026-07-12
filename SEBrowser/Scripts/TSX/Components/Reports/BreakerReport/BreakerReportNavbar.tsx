@@ -20,7 +20,7 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-
+/*
 import React from 'react';
 import BreakerReportService from '../../../../TS/Services/BreakerReport'
 
@@ -117,4 +117,4 @@ export default class BreakerReportNavbar extends React.Component<BreakerReportNa
             </nav>
         );
     }
-}
+}*/
