@@ -40,6 +40,7 @@ import { FilterType } from './Types';
 import TrendChannelFilters from './ChannelFilters';
 import TrendDataNavbarButtons from './TrendDataNavbarButtons';
 import { useTrendDataNavbar } from './useTrendDataNavbar';
+import { getValueListGroup, ValueListItemResponse } from '../../EventSearch/Navbar/EventSearchNavbar';
 
 interface IProps {
     ToggleVis: () => void,
@@ -92,9 +93,9 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         if (field.type != 'enum' || field.enum == undefined || field.enum.length != 1)
             return () => { };
 
-        const handle = getValueListGroup(field.enum[0].Value);
+        const handle: JQuery.jqXHR<ValueListItemResponse[]> = getValueListGroup(field.enum[0].Value);
 
-        handle.done(d => setOptions(d.map(item => ({ Value: item.Value.toString(), Label: item.Text }))))
+        handle.done(d => setOptions(d.map(item => ({ Value: item.Value.toString(), Label: item.AltValue ?? item.Value }))))
         return () => {
             if (handle?.abort != null)
                 handle.abort();
@@ -383,17 +384,6 @@ const getAdditionalMeterFieldNames = () => {
         url: `${homePath}api/openXDA/AdditionalField/ParentTable/Meter/FieldName/0`,
         contentType: "application/json; charset=utf-8",
         cache: false,
-        async: true
-    });
-}
-
-const getValueListGroup = (value) => {
-    return $.ajax({
-        type: "GET",
-        url: `${homePath}api/ValueList/Group/${value}`,
-        contentType: "application/json; charset=utf-8",
-        dataType: 'json',
-        cache: true,
         async: true
     });
 }

@@ -42,6 +42,10 @@ import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 
 const momentDateTimeFormat = "MM/DD/YYYY HH:mm:ss.SSS";
 
+export type ValueListItemResponse = Omit<SystemCenter.Types.ValueListItem, 'AltValue'> & {
+    AltValue: string | null;
+};
+
 const EventSearchNavbar = () => {
     const dispatch = useAppDispatch();
     const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
@@ -463,21 +467,23 @@ const getEnum = (setOptions: (options: Gemstone.TSX.Interfaces.ILabelValue<strin
     if (field.type != 'enum' || field.enum == undefined || field.enum.length != 1)
         return () => {/*Do Nothing*/ };
 
-    const handle = $.ajax({
-        type: "GET",
-        url: `${homePath}api/ValueList/Group/${field.enum[0].Value}`,
-        contentType: "application/json; charset=utf-8",
-        dataType: 'json',
-        cache: true,
-        async: true
-    });
+    const handle: JQuery.jqXHR<ValueListItemResponse[]> = getValueListGroup(field.enum[0].Value);
 
-    handle.done(d => setOptions(d.map(item => ({ Value: item.Value.toString(), Label: item.Text }))))
+    handle.done(d => setOptions(d.map(item => ({ Value: item.Value.toString(), Label: item.AltValue ?? item.Value }))))
 
     return () => {
         if (handle != null && handle.abort != null) handle.abort();
     }
 }
+
+export const getValueListGroup = (groupName: string): JQuery.jqXHR<ValueListItemResponse[]> => $.ajax({
+    type: 'GET',
+    url: `${homePath}api/ValueList/Group/${groupName}`,
+    contentType: 'application/json; charset=utf-8',
+    dataType: 'json',
+    cache: true,
+    async: true
+});
 
 const ConvertType = (type: string) => {
     if (type == 'string' || type == 'integer' || type == 'number' || type == 'datetime' || type == 'boolean')
