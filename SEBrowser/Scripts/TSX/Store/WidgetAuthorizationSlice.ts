@@ -40,8 +40,8 @@ const getDefaultAuthorization = (): EventWidget.IWidgetAuthorization => ({
     }
 });
 
-export const FetchWidgetAuthorization = createAsyncThunk('WidgetAuthorization/FetchThunk', async () => {
-    return loadWidgetAuthorization();
+export const FetchWidgetAuthorization = createAsyncThunk('WidgetAuthorization/FetchThunk', async (_, { signal }) => {
+    return loadWidgetAuthorization(signal);
 });
 
 const widgetAuthorizationSlice = createSlice({
@@ -66,12 +66,12 @@ const widgetAuthorizationSlice = createSlice({
     }
 });
 
-const loadWidgetAuthorization = async (): Promise<EventWidget.IWidgetAuthorization> => {
+const loadWidgetAuthorization = async (signal: AbortSignal): Promise<EventWidget.IWidgetAuthorization> => {
     const authorization = getDefaultAuthorization();
 
     for (const [widget, requirements] of Object.entries(WidgetRequirements)) {
         const resources = requirements.flatMap((requirement) => requirement.RequiredResources);
-        const access: boolean[] = await $.ajax({
+        const handle: JQuery.jqXHR<boolean[]> = $.ajax({
             type: 'POST',
             url: `${homePath}api/authorization/access`,
             contentType: 'application/json; charset=utf-8',
@@ -80,6 +80,12 @@ const loadWidgetAuthorization = async (): Promise<EventWidget.IWidgetAuthorizati
             cache: false,
             async: true
         });
+
+        signal.addEventListener('abort', () => {
+            if (handle.abort !== undefined) handle.abort();
+        });
+
+        const access: boolean[] = await handle;
 
         const resultMap: Record<string, boolean> = {};
 

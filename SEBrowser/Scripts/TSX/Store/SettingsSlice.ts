@@ -29,8 +29,14 @@ import type { RootState } from './Store';
 
 declare let homePath: string;
 
-export const LoadSettings = createAsyncThunk('Settings/LoadSettingsThunk', async () => {
-    return Promise.all([loadTimeZone(), loadWidgetCategories()])
+export const LoadSettings = createAsyncThunk('Settings/LoadSettingsThunk', async (_, { signal }) => {
+    const handles = [loadTimeZone(), loadWidgetCategories()];
+
+    signal.addEventListener('abort', () => handles.forEach(handle => {
+        if (handle.abort !== undefined) handle.abort();
+    }));
+
+    return await Promise.all(handles);
 });
 
 const defaultState = {
