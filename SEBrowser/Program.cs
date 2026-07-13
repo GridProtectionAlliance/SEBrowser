@@ -160,7 +160,6 @@ public class Program
         section.BootstrapTheme = ("~/Content/bootstrap-theme.css", "The application bootstrap theme");
         section.DateFormat = ("MM/dd/yyyy", "The default date format to use when rendering timestamps");
         section.TimeFormat = ("HH:mm.ss.fff", "The default time format to use when rendering timestamps");
-        section.DefaultSecurityRoles = ("Administrator, Manager, Engineer", "The default security roles that should exist for the application");
 
         dynamic oauthSection = settings[OAuthAuthenticationProvider.SettingsSection];
         oauthSection.UserIdClaim = ("http://schemas.microsoft.com/identity/claims/objectidentifier", "Defines the claim used to identify the user.");
