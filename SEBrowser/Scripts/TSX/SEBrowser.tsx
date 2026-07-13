@@ -103,13 +103,17 @@ const PQBrowser = () => {
 
     //Effect to load settings/ custom reports on app mount
     React.useEffect(() => {
-        dispatch(LoadSettings());
-        dispatch(FetchWidgetAuthorization());
+        const settingsRequest = dispatch(LoadSettings());
+        const authorizationRequest = dispatch(FetchWidgetAuthorization());
 
         const handle = getCustomReports();
 
         handle.done(data => setLinks(data));
-        return () => { if (handle.abort != undefined) handle.abort() }
+        return () => {
+            settingsRequest.abort();
+            authorizationRequest.abort();
+            if (handle.abort != undefined) handle.abort();
+        }
     }, [])
 
     return (
