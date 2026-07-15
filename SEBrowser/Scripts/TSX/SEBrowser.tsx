@@ -155,6 +155,7 @@ const PQBrowser = () => {
             <Application
                 HomePath={homePath}
                 DefaultPath={"eventsearch"}
+                DocumentTitleFormatter={(page, app) => `${page} - ${app}`}
                 OnSignOut={() => window.location.href = logoutPath}
                 Logo={homePath + "Images/PQ Browser.png"}
                 SidebarUI={versionUI}
