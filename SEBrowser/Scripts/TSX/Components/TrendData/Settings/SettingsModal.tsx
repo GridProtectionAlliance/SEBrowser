@@ -148,6 +148,7 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
                 <div className={"tab-pane " + (tab == "series" ? " active" : "fade")} id="series">
                     <ChannelTab
                         Type={props.Plot.Type}
+                        PlotFilter={plotBuffer?.PlotFilter ?? []}
                         SetChannels={setChannelsBuffer}
                         Channels={channelsBuffer}
                         SeriesSettings={seriesBuffer}

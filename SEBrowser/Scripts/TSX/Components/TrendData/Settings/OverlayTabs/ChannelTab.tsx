@@ -21,7 +21,7 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import { TrendSearch } from '../../../../global';
+import { IMultiCheckboxOption, TrendSearch } from '../../../../global';
 import { BlockPicker } from 'react-color';
 import { LineTypeOptions } from '../SettingsModal';
 import TrendChannelTable from '../../Components/TrendChannelTable';
@@ -33,6 +33,7 @@ interface IChannelTabProps {
     SetSeriesSettings: (newSettings: TrendSearch.ISeriesSettings[]) => void,
     Channels: TrendSearch.ITrendChannel[],
     SetChannels: (newSettings: TrendSearch.ITrendChannel[]) => void,
+    PlotFilter: IMultiCheckboxOption[],
     Type: TrendSearch.IPlotTypes
 }
 
@@ -79,8 +80,13 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
 
     const getSettingsList = React.useCallback(() => {
         switch (props.Type) {
-            case 'Line':
-                if (!currentSeriesSetting.Settings['Minimum']?.['HasData'] && !currentSeriesSetting.Settings['Average']?.['HasData'] && !currentSeriesSetting.Settings['Maximum']?.['HasData'])
+            case 'Line': {
+                const visibleSeries = Object.keys(currentSeriesSetting.Settings).filter(seriesKey =>
+                    currentSeriesSetting.Settings[seriesKey].HasData &&
+                    (props.PlotFilter.find(option => option.Value === seriesKey)?.Selected ?? true)
+                );
+
+                if (visibleSeries.length === 0)
                     return (
                         <div style={{
                             backgroundColor: "grey", borderRadius: ('25px 25px 25px 25px'),
@@ -90,12 +96,13 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
                 return (
                     <div className="row" style={{ height: '100%', width: '100%' }}>
                         {
-                            Object.keys(currentSeriesSetting.Settings).map(seriesKey =>
-                                <LineSettings SeriesSettings={currentSeriesSetting} SetSeriesSettings={editChannel} Series={seriesKey} />
+                            visibleSeries.map(seriesKey =>
+                                <LineSettings key={seriesKey} SeriesSettings={currentSeriesSetting} SetSeriesSettings={editChannel} Series={seriesKey} />
                             )
                         }
                     </div>
                 );
+            }
             case 'Cyclic':
                 return (
                     <>
@@ -106,7 +113,7 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
                 console.error("Unexpected chart type in ChannelTab.tsx");
                 return null;
         }
-    }, [props.Type, currentSeriesSetting, editChannel, LineTypeOptions]);
+    }, [props.Type, props.PlotFilter, currentSeriesSetting, editChannel, LineTypeOptions]);
 
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
