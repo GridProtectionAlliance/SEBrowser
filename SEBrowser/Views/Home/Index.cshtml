@@ -21,7 +21,6 @@
 //
 //*******************************************************************************************************@
 @using Gemstone.Data
-@using Gemstone.Reflection
 @using Gemstone.Configuration;
 @using Microsoft.AspNetCore.Antiforgery
 @using Microsoft.AspNetCore.Authentication.Cookies
@@ -36,12 +35,6 @@
     string? antiforgeryToken = Antiforgery.GetAndStoreTokens(ViewContext.HttpContext).RequestToken;
 
     ViewData["Title"] = "Home page";
-}
-@{
-    Layout = "";
-
-    Version assemblyVersionInfo = AssemblyInfo.EntryAssembly.Version;
-    string applicationVersion = assemblyVersionInfo.Major + "." + assemblyVersionInfo.Minor + "." + assemblyVersionInfo.Build;
 }
 @{
     Layout = "";
@@ -122,7 +115,6 @@
         var scInstance = '@Html.Raw(ViewBag.scInstance)';
         var openSEEInstance = '@Html.Raw(ViewBag.openSEEInstance)';
         var faultLocationInstance = '@Html.Raw(ViewBag.faultLocationInstance)';
-        var version = '@applicationVersion';
         var homePath = '@Html.Raw(Url.Content("~/"))';
         var controllerViewPath = homePath + '@Html.Raw(ViewContext.RouteData.Values["controller"])/@Html.Raw(ViewContext.RouteData.Values["action"])';
     </script>

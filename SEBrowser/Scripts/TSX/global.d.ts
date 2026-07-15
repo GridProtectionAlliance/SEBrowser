@@ -31,7 +31,6 @@ declare global {
     let openSEEInstance: string;
     let faultLocationInstance: string;
     let controllerViewPath: string;
-    let version: string;
 
     namespace queryString {
         function parse(str: string, opts?: object): object

@@ -33,7 +33,7 @@ import BreakerReport from './Components/Reports/BreakerReport/BreakerReport';
 import RelayReport from './Components/Reports/TripCoilReport/TripCoilReport';
 import CapBankReport from './Components/Reports/CapBankReport/CapBankReport';
 import DERReport from './Components/Reports/DERReport/DERReport';
-import { SystemCenter } from '@gpa-gemstone/application-typings';
+import { Application as ApplicationTypes, SystemCenter } from '@gpa-gemstone/application-typings';
 import { Application, Page, Section } from '@gpa-gemstone/react-interactive';
 import Settings from './Store/Settings';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
@@ -41,6 +41,7 @@ import { useAppDispatch, useAppSelector } from './hooks';
 import { LoadSettings } from './Store/SettingsSlice';
 import { FetchWidgetAuthorization } from './Store/WidgetAuthorizationSlice';
 import { HeartBeatCheck } from '@gpa-gemstone/common-pages';
+import { LIB_VERSION } from './version';
 
 let isRedirecting = false;
 
@@ -64,6 +65,8 @@ const PQBrowser = () => {
 
     const [links, setLinks] = React.useState<SystemCenter.Types.ValueListItem[]>([]);
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
+    const [backendVersion, setBackendVersion] = React.useState<string>('0.0.0');
+    const [getBackendVersionStatus, setGetBackendVersionStatus] = React.useState<ApplicationTypes.Types.Status>('uninitiated');
 
     const evtTypeStatus = useAppSelector(EventTypeSlice.FetchStatus);
     const meterStatus = useAppSelector(MeterSlice.FetchStatus);
@@ -116,6 +119,36 @@ const PQBrowser = () => {
         }
     }, [])
 
+    React.useEffect(() => {
+        setGetBackendVersionStatus('loading');
+        const handle = getBackendVersion();
+
+        handle.done(data => {
+            setBackendVersion(data);
+            setGetBackendVersionStatus('idle');
+        });
+        handle.fail(() => setGetBackendVersionStatus('error'));
+
+        return () => {
+            if (handle.abort != undefined) handle.abort();
+        }
+    }, []);
+
+    const versionUI = React.useMemo(() => (
+        <div className="row m-0">
+            <div className="col-12 p-0">
+                <p className="text-center">
+                    {getBackendVersionStatus === 'error' ?
+                        'Version: n/a' :
+                        getBackendVersionStatus === 'loading' ? <ReactIcons.SpiningIcon /> : `Version: ${backendVersion}`}
+                </p>
+                <p className="text-center">
+                    UI Version: {LIB_VERSION}
+                </p>
+            </div>
+        </div>
+    ), [backendVersion, getBackendVersionStatus]);
+
     return (
         <>
             <HeartBeatCheck IntervalMS={30000} HeartBeat={heartBeatCheck} />
@@ -124,7 +157,7 @@ const PQBrowser = () => {
                 DefaultPath={"eventsearch"}
                 OnSignOut={() => window.location.href = logoutPath}
                 Logo={homePath + "Images/PQ Browser.png"}
-                Version={version}
+                SidebarUI={versionUI}
                 NavBarContent={
                     <ul className="navbar-nav mr-l">
                         <li className="nav-item" style={{ width: '84px' }}>
@@ -174,6 +207,17 @@ const getCustomReports = () => {
         contentType: "application/json; charset=utf-8",
         dataType: 'json',
         cache: true,
+        async: true
+    });
+}
+
+const getBackendVersion = () => {
+    return $.ajax({
+        type: 'GET',
+        url: `${homePath}api/System/Version`,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'text',
+        cache: false,
         async: true
     });
 }
