@@ -32,7 +32,7 @@ import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { Column } from '@gpa-gemstone/react-table';
 import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 import { formatWindowUnit } from '../Utils/HelperFunctions';
-import { TimeFilter } from '@gpa-gemstone/common-pages';
+import { ErrorBoundary, TimeFilter } from '@gpa-gemstone/common-pages';
 import { toGemstoneFilter, fromGemstoneFilter } from '../../EventSearch/TimeWindowUtils';
 import { useAppSelector } from '../../../hooks';
 import { SelectDateTimeSetting, SelectTimeZone } from '../../../Store/SettingsSlice';
@@ -42,6 +42,7 @@ import TrendChannelFilters from './ChannelFilters';
 import TrendDataNavbarButtons from './TrendDataNavbarButtons';
 import { useTrendDataNavbar } from './useTrendDataNavbar';
 import { getValueListGroup, ValueListItemResponse } from '../../EventSearch/Navbar/EventSearchNavbar';
+import { TrendChannelSelectorTutorialAlert } from '../TrendDataTutorials';
 
 interface IProps {
     ToggleVis: () => void,
@@ -184,21 +185,24 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         />
                     </li>
                     <li className="nav-item" style={{ width: '15%', paddingRight: 10 }} ref={filtRef as unknown as React.RefObject<HTMLLIElement>}>
-                        <TrendChannelFilters
-                            TrendFilter={trendFilter}
-                            SetTrendFilter={setTrendFilter}
-                            LinePlot={linePlotOptions}
-                            SetLinePlotOptions={setLinePlotOptions}
-                            PhaseStatus={phaseStatus}
-                            PhaseOptions={phaseOptions}
-                            SetPhaseOptions={setPhaseOptions}
-                            ChannelGroupStatus={channelGroupStatus}
-                            ChannelGroupOptions={channelGroupOptions}
-                            SetChannelGroupOptions={setChannelGroupOptions}
-                            SetShowFilter={setShowFilter}
-                        />
+                        <ErrorBoundary ErrorMessage={'Error loading channel filters.'} ErrorIconSize={50}>
+                            <TrendChannelFilters
+                                TrendFilter={trendFilter}
+                                SetTrendFilter={setTrendFilter}
+                                LinePlot={linePlotOptions}
+                                SetLinePlotOptions={setLinePlotOptions}
+                                PhaseStatus={phaseStatus}
+                                PhaseOptions={phaseOptions}
+                                SetPhaseOptions={setPhaseOptions}
+                                ChannelGroupStatus={channelGroupStatus}
+                                ChannelGroupOptions={channelGroupOptions}
+                                SetChannelGroupOptions={setChannelGroupOptions}
+                                SetShowFilter={setShowFilter}
+                            />
+                        </ErrorBoundary>
                     </li>
-                    <li className="nav-item d-flex" style={{ width: '55%', paddingRight: 10, height: tableHeight }}>
+                    <li className="nav-item d-flex flex-column" style={{ width: '55%', paddingRight: 10, height: tableHeight }}>
+                        <TrendChannelSelectorTutorialAlert />
                         {trendChannelStatus === 'loading' ?
                             <div className='d-flex align-items-center flex-column justify-content-center' style={{ width: '100%', height: tableHeight }}>
                                 <ReactIcons.SpiningIcon Style={{ height: '50%' }} />
