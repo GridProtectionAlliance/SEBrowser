@@ -24,8 +24,20 @@
 import React from 'react';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import moment from 'moment';
-import { TrendSearch } from '../../global';
-import { momentDateFormat } from '../EventSearch/TimeWindowUtils';
+import { TrendSearch } from '../../../global';
+import { momentDateFormat } from '../../EventSearch/TimeWindowUtils';
+
+export type WindowUnit = 'milliseconds' | 'seconds' | 'minutes' | 'hours' | 'days' | 'weeks' | 'months' | 'years';
+
+const windowUnits: Partial<Record<number, WindowUnit>> = {
+    1: 'seconds',
+    2: 'minutes',
+    3: 'hours',
+    4: 'days',
+    5: 'weeks',
+    6: 'months',
+    7: 'years'
+};
 
 // Returns an array of booleans telling which components are common to all channels
 export function findCommonComponents(components: string[], channels: TrendSearch.ITrendChannel[]): boolean[] {
@@ -212,6 +224,8 @@ export function getPlotSettingsOrDefault(): TrendSearch.ITrendPlot {
     Object.keys(storedItems).forEach(field => defaultPlot[field] = storedItems[field]);
     return defaultPlot;
 }
+
+export const formatWindowUnit = (unit: number): WindowUnit => windowUnits[unit] ?? 'milliseconds';
 
 export const TrendDefaults = {
     storeLineSettings,

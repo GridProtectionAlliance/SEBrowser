@@ -31,6 +31,7 @@ import { Search } from '@gpa-gemstone/react-interactive';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { Column } from '@gpa-gemstone/react-table';
 import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
+import { formatWindowUnit } from '../Utils/HelperFunctions';
 import { TimeFilter } from '@gpa-gemstone/common-pages';
 import { toGemstoneFilter, fromGemstoneFilter } from '../../EventSearch/TimeWindowUtils';
 import { useAppSelector } from '../../../hooks';
@@ -149,7 +150,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             <>
                 <div className="navbar-nav mr-auto">
                     <span className="navbar-text">
-                        {timeFilter.date} {timeFilter.time} +/- {timeFilter.windowSize} {formatWindowUnit(timeFilter.timeWindowUnits)}
+                        {timeFilter.date} {timeFilter.time} +/- {timeFilter.windowSize} <span style={{ textTransform: 'capitalize' }}>{formatWindowUnit(timeFilter.timeWindowUnits)}</span>
                     </span>
                 </div>
                 <TrendDataNavbarButtons
@@ -394,25 +395,6 @@ const ConvertFieldType = (type: string) => {
     return {
         type: 'enum', enum: [{ Label: type, Value: type }]
     }
-}
-
-// TODO: These can be in a shared place with eventSearchBar
-const formatWindowUnit = (i: number) => {
-    if (i == 7)
-        return "Years";
-    if (i == 6)
-        return "Months";
-    if (i == 5)
-        return "Weeks";
-    if (i == 4)
-        return "Days";
-    if (i == 3)
-        return "Hours";
-    if (i == 2)
-        return "Minutes";
-    if (i == 1)
-        return "Seconds";
-    return "Milliseconds";
 }
 
 export default TrendSearchNavbar;
