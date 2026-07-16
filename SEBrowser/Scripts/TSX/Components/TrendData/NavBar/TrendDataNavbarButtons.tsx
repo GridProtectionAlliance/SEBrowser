@@ -228,7 +228,7 @@ const TrendDataNavbarButtons = (props: IProps) => {
                 <div style={{ marginBottom: 5 }} data-tooltip='Meter-Plot-Group'
                     onMouseEnter={() => setHover('Meter-Plot-Group')} onMouseLeave={() => setHover('None')}>
                 <BtnDropdown
-                    Label={<ReactIcons.LineChart />}
+                    Label={<ReactIcons.ScatterPlot />}
                     ContainerStyle={{ width: '100%' }}
                     Disabled={props.SelectedSet.size === 0}
                     Callback={() => {
