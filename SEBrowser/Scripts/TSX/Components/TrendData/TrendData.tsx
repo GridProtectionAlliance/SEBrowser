@@ -162,8 +162,8 @@ const TrendData = () => {
                 />
             </ErrorBoundary>
             <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
-                <div className={'row'} style={{ flex: 1, overflow: 'hidden' }}>
-                    <div className={'col-12'} style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }} id={trendSearchId}>
+                <div className={'row m-0'} style={{ flex: 1, overflow: 'hidden' }}>
+                    <div className={'col-12 px-0'} style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }} id={trendSearchId}>
                         {plotList.map(element =>
                             <TrendPlot
                                 key={element.ID}
