@@ -27,6 +27,7 @@ import { Input, TextArea, StylableSelect, CheckBox, Select } from '@gpa-gemstone
 import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import TrendMarkerTable from '../../Components/TrendMarkerTable';
 import { LineTypeOptions, AxisOptions } from '../SettingsModal';
+import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 
 interface IMarkerTabProps {
     // Manage Markers
@@ -49,17 +50,12 @@ Object.keys(SVGIcons).forEach((iconName) => {
 const MarkerTab = React.memo((props: IMarkerTabProps) => {
     // Sizing Variables
     const sideMarkerRef = React.useRef(null);
-    const [markersHeight, setMarkersHeight] = React.useState<number>(500);
+    const { offsetHeight } = useGetContainerPosition(sideMarkerRef);
+    const markersHeight = Math.max(400, offsetHeight);
 
     // Settings Controls
     const [currentMarker, setCurrentMarker] = React.useState<TrendSearch.IMarker>(undefined);
     const [allMarkers, setAllMarkers] = React.useState<TrendSearch.IMarker[]>([]);
-
-    // Get Heights and Widths
-    React.useLayoutEffect(() => {
-        const baseMarkerHeight = sideMarkerRef?.current?.offsetHeight ?? 400;
-        setMarkersHeight(baseMarkerHeight < 400 ? 400 : baseMarkerHeight);
-    });
 
     React.useEffect(() => {
         const markerArray: TrendSearch.IMarker[] = [...props.SymbMarkers, ...props.VeHoMarkers];

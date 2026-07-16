@@ -32,6 +32,7 @@ import { LoadingIcon } from '@gpa-gemstone/react-interactive';
 import { Line, Plot } from '@gpa-gemstone/react-graph';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { ToolTip } from '@gpa-gemstone/react-forms';
+import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 import { ITrendWidgetProps } from './TrendWidgetRegistry';
 import { formatWindowUnit } from '../Utils/HelperFunctions';
 import { serverFormat, timeFilterFormat } from '../Utils/Constants';
@@ -49,15 +50,13 @@ const LineGraph = React.memo((props: ITrendWidgetProps) => {
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('uninitiated');
 
     // Height mangement
-    const [titleHeight, setTitleHeight] = React.useState<number>(0);
     const [plotHeight, setPlotHeight] = React.useState<number>(props.Height);
     const [extraLegendHeight, setExtraLegendHeight] = React.useState<number>(0);
     const titleRef = React.useRef(null);
+    const { offsetHeight: titleHeight } = useGetContainerPosition(titleRef);
     const oldValues = React.useRef<{ ChannelInfo: TrendSearch.ISeriesSettings[], TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: [], TimeFilter: null });
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const generalSettings = useAppSelector(SelectGeneralSettings);
-
-    React.useLayoutEffect(() => setTitleHeight(titleRef?.current?.offsetHeight ?? 0));
 
     React.useEffect(() => {
         if (props.ChannelInfo == null || props.TimeFilter == null) return;

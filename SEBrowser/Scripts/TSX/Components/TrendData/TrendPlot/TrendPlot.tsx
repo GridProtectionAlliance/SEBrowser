@@ -24,7 +24,7 @@ import React from 'react';
 import _ from 'lodash';
 import queryString from 'querystring';
 import moment from 'moment';
-import { CreateGuid, SpacedColor } from '@gpa-gemstone/helper-functions';
+import { CreateGuid, SpacedColor, useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 import { TrashCan, Pencil, Plus } from '@gpa-gemstone/gpa-symbols';
 import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, AxisMap } from '@gpa-gemstone/react-graph';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
@@ -75,8 +75,7 @@ interface IContainerProps {
 const TrendPlot = (props: IContainerProps) => {
     // Sizing Variables
     const chartRef = React.useRef(null);
-    const [chartWidth, setChartWidth] = React.useState<number>(500);
-    const [chartHeight, setChartHeight] = React.useState<number>(500);
+    const { offsetWidth: chartWidth, offsetHeight: chartHeight } = useGetContainerPosition(chartRef);
     const [extraHeight, setExtraHeight] = React.useState<number>(0);
 
     // Plot Saved Settings
@@ -155,12 +154,6 @@ const TrendPlot = (props: IContainerProps) => {
         });
         colorIndex.current.ind = previousIndex;
     }, []);
-
-    // Get Heights and Widths
-    React.useLayoutEffect(() => {
-        setChartWidth(chartRef?.current?.offsetWidth ?? 500);
-        setChartHeight(chartRef?.current?.offsetHeight ?? 500);
-    });
 
     // Pre-filter settings that shouldn't get auto-updated
     React.useEffect(() => {

@@ -30,7 +30,7 @@ import GraphError from './GraphError';
 import { Application } from '@gpa-gemstone/application-typings';
 import { LoadingIcon } from '@gpa-gemstone/react-interactive';
 import { HeatMapChart, Plot } from '@gpa-gemstone/react-graph';
-import { HexToHsv } from '@gpa-gemstone/helper-functions';
+import { HexToHsv, useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 import { Warning } from '@gpa-gemstone/gpa-symbols';
 import { ToolTip } from '@gpa-gemstone/react-forms';
 import type { ITrendWidgetProps } from './TrendWidgetRegistry';
@@ -53,15 +53,13 @@ const CyclicHistogram = React.memo((props: ITrendWidgetProps) => {
     const [barColor, setBarColor] = React.useState<{ Hue: number, Saturation: number }>(null);
     const [metaData, setMetaData] = React.useState<TrendSearch.IMetaData[]>(null);
     // Height mangement
-    const [titleHeight, setTitleHeight] = React.useState<number>(0);
     const [plotHeight, setPlotHeight] = React.useState<number>(props.Height);
     const [extraLegendHeight, setExtraLegendHeight] = React.useState<number>(0);
     const titleRef = React.useRef(null);
+    const { offsetHeight: titleHeight } = useGetContainerPosition(titleRef);
     const oldValues = React.useRef<{ ChannelInfo: TrendSearch.ISeriesSettings, TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: null, TimeFilter: null });
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const generalSettings = useAppSelector(SelectGeneralSettings);
-
-    React.useLayoutEffect(() => setTitleHeight(titleRef?.current?.offsetHeight ?? 0));
 
     React.useEffect(() => {
         if (channelInfo == null || props.TimeFilter == null) return;

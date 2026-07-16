@@ -26,6 +26,7 @@ import { BlockPicker } from 'react-color';
 import { LineTypeOptions } from '../SettingsModal';
 import TrendChannelTable from '../../Components/TrendChannelTable';
 import { LineSettings } from '../TabProperties/LineSettings';
+import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 
 interface IChannelTabProps {
     // Assumption that this doesnt change outside of this overlay
@@ -40,17 +41,12 @@ interface IChannelTabProps {
 const ChannelTab = React.memo((props: IChannelTabProps) => {
     // Sizing Variables
     const sideSettingRef = React.useRef(null);
-    const [settingsHeight, setSettingsHeight] = React.useState<number>(500);
+    const { offsetHeight } = useGetContainerPosition(sideSettingRef);
+    const settingsHeight = Math.max(400, offsetHeight);
 
     // Settings Controls
     const [currentChannelId, setCurrentChannelId] = React.useState<string | undefined>(undefined);
     const [currentSeriesSetting, setCurrentSeriesSetting] = React.useState<TrendSearch.ISeriesSettings | undefined>(undefined);
-
-    // Get Heights and Widths
-    React.useLayoutEffect(() => {
-        const baseHeight = sideSettingRef?.current?.offsetHeight ?? 400;
-        setSettingsHeight(baseHeight < 400 ? 400 : baseHeight);
-    });
 
     React.useEffect(() => {
         // Means were in the first render/ after cleanup
