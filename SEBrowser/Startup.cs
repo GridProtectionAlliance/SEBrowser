@@ -42,6 +42,7 @@ using SEBrowser.Controllers.OpenXDA;
 using SEBrowser.Security;
 using System;
 using System.IO;
+using System.Text.Json;
 namespace SEBrowser;
 
 public class Startup
@@ -51,6 +52,9 @@ public class Startup
         SetupTempPath();
         Configuration = configuration;
         Env = env;
+
+        using JsonDocument package = JsonDocument.Parse(File.ReadAllText(Path.Combine(env.ContentRootPath, "package.json")));
+        UIVersion = package.RootElement.GetProperty("version").GetString()!;
     }
 
     public static class Policies
@@ -61,6 +65,7 @@ public class Startup
 
     public IWebHostEnvironment Env { get; set; }
     public IConfiguration Configuration { get; }
+    public static string UIVersion { get; private set; } = "";
 
     public void ConfigureServices(IServiceCollection services)
     {
