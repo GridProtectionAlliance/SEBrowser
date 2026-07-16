@@ -35,7 +35,7 @@ import { formatWindowUnit } from '../Utils/HelperFunctions';
 import { ErrorBoundary, TimeFilter } from '@gpa-gemstone/common-pages';
 import { toGemstoneFilter, fromGemstoneFilter } from '../../EventSearch/TimeWindowUtils';
 import { useAppSelector } from '../../../hooks';
-import { SelectDateTimeSetting, SelectTimeZone } from '../../../Store/SettingsSlice';
+import { SelectDateTimeSetting, SelectTimeZone, SelectTutorialSettings } from '../../../Store/SettingsSlice';
 import TrendChannelTable from '../Components/TrendChannelTable';
 import { FilterType } from './Types';
 import TrendChannelFilters from './ChannelFilters';
@@ -69,6 +69,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     const [showFilter, setShowFilter] = React.useState<FilterType>('None');
     const dateTimeSetting = useAppSelector(SelectDateTimeSetting);
     const timeZone = useAppSelector(SelectTimeZone);
+    const showTutorials = useAppSelector(SelectTutorialSettings).UseTutorials;
 
     const {
         trendFilter,
@@ -207,7 +208,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                         </ErrorBoundary>
                     </li>
                     <li className="nav-item d-flex flex-column" style={{ width: '55%', paddingRight: 10, height: tableHeight }}>
-                        <TrendChannelSelectorTutorialAlert />
+                        {showTutorials ? <TrendChannelSelectorTutorialAlert /> : null}
                         {trendChannelStatus === 'loading' ?
                             <div className='d-flex align-items-center flex-column justify-content-center' style={{ width: '100%', height: tableHeight }}>
                                 <ReactIcons.SpiningIcon Style={{ height: '50%' }} />

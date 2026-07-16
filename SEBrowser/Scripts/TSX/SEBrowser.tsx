@@ -35,7 +35,7 @@ import CapBankReport from './Components/Reports/CapBankReport/CapBankReport';
 import DERReport from './Components/Reports/DERReport/DERReport';
 import { Application as ApplicationTypes, SystemCenter } from '@gpa-gemstone/application-typings';
 import { Application, Page, Section } from '@gpa-gemstone/react-interactive';
-import Settings from './Store/Settings';
+import Settings from './Components/Settings/Settings';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { useAppDispatch, useAppSelector } from './hooks';
 import { LoadSettings } from './Store/SettingsSlice';

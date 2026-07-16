@@ -68,7 +68,12 @@ export namespace Redux {
         eventSearch: IEventSearchSettings,
         trendData: ITrendDataSettings,
         general: IGeneralSettings,
+        tutorials: ITutorialSettings,
         timeZone: string
+    }
+
+    interface ITutorialSettings {
+        UseTutorials: boolean
     }
 
     interface IGeneralSettings {

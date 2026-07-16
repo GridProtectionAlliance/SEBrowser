@@ -57,6 +57,9 @@ const defaultState = {
         MoveOptionsLeft: false,
         ShowDataPoints: true,
         DateTime: 'startEnd'
+    },
+    tutorials: {
+        UseTutorials: true
     }
 } as Redux.SettingsState;
 
@@ -76,6 +79,10 @@ const settingsSlice = createSlice({
         },
         SetGeneral: (state: Redux.SettingsState, action: { type: string, payload: Redux.IGeneralSettings }) => {
             state.general = action.payload
+            saveSettings(state);
+        },
+        SetTutorials: (state: Redux.SettingsState, action: { type: string, payload: Redux.ITutorialSettings }) => {
+            state.tutorials = action.payload;
             saveSettings(state);
         },
     },
@@ -155,10 +162,11 @@ function loadWidgetCategories() {
 }
 
 export const SettingsReducer = settingsSlice.reducer
-export const { SetEventSearch, SetTrendData, SetGeneral } = settingsSlice.actions
+export const { SetEventSearch, SetTrendData, SetGeneral, SetTutorials } = settingsSlice.actions
 export const SelectEventSearchSettings = (state: RootState) => state.Settings.eventSearch
 export const SelectTrendDataSettings = (state: RootState) => state.Settings.trendData
 export const SelectGeneralSettings = (state: RootState) => state.Settings.general
+export const SelectTutorialSettings = (state: RootState) => state.Settings.tutorials
 export const SelectTimeZone = (state: RootState) => state.Settings.timeZone
 export const SelectWidgetCategories = (state: RootState) => state.Settings.eventSearch.WidgetCategories
 export const SelectDateTimeSetting = (state: RootState) => state.Settings.general.DateTime
