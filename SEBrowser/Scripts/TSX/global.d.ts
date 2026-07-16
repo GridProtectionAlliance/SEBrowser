@@ -242,7 +242,7 @@ export namespace TrendSearch {
         CyclicHistogramBins: number
     }
 
-    type IPlotTypes = 'Line'|'Cyclic';
+    type IPlotTypes = 'Line'|'Cyclic'|'Histogram';
 
     interface ITrendPlot {
         // Represents Data Needed by Outer

@@ -25,7 +25,7 @@ import { ServerErrorIcon } from '@gpa-gemstone/react-interactive';
 import { Button } from '@gpa-gemstone/react-graph';
 
 interface IProps {
-    Title: string,
+    Title?: string,
     Height: number,
     children: React.ReactNode
 }
@@ -34,8 +34,12 @@ const GraphError = React.memo((props: IProps) => {
 
     return (
         <>
-            {props.Title !== undefined ? <h4 style={{ textAlign: "center", width: `100%` }}>{props.Title}</h4> : null}
-            <div className="row" style={{ alignItems: "center", justifyContent: "center", width: "100%", height: `calc(50% - ${props.Title !== undefined ? 34 : 0}px` }}>
+            {props.Title !== undefined ?
+                <h4 style={{ textAlign: "center", width: `100%` }}>
+                    {props.Title}
+                </h4>
+                : null}
+            <div className="row" style={{ alignItems: "center", justifyContent: "center", width: "100%", height: `calc(50% - ${props.Title !== undefined ? 34 : 0}px)` }}>
                 <ServerErrorIcon Show={true} Label={'Error obtaining data from openXDA instance'} Size={props.Height / 7} />
             </div>
             <div className="row" style={{ width: "100%", height: "50%" }}>
@@ -47,7 +51,7 @@ const GraphError = React.memo((props: IProps) => {
                             <div className="col" style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", height: "100%" }}>
                                 <button type="button"
                                     className={'btn btn-primary'}
-                                    onClick={() => { element.props.onClick() }}>
+                                    onClick={() => element.props?.onClick?.()}>
                                     {element}
                                 </button>
                             </div>);

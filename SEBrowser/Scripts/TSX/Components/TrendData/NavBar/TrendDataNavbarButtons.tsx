@@ -40,7 +40,7 @@ interface IProps {
 }
 
 const TrendDataNavbarButtons = (props: IProps) => {
-    const [hover, setHover] = React.useState<'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Group-Line' | 'Cyclic' | 'Move' | 'Trash' | 'Select' | 'Capture'>('None');
+    const [hover, setHover] = React.useState<'None' | 'Show' | 'Hide' | 'Cog' | 'Single-Line' | 'Multi-Line' | 'Group-Line' | 'Cyclic' | 'Histogram' | 'Multi-Histogram' | 'Move' | 'Trash' | 'Select' | 'Capture'>('None');
 
     if (!props.ShowNav)
         return (
@@ -57,7 +57,9 @@ const TrendDataNavbarButtons = (props: IProps) => {
 
     return (
         <>
-            <div className="btn-group-vertical float-right" style={{ paddingRight: '6px' }}>
+            <div className="float-right">
+                <div className="d-flex">
+                    <div className="btn-group-vertical" style={{ paddingRight: '6px' }}>
                 <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm`}
                     onClick={() => props.ToggleVis()}
                     data-tooltip='Hide'
@@ -171,8 +173,8 @@ const TrendDataNavbarButtons = (props: IProps) => {
                     <p>Save All Plots to PDF</p>
                     {props.PlotIds.length === 0 ? <p><ReactIcons.CrossMark Color='var(--danger)'/> {'Requires an Active Plot'}</p> : null}
                 </ToolTip>
-            </div>
-            <div className="btn-group-vertical float-right">
+                    </div>
+                    <div className="btn-group-vertical">
                 <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${props.PlotIds.length === 0 ? ' disabled' : ''}`}
                     onClick={() => {
                         if (props.PlotIds.length !== 0)
@@ -284,6 +286,54 @@ const TrendDataNavbarButtons = (props: IProps) => {
                     <p>Add Selected Channel to New Cyclic Histogram Plot</p>
                     {props.SelectedSet.size !== 1 ? <p><ReactIcons.CrossMark Color='var(--danger)'/> Requires a Single Channel Selection</p> : null}
                 </ToolTip>
+                    </div>
+                </div>
+                <div className="d-flex" style={{ columnGap: 6 }}>
+                <button type="button" style={{ flex: 1 }} className={`btn btn-primary btn-sm${props.SelectedSet.size === 0 ? ' disabled' : ''}`}
+                    data-tooltip='Histogram'
+                    onMouseEnter={() => setHover('Histogram')}
+                    onMouseLeave={() => setHover('None')}
+                    onClick={() => {
+                        if (props.SelectedSet.size === 0) return;
+                        const selectedChannels = props.TrendChannels.filter(chan => props.SelectedSet.has(chan.ID));
+                        props.AddNewCharts([{
+                            TimeFilter: props.TimeFilter, Type: 'Histogram', Channels: selectedChannels, ID: CreateGuid(),
+                            PlotFilter: props.LinePlot
+                        }]);
+                    }}>
+                    <ReactIcons.BarChart />
+                </button>
+                <button type="button" style={{ flex: 1 }} className={`btn btn-primary btn-sm${props.SelectedSet.size === 0 ? ' disabled' : ''}`}
+                    data-tooltip='Multi-Histogram'
+                    onMouseEnter={() => setHover('Multi-Histogram')}
+                    onMouseLeave={() => setHover('None')}
+                    onClick={() => {
+                        if (props.SelectedSet.size === 0) return;
+                        const selectedChannels = props.TrendChannels.filter(chan => props.SelectedSet.has(chan.ID));
+                        const meterPlotChannels: TrendSearch.ITrendChannel[][] = [];
+                        selectedChannels.forEach(channel => {
+                            const listIndex = meterPlotChannels.findIndex(channelList => channelList[0].MeterKey === channel.MeterKey);
+                            if (listIndex > -1)
+                                meterPlotChannels[listIndex].push(channel);
+                            else
+                                meterPlotChannels.push([channel]);
+                        });
+                        props.AddNewCharts(meterPlotChannels.map(channelList => ({
+                            TimeFilter: props.TimeFilter, Type: 'Histogram', Channels: channelList, ID: CreateGuid(),
+                            PlotFilter: props.LinePlot
+                        })));
+                    }}>
+                    <ReactIcons.LinearBarChart />
+                </button>
+            </div>
+            <ToolTip Show={hover === 'Histogram'} Position={'left'} Target={"Histogram"}>
+                <p>Add All Selected Channels to Single Histogram</p>
+                {props.SelectedSet.size === 0 ? <p><ReactIcons.CrossMark Color='var(--danger)'/> {'Requires a Selected Channel'}</p> : null}
+            </ToolTip>
+            <ToolTip Show={hover === 'Multi-Histogram'} Position={'left'} Target={"Multi-Histogram"}>
+                <p>Add Selected Channels to New Histograms Separated by Meter</p>
+                {props.SelectedSet.size === 0 ? <p><ReactIcons.CrossMark Color='var(--danger)'/> Requires a Selected Channel </p> : null}
+            </ToolTip>
             </div>
         </>
     );

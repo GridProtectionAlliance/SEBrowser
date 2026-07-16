@@ -30,7 +30,7 @@ import AllSettingsModal from './Settings/AllSettingsModal';
 import { SelectTrendDataSettings } from '../../Store/SettingsSlice';
 import { useAppSelector, useAppDispatch } from './../../hooks';
 import { ValueListGroupSlice } from '../../Store/Store';
-import { TrendDefaults } from './HelperFunctions';
+import { TrendDefaults } from './Utils/HelperFunctions';
 import { ErrorBoundary } from '@gpa-gemstone/common-pages';
 
 const trendSearchId = "TrendDataChartAll";
@@ -146,7 +146,7 @@ const TrendData = () => {
     }, [lineDefaults]);
 
     return (
-        <div className="container-fluid d-flex h-100 flex-column" style={{ height: 'inherit' }}>
+        <div className="container-fluid d-flex h-100 flex-column p-0" style={{ height: 'inherit' }}>
             <ErrorBoundary ErrorMessage={'Error loading page.'}>
                 <TrendSearchNavbar
                     ToggleVis={toggleNavbar}

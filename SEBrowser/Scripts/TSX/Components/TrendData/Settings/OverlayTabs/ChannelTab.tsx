@@ -80,7 +80,8 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
 
     const getSettingsList = React.useCallback(() => {
         switch (props.Type) {
-            case 'Line': {
+            case 'Line':
+            case 'Histogram': {
                 const visibleSeries = Object.keys(currentSeriesSetting.Settings).filter(seriesKey =>
                     currentSeriesSetting.Settings[seriesKey].HasData &&
                     (props.PlotFilter.find(option => option.Value === seriesKey)?.Selected ?? true)

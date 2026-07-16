@@ -28,7 +28,6 @@ import { CreateGuid, SpacedColor } from '@gpa-gemstone/helper-functions';
 import { TrashCan, Pencil, Plus } from '@gpa-gemstone/gpa-symbols';
 import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, AxisMap } from '@gpa-gemstone/react-graph';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
-import { LineGraph } from './LineGraph';
 import { SEBrowser, TrendSearch } from '../../../global';
 import { SelectTrendDataSettings, SelectGeneralSettings } from '../../../Store/SettingsSlice';
 import { useAppSelector } from './../../../hooks';
@@ -36,8 +35,8 @@ import { GenerateQueryParams } from '../../../Store/EventSearchSlice';
 import { GetDynamicEventSearchData } from '../../../../../EventWidgets/TSX/CollectionWidget/DynamicEventTable/DynamicEventSearchData';
 import { momentDateFormat, momentTimeFormat } from '../../EventSearch/TimeWindowUtils';
 import { SettingsModal } from '../Settings/SettingsModal';
-import { CyclicHistogram } from './CyclicHistogram';
-import { findCommonComponents } from '../HelperFunctions';
+import { findCommonComponents } from '../Utils/HelperFunctions';
+import { TrendWidgetRegistry } from './TrendWidgetRegistry';
 
 type customSelects = "drag" | "symbol" | "horizontal" | "vertical";
 const eventFormat = "MM/DD/YYYY[ <br> ]hh:mm:ss.SSSSSSS";
@@ -73,7 +72,7 @@ interface IContainerProps {
     LineDefaults: TrendSearch.ILinePlotSettingsBundle
 }
 
-const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerProps) => {
+const TrendPlot = (props: IContainerProps) => {
     // Sizing Variables
     const chartRef = React.useRef(null);
     const [chartWidth, setChartWidth] = React.useState<number>(500);
@@ -137,7 +136,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             case "PhaseType": {
                 if (channel === undefined) return getDefaultColor();
                 const currentIndex = phaseMeasurementColorIndex.get(channel.ChannelGroup + channel.Phase) ?? 0;
-                if (currentIndex >= colorSetting.Colors.length) getDefaultColor();
+                if (currentIndex >= colorSetting.Colors.length) return getDefaultColor();
                 return colorSetting.Colors[currentIndex];
             }
         }
@@ -190,7 +189,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
 
     // Update lines if they should be updated
     React.useEffect(() => {
-        if (props.Plot.Type !== 'Line' || plotAllSeriesSettings == null || plotAllSeriesSettings.length === 0) return;
+        if ((props.Plot.Type !== 'Line' && props.Plot.Type !== 'Histogram') || plotAllSeriesSettings == null || plotAllSeriesSettings.length === 0) return;
         const applyStyleFunc: (
             newSettings: TrendSearch.ISeriesSettings[],
             defaultStyle: TrendSearch.ILineStyleSettings,
@@ -216,9 +215,9 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             }
         const newSettings = [...plotAllSeriesSettings];
         let shouldApply = false;
-        if (props.LineDefaults.Minimum.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Minimum.Default, 'Minimum');
-        if (props.LineDefaults.Average.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Average.Default, 'Average');
-        if (props.LineDefaults.Maximum.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Maximum.Default, 'Maximum');
+        if (props.Plot.Type === 'Line' && props.LineDefaults.Minimum.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Minimum.Default, 'Minimum');
+        if (props.Plot.Type === 'Line' && props.LineDefaults.Average.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Average.Default, 'Average');
+        if (props.Plot.Type === 'Line' && props.LineDefaults.Maximum.ShouldApply) shouldApply = applyStyleFunc(newSettings, props.LineDefaults.Maximum.Default, 'Maximum');
         if (props.LineDefaults.Colors.ShouldApply) {
             shouldApply = true;
             colorIndex.current = { ind: -1, assetMap: new Map<string, number>() };
@@ -253,7 +252,8 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
 
         const getDefaultValue: (channel: TrendSearch.ITrendChannel, passChannelToColor: boolean) => TrendSearch.ISeriesSettings = (channel, passChannelToColor) => {
             switch (props.Plot.Type) {
-                case 'Line': default: {
+                case 'Line':
+                case 'Histogram': default: {
                     const color: TrendSearch.IColor = getColor(props.LineDefaults.Colors.Default, passChannelToColor ? channel : undefined);
                     const settings: TrendSearch.ISeriesSettings = {
                         Channel: channel,
@@ -268,7 +268,11 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                             }
                         }
                     };
-                    channel.Series.forEach(series => {
+                    const seriesToConfigure = props.Plot.Type === 'Histogram' ?
+                        (['Minimum', 'Average', 'Maximum'] as const).map(type => channel.Series?.find(series => series.TypeName === type) ?? {
+                            ID: 0, ChannelID: channel.ChannelID, TypeName: type, TypeDescription: type
+                        }) : (channel.Series ?? []);
+                    seriesToConfigure.forEach(series => {
                         const defaultsUsed = props.LineDefaults?.[series.TypeName] ?? props.LineDefaults.Average;
                         settings.Settings[series.TypeName] = {
                             Color: color?.[series.TypeName] ?? color.Average,
@@ -290,7 +294,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
         };
 
         let passChannel = false;
-        if (plotAllSeriesSettings == null && props.Plot.Type === "Line") {
+        if (plotAllSeriesSettings == null && (props.Plot.Type === "Line" || props.Plot.Type === "Histogram")) {
             passChannel = true;
             colorIndex.current = { ind: -1, assetMap: new Map<string, number>() };
             if (props.LineDefaults.Colors.Default.ApplyType === "Asset") buildAssetDictionary(props.Plot.Channels);
@@ -300,7 +304,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             props.Plot.Channels.map(channel => {
                 const oldSettings = plotAllSeriesSettings?.find(oldSetting => oldSetting.Channel.ID === channel.ID)
                 if (oldSettings === undefined) return getDefaultValue(channel, passChannel);
-                if (props.Plot.Type === 'Line') {
+                if (props.Plot.Type === 'Line' || props.Plot.Type === 'Histogram') {
                     Object.keys(oldSettings.Settings).forEach(key => {
                         const series = channel.Series.find(series => series.TypeName === key);
                         oldSettings.Settings[key].Label = constructLabel(channel, series)
@@ -351,6 +355,11 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
 
         // Need this function for vertical labels
         const vertLabelFunc = (field: 'YRightLabel' | 'YLeftLabel') => {
+            if (props.Plot.Type === 'Histogram') {
+                newPlot[field] = field === 'YLeftLabel' ? 'Count' : '';
+                props.SetPlot(newPlot.ID, newPlot, field);
+                return;
+            }
             const isOnAxis = (isRightAxis: boolean): boolean => (isRightAxis === ('YRightLabel' === field));
             const constructLabel = (field: keyof TrendSearch.ITrendChannel, maxUniques: number): string => {
                 const foundArray = Array<string>(maxUniques + 1);
@@ -379,7 +388,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             vertLabelFunc('YRightLabel');
 
 
-    }, [plotAllSeriesSettings]);
+    }, [plotAllSeriesSettings, props.Plot.Type]);
 
     // Handle the overlay
     React.useEffect(() => {
@@ -562,14 +571,10 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
             </>
         );
     else {
-        switch (props.Plot.Type) {
-            case 'Line':
-                plotBody = (
-                    <LineGraph ID={props.Plot.ID} ChannelInfo={plotAllSeriesSettings} SetChannelInfo={setPlotAllSeriesSettings} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
-                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel} MouseHighlight={lineHighlight} SetExtraSpace={setExtraHeight}
-                        Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
-                        OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}>
-                        {props.Plot.ShowEvents ? eventMarkers.map((marker, i) => {
+        const Widget = TrendWidgetRegistry[props.Plot.Type];
+        const overlays = props.Plot.Type === 'Line' ? (
+            <>
+                {props.Plot.ShowEvents ? eventMarkers.map((marker, i) => {
                             if (eventSettings.type === "Event-Vert")
                                 return (
                                     <VerticalMarker key={"Event_" + i} axis={eventSettings.axis}
@@ -582,7 +587,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                                         {eventSettings.symbol}
                                     </SymbolicMarker>);
                         }) : null}
-                        {horiVertMarkers.map((marker, i) => {
+                {horiVertMarkers.map((marker, i) => {
                             if (marker.isHori)
                                 return (
                                     <HorizontalMarker key={"Hori_" + i} axis={marker.axis}
@@ -593,14 +598,14 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                                     Value={marker.value} color={marker.color} lineStyle={marker.line} width={marker.width}
                                     setValue={(value) => { if (customSelect !== "drag") return; setVertHori(marker.ID, value); }} />);
                         })}
-                        {symbolicMarkers.map((marker, i) =>
+                {symbolicMarkers.map((marker, i) =>
                             <SymbolicMarker key={"Marker_" + i} style={{ color: marker.color }} axis={marker.axis}
                                 xPos={marker.xPos} yPos={marker.yPos} radius={marker.radius}
                                 setPosition={(x, y) => { if (customSelect !== "drag") return; setSymbolic(marker.ID, x, 'xPos'); setSymbolic(marker.ID, y, 'yPos'); setSymbolic(marker.ID, x, 'xBox'); setSymbolic(marker.ID, y, 'yBox'); }}>
                                 {marker.symbol}
                             </SymbolicMarker>
                         )}
-                        {symbolicMarkers.map((marker, i) =>
+                {symbolicMarkers.map((marker, i) =>
                             <Infobox key={"Info_" + i} origin="upper-center" axis={marker.axis}
                                 x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
                                 childId={"Info_" + i} offset={15} disallowSnapping={true}
@@ -613,7 +618,7 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                                 </div>
                             </Infobox>
                         )}
-                        {customSelect === "drag" ? null :
+                {customSelect === "drag" ? null :
                             <Infobox key={"MouseOver"} origin={generalSettings.MoveOptionsLeft ? "upper-left" : "upper-right"}
                                 x={generalSettings.MoveOptionsLeft ? 5 : -5} y={25} opacity={0.4} childId={"mouseInfo"} usePixelPositioning={true}
                                 onMouseMove={setHoverPosition}>
@@ -621,21 +626,19 @@ const TrendPlot: React.FunctionComponent<IContainerProps> = (props: IContainerPr
                                     {`${moment.utc(mousePosition.x).format("HH:mm:SS")}\n${mousePosition.y.toFixed(2)}`}
                                 </div>
                             </Infobox>}
-                        {createCustomButton(Plus, "symbol", "crosshair", "vertical")}
-                        {createCustomButton("-", "horizontal", "crosshair", "horizontal")}
-                        {createCustomButton("|", "vertical", "crosshair", "vertical")}
-                    </LineGraph>
-                );
-                break;
-            case ('Cyclic'):
-                plotBody = (
-                    <CyclicHistogram ID={props.Plot.ID} ChannelInfo={(plotAllSeriesSettings?.length ?? 0) > 0 ? plotAllSeriesSettings[0] : null} TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter}
-                        Title={props.Plot.Title} XAxisLabel={props.Plot.XAxisLabel} YAxisLabel={props.Plot.YLeftLabel} MouseHighlight={lineHighlight} SetExtraSpace={setExtraHeight}
-                        Height={chartHeight} Width={chartWidth} Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
-                        OnSelect={createMarker} AlwaysRender={[overlayButton, closeButton]}/>
-                );
-                break;
-        }
+                {createCustomButton(Plus, "symbol", "crosshair", "vertical")}
+                {createCustomButton("-", "horizontal", "crosshair", "horizontal")}
+                {createCustomButton("|", "vertical", "crosshair", "vertical")}
+            </>
+        ) : null;
+        plotBody = (
+            <Widget ID={props.Plot.ID} ChannelInfo={plotAllSeriesSettings} SetChannelInfo={setPlotAllSeriesSettings}
+                TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter} Title={props.Plot.Title}
+                XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel}
+                MouseHighlight={lineHighlight} SetExtraSpace={setExtraHeight} Height={chartHeight} Width={chartWidth}
+                Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
+                OnSelect={createMarker} Controls={[overlayButton, closeButton]} Overlays={overlays} />
+        );
     }
     return (
         <div id={props.Plot.ID} className="col"
