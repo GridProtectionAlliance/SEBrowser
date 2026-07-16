@@ -71,7 +71,11 @@ const AllSettingsModal = React.memo((props: IProps) => {
         // Settings defaults
         if (confirmed || futureOnly) {
             // Handling Markers
-            const newMarkerDefaults = _.cloneDeep(markers);
+            const newMarkerDefaults: TrendSearch.IMarkerSettingsBundle = {
+                Symb: { ...markers.Symb },
+                VeHo: { ...markers.VeHo },
+                Event: { ...markers.Event }
+            };
             Object.keys(markers).forEach(field => {
                 newMarkerDefaults[field].ShouldApply = !(futureOnly || _.isEqual(newMarkerDefaults[field].Default, props.MarkerDefaults[field].Default))
             });

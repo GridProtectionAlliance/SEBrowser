@@ -507,7 +507,7 @@ const TrendPlot = (props: IContainerProps) => {
         switch (customSelect) {
             case "symbol": {
                 const currentMarkers = [...symbolicMarkers];
-                const newMarker = _.cloneDeep(props.MarkerDefaults.Symb.Default);
+                const newMarker = { ...props.MarkerDefaults.Symb.Default };
                 newMarker.ID = CreateGuid();
                 newMarker.xPos = time;
                 newMarker.yPos = values[axisNumber];
