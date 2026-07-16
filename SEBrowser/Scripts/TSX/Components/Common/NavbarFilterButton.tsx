@@ -35,9 +35,8 @@ interface IProps<T extends S> {
 }
 
 
-function NavbarFilterButton<T extends S>(props: IProps<T>) {
+const NavbarFilterButton = <T extends S>(props: IProps<T>) => {
     const [hover, setHover] = React.useState<boolean>(false);
-    const [rows, setRows] = React.useState<React.ReactNode[]>([]);
     const [header, setHeader] = React.useState<React.ReactNode>(null);
 
     const deleteCell = React.useCallback((row: T) => (
@@ -74,45 +73,41 @@ function NavbarFilterButton<T extends S>(props: IProps<T>) {
         }
     }, [props.Type]);
 
-    React.useEffect(() => {
+    const rows = React.useMemo(() => {
         switch (props.Type) {
             case ('Meter'):
-                setRows(props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
+                return props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
                     <td>{d['Name']}</td>
                     <td>{d['AssetKey']}</td>
                     <td>{d['Location']}</td>
                     <td>{d['Make']}</td>
                     <td>{d['Model']}</td>
                     {deleteCell(d)}
-                </tr>));
-                break;
+                </tr>);
             case ('Asset'):
-                setRows(props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
+                return props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
                     <td>{d['AssetKey']}</td>
                     <td>{d['AssetName']}</td>
                     <td>{d['AssetType']}</td>
                     <td>{d['VoltageKV']}</td>
                     {deleteCell(d)}
-                </tr>));
-                break;
+                </tr>);
             case ('AssetGroup'):
-                setRows(props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
+                return props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
                     <td>{d['Name']}</td>
                     <td>{d['Assets']}</td>
                     <td>{d['Meters']}</td>
                     {deleteCell(d)}
-                </tr>));
-                break;
+                </tr>);
             default:
-                setRows(props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
+                return props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
                     <td>{d['Name']}</td>
                     <td>{d['LocationKey']}</td>
                     <td>{d['Meters']}</td>
                     <td>{d['Assets']}</td>
                     {deleteCell(d)}
-                </tr>));
+                </tr>);
         }
-
     }, [props.Data, props.Type, deleteCell])
 
     return (
