@@ -22,11 +22,11 @@
 //******************************************************************************************************
 import React from 'react';
 import { IMultiCheckboxOption, TrendSearch } from '../../../../global';
-import { BlockPicker } from 'react-color';
 import { LineTypeOptions } from '../SettingsModal';
 import TrendChannelTable from '../../Components/TrendChannelTable';
 import { LineSettings } from '../TabProperties/LineSettings';
 import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
+import { ColorPicker } from '@gpa-gemstone/react-forms';
 
 interface IChannelTabProps {
     // Assumption that this doesnt change outside of this overlay
@@ -102,9 +102,12 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
             }
             case 'Cyclic':
                 return (
-                    <>
-                        <BlockPicker onChangeComplete={(color) => editChannel({ ...currentSeriesSetting, Settings: {Color: color.hex } })} color={currentSeriesSetting['Color']} triangle={"hide"} />
-                    </>
+                    <ColorPicker<TrendSearch.ICyclicSeriesSettings>
+                        Record={currentSeriesSetting.Settings as TrendSearch.ICyclicSeriesSettings}
+                        Field={'Color'}
+                        Label={'Color'}
+                        Setter={settings => editChannel({ ...currentSeriesSetting, Settings: settings })}
+                    />
                 );
             default:
                 console.error("Unexpected chart type in ChannelTab.tsx");

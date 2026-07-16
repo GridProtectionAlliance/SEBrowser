@@ -21,8 +21,7 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import { BlockPicker } from 'react-color';
-import { Input, Select } from '@gpa-gemstone/react-forms';
+import { ColorPicker, Input, Select } from '@gpa-gemstone/react-forms';
 import { LineTypeOptions, AxisOptions } from '../SettingsModal';
 import { TrendSearch } from '../../../../global';
 
@@ -54,7 +53,12 @@ const LineSettings = React.memo((props: ILineProps) => {
             <h4>
                 {(props.Series === 'Avgerage' && !props.SeriesSettings['Minimum']?.HasData && !props.SeriesSettings['Maximum']?.HasData) ? 'Values' : props.Series} Settings
                 </h4>
-            <BlockPicker onChangeComplete={(color) => setter({ ...series, Color: color.hex })} color={series['Color']} triangle={"hide"} />
+            <ColorPicker<TrendSearch.ILineSettings>
+                Record={series}
+                Field={'Color'}
+                Label={'Color'}
+                Setter={setter}
+            />
             <Input<TrendSearch.ILineSettings>
                 Record={series}
                 Label={'Legend Label'}
