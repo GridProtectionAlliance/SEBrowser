@@ -37,7 +37,7 @@ import { toGemstoneFilter, fromGemstoneFilter } from '../../EventSearch/TimeWind
 import { useAppSelector } from '../../../hooks';
 import { SelectDateTimeSetting, SelectTimeZone, SelectTutorialSettings } from '../../../Store/SettingsSlice';
 import TrendChannelTable from '../Components/TrendChannelTable';
-import { FilterType } from './Types';
+import { FilterType, TrendChannelTableState } from './Types';
 import TrendChannelFilters from './ChannelFilters';
 import TrendDataNavbarButtons from './TrendDataNavbarButtons';
 import { useTrendDataNavbar } from './useTrendDataNavbar';
@@ -51,7 +51,7 @@ interface IProps {
     AddNewCharts: (chartData: TrendSearch.ITrendPlot[]) => void,
     RemoveAllCharts: () => void,
     SetMovable: (toggle: boolean) => void,
-    SetHasSelectedChannels: (hasSelectedChannels: boolean) => void,
+    SetChannelTableState: (state: TrendChannelTableState) => void,
     Movable: boolean,
     PlotIds: { ID: string, Height: number, Width: number }[],
     // Set for defaults
@@ -92,8 +92,19 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     } = useTrendDataNavbar({ TimeFilter: props.TimeFilter, LinePlot: props.LinePlot });
 
     React.useEffect(() => {
-        props.SetHasSelectedChannels(selectedSet.size > 0);
-    }, [selectedSet, props.SetHasSelectedChannels]);
+        let state: TrendChannelTableState = 'selected';
+
+        if ((trendFilter?.MeterList.length ?? 0) === 0)
+            state = 'noMeter';
+        else if (trendChannelStatus === 'uninitiated' || trendChannelStatus === 'loading')
+            state = 'loading';
+        else if (trendChannelStatus === 'idle' && trendChannels.length === 0)
+            state = 'noChannels';
+        else if (selectedSet.size === 0)
+            state = 'noSelection';
+
+        props.SetChannelTableState(state);
+    }, [trendFilter?.MeterList.length, trendChannels.length, trendChannelStatus, selectedSet, props.SetChannelTableState]);
 
     const tableHeight = timeOffsetHeight > filtOffsetHeight ? timeOffsetHeight : filtOffsetHeight;
 

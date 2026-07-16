@@ -33,6 +33,7 @@ import { ValueListGroupSlice } from '../../Store/Store';
 import { TrendDefaults } from './Utils/HelperFunctions';
 import { ErrorBoundary } from '@gpa-gemstone/common-pages';
 import { Alert } from '@gpa-gemstone/react-interactive';
+import { TrendChannelTableState } from './NavBar/Types';
 
 const trendSearchId = "TrendDataChartAll";
 const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFilter"]);
@@ -47,7 +48,7 @@ const TrendData = () => {
     const [lineDefaults, setLineDefaults] = React.useState<TrendSearch.ILinePlotSettingsBundle>(TrendDefaults.getLineSettingsOrDefault);
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
     const [plotsMovable, setPlotsMovable] = React.useState<boolean>(false);
-    const [hasSelectedChannels, setHasSelectedChannels] = React.useState<boolean>(false);
+    const [channelTableState, setChannelTableState] = React.useState<TrendChannelTableState>('noMeter');
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
 
     const defaultSliceStatus = useAppSelector((state) => ValueListGroupSlice.Status(state, defaultValueList));
@@ -160,7 +161,7 @@ const TrendData = () => {
                     LinePlot={defaultPlotSettings.PlotFilter}
                     Movable={plotsMovable}
                     SetMovable={setPlotsMovable}
-                    SetHasSelectedChannels={setHasSelectedChannels}
+                    SetChannelTableState={setChannelTableState}
                     PlotIds={plotList.map(plot => { return { ID: plot.ID, Width: plot.Width ?? 0, Height: plot.Height ?? 0 } })}
                 />
             </ErrorBoundary>
@@ -169,9 +170,7 @@ const TrendData = () => {
                     <div className={'col-12 px-0'} style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }} id={trendSearchId}>
                         {plotList.length === 0 ?
                             <Alert Class="alert-info" Style={{ height: '100%', marginBottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                {hasSelectedChannels ?
-                                    'No plots to display. Use the plot controls to add the selected channels to a plot.' :
-                                    'No channels selected. Select one or more channels, or adjust the channel filters.'}
+                                {getEmptyPlotMessage(channelTableState)}
                             </Alert> :
                             plotList.map(element =>
                             <TrendPlot
@@ -217,6 +216,21 @@ const getShowNav = (): boolean => {
         return false
 
     return parsed;
+}
+
+const getEmptyPlotMessage = (channelTableState: TrendChannelTableState): string => {
+    switch (channelTableState) {
+        case 'noMeter':
+            return 'Select a Meter to view available channels.';
+        case 'loading':
+            return 'Loading channels...';
+        case 'noChannels':
+            return 'No channels match the selected filters. Adjust the filters to find available channels.';
+        case 'noSelection':
+            return 'No channels selected. Select one or more channels from the channel table.';
+        default:
+            return 'No plots to display. Use the plot controls to add the selected channels to a plot.';
+    }
 }
 
 export default TrendData;

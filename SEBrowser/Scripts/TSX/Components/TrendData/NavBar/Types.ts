@@ -35,3 +35,5 @@ export interface ITrendDataFilter {
 }
 
 export type FilterType = 'None' | 'Meter' | 'Asset';
+
+export type TrendChannelTableState = 'noMeter' | 'loading' | 'noChannels' | 'noSelection' | 'selected';
