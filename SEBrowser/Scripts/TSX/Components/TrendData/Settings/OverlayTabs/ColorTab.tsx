@@ -20,12 +20,11 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-import { Input, Select } from '@gpa-gemstone/react-forms';
+import { ColorPicker, Input, Select } from '@gpa-gemstone/react-forms';
 import { Table, Column } from '@gpa-gemstone/react-table';
 import React from 'react';
 import { TrendSearch } from '../../../../global';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
-import { BlockPicker } from 'react-color';
 import _ from 'lodash';
 
 interface IColorTabProps {
@@ -92,7 +91,30 @@ const ColorTab = React.memo((props: IColorTabProps) => {
                                 Key={'Label'}
                                 AllowSort={false}
                                 Field={'Label'}
-                            >Label</Column>
+                            >
+                                Label
+                            </Column>
+                            <Column<TrendSearch.IColor>
+                                Key={'Minimum'}
+                                AllowSort={false}
+                                Content={({ item }) => <div style={{ backgroundColor: item.Minimum, height: '1.5rem' }} />}
+                            >
+                                Min
+                            </Column>
+                            <Column<TrendSearch.IColor>
+                                Key={'Average'}
+                                AllowSort={false}
+                                Content={({ item }) => <div style={{ backgroundColor: item.Average, height: '1.5rem' }} />}
+                            >
+                                Avg
+                            </Column>
+                            <Column<TrendSearch.IColor>
+                                Key={'Maximum'}
+                                AllowSort={false}
+                                Content={({ item }) => <div style={{ backgroundColor: item.Maximum, height: '1.5rem' }} />}
+                            >
+                                Max
+                            </Column>
                             <Column<TrendSearch.IColor>
                                 Key={'Order'}
                                 AllowSort={false}
@@ -101,7 +123,7 @@ const ColorTab = React.memo((props: IColorTabProps) => {
                                 Content={({ index }) =>
                                     <>
                                         <button className="btn btn-sm" onClick={(evt) => setOrder(evt, index, "remove")}>
-                                            <ReactIcons.TrashCan Color='var(--danger)'/>
+                                            <ReactIcons.TrashCan Color='var(--danger)' />
                                         </button>
                                         <button className="btn btn-sm" onClick={(evt) => setOrder(evt, index, "up")} disabled={index === 0}>
                                             <ReactIcons.ArrowDropUp />
@@ -126,19 +148,28 @@ const ColorTab = React.memo((props: IColorTabProps) => {
                         </div>
                         <div className="row">
                             <div className="col" style={{ width: 'auto' }}>
-                                <h4>Min Color</h4>
-                                <BlockPicker onChangeComplete={(color) => setColors({ ...props.Colors.Colors[currentIndex], Minimum: color.hex })}
-                                    color={props.Colors.Colors[currentIndex].Minimum} triangle={"hide"} />
+                                <ColorPicker<TrendSearch.IColor>
+                                    Record={props.Colors.Colors[currentIndex]}
+                                    Field={'Minimum'}
+                                    Label={'Min Color'}
+                                    Setter={setColors}
+                                />
                             </div>
                             <div className="col" style={{ width: 'auto' }}>
-                                <h4>Avg Color</h4>
-                                <BlockPicker onChangeComplete={(color) => setColors({ ...props.Colors.Colors[currentIndex], Average: color.hex })}
-                                    color={props.Colors.Colors[currentIndex].Average} triangle={"hide"} />
+                                <ColorPicker<TrendSearch.IColor>
+                                    Record={props.Colors.Colors[currentIndex]}
+                                    Field={'Average'}
+                                    Label={'Avg Color'}
+                                    Setter={setColors}
+                                />
                             </div>
                             <div className="col" style={{ width: 'auto' }}>
-                                <h4>Max Color</h4>
-                                <BlockPicker onChangeComplete={(color) => setColors({ ...props.Colors.Colors[currentIndex], Maximum: color.hex })}
-                                    color={props.Colors.Colors[currentIndex].Maximum} triangle={"hide"} />
+                                <ColorPicker<TrendSearch.IColor>
+                                    Record={props.Colors.Colors[currentIndex]}
+                                    Field={'Maximum'}
+                                    Label={'Max Color'}
+                                    Setter={setColors}
+                                />
                             </div>
                         </div>
                     </>}
