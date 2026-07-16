@@ -51,6 +51,7 @@ interface IProps {
     AddNewCharts: (chartData: TrendSearch.ITrendPlot[]) => void,
     RemoveAllCharts: () => void,
     SetMovable: (toggle: boolean) => void,
+    SetHasSelectedChannels: (hasSelectedChannels: boolean) => void,
     Movable: boolean,
     PlotIds: { ID: string, Height: number, Width: number }[],
     // Set for defaults
@@ -88,6 +89,10 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
         linePlotOptions,
         setLinePlotOptions
     } = useTrendDataNavbar({ TimeFilter: props.TimeFilter, LinePlot: props.LinePlot });
+
+    React.useEffect(() => {
+        props.SetHasSelectedChannels(selectedSet.size > 0);
+    }, [selectedSet, props.SetHasSelectedChannels]);
 
     const tableHeight = timeOffsetHeight > filtOffsetHeight ? timeOffsetHeight : filtOffsetHeight;
 

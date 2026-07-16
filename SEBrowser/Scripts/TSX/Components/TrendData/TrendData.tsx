@@ -32,6 +32,7 @@ import { useAppSelector, useAppDispatch } from './../../hooks';
 import { ValueListGroupSlice } from '../../Store/Store';
 import { TrendDefaults } from './Utils/HelperFunctions';
 import { ErrorBoundary } from '@gpa-gemstone/common-pages';
+import { Alert } from '@gpa-gemstone/react-interactive';
 
 const trendSearchId = "TrendDataChartAll";
 const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFilter"]);
@@ -46,6 +47,7 @@ const TrendData = () => {
     const [lineDefaults, setLineDefaults] = React.useState<TrendSearch.ILinePlotSettingsBundle>(TrendDefaults.getLineSettingsOrDefault);
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
     const [plotsMovable, setPlotsMovable] = React.useState<boolean>(false);
+    const [hasSelectedChannels, setHasSelectedChannels] = React.useState<boolean>(false);
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
 
     const defaultSliceStatus = useAppSelector((state) => ValueListGroupSlice.Status(state, defaultValueList));
@@ -158,13 +160,20 @@ const TrendData = () => {
                     LinePlot={defaultPlotSettings.PlotFilter}
                     Movable={plotsMovable}
                     SetMovable={setPlotsMovable}
+                    SetHasSelectedChannels={setHasSelectedChannels}
                     PlotIds={plotList.map(plot => { return { ID: plot.ID, Width: plot.Width ?? 0, Height: plot.Height ?? 0 } })}
                 />
             </ErrorBoundary>
             <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
                 <div className={'row m-0'} style={{ flex: 1, overflow: 'hidden' }}>
                     <div className={'col-12 px-0'} style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }} id={trendSearchId}>
-                        {plotList.map(element =>
+                        {plotList.length === 0 ?
+                            <Alert Class="alert-info" Style={{ height: '100%', marginBottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {hasSelectedChannels ?
+                                    'No plots to display. Use the plot controls to add the selected channels to a plot.' :
+                                    'No channels selected. Select one or more channels, or adjust the channel filters.'}
+                            </Alert> :
+                            plotList.map(element =>
                             <TrendPlot
                                 key={element.ID}
                                 DragMode={plotsMovable}
