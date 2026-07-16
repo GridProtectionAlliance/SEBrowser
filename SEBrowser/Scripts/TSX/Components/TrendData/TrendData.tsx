@@ -31,6 +31,7 @@ import { SelectTrendDataSettings } from '../../Store/SettingsSlice';
 import { useAppSelector, useAppDispatch } from './../../hooks';
 import { ValueListGroupSlice } from '../../Store/Store';
 import { TrendDefaults } from './HelperFunctions';
+import { ErrorBoundary } from '@gpa-gemstone/common-pages';
 
 const trendSearchId = "TrendDataChartAll";
 const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFilter"]);
@@ -146,45 +147,51 @@ const TrendData = () => {
 
     return (
         <div className="container-fluid d-flex h-100 flex-column" style={{ height: 'inherit' }}>
-            <TrendSearchNavbar
-                ToggleVis={toggleNavbar}
-                ShowNav={showNav}
-                SetShowAllSettings={setShowSettings}
-                AddNewCharts={concatNewContainers}
-                RemoveAllCharts={removeAllCharts}
-                TimeFilter={defaultPlotSettings.TimeFilter}
-                LinePlot={defaultPlotSettings.PlotFilter}
-                Movable={plotsMovable}
-                SetMovable={setPlotsMovable}
-                PlotIds={plotList.map(plot => { return { ID: plot.ID, Width: plot.Width ?? 0, Height: plot.Height ?? 0 } })}
-            />
-            <div className={'row'} style={{ flex: 1, overflow: 'hidden' }}>
-                <div className={'col-12'} style={{ height: '100%', overflowY: 'scroll', overflowX: 'hidden' }} id={trendSearchId}>
-                    {plotList.map(element =>
-                        <TrendPlot
-                            key={element.ID}
-                            DragMode={plotsMovable}
-                            Plot={element}
-                            SetPlot={setPlot}
-                            RemovePlot={removePlot}
-                            SplicePlot={movePlot}
-                            HandleOverlay={closeSettings}
-                            MarkerDefaults={markerDefaults}
-                            LineDefaults={lineDefaults}
-                        />)}
+            <ErrorBoundary ErrorMessage={'Error loading page.'}>
+                <TrendSearchNavbar
+                    ToggleVis={toggleNavbar}
+                    ShowNav={showNav}
+                    SetShowAllSettings={setShowSettings}
+                    AddNewCharts={concatNewContainers}
+                    RemoveAllCharts={removeAllCharts}
+                    TimeFilter={defaultPlotSettings.TimeFilter}
+                    LinePlot={defaultPlotSettings.PlotFilter}
+                    Movable={plotsMovable}
+                    SetMovable={setPlotsMovable}
+                    PlotIds={plotList.map(plot => { return { ID: plot.ID, Width: plot.Width ?? 0, Height: plot.Height ?? 0 } })}
+                />
+            </ErrorBoundary>
+            <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                <div className={'row'} style={{ flex: 1, overflow: 'hidden' }}>
+                    <div className={'col-12'} style={{ height: '100%', overflowY: 'scroll', overflowX: 'hidden' }} id={trendSearchId}>
+                        {plotList.map(element =>
+                            <TrendPlot
+                                key={element.ID}
+                                DragMode={plotsMovable}
+                                Plot={element}
+                                SetPlot={setPlot}
+                                RemovePlot={removePlot}
+                                SplicePlot={movePlot}
+                                HandleOverlay={closeSettings}
+                                MarkerDefaults={markerDefaults}
+                                LineDefaults={lineDefaults}
+                            />)}
+                    </div>
                 </div>
-            </div>
-            <AllSettingsModal
-                Show={showSettings}
-                SetShow={setShowSettings}
-                ApplyFieldToAll={setAllPlot}
-                Defaults={defaultPlotSettings}
-                SetDefaults={setDefaultPlotSettings}
-                MarkerDefaults={markerDefaults}
-                SetMarkerDefaults={setMarkerDefaults}
-                LinePlotDefaults={lineDefaults}
-                SetLinePlotDefaults={setLineDefaults}
-            />
+            </ErrorBoundary>
+            <ErrorBoundary ErrorMessage={'Error loading page.'}>
+                <AllSettingsModal
+                    Show={showSettings}
+                    SetShow={setShowSettings}
+                    ApplyFieldToAll={setAllPlot}
+                    Defaults={defaultPlotSettings}
+                    SetDefaults={setDefaultPlotSettings}
+                    MarkerDefaults={markerDefaults}
+                    SetMarkerDefaults={setMarkerDefaults}
+                    LinePlotDefaults={lineDefaults}
+                    SetLinePlotDefaults={setLineDefaults}
+                />
+            </ErrorBoundary>
         </div>
     );
 }

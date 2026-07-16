@@ -26,6 +26,7 @@ import { VerticalSplit, SplitSection } from '@gpa-gemstone/react-interactive';
 import MostActiveMeters from './MostActiveMeters';
 import LeastActiveMeters from './LeastActiveMeters';
 import FilesProcessed from './FilesProcessed';
+import { ErrorBoundary } from '@gpa-gemstone/common-pages';
 
 const MeterActivity = () => {
     return (
@@ -33,16 +34,22 @@ const MeterActivity = () => {
             <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
                 <div className="container-fluid d-flex flex-column h-100 p-0">
                     <div className="d-flex flex-column p-2" style={{ flex: '1 1 50%', overflow: 'hidden' }}>
-                        <MostActiveMeters />
+                        <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                            <MostActiveMeters />
+                        </ErrorBoundary>
                     </div>
                     <div className="d-flex flex-column p-2" style={{ flex: '1 1 50%', overflow: 'hidden' }}>
-                        <LeastActiveMeters />
+                        <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                            <LeastActiveMeters />
+                        </ErrorBoundary>
                     </div>
                 </div>
             </SplitSection>
             <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
                 <div className="container-fluid d-flex flex-column h-100 p-2" style={{ overflowY: 'auto' }}>
-                    <FilesProcessed />
+                    <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                        <FilesProcessed />
+                    </ErrorBoundary>
                 </div>
             </SplitSection>
         </VerticalSplit>

@@ -43,6 +43,7 @@ import DynamicMagDurChart from '../../../../EventWidgets/TSX/CollectionWidget/Dy
 import CollectionWidgetRouter from '../../../../EventWidgets/TSX/CollectionWidgetWrapper';
 import { HelpIcon, ToggleSwitch } from '@gpa-gemstone/react-forms';
 import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
+import { ErrorBoundary } from '@gpa-gemstone/common-pages';
 
 const availableWidgets: EventWidget.ICollectionWidget<any, any, any>[] = [DynamicEventSearch, DynamicMagDurChart];
 
@@ -175,54 +176,60 @@ const EventSearch = () => {
 
     return (
         <div className="d-flex flex-column" style={{ width: '100%', height: '100%' }} data-drawer={'eventPreviewPane'}>
-            <EventSearchNavbar />
-            <VerticalSplit style={{ width: '100%', flex: 1, minHeight: 0 }}>
-                <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
-                    <div className="d-flex flex-column" style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
-                        <div className='row m-0 flex-shrink-0'>
-                            <div className='col-6 pl-1 d-flex justify-content-start'>
-                                {resultCount != null ?
-                                    <p className="d-flex align-items-center">
-                                        Results: {resultCount}
-                                        {resultCount === eventSearchSettings.NumberResults ?
-                                            <HelpIcon Help={`${showMagDur ? 'Events without a magnitude and duration are not displayed on the chart. ' : ''}Only the first ${resultCount} results are shown - please narrow your search or increase the number of results in the application settings.`} />
-                                            : null}
-                                    </p> : null}
+            <ErrorBoundary ErrorMessage={'Error loading page.'}>
+                <EventSearchNavbar />
+            </ErrorBoundary>
+            <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                <VerticalSplit style={{ width: '100%', flex: 1, minHeight: 0 }}>
+                    <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
+                        <div className="d-flex flex-column" style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
+                            <div className='row m-0 flex-shrink-0'>
+                                <div className='col-6 pl-1 d-flex justify-content-start'>
+                                    {resultCount != null ?
+                                        <p className="d-flex align-items-center">
+                                            Results: {resultCount}
+                                            {resultCount === eventSearchSettings.NumberResults ?
+                                                <HelpIcon Help={`${showMagDur ? 'Events without a magnitude and duration are not displayed on the chart. ' : ''}Only the first ${resultCount} results are shown - please narrow your search or increase the number of results in the application settings.`} />
+                                                : null}
+                                        </p> : null}
+                                </div>
+                                <div className='col-6 pr-1 p-0 d-flex justify-content-end'>
+                                    <ToggleSwitch<{ UseMagDur: boolean }>
+                                        Record={{ UseMagDur: showMagDur }}
+                                        Field="UseMagDur"
+                                        Label={showMagDur ? 'List' : 'Mag/Dur'}
+                                        Setter={(rec) => setShowMagDur(rec.UseMagDur)}
+                                    />
+                                </div>
                             </div>
-                            <div className='col-6 pr-1 p-0 d-flex justify-content-end'>
-                                <ToggleSwitch<{ UseMagDur: boolean }>
-                                    Record={{ UseMagDur: showMagDur }}
-                                    Field="UseMagDur"
-                                    Label={showMagDur ? 'List' : 'Mag/Dur'}
-                                    Setter={(rec) => setShowMagDur(rec.UseMagDur)}
+                            <div style={{ width: '100%', flex: 1, minHeight: 0 }}>
+                                <CollectionWidgetRouter
+                                    Widget={showMagDur ? magDurWidgetView : eventSearchWidgetView}
+                                    AvailableWidgets={availableWidgets}
+                                    EventFilter={currentFilter}
+                                    GetEventData={getEventData}
+                                    OnDataLoaded={setResultCount}
+                                    EventID={eventId}
+                                    Callback={handleEventSelect}
+                                    HomePath={homePath}
+                                    WidgetAuthorization={widgetAuthorization}
                                 />
                             </div>
                         </div>
-                        <div style={{ width: '100%', flex: 1, minHeight: 0 }}>
-                            <CollectionWidgetRouter
-                                Widget={showMagDur ? magDurWidgetView : eventSearchWidgetView}
-                                AvailableWidgets={availableWidgets}
-                                EventFilter={currentFilter}
-                                GetEventData={getEventData}
-                                OnDataLoaded={setResultCount}
-                                EventID={eventId}
-                                Callback={handleEventSelect}
-                                HomePath={homePath}
-                                WidgetAuthorization={widgetAuthorization}
-                            />
+                    </SplitSection>
+                    <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
+                        <div ref={previewPaneRef} style={{ width: '100%', height: '100%', position: 'relative', overflowY: 'hidden' }}>
+                            <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                                <EventPreviewPane
+                                    Event={selectedEvent}
+                                    InitialTab={initialTab}
+                                    Height={previewPaneHeight}
+                                />
+                            </ErrorBoundary>
                         </div>
-                    </div>
-                </SplitSection>
-                <SplitSection Width={50} MinWidth={25} MaxWidth={75}>
-                    <div ref={previewPaneRef} style={{ width: '100%', height: '100%', position: 'relative', overflowY: 'hidden' }}>
-                        <EventPreviewPane
-                            Event={selectedEvent}
-                            InitialTab={initialTab}
-                            Height={previewPaneHeight}
-                        />
-                    </div>
-                </SplitSection>
-            </VerticalSplit>
+                    </SplitSection>
+                </VerticalSplit>
+            </ErrorBoundary>
         </div>
     );
 }

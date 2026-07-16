@@ -27,6 +27,7 @@ import * as queryString from 'querystring';
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SEBrowser } from '../../../global';
+import { ErrorBoundary } from '@gpa-gemstone/common-pages';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -139,12 +140,15 @@ const CapBankReport = () => {
 
     return (
         <div className="d-flex flex-column" style={{ width: '100%', height: '100%' }}>
-            <CapBankReportNavBar {...searchBarProps} />
-            <CapBankReportPane {...searchBarProps} />
+            <ErrorBoundary ErrorMessage={'Error loading page.'}>
+                <CapBankReportNavBar {...searchBarProps} />
+            </ErrorBoundary>
+            <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                <CapBankReportPane {...searchBarProps} />
+            </ErrorBoundary>
         </div>
     );
 }
 
 export default CapBankReport;
-
 

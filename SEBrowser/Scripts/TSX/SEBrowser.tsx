@@ -40,7 +40,7 @@ import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { useAppDispatch, useAppSelector } from './hooks';
 import { LoadSettings } from './Store/SettingsSlice';
 import { FetchWidgetAuthorization } from './Store/WidgetAuthorizationSlice';
-import { HeartBeatCheck } from '@gpa-gemstone/common-pages';
+import { ErrorBoundary, HeartBeatCheck } from '@gpa-gemstone/common-pages';
 import { LIB_VERSION } from './version';
 
 let isRedirecting = false;
@@ -177,13 +177,19 @@ const PQBrowser = () => {
                 }
             >
                 <Page Name={'eventsearch'} Label={'Event Search'}>
-                    <EventSearch />
+                    <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                        <EventSearch />
+                    </ErrorBoundary>
                 </Page>
                 <Page Name={'meteractivity'} Label={'Meter Activity'}>
-                    <MeterActivity />
+                    <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                        <MeterActivity />
+                    </ErrorBoundary>
                 </Page>
                 <Page Name={'trenddata'} Label={'Trend Data'}>
-                    <TrendData />
+                    <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                        <TrendData />
+                    </ErrorBoundary>
                 </Page>
                 <Section Label={"Custom Reports"}>
                     {links.map((item, i) =>
@@ -192,7 +198,9 @@ const PQBrowser = () => {
                             Name={item.AltValue ?? item.Value}
                             Label={item.Value}
                         >
-                            {createWidget(item.AltValue ?? item.Value)}
+                            <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                                {createWidget(item.AltValue ?? item.Value)}
+                            </ErrorBoundary>
                         </Page>)}
                 </Section>
             </Application>

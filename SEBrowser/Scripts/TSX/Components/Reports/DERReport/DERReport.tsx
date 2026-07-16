@@ -27,6 +27,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Alert } from '@gpa-gemstone/react-interactive';
 import DERReportNavBar, { ISelectableOption } from './DERReportNavBar';
 import DERReportPane from './DERReportPane';
+import { ErrorBoundary } from '@gpa-gemstone/common-pages';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -82,27 +83,31 @@ function DERReport() {
 
     return (
         <div className="d-flex flex-column" style={{ width: '100%', height: '100%' }}>
-            <DERReportNavBar
-                date={date}
-                time={time}
-                windowSize={windowSize}
-                timeWindowUnits={timeWindowUnits}
-                setDate={setDate}
-                setTime={setTime}
-                setWindowSize={setWindowSize}
-                setTimeWindowUnits={setTimeWindowUnits}
-                setRegulations={setRegulations}
-                setDERs={setDERs}
-            />
-            {configured === true ?
-                <DERReportPane
+            <ErrorBoundary ErrorMessage={'Error loading page.'}>
+                <DERReportNavBar
                     date={date}
                     time={time}
                     windowSize={windowSize}
                     timeWindowUnits={timeWindowUnits}
-                    regulations={regulations}
-                    ders={ders}
+                    setDate={setDate}
+                    setTime={setTime}
+                    setWindowSize={setWindowSize}
+                    setTimeWindowUnits={setTimeWindowUnits}
+                    setRegulations={setRegulations}
+                    setDERs={setDERs}
                 />
+            </ErrorBoundary>
+            {configured === true ?
+                <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                    <DERReportPane
+                        date={date}
+                        time={time}
+                        windowSize={windowSize}
+                        timeWindowUnits={timeWindowUnits}
+                        regulations={regulations}
+                        ders={ders}
+                    />
+                </ErrorBoundary>
             : null}
         </div>
     );

@@ -26,6 +26,7 @@ import RelayReportPane from './TripCoilReportPane';
 import * as queryString from 'querystring';
 import moment from 'moment';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { ErrorBoundary } from '@gpa-gemstone/common-pages';
 
 const momentDateFormat = "MM/DD/YYYY";
 const momentTimeFormat = "HH:mm:ss.SSS";
@@ -98,8 +99,12 @@ const RelayReport = () => {
 
     return (
         <div className="d-flex flex-column" style={{ width: '100%', height: '100%' }}>
-            <RelayReportNavBar {...searchBarProps} />
-            <RelayReportPane {...searchBarProps} />
+            <ErrorBoundary ErrorMessage={'Error loading page.'}>
+                <RelayReportNavBar {...searchBarProps} />
+            </ErrorBoundary>
+            <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                <RelayReportPane {...searchBarProps} />
+            </ErrorBoundary>
         </div>
     );
 }
