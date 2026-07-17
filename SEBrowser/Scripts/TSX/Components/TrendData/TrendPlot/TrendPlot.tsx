@@ -349,7 +349,7 @@ const TrendPlot = (props: IContainerProps) => {
         // Need this function for vertical labels
         const vertLabelFunc = (field: 'YRightLabel' | 'YLeftLabel') => {
             if (props.Plot.Type === 'Histogram') {
-                newPlot[field] = field === 'YLeftLabel' ? 'Count' : '';
+                newPlot[field] = field === 'YLeftLabel' ? 'Percentage (%)' : '';
                 props.SetPlot(newPlot.ID, newPlot, field);
                 return;
             }

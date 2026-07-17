@@ -45,7 +45,7 @@ type SeriesSettingsWithChannel = TrendSearch.ISeriesSettings & { Channel: TrendS
 interface IHistogramSeries {
     ID: string,
     Color: string,
-    Counts: number[],
+    Percentages: number[],
     Label: string
 }
 
@@ -118,7 +118,7 @@ const Histogram = React.memo((props: ITrendWidgetProps) => {
         return <GraphError Height={height} Title={props.Title}>{props.Controls}</GraphError>;
 
     const barWidth = data == null || data.Series.length === 0 ? 0 : data.BinWidth * 0.9 / data.Series.length;
-    const maxCount = Math.max(1, ...(data?.Series.flatMap(series => series.Counts) ?? []));
+    const maxPercentage = Math.max(1, ...(data?.Series.flatMap(series => series.Percentages) ?? []));
 
     return (
         <div className="row">
@@ -138,7 +138,7 @@ const Histogram = React.memo((props: ITrendWidgetProps) => {
                 legendWidth={width / 2}
                 menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
                 defaultTdomain={data?.Domain ?? [0, 1]}
-                defaultYdomain={[0, maxCount]}
+                defaultYdomain={[0, maxPercentage]}
                 XAxisType="value"
                 onSelect={props.OnSelect}
                 onCapture={captureCallback}
@@ -156,10 +156,10 @@ const Histogram = React.memo((props: ITrendWidgetProps) => {
             >
                 {data?.Series.map((series, seriesIndex) =>
                     <BarGroup key={series.ID} Legend={series.Label}>
-                        {series.Counts.map((count, binIndex) =>
+                        {series.Percentages.map((percentage, binIndex) =>
                             <Bar
                                 key={`${series.ID}_${binIndex}`}
-                                Data={[0, count]}
+                                Data={[0, percentage]}
                                 BarOrigin={data.Domain[0] + binIndex * data.BinWidth + data.BinWidth * 0.05 + seriesIndex * barWidth}
                                 BarWidth={barWidth}
                                 Color={series.Color}
@@ -194,7 +194,7 @@ const getSeriesPlotted = (plotFilter?: IMultiCheckboxOption[] | null): SeriesTyp
 
 /**
  * Builds equal-width value bins shared by all selected channels and series.
- * Each returned series contains the number of finite samples falling into each bin.
+ * Each returned series contains the percentage of its finite samples falling into each bin.
  */
 const buildHistogramData = (points?: TrendSearch.IPQData[] | null, channelInfo?: TrendSearch.ISeriesSettings[] | null,
     plotFilter?: IMultiCheckboxOption[] | null): IHistogramData | null => {
@@ -231,14 +231,15 @@ const buildHistogramData = (points?: TrendSearch.IPQData[] | null, channelInfo?:
             const seriesSetting = settings?.[type];
             if (seriesSetting == null) return [];
             const counts = Array<number>(binCount).fill(0);
-            channelPoints.map(point => point[type]).filter(Number.isFinite).forEach(value => {
+            const values = channelPoints.map(point => point[type]).filter(Number.isFinite);
+            values.forEach(value => {
                 const bin = Math.min(binCount - 1, Math.floor((value - minimum) / binWidth));
                 counts[Math.max(0, bin)] += 1;
             });
             return {
                 ID: `${channel.Channel.ID}_${type}`,
                 Color: seriesSetting.Color,
-                Counts: counts,
+                Percentages: values.length === 0 ? counts : counts.map(count => 100 * count / values.length),
                 Label: seriesSetting.Label
             };
         });
