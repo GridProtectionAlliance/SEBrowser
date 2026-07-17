@@ -21,21 +21,29 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import { IMultiCheckboxOption, TrendSearch } from '../../../../global';
-import { LineTypeOptions } from '../SettingsModal';
-import TrendChannelTable from '../../Components/TrendChannelTable';
-import { LineSettings } from '../TabProperties/LineSettings';
+import { IMultiCheckboxOption, TrendSearch } from '../../../../../global';
+import TrendChannelTable from '../../../Components/TrendChannelTable';
 import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
-import { ColorPicker } from '@gpa-gemstone/react-forms';
 
-interface IChannelTabProps {
+export interface IChannelSettingsProps {
     // Assumption that this doesnt change outside of this overlay
     SeriesSettings: TrendSearch.ISeriesSettings[],
     SetSeriesSettings: (newSettings: TrendSearch.ISeriesSettings[]) => void,
     Channels: TrendSearch.ITrendChannel[],
     SetChannels: (newSettings: TrendSearch.ITrendChannel[]) => void,
-    PlotFilter: IMultiCheckboxOption[],
-    Type: TrendSearch.IPlotTypes
+    PlotFilter: IMultiCheckboxOption[]
+}
+
+export type IChannelSeriesSettings = TrendSearch.ISeriesSettings & { Channel: TrendSearch.ITrendChannel };
+
+export interface IChannelEditorProps {
+    SeriesSettings: IChannelSeriesSettings,
+    SetSeriesSettings: (newSettings: TrendSearch.ISeriesSettings) => void,
+    PlotFilter: IMultiCheckboxOption[]
+}
+
+interface IChannelTabProps extends IChannelSettingsProps {
+    Editor: React.ComponentType<IChannelEditorProps>
 }
 
 const ChannelTab = React.memo((props: IChannelTabProps) => {
@@ -45,85 +53,62 @@ const ChannelTab = React.memo((props: IChannelTabProps) => {
     const settingsHeight = Math.max(400, offsetHeight);
 
     // Settings Controls
-    const [currentChannelId, setCurrentChannelId] = React.useState<string | undefined>(undefined);
-    const [currentSeriesSetting, setCurrentSeriesSetting] = React.useState<TrendSearch.ISeriesSettings | undefined>(undefined);
+    const [currentChannelId, setCurrentChannelId] = React.useState<string>('');
+    const [currentSeriesSetting, setCurrentSeriesSetting] = React.useState<IChannelSeriesSettings | undefined>(undefined);
 
     React.useEffect(() => {
         // Means were in the first render/ after cleanup
-        if (currentChannelId === undefined) return;
+        if (currentChannelId.length === 0) return;
         // Set our buffer to new channel
-        setCurrentSeriesSetting(props.SeriesSettings.find(setting => setting.Channel.ID === currentChannelId));
+        setCurrentSeriesSetting(props.SeriesSettings.find((setting): setting is IChannelSeriesSettings => setting.Channel?.ID === currentChannelId));
     }, [currentChannelId]);
 
     // Functions to handle removing/editing channels
     const removeChannel = React.useCallback((channel: TrendSearch.ITrendChannel) => {
         // Remove Setting
         const allSettings = [...props.SeriesSettings];
-        const indexSetting = allSettings.findIndex(setting => setting.Channel.ID === channel.ID);
+        const indexSetting = allSettings.findIndex(setting => setting.Channel?.ID === channel.ID);
+        if (indexSetting < 0) return;
         allSettings.splice(indexSetting, 1);
         props.SetSeriesSettings(allSettings);
     }, [props.SeriesSettings, props.SetSeriesSettings, props.Channels, props.SetChannels]);
 
     const editChannel = React.useCallback((seriesSetting: TrendSearch.ISeriesSettings) => {
+        const channel = seriesSetting.Channel;
+        if (channel == null) return;
+        const channelSettings: IChannelSeriesSettings = { ...seriesSetting, Channel: channel };
         const allSettings = [...props.SeriesSettings];
-        const index = allSettings.findIndex(setting => setting.Channel.ID === seriesSetting.Channel.ID);
-        allSettings.splice(index, 1, seriesSetting);
+        const index = allSettings.findIndex(setting => setting.Channel?.ID === channel.ID);
+        if (index < 0) return;
+        allSettings.splice(index, 1, channelSettings);
         // Handle updating list
         props.SetSeriesSettings(allSettings);
         // Handle updating current
-        setCurrentSeriesSetting(seriesSetting);
+        setCurrentSeriesSetting(channelSettings);
     }, [props.SeriesSettings, props.SetSeriesSettings]);
 
-    const getSettingsList = React.useCallback(() => {
-        switch (props.Type) {
-            case 'Line':
-            case 'Histogram': {
-                const visibleSeries = Object.keys(currentSeriesSetting.Settings).filter(seriesKey =>
-                    currentSeriesSetting.Settings[seriesKey].HasData &&
-                    (props.PlotFilter.find(option => option.Value === seriesKey)?.Selected ?? true)
-                );
-
-                if (visibleSeries.length === 0)
-                    return (
-                        <div style={{
-                            backgroundColor: "grey", borderRadius: ('25px 25px 25px 25px'),
-                            width: '100%', height: '100%'
-                        }} />
-                    );
-                return (
-                    <div className="row" style={{ height: '100%', width: '100%' }}>
-                        {
-                            visibleSeries.map(seriesKey =>
-                                <LineSettings key={seriesKey} SeriesSettings={currentSeriesSetting} SetSeriesSettings={editChannel} Series={seriesKey} />
-                            )
-                        }
-                    </div>
-                );
-            }
-            case 'Cyclic':
-                return (
-                    <ColorPicker<TrendSearch.ICyclicSeriesSettings>
-                        Record={currentSeriesSetting.Settings as TrendSearch.ICyclicSeriesSettings}
-                        Field={'Color'}
-                        Label={'Color'}
-                        Setter={settings => editChannel({ ...currentSeriesSetting, Settings: settings })}
-                    />
-                );
-            default:
-                console.error("Unexpected chart type in ChannelTab.tsx");
-                return null;
-        }
-    }, [props.Type, props.PlotFilter, currentSeriesSetting, editChannel, LineTypeOptions]);
+    const Editor = props.Editor;
 
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
             <div className="col" style={{ width: '40%', height: settingsHeight }}>
-                <TrendChannelTable Height={settingsHeight} TrendChannels={props.Channels} SetTrendChannels={props.SetChannels} OnChannelRemoval={removeChannel}
-                    Type='single' Selected={currentChannelId} SetSelected={setCurrentChannelId} />
+                <TrendChannelTable
+                    Height={settingsHeight}
+                    TrendChannels={props.Channels}
+                    SetTrendChannels={props.SetChannels}
+                    OnChannelRemoval={removeChannel}
+                    Type='single'
+                    Selected={currentChannelId}
+                    SetSelected={setCurrentChannelId}
+                />
             </div>
             <div className="col" style={{ width: '60%', overflowY: 'scroll', maxHeight: 'calc(100vh - 264px)' }} ref={sideSettingRef}>
                 {currentSeriesSetting === undefined ? null :
-                    getSettingsList()
+                    <Editor
+                        SeriesSettings={currentSeriesSetting}
+                        SetSeriesSettings={editChannel}
+                        PlotFilter={props.PlotFilter}
+                    />
                 }
             </div>
         </div>

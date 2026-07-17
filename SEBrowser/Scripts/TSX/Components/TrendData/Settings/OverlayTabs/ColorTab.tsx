@@ -79,7 +79,7 @@ const ColorTab = React.memo((props: IColorTabProps) => {
                             SortKey={""}
                             Ascending={false}
                             OnSort={() => undefined}
-                            KeySelector={(_item, index) => index}
+                            KeySelector={(_item, index) => index!}
                             OnClick={(data) => setCurrentIndex(data.index)}
                             Selected={(_item, index) => currentIndex === index}
                             TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}

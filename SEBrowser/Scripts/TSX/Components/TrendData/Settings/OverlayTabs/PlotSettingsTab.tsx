@@ -30,7 +30,7 @@ import { CheckBox, Input, MultiCheckBoxSelect, Select } from '@gpa-gemstone/reac
 import { ValueListGroupSlice } from '../../../../Store/Store'
 import { useAppSelector, useAppDispatch } from '../../../../hooks';
 
-interface IProps {
+export interface IPlotSettingsProps {
     Plot: TrendSearch.ITrendPlot,
     SetPlot: (record: TrendSearch.ITrendPlot) => void,
     SetConfirmDisabled: (record: boolean) => void,
@@ -49,7 +49,7 @@ const axisOptions: { Value: string, Label: string }[] = [
     { Value: 'Manual', Label: 'Manual' }
 ]
 
-const PlotSettingsTab = React.memo((props: IProps) => {
+const PlotSettingsTab = React.memo((props: IPlotSettingsProps) => {
     const [limits, setLimits] = React.useState<AxisLimits>({ LeftUpper: 1, LeftLower: 0, RightUpper: 1, RightLower: 0 });
     const [labelOptions, setLabelOptions] = React.useState<{ Value: string, Label: string, Selected: boolean}[] >([]);
 

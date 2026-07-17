@@ -28,7 +28,7 @@ import TrendMarkerTable from '../../Components/TrendMarkerTable';
 import { LineTypeOptions, AxisOptions } from '../SettingsModal';
 import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 
-interface IMarkerTabProps {
+export interface IMarkerSettingsProps {
     // Manage Markers
     SymbMarkers: TrendSearch.ISymbolic[],
     SetSymbMarkers: (markers: TrendSearch.ISymbolic[]) => void,
@@ -46,7 +46,7 @@ Object.keys(SVGIcons).forEach((iconName) => {
     markerSymbolOptions.push({ Value: SVGIcons[iconName], Element: SVGIcons[iconName] })
 });
 
-const MarkerTab = React.memo((props: IMarkerTabProps) => {
+const MarkerTab = React.memo((props: IMarkerSettingsProps) => {
     // Sizing Variables
     const sideMarkerRef = React.useRef(null);
     const { offsetHeight } = useGetContainerPosition(sideMarkerRef);

@@ -25,6 +25,14 @@ import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../global';
 import { CyclicHistogram } from './CyclicHistogram';
 import { Histogram } from './Histogram';
 import { LineGraph } from './LineGraph';
+import { PlotSettingsTab } from '../Settings/OverlayTabs/PlotSettingsTab';
+import type { IPlotSettingsProps } from '../Settings/OverlayTabs/PlotSettingsTab';
+import { MarkerTab } from '../Settings/OverlayTabs/MarkerTab';
+import type { IMarkerSettingsProps } from '../Settings/OverlayTabs/MarkerTab';
+import { CyclicChannelTab } from '../Settings/OverlayTabs/ChannelTabs/CyclicChannelTab';
+import { HistogramChannelTab } from '../Settings/OverlayTabs/ChannelTabs/HistogramChannelTab';
+import { LineChannelTab } from '../Settings/OverlayTabs/ChannelTabs/LineChannelTab';
+import type { IChannelSettingsProps } from '../Settings/OverlayTabs/ChannelTabs/ChannelTab';
 
 /** Props shared by every trend plot widget registered with {@link TrendWidgetRegistry}. */
 export interface ITrendWidgetProps {
@@ -70,8 +78,38 @@ export interface ITrendWidgetProps {
     Overlays?: React.ReactNode
 }
 
-export const TrendWidgetRegistry: Record<TrendSearch.IPlotTypes, React.ComponentType<ITrendWidgetProps>> = {
-    Line: LineGraph,
-    Cyclic: CyclicHistogram,
-    Histogram: Histogram
+export interface ITrendWidgetSettings {
+    Plot?: React.ComponentType<IPlotSettingsProps>,
+    Marker?: React.ComponentType<IMarkerSettingsProps>,
+    Channel?: React.ComponentType<IChannelSettingsProps>
+}
+
+export interface ITrendWidgetDefinition {
+    Widget: React.ComponentType<ITrendWidgetProps>,
+    Settings?: ITrendWidgetSettings
+}
+
+export const TrendWidgetRegistry: Record<TrendSearch.IPlotTypes, ITrendWidgetDefinition> = {
+    Line: {
+        Widget: LineGraph,
+        Settings: {
+            Plot: PlotSettingsTab,
+            Marker: MarkerTab,
+            Channel: LineChannelTab
+        }
+    },
+    Cyclic: {
+        Widget: CyclicHistogram,
+        Settings: {
+            Plot: PlotSettingsTab,
+            Channel: CyclicChannelTab
+        }
+    },
+    Histogram: {
+        Widget: Histogram,
+        Settings: {
+            Plot: PlotSettingsTab,
+            Channel: HistogramChannelTab
+        }
+    }
 };

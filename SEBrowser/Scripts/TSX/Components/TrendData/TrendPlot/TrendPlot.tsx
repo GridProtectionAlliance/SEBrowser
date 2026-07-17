@@ -81,8 +81,9 @@ const TrendPlot = (props: IContainerProps) => {
     // Plot Saved Settings
     const generalSettings = useAppSelector(SelectGeneralSettings);
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
+    const widgetDefinition = TrendWidgetRegistry[props.Plot.Type];
     const [plotAllSeriesSettings, setPlotAllSeriesSettings] = React.useState<TrendSearch.ISeriesSettings[]>(null);
-    const colorIndex = React.useRef<{ ind: number, assetMap: Map<string, number> }>({ind: -1, assetMap: new Map<string, number>()});
+    const colorIndex = React.useRef<{ ind: number, assetMap: Map<string, number> }>({ ind: -1, assetMap: new Map<string, number>() });
     const changedProperties = React.useRef<Set<string>>(new Set<string>());
 
     // Plot Markers
@@ -404,15 +405,15 @@ const TrendPlot = (props: IContainerProps) => {
             return null;
         }
         return GetDynamicEventSearchData({
-                date: timeFilter.date, time: timeFilter.time,
-                windowSize: timeFilter.windowSize, timeWindowUnits: timeFilter.timeWindowUnits,
-                meterIDs: meters, assetIDs: assets, locationIDs: [], groupIDs: [],
-                curveOutside: true, curveInside: true,
-                numberResults: 15,
-            }, `${homePath}api/OpenXDA/GetEventSearchData`).done((data: any[]) => {
+            date: timeFilter.date, time: timeFilter.time,
+            windowSize: timeFilter.windowSize, timeWindowUnits: timeFilter.timeWindowUnits,
+            meterIDs: meters, assetIDs: assets, locationIDs: [], groupIDs: [],
+            curveOutside: true, curveInside: true,
+            numberResults: 15,
+        }, `${homePath}api/OpenXDA/GetEventSearchData`).done((data: any[]) => {
             setEventMarkers(data.map(datum => {
                 const meterID = props.Plot.Channels.find(channel => channel.MeterKey === datum["Meter Key"]).MeterID;
-                return { value: moment.utc(datum.Time, eventFormat).valueOf(), meterID: meterID, eventID: datum["EventID"]}
+                return { value: moment.utc(datum.Time, eventFormat).valueOf(), meterID: meterID, eventID: datum["EventID"] }
             }));
         });
     }
@@ -483,7 +484,7 @@ const TrendPlot = (props: IContainerProps) => {
             {TrashCan}
         </Button>);
 
-    const overlayButton = (
+    const overlayButton = widgetDefinition.Settings == null ? null : (
         <Button onClick={() => setShowSettings(!showSettings)}>
             {Pencil}
         </Button>);
@@ -520,7 +521,7 @@ const TrendPlot = (props: IContainerProps) => {
             }
             case "horizontal":
                 isHori = true;
-                // falls through
+            // falls through
             case "vertical": {
                 const currentMarkers = [...horiVertMarkers];
                 const newMarker = _.cloneDeep(props.MarkerDefaults.VeHo.Default);
@@ -549,9 +550,9 @@ const TrendPlot = (props: IContainerProps) => {
         newList[index]["value"] = value;
         setHoriVertMarkers(newList);
     }, [horiVertMarkers, setHoriVertMarkers]);
-    
+
     const setHoverPosition = React.useCallback((xArg: number, yArg: number) => {
-        setMousePosition({x: xArg, y: yArg})
+        setMousePosition({ x: xArg, y: yArg })
     }, [setMousePosition]);
 
     let plotBody = null;
@@ -564,87 +565,189 @@ const TrendPlot = (props: IContainerProps) => {
             </>
         );
     else {
-        const Widget = TrendWidgetRegistry[props.Plot.Type];
+        const Widget = widgetDefinition.Widget;
         const overlays = props.Plot.Type === 'Line' ? (
             <>
                 {props.Plot.ShowEvents ? eventMarkers.map((marker, i) => {
-                            if (eventSettings.type === "Event-Vert")
-                                return (
-                                    <VerticalMarker key={"Event_" + i} axis={eventSettings.axis}
-                                        Value={marker.value} color={eventSettings.color} lineStyle={eventSettings.line} width={eventSettings.width}
-                                        onClick={() => { if (customSelect !== "drag") return; navigateEvent(marker); }} />)
-                            else
-                                return (
-                                    <SymbolicMarker key={"Marker_" + i} style={{ color: eventSettings.color }} axis={eventSettings.axis}
-                                        usePixelPositioning={{x: false, y: true}} xPos={marker.value} yPos={eventSettings.alignTop ? 11 : -11} radius={12}>
-                                        {eventSettings.symbol}
-                                    </SymbolicMarker>);
-                        }) : null}
-                {horiVertMarkers.map((marker, i) => {
-                            if (marker.isHori)
-                                return (
-                                    <HorizontalMarker key={"Hori_" + i} axis={marker.axis}
-                                        Value={marker.value} color={marker.color} lineStyle={marker.line} width={marker.width}
-                                        setValue={(value) => { if (customSelect !== "drag") return; setVertHori(marker.ID, value); }} />);
-                            return (
-                                <VerticalMarker key={"Vert_" + i} axis={marker.axis}
-                                    Value={marker.value} color={marker.color} lineStyle={marker.line} width={marker.width}
-                                    setValue={(value) => { if (customSelect !== "drag") return; setVertHori(marker.ID, value); }} />);
-                        })}
-                {symbolicMarkers.map((marker, i) =>
-                            <SymbolicMarker key={"Marker_" + i} style={{ color: marker.color }} axis={marker.axis}
-                                xPos={marker.xPos} yPos={marker.yPos} radius={marker.radius}
-                                setPosition={(x, y) => { if (customSelect !== "drag") return; setSymbolic(marker.ID, x, 'xPos'); setSymbolic(marker.ID, y, 'yPos'); setSymbolic(marker.ID, x, 'xBox'); setSymbolic(marker.ID, y, 'yBox'); }}>
-                                {marker.symbol}
+                    if (eventSettings.type === "Event-Vert")
+                        return (
+                            <VerticalMarker
+                                key={"Event_" + i}
+                                axis={eventSettings.axis}
+                                Value={marker.value}
+                                color={eventSettings.color}
+                                lineStyle={eventSettings.line}
+                                width={eventSettings.width}
+                                onClick={() => {
+                                    if (customSelect !== "drag")
+                                        return;
+                                    navigateEvent(marker);
+                                }}
+                            />
+                        )
+                    else
+                        return (
+                            <SymbolicMarker
+                                key={"Marker_" + i}
+                                style={{ color: eventSettings.color }}
+                                axis={eventSettings.axis}
+                                usePixelPositioning={{ x: false, y: true }}
+                                xPos={marker.value}
+                                yPos={eventSettings.alignTop ? 11 : -11}
+                                radius={12}
+                            >
+                                {eventSettings.symbol}
                             </SymbolicMarker>
-                        )}
+                        );
+                }) : null}
+                {horiVertMarkers.map((marker, i) => {
+                    if (marker.isHori)
+                        return (
+                            <HorizontalMarker
+                                key={"Hori_" + i}
+                                axis={marker.axis}
+                                Value={marker.value}
+                                color={marker.color}
+                                lineStyle={marker.line}
+                                width={marker.width}
+                                setValue={(value) => {
+                                    if (customSelect !== "drag")
+                                        return;
+                                    setVertHori(marker.ID, value);
+                                }}
+                            />
+                        );
+                    return (
+                        <VerticalMarker
+                            key={"Vert_" + i}
+                            axis={marker.axis}
+                            Value={marker.value}
+                            color={marker.color}
+                            lineStyle={marker.line}
+                            width={marker.width}
+                            setValue={(value) => {
+                                if (customSelect !== "drag")
+                                    return;
+                                setVertHori(marker.ID, value);
+                            }}
+                        />);
+                })}
                 {symbolicMarkers.map((marker, i) =>
-                            <Infobox key={"Info_" + i} origin="upper-center" axis={marker.axis}
-                                x={marker.xBox} y={marker.yBox} opacity={marker.opacity}
-                                childId={"Info_" + i} offset={15} disallowSnapping={true}
-                                setPosition={(x, y) => { if (customSelect !== "drag") return; setSymbolic(marker.ID, x, 'xBox'); setSymbolic(marker.ID, y, 'yBox'); }}>
-                                <div id={"Info_" + i} style={{
-                                    display: 'inline-block', background: `rgba(255, 255, 255, ${marker.opacity})`, color: marker.fontColor,
-                                    overflow: 'visible', whiteSpace: 'pre-wrap', fontSize: `${marker.fontSize}em`
-                                }}>
-                                    {`${moment.utc(marker.xPos).format(marker.format)}\n${marker.yPos.toFixed(2)}\n${marker.note}`}
-                                </div>
-                            </Infobox>
-                        )}
+                    <SymbolicMarker
+                        key={"Marker_" + i}
+                        style={{ color: marker.color }}
+                        axis={marker.axis}
+                        xPos={marker.xPos}
+                        yPos={marker.yPos}
+                        radius={marker.radius}
+                        setPosition={(x, y) => {
+                            if (customSelect !== "drag")
+                                return;
+                            setSymbolic(marker.ID, x, 'xPos');
+                            setSymbolic(marker.ID, y, 'yPos');
+                            setSymbolic(marker.ID, x, 'xBox');
+                            setSymbolic(marker.ID, y, 'yBox');
+                        }}
+                    >
+                        {marker.symbol}
+                    </SymbolicMarker>
+                )}
+                {symbolicMarkers.map((marker, i) =>
+                    <Infobox
+                        key={"Info_" + i}
+                        origin="upper-center"
+                        axis={marker.axis}
+                        x={marker.xBox}
+                        y={marker.yBox}
+                        opacity={marker.opacity}
+                        childId={"Info_" + i}
+                        offset={15}
+                        disallowSnapping={true}
+                        setPosition={(x, y) => {
+                            if (customSelect !== "drag")
+                                return;
+                            setSymbolic(marker.ID, x, 'xBox');
+                            setSymbolic(marker.ID, y, 'yBox');
+                        }}
+                    >
+                        <div id={"Info_" + i} style={{
+                            display: 'inline-block', background: `rgba(255, 255, 255, ${marker.opacity})`, color: marker.fontColor,
+                            overflow: 'visible', whiteSpace: 'pre-wrap', fontSize: `${marker.fontSize}em`
+                        }}>
+                            {`${moment.utc(marker.xPos).format(marker.format)}\n${marker.yPos.toFixed(2)}\n${marker.note}`}
+                        </div>
+                    </Infobox>
+                )}
                 {customSelect === "drag" ? null :
-                            <Infobox key={"MouseOver"} origin={generalSettings.MoveOptionsLeft ? "upper-left" : "upper-right"}
-                                x={generalSettings.MoveOptionsLeft ? 5 : -5} y={25} opacity={0.4} childId={"mouseInfo"} usePixelPositioning={true}
-                                onMouseMove={setHoverPosition}>
-                                <div id={"mouseInfo"} style={{ display: 'inline-block', background: 'white', overflow: 'visible', whiteSpace: 'pre-wrap', opacity: 0.7 }}>
-                                    {`${moment.utc(mousePosition.x).format("HH:mm:SS")}\n${mousePosition.y.toFixed(2)}`}
-                                </div>
-                            </Infobox>}
+                    <Infobox
+                        key={"MouseOver"}
+                        origin={generalSettings.MoveOptionsLeft ? "upper-left" : "upper-right"}
+                        x={generalSettings.MoveOptionsLeft ? 5 : -5}
+                        y={25}
+                        opacity={0.4}
+                        childId={"mouseInfo"}
+                        usePixelPositioning={true}
+                        onMouseMove={setHoverPosition}
+                    >
+                        <div id={"mouseInfo"} style={{ display: 'inline-block', background: 'white', overflow: 'visible', whiteSpace: 'pre-wrap', opacity: 0.7 }}>
+                            {`${moment.utc(mousePosition.x).format("HH:mm:SS")}\n${mousePosition.y.toFixed(2)}`}
+                        </div>
+                    </Infobox>}
                 {createCustomButton(Plus, "symbol", "crosshair", "vertical")}
                 {createCustomButton("-", "horizontal", "crosshair", "horizontal")}
                 {createCustomButton("|", "vertical", "crosshair", "vertical")}
             </>
         ) : null;
         plotBody = (
-            <Widget ID={props.Plot.ID} ChannelInfo={plotAllSeriesSettings} SetChannelInfo={setPlotAllSeriesSettings}
-                TimeFilter={props.Plot.TimeFilter} PlotFilter={props.Plot.PlotFilter} Title={props.Plot.Title}
-                XAxisLabel={props.Plot.XAxisLabel} YLeftLabel={props.Plot.YLeftLabel} YRightLabel={props.Plot.YRightLabel}
-                MouseHighlight={lineHighlight} SetExtraSpace={setExtraHeight} Height={chartHeight} Width={chartWidth}
-                Metric={props.Plot.Metric} Cursor={customCursor} AxisZoom={props.Plot.AxisZoom} DefaultZoom={props.Plot.DefaultZoom}
-                OnSelect={createMarker} Controls={[overlayButton, closeButton]} Overlays={overlays} />
+            <Widget
+                ID={props.Plot.ID}
+                ChannelInfo={plotAllSeriesSettings}
+                SetChannelInfo={setPlotAllSeriesSettings}
+                TimeFilter={props.Plot.TimeFilter}
+                PlotFilter={props.Plot.PlotFilter}
+                Title={props.Plot.Title}
+                XAxisLabel={props.Plot.XAxisLabel}
+                YLeftLabel={props.Plot.YLeftLabel}
+                YRightLabel={props.Plot.YRightLabel}
+                MouseHighlight={lineHighlight}
+                SetExtraSpace={setExtraHeight}
+                Height={chartHeight}
+                Width={chartWidth}
+                Metric={props.Plot.Metric}
+                Cursor={customCursor}
+                AxisZoom={props.Plot.AxisZoom}
+                DefaultZoom={props.Plot.DefaultZoom}
+                OnSelect={createMarker}
+                Controls={[overlayButton, closeButton]}
+                Overlays={overlays}
+            />
         );
     }
     return (
         <div id={props.Plot.ID} className="col"
             style={{
-                width: (props.Plot.Width ?? 100) + '%', height: `calc(${(props.Plot.Height ?? 50)}% + ${extraHeight}px)`, float: 'left',
+                width: (props.Plot.Width ?? 100) + '%',
+                height: `calc(${(props.Plot.Height ?? 50)}% + ${extraHeight}px)`,
+                float: 'left',
                 border: (trendDatasettings.BorderPlots ? "thin black solid" : undefined)
             }}
             ref={chartRef} onDragOver={handleDragOverChannel} onDrop={handleDropChannel}>
             {plotBody}
-            <SettingsModal SetShow={setShowSettings} Show={showSettings}
-                Plot={props.Plot} SetPlot={handleSetPlot} SeriesSettings={plotAllSeriesSettings} SetSeriesSettings={setPlotAllSeriesSettings} 
-                SymbolicMarkers={symbolicMarkers} SetSymbolicMarkers={setSymbolicMarkers} VertHoriMarkers={horiVertMarkers} SetVertHoriMarkers={setHoriVertMarkers}
-                EventSettings={eventSettings} SetEventSettings={setEventSettings} />
+            <SettingsModal
+                SetShow={setShowSettings}
+                Show={showSettings}
+                Plot={props.Plot}
+                SetPlot={handleSetPlot}
+                SeriesSettings={plotAllSeriesSettings}
+                SetSeriesSettings={setPlotAllSeriesSettings}
+                SymbolicMarkers={symbolicMarkers}
+                SetSymbolicMarkers={setSymbolicMarkers}
+                VertHoriMarkers={horiVertMarkers}
+                SetVertHoriMarkers={setHoriVertMarkers}
+                EventSettings={eventSettings}
+                SetEventSettings={setEventSettings}
+                Settings={widgetDefinition.Settings}
+            />
         </div>
     );
 };
@@ -687,7 +790,8 @@ const DragHalf: React.FunctionComponent<IDragHalf> = (props) => {
             onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDragStart={handleDragStart} onDrop={handleDrop} draggable={true}>
             <div className="col" style={{
                 backgroundColor: "grey", borderRadius: (props.isLeft ? '25px 0px 0px 25px' : '0px 25px 25px 0px'),
-                width: 'calc(100% - 40px)', height: '100%', float: (props.isLeft ? 'right' : 'left'), userSelect: 'none' }} />
+                width: 'calc(100% - 40px)', height: '100%', float: (props.isLeft ? 'right' : 'left'), userSelect: 'none'
+            }} />
             <div className="col" style={{ width: '40px', height: '100%', justifyContent: 'center', float: (props.isLeft ? 'left' : 'right'), userSelect: 'none' }}>
                 <div style={{ backgroundColor: (isHovered ? "black" : undefined), height: '100%', width: '5px' }} />
             </div>
