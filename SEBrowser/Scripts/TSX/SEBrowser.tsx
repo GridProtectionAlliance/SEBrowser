@@ -44,6 +44,8 @@ import { ErrorBoundary, HeartBeatCheck } from '@gpa-gemstone/common-pages';
 import { LIB_VERSION } from './version';
 
 let isRedirecting = false;
+// Do not allow a stalled settings request to block the entire application indefinitely.
+const settingsInitializationTimeoutMS = 10000;
 
 //Intercept requests at the XHR level to redirect 401 response to the login page
 const originalXHRSend = XMLHttpRequest.prototype.send;
@@ -65,6 +67,7 @@ const PQBrowser = () => {
 
     const [links, setLinks] = React.useState<SystemCenter.Types.ValueListItem[]>([]);
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
+    const [settingsInitialized, setSettingsInitialized] = React.useState<boolean>(false);
     const [backendVersion, setBackendVersion] = React.useState<string>('0.0.0');
     const [getBackendVersionStatus, setGetBackendVersionStatus] = React.useState<ApplicationTypes.Types.Status>('uninitiated');
 
@@ -106,13 +109,23 @@ const PQBrowser = () => {
 
     //Effect to load settings/ custom reports on app mount
     React.useEffect(() => {
+        let disposed = false;
         const settingsRequest = dispatch(LoadSettings());
         const authorizationRequest = dispatch(FetchWidgetAuthorization());
+        // Aborting dispatches LoadSettings.rejected, which loads the local/default fallback settings.
+        // The finally handler then permits the application to render regardless of the request outcome.
+        const settingsTimeout = window.setTimeout(() => settingsRequest.abort(), settingsInitializationTimeoutMS);
 
         const handle = getCustomReports();
 
+        settingsRequest.finally(() => {
+            window.clearTimeout(settingsTimeout);
+            if (!disposed) setSettingsInitialized(true);
+        });
         handle.done(data => setLinks(data));
         return () => {
+            disposed = true;
+            window.clearTimeout(settingsTimeout);
             settingsRequest.abort();
             authorizationRequest.abort();
             if (handle.abort != undefined) handle.abort();
@@ -148,6 +161,13 @@ const PQBrowser = () => {
             </div>
         </div>
     ), [backendVersion, getBackendVersionStatus]);
+
+    if (!settingsInitialized)
+        return (
+            <div className="d-flex align-items-center justify-content-center" style={{ width: '100vw', height: '100vh' }}>
+                <ReactIcons.SpiningIcon Size={100} />
+            </div>
+        );
 
     return (
         <>

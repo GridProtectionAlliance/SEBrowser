@@ -93,7 +93,10 @@ export namespace Redux {
         InsertAtStart: boolean,
         MarkerSnapping: boolean,
         StartWithOptionsClosed: boolean,
-        LegendDisplay: 'bottom' | 'right' | 'hidden'
+        LegendDisplay: 'bottom' | 'right' | 'hidden',
+        DefaultPhaseIDs?: number[],
+        DefaultChannelGroupIDs?: number[],
+        DefaultSeries?: string[]
     }
 
     interface IValueListSliceState {

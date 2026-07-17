@@ -29,6 +29,7 @@ import queryString from 'querystring';
 import { IKeyValuePair, ITrendDataFilter } from './Types';
 import { MeterSlice, AssetSlice } from '../../../Store/Store';
 import { useAppSelector } from '../../../hooks';
+import { SelectTrendDataSettings } from '../../../Store/SettingsSlice';
 
 interface IProps {
     TimeFilter: SEBrowser.IReportTimeFilter,
@@ -60,13 +61,14 @@ export const useTrendDataNavbar = (props: IProps) => {
 
     const assetStatus = useAppSelector(AssetSlice.FetchStatus);
     const allAssets = useAppSelector(AssetSlice.Data);
+    const trendDataSettings = useAppSelector(SelectTrendDataSettings);
 
     const [timeFilter, setTimeFilter] = React.useState<SEBrowser.IReportTimeFilter>(props.TimeFilter);
 
     const [trendFilter, setTrendFilter] = React.useState<ITrendDataFilter | null>(null);
     const [phaseOptions, setPhaseOptions] = React.useState<IMultiCheckboxOption[]>([]);
     const [channelGroupOptions, setChannelGroupOptions] = React.useState<IMultiCheckboxOption[]>([]);
-    const [linePlotOptions, setLinePlotOptions] = React.useState<IMultiCheckboxOption[]>(props.LinePlot);
+    const [linePlotOptions, setLinePlotOptions] = React.useState<IMultiCheckboxOption[]>(() => applySeriesDefaults(props.LinePlot, trendDataSettings.DefaultSeries));
 
     const [trendChannels, setTrendChannels] = React.useState<TrendSearch.ITrendChannel[]>([]);
     const [trendChannelStatus, setTrendChannelStatus] = React.useState<Application.Types.Status>('uninitiated');
@@ -113,7 +115,7 @@ export const useTrendDataNavbar = (props: IProps) => {
 
     // Update Default Values
     React.useEffect(() => {
-        setLinePlotOptions(props.LinePlot);
+        setLinePlotOptions(applySeriesDefaults(props.LinePlot, trendDataSettings.DefaultSeries));
     }, [props.LinePlot]);
 
     React.useEffect(() => {
@@ -183,23 +185,23 @@ export const useTrendDataNavbar = (props: IProps) => {
     }, [trendFilter, timeFilter]);
 
     React.useEffect(() => {
-        // Todo: get filters from memory
         if (trendFilter !== null || channelGroupStatus !== 'idle' || phaseStatus !== 'idle' || meterStatus !== 'idle' || assetStatus !== 'idle' || !queryReady) return;
 
         // Note: the different arguements of startingArray and fallBack need different types since we don't know Id's at compile time and don't know names at query parse time
-        function makeKeyValuePairs(allKeys: { ID: number, Name: string, Description: string }[], startingTrueSet: Set<number> | undefined, fallBackTrueSet: Set<string>): IKeyValuePair[] {
+        function makeKeyValuePairs(allKeys: { ID: number, Name: string, Description: string }[], startingTrueSet: Set<number> | undefined, defaultIDs: number[] | undefined, fallBackTrueSet: Set<string>): IKeyValuePair[] {
             if (allKeys == null)
                 return [];
 
-            if (startingTrueSet == null)
+            const selectedIDs = startingTrueSet ?? (defaultIDs == null ? undefined : new Set(defaultIDs));
+            if (selectedIDs == null)
                 return allKeys.map(key => ({ [key.ID]: fallBackTrueSet.has(key.Name) }));
 
-            return allKeys.map(key => ({ [key.ID]: startingTrueSet.has(key.ID) }));
+            return allKeys.map(key => ({ [key.ID]: selectedIDs.has(key.ID) }));
         }
 
         setTrendFilter({
-            Phases: makeKeyValuePairs(allPhases, queryRef.current.phaseIds, new Set(["AB", "BC", "CA"])),
-            ChannelGroups: makeKeyValuePairs(allChannelGroups, queryRef.current.groupIds, new Set(["Voltage"])),
+            Phases: makeKeyValuePairs(allPhases, queryRef.current.phaseIds, trendDataSettings.DefaultPhaseIDs, new Set(["AB", "BC", "CA"])),
+            ChannelGroups: makeKeyValuePairs(allChannelGroups, queryRef.current.groupIds, trendDataSettings.DefaultChannelGroupIDs, new Set(["Voltage"])),
             MeterList: queryRef.current.meterIds == null ? [] : allMeters.filter(meter => queryRef.current.meterIds?.has(meter.ID)),
             AssetList: queryRef.current.assetIds == null ? [] : allAssets.filter(asset => queryRef.current.assetIds?.has(asset.ID))
         });
@@ -244,6 +246,11 @@ export const useTrendDataNavbar = (props: IProps) => {
         setLinePlotOptions,
         multiCheckboxUpdate
     };
+}
+
+const applySeriesDefaults = (options: IMultiCheckboxOption[], defaults: string[] | undefined): IMultiCheckboxOption[] => {
+    if (defaults == null) return options;
+    return options.map(option => ({ ...option, Selected: defaults.includes(option.Value as string) }));
 }
 
 const getTrendSearchData = (trendFilter): JQuery.jqXHR<TrendSearch.ITrendChannel[]> => {
