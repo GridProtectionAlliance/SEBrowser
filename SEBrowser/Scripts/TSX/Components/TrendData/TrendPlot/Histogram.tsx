@@ -23,7 +23,7 @@
 import React from 'react';
 import { Application } from '@gpa-gemstone/application-typings';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
-import { Bar, BarGroup, Plot } from '@gpa-gemstone/react-graph';
+import { Bar, BarGroup, Line, Plot } from '@gpa-gemstone/react-graph';
 import { ToolTip } from '@gpa-gemstone/react-forms';
 import { LoadingIcon } from '@gpa-gemstone/react-interactive';
 import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
@@ -46,7 +46,8 @@ interface IHistogramSeries {
     ID: string,
     Color: string,
     Percentages: number[],
-    Label: string
+    Label: string,
+    Settings: TrendSearch.IHistogramSettings
 }
 
 interface IHistogramData {
@@ -91,7 +92,7 @@ const Histogram = React.memo((props: ITrendWidgetProps) => {
                 const tag = getChannelTag(channel?.Channel?.ChannelID);
                 if (tag == null) return channel;
                 const channelPoints = responsePoints.filter(point => typeof point?.Tag === 'string' && point.Tag.toLowerCase() === tag);
-                const settings = { ...(channel.Settings ?? {}) } as TrendSearch.ILineSeriesSettings;
+                const settings = { ...(channel.Settings ?? {}) } as TrendSearch.IHistogramSeriesSettings;
                 Object.keys(settings).forEach(type => {
                     const dataType = seriesTypes.find(seriesType => seriesType === type) ?? 'Average';
                     const setting = settings[type] ?? settings.Average;
@@ -138,7 +139,7 @@ const Histogram = React.memo((props: ITrendWidgetProps) => {
                 legendWidth={width / 2}
                 menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
                 defaultTdomain={data?.Domain ?? [0, 1]}
-                defaultYdomain={[0, maxPercentage]}
+                defaultYdomain={[[0, maxPercentage], [0, 100]]}
                 XAxisType="value"
                 onSelect={props.OnSelect}
                 onCapture={captureCallback}
@@ -150,7 +151,7 @@ const Histogram = React.memo((props: ITrendWidgetProps) => {
                 holdMenuOpen={!trendDataSettings.StartWithOptionsClosed}
                 limitZoom={true}
                 Tlabel={props.XAxisLabel}
-                Ylabel={props.YLeftLabel}
+                Ylabel={[props.YLeftLabel, props.YRightLabel]}
                 showMouse={props.MouseHighlight}
                 yDomain={props.AxisZoom}
             >
@@ -167,6 +168,19 @@ const Histogram = React.memo((props: ITrendWidgetProps) => {
                             />
                         )}
                     </BarGroup>
+                )}
+                {data?.Series.filter(series => series.Settings.ShowCumulativeProbability ?? true).map(series =>
+                    <Line
+                        key={`${series.ID}_cumulative`}
+                        highlightHover={false}
+                        autoShowPoints={false}
+                        lineStyle={series.Settings.Type}
+                        color={series.Settings.CumulativeProbabilityColor ?? series.Color}
+                        data={getCumulativeProbability(series.Percentages, data.Domain[0], data.BinWidth)}
+                        legend={series.Settings.CumulativeProbabilityLabel ?? `${series.Label} Cumulative Probability`}
+                        axis="right"
+                        width={series.Settings.Width}
+                    />
                 )}
                 {props.Controls}
             </Plot>
@@ -226,7 +240,7 @@ const buildHistogramData = (points?: TrendSearch.IPQData[] | null, channelInfo?:
     const series = channels.flatMap(channel => {
         const tag = getChannelTag(channel.Channel.ChannelID);
         const channelPoints = validPoints.filter(point => point.Tag.toLowerCase() === tag);
-        const settings = channel.Settings as TrendSearch.ILineSeriesSettings | null | undefined;
+        const settings = channel.Settings as TrendSearch.IHistogramSeriesSettings | null | undefined;
         return plottedSeries.flatMap(type => {
             const seriesSetting = settings?.[type];
             if (seriesSetting == null) return [];
@@ -240,12 +254,22 @@ const buildHistogramData = (points?: TrendSearch.IPQData[] | null, channelInfo?:
                 ID: `${channel.Channel.ID}_${type}`,
                 Color: seriesSetting.Color,
                 Percentages: values.length === 0 ? counts : counts.map(count => 100 * count / values.length),
-                Label: seriesSetting.Label
+                Label: seriesSetting.Label,
+                Settings: seriesSetting
             };
         });
     });
 
     return { BinWidth: binWidth, Domain: [minimum, maximum], Series: series };
+};
+
+/** Returns an empirical cumulative distribution at each histogram bin boundary. */
+const getCumulativeProbability = (percentages: number[], minimum: number, binWidth: number): [number, number][] => {
+    let cumulative = 0;
+    return [[minimum, 0] as [number, number]].concat(percentages.map((percentage, index) => {
+        cumulative += percentage;
+        return [minimum + (index + 1) * binWidth, cumulative];
+    }));
 };
 
 export { Histogram };

@@ -227,6 +227,17 @@ export namespace TrendSearch {
         Average: TrendSearch.ILineSettings
     }
 
+    interface IHistogramSettings extends ILineSettings {
+        ShowCumulativeProbability: boolean,
+        CumulativeProbabilityColor: string,
+        CumulativeProbabilityLabel: string
+    }
+
+    interface IHistogramSeriesSettings extends ILineSeriesSettings {
+        [key: string]: TrendSearch.IHistogramSettings,
+        Average: TrendSearch.IHistogramSettings
+    }
+
     interface ICyclicSeriesSettings {
         Color: string
     }
@@ -234,7 +245,7 @@ export namespace TrendSearch {
     // Overall Series Settings
     interface ISeriesSettings {
         Channel?: TrendSearch.ITrendChannel,
-        Settings: ILineSeriesSettings | ICyclicSeriesSettings
+        Settings: ILineSeriesSettings | IHistogramSeriesSettings | ICyclicSeriesSettings
     }
 
     interface IMetaData {

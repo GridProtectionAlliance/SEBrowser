@@ -268,14 +268,24 @@ const TrendPlot = (props: IContainerProps) => {
                         }) : (channel.Series ?? []);
                     seriesToConfigure.forEach(series => {
                         const defaultsUsed = props.LineDefaults?.[series.TypeName] ?? props.LineDefaults.Average;
-                        settings.Settings[series.TypeName] = {
+                        const label = constructLabel(channel, series);
+                        const lineSettings: TrendSearch.ILineSettings = {
                             Color: color?.[series.TypeName] ?? color.Average,
                             Width: defaultsUsed.Default.Width,
                             Type: defaultsUsed.Default.Type,
                             Axis: 'left',
-                            Label: constructLabel(channel, series),
+                            Label: label,
                             HasData: false
-                        }
+                        };
+                        if (props.Plot.Type === 'Histogram')
+                            (settings.Settings as TrendSearch.IHistogramSeriesSettings)[series.TypeName] = {
+                                ...lineSettings,
+                                ShowCumulativeProbability: true,
+                                CumulativeProbabilityColor: color?.[series.TypeName] ?? color.Average,
+                                CumulativeProbabilityLabel: `${label} Cumulative Probability`
+                            };
+                        else
+                            (settings.Settings as TrendSearch.ILineSeriesSettings)[series.TypeName] = lineSettings;
                     });
                     return settings;
                 }
@@ -299,9 +309,17 @@ const TrendPlot = (props: IContainerProps) => {
                 const oldSettings = plotAllSeriesSettings?.find(oldSetting => oldSetting.Channel.ID === channel.ID)
                 if (oldSettings === undefined) return getDefaultValue(channel, passChannel);
                 if (props.Plot.Type === 'Line' || props.Plot.Type === 'Histogram') {
-                    Object.keys(oldSettings.Settings).forEach(key => {
+                    const lineSettings = oldSettings.Settings as TrendSearch.ILineSeriesSettings;
+                    Object.keys(lineSettings).forEach(key => {
                         const series = channel.Series.find(series => series.TypeName === key);
-                        oldSettings.Settings[key].Label = constructLabel(channel, series)
+                        const label = constructLabel(channel, series);
+                        lineSettings[key].Label = label;
+                        if (props.Plot.Type === 'Histogram') {
+                            const histogramSettings = lineSettings[key] as TrendSearch.IHistogramSettings;
+                            histogramSettings.ShowCumulativeProbability ??= true;
+                            histogramSettings.CumulativeProbabilityColor ??= histogramSettings.Color;
+                            histogramSettings.CumulativeProbabilityLabel ??= `${label} Cumulative Probability`;
+                        }
                     }
                     );
                 }
@@ -350,7 +368,7 @@ const TrendPlot = (props: IContainerProps) => {
         // Need this function for vertical labels
         const vertLabelFunc = (field: 'YRightLabel' | 'YLeftLabel') => {
             if (props.Plot.Type === 'Histogram') {
-                newPlot[field] = field === 'YLeftLabel' ? 'Percentage (%)' : '';
+                newPlot[field] = field === 'YLeftLabel' ? 'Percentage (%)' : 'Cumulative Probability (%)';
                 props.SetPlot(newPlot.ID, newPlot, field);
                 return;
             }
