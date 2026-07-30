@@ -110,7 +110,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
 
     function getEnum(setOptions, field) {
         if (field.type != 'enum' || field.enum == undefined || field.enum.length != 1)
-            return () => { };
+            return () => { /*noop */};
 
         const handle: JQuery.jqXHR<ValueListItemResponse[]> = getValueListGroup(field.enum[0].Value);
 

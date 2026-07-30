@@ -221,7 +221,8 @@ const PQBrowser = () => {
                             <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
                                 {createWidget(item.AltValue ?? item.Value)}
                             </ErrorBoundary>
-                        </Page>)}
+                        </Page>
+                    )}
                 </Section>
             </Application>
             <Settings Show={showSettings} Close={() => setShowSettings(false)} />
@@ -229,6 +230,7 @@ const PQBrowser = () => {
     );
 }
 
+//CustomReports shouldnt be a valuelist.
 const getCustomReports = () => {
     return $.ajax({
         type: "GET",
@@ -251,6 +253,9 @@ const getBackendVersion = () => {
     });
 }
 
+//This is never going to work
+//once someone changes the values nothing will render
+//the need to be set up like widgets are with a hardCoded string for mapping
 const createWidget = (item: string) => {
     if (item === "breakerreport")
         return <BreakerReport />
