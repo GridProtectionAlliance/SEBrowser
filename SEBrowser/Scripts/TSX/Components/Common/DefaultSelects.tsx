@@ -43,6 +43,7 @@ interface IProps<T> {
 }
 
 /** This Implements a few standardized Selection Popups */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DefaultSelects {
 
     /** This Implements a standard Meter Selection Modal */

@@ -47,6 +47,7 @@ const useSetFilters = <T,>(setFilter: (filters: Search.IFilter<T>[]) => void, ad
 }
 
 /** This Implements a few standardized SearchBars */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DefaultSearch {
 
     /** This Implements a standard Meter Search */
