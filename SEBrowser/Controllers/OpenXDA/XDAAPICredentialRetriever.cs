@@ -22,33 +22,32 @@
 //******************************************************************************************************
 
 using System.Security.Claims;
-using GSF.Data;
-using GSF.Data.Model;
+using Gemstone.Configuration;
+using Gemstone.Data;
+using Gemstone.Data.Model;
 using openXDA.APIAuthentication;
 
-namespace SEBrowser.Controllers
+namespace SEBrowser.Controllers.OpenXDA;
+
+public class XDAAPICredentialRetriever : IAPICredentialRetriever
 {
-    public class XDAAPICredentialRetriever : IAPICredentialRetriever
+    public string Token { get; private set; }
+    public string Key { get; private set; }
+    public string Host { get; private set; }
+
+    public bool TryRefreshSettings()
     {
-        public string Token { get; private set; }
-        public string Key { get; private set; }
-        public string Host { get; private set; }
+        using AdoDataConnection connection = new(Settings.Default);
 
-        public bool TryRefreshSettings()
-        {
-            using (AdoDataConnection connection = new("systemSettings"))
-            {
-                Token = new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAApiToken' AND Scope='app.setting'")?.Value ?? "localhost:8989/";
-                Key = new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAApiKey' AND Scope='app.setting'")?.Value ?? "";
-                Host = new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAInstance' AND Scope='app.setting'")?.Value ?? "";
-                return true;
-            }
-        }
+        Token = new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAApiToken' AND Scope='app.setting'")?.Value ?? "localhost:8989/";
+        Key = new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAApiKey' AND Scope='app.setting'")?.Value ?? "";
+        Host = new TableOperations<Model.System.Settings>(connection).QueryRecordWhere($"Name = 'XDAInstance' AND Scope='app.setting'")?.Value ?? "";
+        return true;
+    }
 
-        public bool TryRetrieveCustomer(ClaimsPrincipal principal, out string customerKey)
-        {
-            customerKey = null;
-            return true;
-        }
+    public bool TryRetrieveCustomer(ClaimsPrincipal principal, out string customerKey)
+    {
+        customerKey = null;
+        return true;
     }
 }

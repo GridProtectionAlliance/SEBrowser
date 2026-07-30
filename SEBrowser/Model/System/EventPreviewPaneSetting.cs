@@ -21,21 +21,16 @@
 //
 //******************************************************************************************************
 
-using GSF.Data.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using Gemstone.Data.Model;
 
-namespace SEBrowser.Model.System
+namespace SEBrowser.Model.System;
+
+[TableName("SEBrowser.EventPreviewPaneSetting"), UseEscapedName]
+public class EventPreviewPaneSetting
 {
-    [TableName("SEBrowser.EventPreviewPaneSetting"),UseEscapedName]
-    public class EventPreviewPaneSetting
-    {
-        [PrimaryKey(true)]
-        public int ID { get; set; }
-        public string Name { get; set; }
-        public bool Show { get; set; }
-        public int OrderBy { get; set; }
-    }
+    [PrimaryKey(true)]
+    public int ID { get; set; }
+    public string Name { get; set; }
+    public bool Show { get; set; }
+    public int OrderBy { get; set; }
 }

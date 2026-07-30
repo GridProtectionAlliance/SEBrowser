@@ -21,36 +21,27 @@
 //
 //******************************************************************************************************
 
-using FaultData.DataAnalysis;
-using GSF;
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Web;
-using Microsoft.AspNet.SignalR.Infrastructure;
+using Gemstone.Configuration;
+using Gemstone.Data;
+using Gemstone.Data.Model;
+using Gemstone.EnumExtensions;
+using Gemstone.Security.AccessControl;
+using Microsoft.AspNetCore.Mvc;
 using openXDA.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Runtime.Caching;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Web;
-using System.Web.Http;
-using System.Windows.Forms;
 
 namespace SEBrowser.Controllers
 {
-    [RoutePrefix("api/OpenXDA")]
+    [Route("api/OpenXDA")]
 
-    public class OpenXDAController : ApiController
+    public class OpenXDAController : ControllerBase
     {
         #region [ Members ]
-        const string SettingsCategory = "systemSettings";
-
         private string m_collumns = null;
         private Dictionary<string, string> m_sortCollumns = null;
 
@@ -59,7 +50,7 @@ namespace SEBrowser.Controllers
             get
             {
                 if (m_collumns is null)
-                    using (AdoDataConnection connection = new(SettingsCategory))
+                    using (AdoDataConnection connection = new(Settings.Default))
                     {
                         DataTable collumns = connection.RetrieveData(@"
                             SELECT COLUMN_NAME,TABLE_NAME
@@ -67,8 +58,11 @@ namespace SEBrowser.Controllers
                             WHERE TABLE_NAME = 'SEBrowser.EventSearchEventView'
                                 OR TABLE_NAME = 'SEBrowser.EventSearchDetailsView' 
                                 AND COLUMN_NAME NOT LIKE 'Sort.%'");
-                        m_collumns = String.Join(",",collumns.Select()
-                            .Select(r => $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}]")
+
+                        m_collumns = String.Join(",", collumns.Select()
+                            .Select(r => r["TABLE_NAME"].ToString() == "SEBrowser.EventSearchDetailsView" && r["COLUMN_NAME"].ToString() == "EventID"
+                                ? $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}] AS [EventID1]"
+                                : $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}]")
                             );
                     }
                 return m_collumns;
@@ -80,7 +74,7 @@ namespace SEBrowser.Controllers
             get
             {
                 if (m_sortCollumns is null)
-                    using (AdoDataConnection connection = new(SettingsCategory))
+                    using (AdoDataConnection connection = new(Settings.Default))
                     {
                         DataTable collumns = connection.RetrieveData(@"
                             SELECT COLUMN_NAME,TABLE_NAME
@@ -88,11 +82,11 @@ namespace SEBrowser.Controllers
                             WHERE (TABLE_NAME = 'SEBrowser.EventSearchEventView'
                                 OR TABLE_NAME = 'SEBrowser.EventSearchDetailsView') 
                                 AND COLUMN_NAME LIKE 'Sort.%'");
+
                         m_sortCollumns = collumns.Select()
                             .ToDictionary(
                             r => r["COLUMN_NAME"].ToString().Split('.')[1],
-                            r => $"[{r["TABLE_NAME"]}.{r["COLUMN_NAME"]}]");
-                           ;
+                            r => $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}]");
                     }
                 return m_sortCollumns;
             }
@@ -135,14 +129,15 @@ namespace SEBrowser.Controllers
             public string transientType { get; set; }
             public string sagType { get; set; }
             public string swellType { get; set; }
-            public List<int> meterIDs { get; set; }
-            public List<int> typeIDs { get; set; }
-            public List<int> assetIDs { get; set; }
-            public List<int> groupIDs { get; set; }
-            public List<int> locationIDs { get; set; }
-            public string numberResults { get; set; }
+            public int[] meterIDs { get; set; }
+            public int[] typeIDs { get; set; }
+            public int[] assetIDs { get; set; }
+            public int[] groupIDs { get; set; }
+            public int[] locationIDs { get; set; }
+            public int? numberResults { get; set; }
             public bool ascending { get; set; }
             public string sortKey { get; set; }
+            public int? eventID { get; set; }
         }
 
         enum TimeWindowUnits
@@ -171,31 +166,51 @@ namespace SEBrowser.Controllers
             public bool ABCG { get; set; }
         }
 
-        [Route("GetEventSearchData"), HttpPost]
-        public DataTable GetEventSearchData(EventSearchPostData postData)
+        // Read-style POST; without this, Gemstone's verb mapping would require Create access.
+        [Route("GetEventSearchData"), HttpPost, ResourceAccess(ResourceAccessType.Read)]
+        public DataTable GetEventSearchData([FromBody] EventSearchPostData postData)
         {
-            using (AdoDataConnection connection = new(SettingsCategory))
+            if(postData is null)
+                throw new Exception("Unable to parse request body");
+
+            using AdoDataConnection connection = new(Settings.Default);
             {
-                DateTime dateTime = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+                // When an eventID is provided, the request targets that single event and the time/characteristic filters are skipped
+                object queryParameter;
+                string recordFilter;
+                string filters = "";
 
-                string eventType = (postData.typeIDs is null) ? null : getEventTypeFilter(postData);
-                string phase = (postData.phases is null) ? null : getPhaseFilter(postData);
-                string eventCharacteristic = getEventCharacteristicFilter(postData);
-                string asset = getAssetFilters(postData);
+                //If eventID is provided no filters are needed this is a 1-1 lookup
+                if (postData.eventID is not null)
+                {
+                    queryParameter = postData.eventID;
+                    recordFilter = "Event.ID = {0}";
+                }
+                else
+                {
+                    queryParameter = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+                    recordFilter = getTimeFilter(postData);
 
-                string filters = $"{(string.IsNullOrEmpty(eventType) ? "" : $"AND ({eventType})")} ";
-                filters += $"{(string.IsNullOrEmpty(phase) ? "" : $"AND ({phase})")}  ";
-                filters += $"{(string.IsNullOrEmpty(eventCharacteristic) ? "" : $"AND {eventCharacteristic}")} ";
-                filters += $"{(string.IsNullOrEmpty(asset) ? "" : $"AND {asset}")}";
+                    string eventType = (postData.typeIDs is null) ? null : getEventTypeFilter(postData);
+                    string phase = (postData.phases is null) ? null : getPhaseFilter(postData);
+                    string eventCharacteristic = getEventCharacteristicFilter(postData);
+                    string asset = getAssetFilters(postData);
 
-                string sortBy = postData.sortKey ?? "Time";
-                if (!SortColumns.TryGetValue(sortBy, out sortBy))
-                    sortBy = postData.sortKey ?? "Time";
-                sortBy = $"ORDER BY [{sortBy}] {(postData.ascending ? "ASC" : "DESC")}";
+                    filters = $"{(string.IsNullOrEmpty(eventType) ? "" : $"AND ({eventType})")} ";
+                    filters += $"{(string.IsNullOrEmpty(phase) ? "" : $"AND ({phase})")}  ";
+                    filters += $"{(string.IsNullOrEmpty(eventCharacteristic) ? "" : $"AND {eventCharacteristic}")} ";
+                    filters += $"{(string.IsNullOrEmpty(asset) ? "" : $"AND {asset}")}";
+                }
+
+                // Sort keys map to the views' "Sort.<key>" columns; unknown keys fall back to Time to keep user input out of the SQL
+                if (!SortColumns.TryGetValue(postData.sortKey ?? "Time", out string sortColumn))
+                    sortColumn = "[Time]";
+
+                string sortBy = $"ORDER BY {sortColumn} {(postData.ascending ? "ASC" : "DESC")}";
 
                 string query =
                     $"""
-                    SELECT TOP {postData.numberResults ?? "100"}
+                    SELECT TOP {postData.numberResults?.ToString() ?? "100"}
                         {Columns}
                     FROM
                         (
@@ -224,7 +239,7 @@ namespace SEBrowser.Controllers
                                     ) AND
                                     EventType.Name IN ('Fault', 'RecloseIntoFault')
                             WHERE
-                                ({getTimeFilter(postData)}) AND
+                                ({recordFilter}) AND
                                 (
                                     EventWorstDisturbance.ID IS NOT NULL OR
                                     FaultSummary.ID IS NOT NULL OR
@@ -242,7 +257,7 @@ namespace SEBrowser.Controllers
                             ) {sortBy}
                     """;
 
-                DataTable table = connection.RetrieveData(query, dateTime);
+                DataTable table = connection.RetrieveData(query, queryParameter);
 
                 return table;
             }
@@ -435,9 +450,9 @@ namespace SEBrowser.Controllers
 
 
         [Route("GetEventSearchMeterMakes"), HttpGet]
-        public IHttpActionResult GetEventSearchMeterMakes()
+        public IActionResult GetEventSearchMeterMakes()
         {
-            using (AdoDataConnection connection = new(SettingsCategory))
+            using (AdoDataConnection connection = new(Settings.Default))
             {
 
                 DataTable table = connection.RetrieveData(@"SELECT DISTINCT Make FROM Meter");
@@ -448,41 +463,32 @@ namespace SEBrowser.Controllers
         }
 
         [Route("GetEventSearchMeterModels/{make}"), HttpGet]
-        public IHttpActionResult GetEventSearchMeterModels(string make)
+        public IActionResult GetEventSearchMeterModels(string make)
         {
-            using (AdoDataConnection connection = new(SettingsCategory))
-            {
+            using AdoDataConnection connection = new(Settings.Default);
 
-                DataTable table = connection.RetrieveData(@"SELECT DISTINCT Model FROM Meter WHERE Make = {0}", make);
+            DataTable table = connection.RetrieveData(@"SELECT DISTINCT Model FROM Meter WHERE Make = {0}", make);
 
-                return Ok(table.Select().Select(x => x["Model"].ToString()));
-            }
-
+            return Ok(table.Select().Select(x => x["Model"].ToString()));
         }
 
         [Route("GetRelayPerformance"), HttpGet]
-        public DataTable GetRelayPerformance()
+        public DataTable GetRelayPerformance(int eventId)
         {
-            Dictionary<string, string> query = Request.QueryParameters();
-            int eventID = int.Parse(query["eventId"]);
-            if (eventID <= 0) return new DataTable();
-            using (AdoDataConnection connection = new(SettingsCategory))
-            {
-                Event evt = new TableOperations<Event>(connection).QueryRecordWhere("ID = {0}", eventID);
-                return RelayHistoryTable(evt.AssetID, -1);
-            }
+            if (eventId <= 0) return new DataTable();
+            using AdoDataConnection connection = new(Settings.Default);
 
+            Event evt = new TableOperations<Event>(connection).QueryRecordWhere("ID = {0}", eventId);
+            return RelayHistoryTable(evt.AssetID, -1);
         }
 
         [Route("getCapBankAnalytic"), HttpGet]
-        public DataTable GetCapBankAnalytic()
+        public DataTable GetCapBankAnalytic(int eventId)
         {
-            Dictionary<string, string> query = Request.QueryParameters();
-            int eventID = int.Parse(query["eventId"]);
-            if (eventID <= 0) return new DataTable();
-            using (AdoDataConnection connection = new(SettingsCategory))
-            {
-                string sqlQuery = @"SELECT
+            if (eventId <= 0) return new DataTable();
+            using AdoDataConnection connection = new(Settings.Default);
+
+            string sqlQuery = @"SELECT
                                             CBAnalyticResult.Id AS ID,
                                             CBAnalyticResult.Time AS Time,
                                             CBAnalyticResult.EventID AS EventId,
@@ -505,16 +511,14 @@ namespace SEBrowser.Controllers
                                             CBSwitchingCondition ON CBSwitchHealthAnalytic.CBSwitchingConditionID = CBSwitchingCondition.ID
                                         WHERE CBAnalyticResult.EventID = {0}";
 
-                return connection.RetrieveData(sqlQuery, eventID); ;
-            }
-
+            return connection.RetrieveData(sqlQuery, eventId);
         }
 
         private DataTable RelayHistoryTable(int relayID, int eventID)
         {
             DataTable dataTable;
 
-            using (AdoDataConnection connection = new(SettingsCategory))
+            using (AdoDataConnection connection = new(Settings.Default))
             {
                 if (eventID > 0) { dataTable = connection.RetrieveData("SELECT * FROM BreakerHistory WHERE BreakerID = {0} AND EventID = {1}", relayID, eventID); }
                 else { dataTable = connection.RetrieveData("SELECT * FROM BreakerHistory WHERE BreakerID = {0}", relayID); }

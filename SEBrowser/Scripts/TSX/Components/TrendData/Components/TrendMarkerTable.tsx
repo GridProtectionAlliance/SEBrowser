@@ -50,20 +50,25 @@ const TrendMarkerTable = (props: IProps) => {
         (marker: TrendSearch.IMarker) => (
             <button type="button"
                 className={'btn float-left'}
-                onClick={(event) => { event.preventDefault(); event.stopPropagation(); props.RemoveMarker(marker) }}>
+                onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (props.RemoveMarker == null) return;
+                    props.RemoveMarker(marker)
+                }}
+            >
                 {TrashCan}
             </button>
         ), [props.RemoveMarker]);
 
-    const sortCallback = React.useCallback(
-        (data: { colKey: string, colField?: string, ascending: boolean }) => {
-            if (data.colKey === 'undefined')
-                return
-            if (data.colField === sortField)
-                setAscending(!ascending);
-            else
-                setSortField(data.colField);
-        }, [ascending]);
+    const sortCallback = React.useCallback((data: { colKey: string, colField?: string, ascending: boolean }) => {
+        if (data.colKey === 'undefined')
+            return
+        if (data.colField === sortField)
+            setAscending(!ascending);
+        else
+            setSortField(prev => data.colField ?? prev);
+    }, [ascending]);
 
     return (
         <Table<TrendSearch.IMarker>
@@ -81,44 +86,57 @@ const TrendMarkerTable = (props: IProps) => {
             RowStyle={{ display: 'table', tableLayout: 'fixed', width: 'calc(100%)' }}
             KeySelector={item => item.ID}
         >
-            <Column<TrendSearch.IMarker> Key="symbol" Content={row => {
-                switch (row.item.type) {
-                    case "VeHo":
-                        if (props.IsGlobal ?? false) return "+"
-                        return row.item["isHori"] ? "-" : "|"
-                    case "Symb": return row.item["symbol"];
-                    default:
-                        return "Event";
-                }
-            }}
-            >{""}</Column>
-            <Column<TrendSearch.IMarker> Key="type" Field="type" Content={row => {
-                if (props.IsGlobal ?? false) {
+            <Column<TrendSearch.IMarker>
+                Key="symbol"
+                Content={row => {
                     switch (row.item.type) {
                         case "VeHo":
-                            return "Vertical and Horizontal Line Marker(s)";
-                        case "Symb":
-                            return "Icon Marker(s) and Infobox(es)";
+                            if (props.IsGlobal ?? false) return "+"
+                            return row.item["isHori"] ? "-" : "|"
+                        case "Symb": return row.item["symbol"];
                         default:
-                            return "Event Marker(s)";
+                            return "Event";
                     }
-                } else {
-                    switch (row.item.type) {
-                        case "VeHo":
-                            return (row.item["isHori"] ?? true) ? row.item["value"].toFixed(2) : moment.utc(row.item["value"]).format(momentFormat);
-                        case "Symb":
-                            return `${moment.utc(row.item["xPos"]).format(momentFormat)} | ${row.item["yPos"].toFixed(2)}`;
-                        default:
-                            return "All Events";
+                }}
+            >
+                {""}
+            </Column>
+            <Column<TrendSearch.IMarker>
+                Key="type"
+                Field="type"
+                Content={row => {
+                    if (props.IsGlobal ?? false) {
+                        switch (row.item.type) {
+                            case "VeHo":
+                                return "Vertical and Horizontal Line Marker(s)";
+                            case "Symb":
+                                return "Icon Marker(s) and Infobox(es)";
+                            default:
+                                return "Event Marker(s)";
+                        }
+                    } else {
+                        switch (row.item.type) {
+                            case "VeHo":
+                                return (row.item["isHori"] ?? true) ? row.item["value"].toFixed(2) : moment.utc(row.item["value"]).format(momentFormat);
+                            case "Symb":
+                                return `${moment.utc(row.item["xPos"]).format(momentFormat)} | ${row.item["yPos"].toFixed(2)}`;
+                            default:
+                                return "All Events";
+                        }
                     }
-                }
-            }}
-            >{(props.IsGlobal ?? false) ? "" : "Value"}</Column>
+                }}
+            >
+                {(props.IsGlobal ?? false) ? "" : "Value"}
+            </Column>
             {(props.IsGlobal ?? false) ? null :
-                <Column<TrendSearch.IMarker> Key="RemoveChannel"
-                    RowStyle={{ width: "50px" }} HeaderStyle={{ width: "50px" }}
+                <Column<TrendSearch.IMarker>
+                    Key="RemoveChannel"
+                    RowStyle={{ width: "50px" }}
+                    HeaderStyle={{ width: "50px" }}
                     Content={row => removeButton(row.item)}
-                >{""}</Column>
+                >
+                    {""}
+                </Column>
             }
         </Table>
     );

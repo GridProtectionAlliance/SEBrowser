@@ -26,9 +26,7 @@ import React from 'react';
 import _ from 'lodash';
 import { TrendSearch } from '../../../global';
 import { TabSelector, Modal } from '@gpa-gemstone/react-interactive';
-import { PlotSettingsTab } from './OverlayTabs/PlotSettingsTab';
-import { MarkerTab } from './OverlayTabs/MarkerTab';
-import { ChannelTab } from './OverlayTabs/ChannelTab';
+import type { ITrendWidgetSettings } from '../TrendPlot/TrendWidgetRegistry';
 
 interface IOverlayProps {
     // Manage Plot
@@ -46,7 +44,8 @@ interface IOverlayProps {
     SetSeriesSettings: (newSettings: TrendSearch.ISeriesSettings[]) => void
     // Manage Overlay
     Show: boolean,
-    SetShow: (value: boolean) => void
+    SetShow: (value: boolean) => void,
+    Settings?: ITrendWidgetSettings
 }
 
 const SettingsModal = React.memo((props: IOverlayProps) => {
@@ -54,14 +53,14 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
     const [tab, setTab] = React.useState<string>("plot");
     const [confirmDisabled, setConfirmDisabled] = React.useState<boolean>(false);
     // Plot Tab Buffers
-    const [plotBuffer, setPlotBuffer] = React.useState<TrendSearch.ITrendPlot>(null);
+    const [plotBuffer, setPlotBuffer] = React.useState<TrendSearch.ITrendPlot | null>(null);
     // Channels Tab Buffers
     const [seriesBuffer, setSeriesBuffer] = React.useState<TrendSearch.ISeriesSettings[]>([]);
     const [channelsBuffer, setChannelsBuffer] = React.useState<TrendSearch.ITrendChannel[]>([]);
     // Markers Tab Buffers
     const [symbolicsBuffer, setSymbolicsBuffer] = React.useState<TrendSearch.ISymbolic[]>([]);
     const [markersBuffer, setMarkersBuffer] = React.useState<TrendSearch.IVertHori[]>([]);
-    const [eventBuffer, setEventBuffer] = React.useState<TrendSearch.EventMarkerSettings>(null);
+    const [eventBuffer, setEventBuffer] = React.useState<TrendSearch.EventMarkerSettings | null>(null);
 
     // Create Settings Buffers
     React.useEffect(() => {
@@ -69,7 +68,7 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
     }, [props.Plot]);
 
     React.useEffect(() => {
-        setSeriesBuffer(props.SeriesSettings);
+        setSeriesBuffer(props.SeriesSettings ?? []);
     }, [props.SeriesSettings]);
 
     React.useEffect(() => {
@@ -88,62 +87,110 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
         setEventBuffer(props.EventSettings);
     }, [props.EventSettings]);
 
+    const PlotSettings = props.Settings?.Plot;
+    const MarkerSettings = props.Settings?.Marker;
+    const ChannelSettings = props.Settings?.Channel;
+    const tabs = [
+        PlotSettings == null ? null : { Id: "plot", Label: "Plot" },
+        MarkerSettings == null ? null : { Id: "marks", Label: "Marker" },
+        ChannelSettings == null ? null : { Id: "series", Label: "Channel" }
+    ].filter(tab => tab != null);
+
+    React.useEffect(() => {
+        if (props.Show && !tabs.some(settingsTab => settingsTab.Id === tab))
+            setTab(tabs[0]?.Id ?? "plot");
+    }, [props.Show, PlotSettings, MarkerSettings, ChannelSettings, tab]);
+
     function checkAndSetValue(record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)): void {
         if (!_.isEqual(props.Plot[field], record[field]))
             props.SetPlot(props.Plot.ID, record, field);
     }
 
-    const Tabs = [
-        { Id: "plot", Label: "Plot" },
-        { Id: "marks", Label: "Marker" },
-        { Id: "series", Label: "Channel" }
-    ];
-
     return (
-        <Modal Title={`Change Plot: ${props.Plot.Title ?? `${props.Plot.Channels.length} Channel ${props.Plot.Type} Plot`}`} ShowX={false} Size='xlg'
-            ShowConfirm={true} ConfirmText='Save Changes' DisableConfirm={confirmDisabled} ShowCancel={true} CancelText='Discard Changes'
-            Show={props.Show} CallBack={(conf) => {
+        <Modal 
+        Title={`Change Plot: ${props.Plot.Title ?? `${props.Plot.Channels.length} Channel ${props.Plot.Type} Plot`}`} 
+        ShowX={false} 
+        Size='xlg'
+            ShowConfirm={true} 
+            ConfirmText='Save Changes' 
+            DisableConfirm={confirmDisabled} 
+            ShowCancel={true} 
+            CancelText='Discard Changes'
+            Show={props.Show} 
+            CallBack={(conf) => {
                 if (conf) {
                     // Each of the fields that are set global to all channels (do this field by field to avoid unneccessary rerenders)
                     const plotSettings = { ...plotBuffer };
-                    plotSettings.Channels = channelsBuffer;
-                    Object.keys(plotSettings).forEach(field => checkAndSetValue(plotSettings, field as keyof (TrendSearch.ITrendPlot)));
+                    if (ChannelSettings != null) plotSettings.Channels = channelsBuffer;
+                    if (PlotSettings != null || ChannelSettings != null)
+                        Object.keys(plotSettings).forEach(field => checkAndSetValue(plotSettings, field as keyof (TrendSearch.ITrendPlot)));
                     // Do other settings
-                    props.SetSeriesSettings(seriesBuffer);
-                    props.SetSymbolicMarkers(symbolicsBuffer);
-                    props.SetVertHoriMarkers(markersBuffer);
-                    props.SetEventSettings(eventBuffer);
+                    if (ChannelSettings != null) props.SetSeriesSettings(seriesBuffer);
+                    if (MarkerSettings != null) {
+                        props.SetSymbolicMarkers(symbolicsBuffer);
+                        props.SetVertHoriMarkers(markersBuffer);
+                        props.SetEventSettings(eventBuffer);
+                    }
 
                 } else {
                     // Reset buffers
                     setPlotBuffer(props.Plot);
-                    setSeriesBuffer(props.SeriesSettings);
+                    setSeriesBuffer(props.SeriesSettings ?? []);
                     setChannelsBuffer(props.Plot.Channels);
                     setSymbolicsBuffer(props.SymbolicMarkers);
                     setMarkersBuffer(props.VertHoriMarkers);
                     setEventBuffer(props.EventSettings);
                 }
-                setTab("plot");
+                setTab(tabs[0]?.Id ?? "plot");
                 props.SetShow(false);
 
-        }}>
-            <TabSelector CurrentTab={tab} SetTab={setTab} Tabs={Tabs} />
-            <div className="tab-content" style={{ overflow: 'hidden' }}>
-                <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
-                    <PlotSettingsTab Plot={plotBuffer} SetPlot={setPlotBuffer} SetConfirmDisabled={setConfirmDisabled} IsGlobalSettings={false} />
+            }}>
+            <TabSelector
+             CurrentTab={tab}
+              SetTab={setTab} 
+              Tabs={tabs}
+               />
+            {PlotSettings == null ? null :
+                <div className="tab-content" style={{ overflow: 'hidden' }}>
+                    <div className={"tab-pane " + (tab == "plot" ? " active" : "fade")} id="plot">
+                        <PlotSettings
+                            Plot={plotBuffer}
+                            SetPlot={setPlotBuffer}
+                            SetConfirmDisabled={setConfirmDisabled}
+                            IsGlobalSettings={false}
+                        />
+                    </div>
                 </div>
-            </div>
-            <div className="tab-content" style={{ overflow: 'hidden' }}>
-                <div className={"tab-pane " + (tab == "series" ? " active" : "fade")} id="series">
-                    <ChannelTab Type={props.Plot.Type} SetChannels={setChannelsBuffer} Channels={channelsBuffer} SeriesSettings={seriesBuffer} SetSeriesSettings={setSeriesBuffer} />
+            }
+            {ChannelSettings == null ? null :
+                <div className="tab-content" style={{ overflow: 'hidden' }}>
+                    <div className={"tab-pane " + (tab == "series" ? " active" : "fade")} id="series">
+                        <ChannelSettings
+                            PlotFilter={plotBuffer?.PlotFilter ?? []}
+                            SetChannels={setChannelsBuffer}
+                            Channels={channelsBuffer}
+                            SeriesSettings={seriesBuffer}
+                            SetSeriesSettings={setSeriesBuffer}
+                        />
+                    </div>
                 </div>
-            </div>
-            <div className="tab-content" style={{ overflow: 'hidden' }}>
-                <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
-                    <MarkerTab VeHoMarkers={markersBuffer} SetVeHoMarkers={setMarkersBuffer} SymbMarkers={symbolicsBuffer} SetSymbMarkers={setSymbolicsBuffer}
-                        EventSettings={eventBuffer} SetEventSettings={setEventBuffer} DisplayEventSettings={plotBuffer?.ShowEvents ?? false} IsGlobalSettings={false}/>
+            }
+            {MarkerSettings == null ? null :
+                <div className="tab-content" style={{ overflow: 'hidden' }}>
+                    <div className={"tab-pane " + (tab == "marks" ? " active" : "fade")} id="marks">
+                        <MarkerSettings
+                            VeHoMarkers={markersBuffer}
+                            SetVeHoMarkers={setMarkersBuffer}
+                            SymbMarkers={symbolicsBuffer}
+                            SetSymbMarkers={setSymbolicsBuffer}
+                            EventSettings={eventBuffer}
+                            SetEventSettings={setEventBuffer}
+                            DisplayEventSettings={plotBuffer?.ShowEvents ?? false}
+                            IsGlobalSettings={false}
+                        />
+                    </div>
                 </div>
-            </div>
+            }
         </Modal>
     );
 });

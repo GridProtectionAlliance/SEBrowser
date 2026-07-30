@@ -23,20 +23,22 @@
 
 
 
-using GSF.Data.Model;
-using GSF.Web.Model;
+using Gemstone.Data;
+using Gemstone.Data.Model;
 using SEBrowser.Model.System;
+using System;
 using System.Collections.Generic;
 
 namespace SEBrowser
 {
     public static class WebExtensions
     {
-        public static Dictionary<string, string> LoadDatabaseSettings(this DataContext dataContext, string scope)
+        public static Dictionary<string, string> LoadDatabaseSettings(this AdoDataConnection connection, string scope)
         {
-            Dictionary<string, string> settings = new();
+            Dictionary<string, string> settings = new(StringComparer.OrdinalIgnoreCase);
+            TableOperations<Settings> settingsTable = new(connection);
 
-            foreach (Settings setting in dataContext.Table<Settings>().QueryRecords("Name", new RecordRestriction("Scope = {0}", scope)))
+            foreach (Settings setting in settingsTable.QueryRecords("Name", new RecordRestriction("Scope = {0}", scope)))
             {
                 if (!string.IsNullOrEmpty(setting.Name))
                     settings.Add(setting.Name, setting.Value);

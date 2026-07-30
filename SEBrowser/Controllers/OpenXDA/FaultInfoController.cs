@@ -21,42 +21,23 @@
 //
 //******************************************************************************************************
 
-using FaultData.DataAnalysis;
-using GSF;
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Web;
-using openXDA.Model;
-using SEBrowser.Model.System;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Runtime.Caching;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Web;
-using System.Web.Http;
+using Gemstone.Configuration;
+using Gemstone.Data;
+using Microsoft.AspNetCore.Mvc;
 
-namespace SEBrowser.Controllers.OpenXDA
+namespace SEBrowser.Controllers.OpenXDA;
+
+[Route("api/OpenXDA/FaultInfo")]
+public class FaultInfoController : ControllerBase
 {
-    [RoutePrefix("api/OpenXDA/FaultInfo")]
-    public class FaultInfoController : ApiController
+    const string SettingsCategory = "systemSettings";
+
+    [Route("TreeProbability/{eventID:int}"), HttpGet]
+    public IActionResult GetTreeProbability(int eventID)
     {
-        const string SettingsCategory = "systemSettings";
+        using AdoDataConnection connection = new(Settings.Default);
 
-		[Route("TreeProbability/{eventID:int}"), HttpGet]
-		public IHttpActionResult GetTreeProbability(int eventID)
-		{
-			try
-			{
-				using (AdoDataConnection connection = new(SettingsCategory))
-				{
-
-					string query = @"
+        string query = @"
 					SELECT 
 						Event.ID,
 						FaultSummary.Inception as FaultTime,
@@ -85,15 +66,8 @@ namespace SEBrowser.Controllers.OpenXDA
 					WHERE 
 						Event.ID = {0}
                     ";
-					return Ok(connection.RetrieveData(query, eventID));
-				}
-			}
-			catch (Exception ex)
-			{
-				return InternalServerError(ex);
-			}
-		}
 
+        return Ok(connection.RetrieveData(query, eventID));
+    }
 
-	}
 }

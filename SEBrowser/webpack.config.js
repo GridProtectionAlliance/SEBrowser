@@ -1,8 +1,8 @@
 ﻿"use strict";
 const path = require("path");
-const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const { version } = require('./package.json');
 
 module.exports = env => {
     if (env.NODE_ENV == undefined) env.NODE_ENV = 'development';
@@ -12,16 +12,15 @@ module.exports = env => {
         cache: true,
         entry: {
             SEBrowser: "./Scripts/TSX/SEBrowser.tsx",
-
         },
         output: {
-            path: path.resolve(__dirname, 'Scripts'),
+            path: path.resolve(__dirname, 'wwwroot', 'Scripts'),
             publicPath: 'Scripts/',
-            filename: "[name].js"
+            filename: `[name].${version}.js`,
+            chunkFilename: "[name].js"
         },
         // Enable sourcemaps for debugging webpack's output.
         devtool: "inline-source-map",
-
         resolve: {
             // Add '.ts' and '.tsx' as resolvable extensions.
             extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js", ".css"],
@@ -50,9 +49,10 @@ module.exports = env => {
                     use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
                 },
                 {
+                    //loader is the default asset loader in webpack 5
                     test: /\.(woff|woff2|ttf|eot|svg|png|gif)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                    loader: 'url-loader',
-                    options: { limit: 100000 }
+                    type: 'asset',
+                    parser: { dataUrlCondition: { maxSize: 100000 } }
                 }
             ]
         },
@@ -64,7 +64,6 @@ module.exports = env => {
             ],
         },
         plugins: [
-            new NodePolyfillPlugin(),
             new ForkTsCheckerWebpackPlugin()
         ]
     };

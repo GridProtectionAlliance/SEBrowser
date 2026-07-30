@@ -22,19 +22,19 @@
 //******************************************************************************************************
 
 import React from 'react';
-import moment from 'moment';
 import _ from 'lodash';
-import TrendSearchNavbar from './TrendDataNavbar';
+import TrendSearchNavbar from './NavBar/TrendDataNavbar';
 import TrendPlot from './TrendPlot/TrendPlot';
-import { TrendSearch } from '../../Global';
+import { TrendSearch } from '../../global';
 import AllSettingsModal from './Settings/AllSettingsModal';
 import { SelectTrendDataSettings } from '../../Store/SettingsSlice';
 import { useAppSelector, useAppDispatch } from './../../hooks';
-import { SVGIcons } from '@gpa-gemstone/gpa-symbols';
 import { ValueListGroupSlice } from '../../Store/Store';
-import { TrendDefaults } from './HelperFunctions';
+import { TrendDefaults } from './Utils/HelperFunctions';
+import { ErrorBoundary } from '@gpa-gemstone/common-pages';
+import { Alert } from '@gpa-gemstone/react-interactive';
+import { TrendChannelTableState } from './NavBar/Types';
 
-const momentDateFormat = "MM/DD/YYYY";
 const trendSearchId = "TrendDataChartAll";
 const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFilter"]);
 const defaultValueList = "TrendLabelDefaults";
@@ -48,18 +48,12 @@ const TrendData = () => {
     const [lineDefaults, setLineDefaults] = React.useState<TrendSearch.ILinePlotSettingsBundle>(TrendDefaults.getLineSettingsOrDefault);
     const [showSettings, setShowSettings] = React.useState<boolean>(false);
     const [plotsMovable, setPlotsMovable] = React.useState<boolean>(false);
+    const [channelTableState, setChannelTableState] = React.useState<TrendChannelTableState>('noMeter');
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
 
     const defaultSliceStatus = useAppSelector((state) => ValueListGroupSlice.Status(state, defaultValueList));
     const defaultSliceData = useAppSelector((state) => ValueListGroupSlice.Data(state, defaultValueList));
     const dispatch = useAppDispatch();
-
-    function getShowNav(): boolean {
-        if (Object.prototype.hasOwnProperty.call(localStorage, 'SEbrowser.TrendData.ShowNav'))
-            return JSON.parse(localStorage.getItem('SEbrowser.TrendData.ShowNav'));
-        else
-            return true;
-    }
 
     const removePlot = React.useCallback(((ID: string) => {
         const index = plotList.findIndex(item => item.ID === ID);
@@ -134,7 +128,7 @@ const TrendData = () => {
 
     React.useEffect(() => {
         // only allow settings this if it hasn't been set before
-        if (defaultSliceStatus === 'idle' && defaultPlotSettings.LabelComponents.length === 0)
+        if (defaultSliceStatus === 'idle' && defaultPlotSettings?.LabelComponents?.length === 0)
             setDefaultPlotSettings({ ...defaultPlotSettings, LabelComponents: defaultSliceData.map(item => item.Value) });
     }, [defaultSliceStatus]);
 
@@ -155,33 +149,88 @@ const TrendData = () => {
     }, [lineDefaults]);
 
     return (
-        <div className="container-fluid d-flex h-100 flex-column" style={{ height: 'inherit' }}>
-            <TrendSearchNavbar
-                ToggleVis={toggleNavbar}
-                ShowNav={showNav}
-                SetShowAllSettings={setShowSettings}
-                AddNewCharts={concatNewContainers}
-                RemoveAllCharts={removeAllCharts}
-                TimeFilter={defaultPlotSettings.TimeFilter}
-                LinePlot={defaultPlotSettings.PlotFilter}
-                Movable={plotsMovable}
-                SetMovable={setPlotsMovable}
-                PlotIds={plotList.map(plot => { return { ID: plot.ID, Width: plot.Width, Height: plot.Height } })}
-            />
-            <div className={'row'} style={{ flex: 1, overflow: 'hidden' }}>
-                <div className={'col-12'} style={{ height: '100%', overflowY: 'scroll', overflowX: 'hidden' }} id={trendSearchId}>
-                    {plotList.map(element => <TrendPlot key={element.ID} DragMode={plotsMovable}
-                        Plot={element} SetPlot={setPlot} RemovePlot={removePlot} SplicePlot={movePlot}
-                        HandleOverlay={closeSettings} MarkerDefaults={markerDefaults} LineDefaults={lineDefaults}
-                    />)}
+        <div className="container-fluid d-flex h-100 flex-column p-0" style={{ height: 'inherit' }}>
+            <ErrorBoundary ErrorMessage={'Error loading page.'}>
+                <TrendSearchNavbar
+                    ToggleVis={toggleNavbar}
+                    ShowNav={showNav}
+                    SetShowAllSettings={setShowSettings}
+                    AddNewCharts={concatNewContainers}
+                    RemoveAllCharts={removeAllCharts}
+                    TimeFilter={defaultPlotSettings.TimeFilter}
+                    LinePlot={defaultPlotSettings.PlotFilter}
+                    Movable={plotsMovable}
+                    SetMovable={setPlotsMovable}
+                    SetChannelTableState={setChannelTableState}
+                    PlotIds={plotList.map(plot => { return { ID: plot.ID, Width: plot.Width ?? 0, Height: plot.Height ?? 0 } })}
+                />
+            </ErrorBoundary>
+            <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                <div className={'row m-0'} style={{ flex: 1, overflow: 'hidden' }}>
+                    <div className={'col-12 px-0'} style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }} id={trendSearchId}>
+                        {plotList.length === 0 ?
+                            <Alert Class="alert-info" Style={{ height: '100%', marginBottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {getEmptyPlotMessage(channelTableState)}
+                            </Alert> :
+                            plotList.map(element =>
+                            <TrendPlot
+                                key={element.ID}
+                                DragMode={plotsMovable}
+                                Plot={element}
+                                SetPlot={setPlot}
+                                RemovePlot={removePlot}
+                                SplicePlot={movePlot}
+                                HandleOverlay={closeSettings}
+                                MarkerDefaults={markerDefaults}
+                                LineDefaults={lineDefaults}
+                            />)}
+                    </div>
                 </div>
-            </div>
-            <AllSettingsModal Show={showSettings} SetShow={setShowSettings} ApplyFieldToAll={setAllPlot}
-                Defaults={defaultPlotSettings} SetDefaults={setDefaultPlotSettings}
-                MarkerDefaults={markerDefaults} SetMarkerDefaults={setMarkerDefaults}
-                LinePlotDefaults={lineDefaults} SetLinePlotDefaults={setLineDefaults} />
+            </ErrorBoundary>
+            <ErrorBoundary ErrorMessage={'Error loading page.'}>
+                <AllSettingsModal
+                    Show={showSettings}
+                    SetShow={setShowSettings}
+                    ApplyFieldToAll={setAllPlot}
+                    Defaults={defaultPlotSettings}
+                    SetDefaults={setDefaultPlotSettings}
+                    MarkerDefaults={markerDefaults}
+                    SetMarkerDefaults={setMarkerDefaults}
+                    LinePlotDefaults={lineDefaults}
+                    SetLinePlotDefaults={setLineDefaults}
+                />
+            </ErrorBoundary>
         </div>
     );
+}
+
+const getShowNav = (): boolean => {
+    const value = localStorage.getItem('SEbrowser.TrendData.ShowNav');
+
+    if (value === null)
+        return true;
+
+    const parsed: unknown = JSON.parse(value);
+
+    if (typeof parsed !== 'boolean')
+        return false
+
+    return parsed;
+}
+
+const getEmptyPlotMessage = (channelTableState: TrendChannelTableState): string => {
+    switch (channelTableState) {
+        case 'noMeter':
+            return 'Select a Meter to view available channels.';
+        case 'loading':
+            return 'Loading channels...';
+        case 'noChannels':
+            return 'No channels match the selected filters. Adjust the filters to find available channels.';
+        case 'noSelection':
+            return 'No channels selected. Select one or more channels from the channel table.';
+        default:
+            return 'No plots to display. Use the plot controls to add the selected channels to a plot.';
+    }
 }
 
 export default TrendData;

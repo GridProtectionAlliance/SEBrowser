@@ -20,17 +20,17 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-import { SystemCenter, OpenXDA as XDA } from '@gpa-gemstone/application-typings';
-import { IGenericSliceState } from '@gpa-gemstone/react-interactive';
+import { SystemCenter, OpenXDA as XDA, Application } from '@gpa-gemstone/application-typings';
+import { EventWidget } from '../../EventWidgets/TSX/global';
 
 declare global {
     let homePath: string;
+    let logoutPath: string;
     let xdaInstance: string;
     let scInstance: string;
     let openSEEInstance: string;
     let faultLocationInstance: string;
     let controllerViewPath: string;
-    let version: string;
 
     namespace queryString {
         function parse(str: string, opts?: object): object
@@ -40,42 +40,20 @@ declare global {
 
 }
 
-//Todo: Move to gemstone?
+//this should be in gemstone?
 export interface IMultiCheckboxOption {
     Value: number | string,
-    Label: string,
+    Label: string | JSX.Element,
     Selected: boolean
 }
 
 export namespace Redux {
-    interface StoreState {
-        EventSearch: EventSearchState,
-        MagDurCurve: IGenericSliceState<XDA.Types.MagDurCurve>,
-        Meter: IGenericSliceState<SystemCenter.Types.DetailedMeter>,
-        Asset: IGenericSliceState<SystemCenter.Types.DetailedAsset>,
-        AssetGroup: IGenericSliceState<XDA.Types.AssetGroup>,
-        Location: IGenericSliceState<SystemCenter.Types.DetailedLocation>,
-        Settings: SettingsState,
-        EventType: IGenericSliceState<SEBrowser.EventType>,
-        EventNote: IGenericSliceState<XDA.Types.Note>,
-        MeterNote: IGenericSliceState<XDA.Types.Note>,
-        AssetNote: IGenericSliceState<XDA.Types.Note>,
-        LocationNote: IGenericSliceState<XDA.Types.Note>,
-        Phase: IGenericSliceState<XDA.Types.Phase>,
-        ChannelGroup: IGenericSliceState<SEBrowser.ChannelGroup>,
-        ValueList: iValueListSliceState
+    interface IWidgetAuthorizationState {
+        WidgetAuthorization: EventWidget.IWidgetAuthorization,
+        Status: Application.Types.Status
     }
 
-    interface State<T> {
-        Status: SEBrowser.Status,
-        Data: T[],
-        Error: null | string,
-        SortField: string,
-        Ascending: boolean,
-        Record?: T,
-    }
-
-    interface EventSearchState extends Redux.State<any> {
+    interface EventSearchState {
         TimeRange: SEBrowser.IReportTimeFilter,
         EventType: number[],
         EventCharacteristic: SEBrowser.IEventCharacteristicFilters,
@@ -83,15 +61,19 @@ export namespace Redux {
         SelectedAssets: SystemCenter.Types.DetailedAsset[],
         SelectedStations: SystemCenter.Types.DetailedLocation[],
         SelectedGroups: XDA.Types.AssetGroup[],
-        isReset: boolean,
-        ActiveFetchID: string[]
+        isReset: boolean
     }
 
     interface SettingsState {
         eventSearch: IEventSearchSettings,
         trendData: ITrendDataSettings,
         general: IGeneralSettings,
+        tutorials: ITutorialSettings,
         timeZone: string
+    }
+
+    interface ITutorialSettings {
+        UseTutorials: boolean
     }
 
     interface IGeneralSettings {
@@ -111,7 +93,10 @@ export namespace Redux {
         InsertAtStart: boolean,
         MarkerSnapping: boolean,
         StartWithOptionsClosed: boolean,
-        LegendDisplay: 'bottom' | 'right' | 'hidden'
+        LegendDisplay: 'bottom' | 'right' | 'hidden',
+        DefaultPhaseIDs?: number[],
+        DefaultChannelGroupIDs?: number[],
+        DefaultSeries?: string[]
     }
 
     interface IValueListSliceState {
@@ -128,20 +113,28 @@ export namespace Redux {
     }
 }
 export namespace SEBrowser {
-    type Status = 'loading' | 'idle' | 'error' | 'changed' | 'unitiated';
-    type TimeWindowMode =   'center' | 'startWindow' | 'endWindow' | 'startEnd';
+    type TimeWindowMode =   'startWindow' | 'endWindow' | 'startEnd';
       
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
     interface EventPreviewPaneSetting { ID: number, Name: string, Show: boolean, OrderBy: number }
     interface IReportTimeFilter { date: string, time: string, windowSize: number, timeWindowUnits: number }
     interface IPhaseFilters { AN: boolean, BN: boolean, CN: boolean, AB: boolean, BC: boolean, CA: boolean, ABG: boolean, BCG: boolean, ABC: boolean, ABCG: boolean }
     interface IEventCharacteristicFilters {
-        durationMin: number, durationMax: number,
+        durationMin: number | null,
+        durationMax: number | null,
         phases: IPhaseFilters,
-        transientMin?: number, transientMax?: number, transientType: ('LL'|'LN'|'both'),
-        sagMin?: number, sagMax?: number, sagType: ('LL' | 'LN' | 'both'),
-        swellMin?: number, swellMax?: number, swellType: ('LL' | 'LN' | 'both'),
-        curveID: number, curveInside: boolean, curveOutside: boolean
+        transientMin: number | null, 
+        transientMax: number | null, 
+        transientType: ('LL'|'LN'|'both'),
+        sagMin: number | null, 
+        sagMax: number | null, 
+        sagType: ('LL' | 'LN' | 'both'),
+        swellMin: number | null, 
+        swellMax: number | null, 
+        swellType: ('LL' | 'LN' | 'both'),
+        curveID: number, 
+        curveInside: boolean, 
+        curveOutside: boolean
     }
     
     interface EventNote extends XDA.Types.Note {
@@ -234,6 +227,17 @@ export namespace TrendSearch {
         Average: TrendSearch.ILineSettings
     }
 
+    interface IHistogramSettings extends ILineSettings {
+        ShowCumulativeProbability: boolean,
+        CumulativeProbabilityColor: string,
+        CumulativeProbabilityLabel: string
+    }
+
+    interface IHistogramSeriesSettings extends ILineSeriesSettings {
+        [key: string]: TrendSearch.IHistogramSettings,
+        Average: TrendSearch.IHistogramSettings
+    }
+
     interface ICyclicSeriesSettings {
         Color: string
     }
@@ -241,7 +245,7 @@ export namespace TrendSearch {
     // Overall Series Settings
     interface ISeriesSettings {
         Channel?: TrendSearch.ITrendChannel,
-        Settings: ILineSeriesSettings | ICyclicSeriesSettings
+        Settings: ILineSeriesSettings | IHistogramSeriesSettings | ICyclicSeriesSettings
     }
 
     interface IMetaData {
@@ -257,7 +261,7 @@ export namespace TrendSearch {
         CyclicHistogramBins: number
     }
 
-    type IPlotTypes = 'Line'|'Cyclic';
+    type IPlotTypes = 'Line'|'Cyclic'|'Histogram';
 
     interface ITrendPlot {
         // Represents Data Needed by Outer
@@ -292,7 +296,7 @@ export namespace TrendSearch {
     interface ISymbolic extends IMarker {
         // Symbolic marker
         format: string,
-        symbol: JSX.Element,
+        symbol: React.ReactNode,
         xPos: number,
         yPos: number,
         radius: number,

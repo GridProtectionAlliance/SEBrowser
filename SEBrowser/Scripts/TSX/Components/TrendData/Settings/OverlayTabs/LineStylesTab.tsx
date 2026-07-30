@@ -21,7 +21,7 @@
 //
 //******************************************************************************************************
 import React from 'react';
-import { TrendSearch } from '../../../../Global';
+import { TrendSearch } from '../../../../global';
 import { LineStyles } from '../TabProperties/LineStyles'
 
 interface IChannelTabProps {

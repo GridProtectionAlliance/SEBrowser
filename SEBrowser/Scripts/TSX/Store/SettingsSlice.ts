@@ -25,11 +25,18 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { cloneDeep } from 'lodash';
 import { Redux } from '../global';
+import type { RootState } from './Store';
 
 declare let homePath: string;
 
-export const LoadSettings = createAsyncThunk('Settings/LoadSettingsThunk', async () => {
-    return Promise.all([loadTimeZone(), loadWidgetCategories()])
+export const LoadSettings = createAsyncThunk('Settings/LoadSettingsThunk', async (_, { signal }) => {
+    const handles = [loadTimeZone(), loadWidgetCategories()];
+
+    signal.addEventListener('abort', () => handles.forEach(handle => {
+        if (handle.abort !== undefined) handle.abort();
+    }));
+
+    return await Promise.all(handles);
 });
 
 const defaultState = {
@@ -49,7 +56,10 @@ const defaultState = {
     general: {
         MoveOptionsLeft: false,
         ShowDataPoints: true,
-        DateTime: 'center'
+        DateTime: 'startEnd'
+    },
+    tutorials: {
+        UseTutorials: true
     }
 } as Redux.SettingsState;
 
@@ -69,6 +79,10 @@ const settingsSlice = createSlice({
         },
         SetGeneral: (state: Redux.SettingsState, action: { type: string, payload: Redux.IGeneralSettings }) => {
             state.general = action.payload
+            saveSettings(state);
+        },
+        SetTutorials: (state: Redux.SettingsState, action: { type: string, payload: Redux.ITutorialSettings }) => {
+            state.tutorials = action.payload;
             saveSettings(state);
         },
     },
@@ -108,6 +122,9 @@ function readSettings() {
         const serializedState = localStorage.getItem('SEBrowser.Settings');
         if (serializedState === null) throw new Error("No setting state found")
         preserved = JSON.parse(serializedState);
+        // 'center' mode was removed with the gemstone TimeFilter migration
+        if (preserved.general != null && (preserved.general.DateTime as string) === 'center')
+            preserved.general.DateTime = 'startEnd';
         return preserved;
     } catch (err) {
         return cloneDeep(defaultState);
@@ -128,11 +145,9 @@ function loadTimeZone() {
         type: "GET",
         url: `${homePath}api/SEBrowser/GetTimeZone`,
         contentType: "application/json; charset=utf-8",
-        dataType: 'json',
-        cache: true,
+        cache: false,
         async: true
     });
-
 }
 
 function loadWidgetCategories() {
@@ -141,17 +156,17 @@ function loadWidgetCategories() {
         url: `${homePath}api/openXDA/WidgetCategory`,
         contentType: "application/json; charset=utf-8",
         dataType: 'json',
-        cache: true,
+        cache: false,
         async: true
     });
 }
 
-
 export const SettingsReducer = settingsSlice.reducer
-export const { SetEventSearch, SetTrendData, SetGeneral } = settingsSlice.actions
-export const SelectEventSearchSettings = (state: Redux.StoreState) => state.Settings.eventSearch
-export const SelectTrendDataSettings = (state: Redux.StoreState) => state.Settings.trendData
-export const SelectGeneralSettings = (state: Redux.StoreState) => state.Settings.general
-export const SelectTimeZone = (state: Redux.StoreState) => state.Settings.timeZone
-export const SelectWidgetCategories = (state: Redux.StoreState) => state.Settings.eventSearch.WidgetCategories
-export const SelectDateTimeSetting = (state: Redux.StoreState) => state.Settings.general.DateTime
+export const { SetEventSearch, SetTrendData, SetGeneral, SetTutorials } = settingsSlice.actions
+export const SelectEventSearchSettings = (state: RootState) => state.Settings.eventSearch
+export const SelectTrendDataSettings = (state: RootState) => state.Settings.trendData
+export const SelectGeneralSettings = (state: RootState) => state.Settings.general
+export const SelectTutorialSettings = (state: RootState) => state.Settings.tutorials
+export const SelectTimeZone = (state: RootState) => state.Settings.timeZone
+export const SelectWidgetCategories = (state: RootState) => state.Settings.eventSearch.WidgetCategories
+export const SelectDateTimeSetting = (state: RootState) => state.Settings.general.DateTime

@@ -1,8 +1,32 @@
-![Model](https://www.gridprotectionalliance.org/images/products/productTitles75/SEBrowser.png)
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="SEBrowser/wwwroot/Images/PQBrowserLight.png">
+    <source media="(prefers-color-scheme: light)" srcset="SEBrowser/wwwroot/Images/PQBrowserDark.png">
+    <img alt="PQ Browser" src="SEBrowser/wwwroot/Images/PQBrowserDark.png" width="520">
+  </picture>
+</div>
 
+# PQ Browser
 
-The list-based SE Browser is designed to complement the Open PQ Dashboard which provides graphical methods to filter and drill into event data.  
-Items shown in the SE Browser preview panel include: fault location maps, waveform visualizations, among other event summary data.
+PQ Browser is a list-based power-quality event browser that complements the graphical filtering and drill-down workflows in Open PQ Dashboard. It brings event search, operational context, and configurable analysis widgets together in a single view.
 
-![PQDashboard Screen](https://gridprotectionalliance.org/images/products/SEBrowser.jpg)
-*SE Browser Version 1.0*
+![PQ Browser Event Search with a selected event and populated widgets](docs/images/event-search-preview.png)
+
+*Event Search with a transient event selected and the populated **All** widget view.*
+
+## Highlights
+
+- Search events by time range, event type, magnitude and duration, phase, meter, asset, asset group, or substation.
+- Select an event to inspect waveform analysis, fault details, correlated events, configuration data, statistics, and event history without leaving the results list.
+- Review meter activity and trend data alongside the event-search workflow.
+- Run operational reports for trip coils, capacitor banks, DERs, and breakers.
+
+## Development
+
+The application targets .NET 9 and builds its React/TypeScript interface with npm and webpack. After configuring the required database and service connections:
+
+```powershell
+cd SEBrowser
+npm run builddev
+dotnet run
+```

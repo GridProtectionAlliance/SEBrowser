@@ -23,6 +23,14 @@
 
 declare let homePath: string;
 
+import { IEventView } from './../../TSX/Components/MeterActivity/ListItem';
+
+export interface IFileProcessed {
+    CreationTime: string,
+    FilePath: string,
+    FileGroupID: number
+}
+
 export default class SEBrowserdService {
     mostActiveMeterHandle: JQuery.jqXHR;
     leastActiveMeterHandle: JQuery.jqXHR;
@@ -111,7 +119,7 @@ export default class SEBrowserdService {
         return this.leastActiveMeterHandle;
     }
 
-    getFilesProcessedMeterActivityData(column: string): JQuery.jqXHR {
+    getFilesProcessedMeterActivityData(column: string): JQuery.jqXHR<Array<IFileProcessed>> {
         if (this.filesProcessedMeterHandle !== undefined)
             this.filesProcessedMeterHandle.abort();
 
@@ -127,7 +135,7 @@ export default class SEBrowserdService {
         return this.filesProcessedMeterHandle;
     }
 
-    getFileGroupEvents(fileGroupID: number): JQuery.jqXHR {
+    getFileGroupEvents(fileGroupID: number): JQuery.jqXHR<Array<IEventView>> {
         if (this.fileGroupEventsHandle !== undefined)
             this.fileGroupEventsHandle.abort();
 

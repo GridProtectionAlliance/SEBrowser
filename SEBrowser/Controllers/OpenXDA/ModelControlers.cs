@@ -21,93 +21,146 @@
 //
 //******************************************************************************************************
 
-using GSF.Data;
-using GSF.Data.Model;
-using GSF.Identity;
-using GSF.Web.Model;
+using Gemstone.Data;
+using Gemstone.Data.Model;
+using Gemstone.Web.APIController;
+using Microsoft.AspNetCore.Mvc;
 using openXDA.Model;
-using SystemCenter.Model;
+using SEBrowser.Model;
+using SEBrowser.Security;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Net;
-using System.Web.Http;
 using System.Linq;
-using SEBrowser.Model;
+using SystemCenter.Model;
 
 namespace SEBrowser.Controllers.OpenXDA
 {
-    [RoutePrefix("api/openXDA/AssetGroup")]
-    public class OpenXDAAssetGroupController : ModelController<AssetGroupView> { }
+    [Route("api/openXDA/AssetGroup")]
+    public class OpenXDAAssetGroupController : ReadOnlyModelController<AssetGroupView>;
 
     [RootQueryRestriction("ShowInFilter = 1")]
     [UseEscapedName, TableName("EventType")]
-    public class SEbrowserEventType : EventType { }
-    [RoutePrefix("api/openXDA/EventType")]
-    public class EventTypeController : ModelController<SEbrowserEventType> { }
+    public class SEbrowserEventType : EventType;
 
-    [RoutePrefix("api/openXDA/Asset")]
-    public class OpenXDAAssetController : DetailedAssetController<DetailedAsset> { }
+    [Route("api/openXDA/EventType")]
+    public class EventTypeController : ReadOnlyModelController<SEbrowserEventType>;
 
-    [RoutePrefix("api/openXDA/Meter")]
-    public class OpenXDAMeterController : ModelController<DetailedMeter> { }
+    [Route("api/openXDA/Asset")]
+    public class OpenXDAAssetController : ReadOnlyModelController<DetailedAsset>;
 
-    [RoutePrefix("api/openXDA/Location")]
-    public class OpenXDALocationController : DetailedLocationController<DetailedLocation> { }
+    [Route("api/openXDA/Meter")]
+    public class OpenXDAMeterController : ReadOnlyModelController<DetailedMeter>;
 
-    [RoutePrefix("api/openXDA/Widget")]
-    public class WidgetController : ModelController<WidgetView> { }
+    [Route("api/openXDA/Location")]
+    public class OpenXDALocationController : ReadOnlyModelController<DetailedLocation>;
 
-    [RoutePrefix("api/OpenXDA/WidgetCategory")]
-    public class WidgetCategoryController : ModelController<WidgetCategory> { }
-
-    [RoutePrefix("api/openXDA/AdditionalField")]
-    public class AdditionalFieldController : ModelController<AdditionalFieldView>
+    [Route("api/openXDA/Widget")]
+    public class WidgetController : ControllerBase
     {
-
-        [HttpGet, Route("ParentTable/{openXDAParentTable}/{sort}/{ascending:int}")]
-        public IHttpActionResult GetAdditionalFieldsForTable(string openXDAParentTable, string sort, int ascending)
+        [HttpGet, Route("{categoryID:int}")]
+        public IActionResult GetWidgetsForCategory(int categoryID)
         {
-            if (GetRoles == string.Empty || User.IsInRole(GetRoles))
-            {
-                //Fix added Fro Capacitor Bank due to naming Missmatch
-                if (openXDAParentTable == "CapacitorBank")
-                    openXDAParentTable = "CapBank";
+            using AdoDataConnection connection = new(Gemstone.Configuration.Settings.Default);
 
-                string orderByExpression = DefaultSort;
+            IEnumerable<WidgetView> records = new TableOperations<WidgetView>(connection)
+                .QueryRecords(new RecordRestriction("CategoryID = {0}", categoryID));
 
-                if (sort != null && sort != string.Empty)
-                    orderByExpression = $"{sort} {(ascending == 1 ? "ASC" : "DESC")}";
-
-                using (AdoDataConnection connection = new(Connection))
-                {
-                    IEnumerable<AdditionalField> records = new TableOperations<AdditionalField>(connection).QueryRecords(orderByExpression, new RecordRestriction("ParentTable = {0}", openXDAParentTable));
-                    if (!User.IsInRole("Administrator"))
-                    {
-                        records = records.Where(x => !x.IsSecure);
-                    }
-
-                    return Ok(records);
-                }
-            }
-            else
-            {
-                return Unauthorized();
-            }
+            return Ok(records);
         }
-
     }
 
-    [RoutePrefix("api/ValueList")]
-    public class SEBrowserValueListController : ValueListController<ValueList> { }
+    [Route("api/OpenXDA/WidgetCategory")]
+    public class WidgetCategoryController : ControllerBase
+    {
+        [HttpGet]
+        public IActionResult GetWidgetCategories()
+        {
+            using AdoDataConnection connection = new(Gemstone.Configuration.Settings.Default);
 
-    [RoutePrefix("api/openXDA/Phase")]
-    public class PhaseController : ModelController<Phase> { }
+            IEnumerable<WidgetCategory> records = new TableOperations<WidgetCategory>(connection)
+                .QueryRecords("OrderBy");
 
-    [RoutePrefix("api/openXDA/ChannelGroup")]
-    public class ChannelGroupController : ModelController<ChannelGroup> { }
+            return Ok(records);
+        }
+    }
 
-    [RoutePrefix("api/openXDA/StandardMagDurCurve")]
-    public class StandardMagDurCurveController : ModelController<openXDA.Model.StandardMagDurCurve>
-    { }
+    [Route("api/openXDA/AdditionalField")]
+    public class AdditionalFieldController : ControllerBase
+    {
+        [HttpGet, Route("ParentTable/{openXDAParentTable}/{sort}/{ascending:int}")]
+        public IActionResult GetAdditionalFieldsForTable(string openXDAParentTable, string sort, int ascending)
+        {
+            //Fix added for Capacitor Bank due to naming mismatch
+            if (openXDAParentTable == "CapacitorBank")
+                openXDAParentTable = "CapBank";
+
+            // Asset additional fields are stored under the individual asset-type tables, not a single "Asset" table.
+            // Only searchable fields are returned; this endpoint exists to populate search filter dropdowns.
+            RecordRestriction restriction = openXDAParentTable == "Asset"
+                ? new RecordRestriction("Searchable <> 0 AND ParentTable IN ('Line', 'Transformer', 'Breaker', 'CapBank', 'Bus', 'Generation', 'StationAux', 'StationBattery')")
+                : new RecordRestriction("Searchable <> 0 AND ParentTable = {0}", openXDAParentTable);
+
+            using AdoDataConnection connection = new(Gemstone.Configuration.Settings.Default);
+
+            TableOperations<AdditionalField> tableOperations = new(connection);
+
+            // Validate sort against actual column names to prevent SQL injection via the ORDER BY clause
+            string? sortField = tableOperations.GetFieldNames(false)
+                .FirstOrDefault(field => string.Equals(field, sort, StringComparison.OrdinalIgnoreCase));
+
+            if (sortField is null)
+                return BadRequest($"Invalid sort field: {sort}");
+
+            string orderByExpression = $"{sortField} {(ascending == 1 ? "ASC" : "DESC")}";
+
+            IEnumerable<AdditionalField> records = tableOperations
+                .QueryRecords(orderByExpression, restriction);
+
+            if (!AuthenticationSetup.CanViewSecureAdditionalFields(User))
+                records = records.Where(x => !x.IsSecure);
+
+            return Ok(records);
+        }
+    }
+
+    [Route("api/ValueList")]
+    public class SEBrowserValueListController : ValueListController;
+
+    [Route("api/openXDA/Phase")]
+    public class PhaseController : ReadOnlyModelController<Phase>;
+
+    [Route("api/openXDA/ChannelGroup")]
+    public class ChannelGroupController : ReadOnlyModelController<ChannelGroup>;
+
+    [Route("api/openXDA/StandardMagDurCurve")]
+    public class StandardMagDurCurveController : ControllerBase
+    {
+        private static readonly string[] s_sortableColumns = { "ID", "Name", "Color" };
+
+        [HttpGet, Route("{sort}/{ascending:int}")]
+        public IActionResult GetStandardMagDurCurves(string sort, int ascending)
+        {
+            // Validate sort against known column names to prevent SQL injection via the ORDER BY clause
+            string? sortField = s_sortableColumns
+                .FirstOrDefault(column => string.Equals(column, sort, StringComparison.OrdinalIgnoreCase));
+
+            if (sortField is null)
+                return BadRequest($"Invalid sort field: {sort}");
+
+            string orderByExpression = $"{sortField} {(ascending == 1 ? "ASC" : "DESC")}";
+
+            using AdoDataConnection connection = new(Gemstone.Configuration.Settings.Default);
+
+            // Converts the spatial Area (geometry) column into the "x y, x y, ..." coordinate string the frontend expects.
+            DataTable curves = connection.RetrieveData($@"
+                SELECT
+                    ID, Name, Color,
+                    REPLACE(REPLACE(RIGHT(Area.STAsText(), len(Area.STAsText()) - charindex('(', Area.STAsText())),')',''),'(','') AS Area
+                FROM StandardMagDurCurve
+                ORDER BY {orderByExpression}");
+
+            return Ok(curves);
+        }
+    }
 }

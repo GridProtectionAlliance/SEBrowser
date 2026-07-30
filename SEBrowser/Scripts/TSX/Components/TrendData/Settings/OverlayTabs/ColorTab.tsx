@@ -20,12 +20,11 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
-import { Input, Select } from '@gpa-gemstone/react-forms';
+import { ColorPicker, Input, Select } from '@gpa-gemstone/react-forms';
 import { Table, Column } from '@gpa-gemstone/react-table';
 import React from 'react';
-import { TrendSearch } from '../../../../Global';
-import { TrashCan, UpArrow, DownArrow } from '@gpa-gemstone/gpa-symbols';
-import { BlockPicker } from 'react-color';
+import { TrendSearch } from '../../../../global';
+import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import _ from 'lodash';
 
 interface IColorTabProps {
@@ -67,7 +66,7 @@ const ColorTab = React.memo((props: IColorTabProps) => {
 
     return (
         <div className="row" style={{ paddingLeft: 20, paddingRight: 20 }}>
-            <div className="col" style={{ width: '40%', height: 'calc(100vh - 264px)'}}>
+            <div className="col" style={{ width: '40%', height: 'calc(100vh - 264px)' }}>
                 <br />
                 <div className="alert alert-primary">These settings will only apply to line plots. Changes to these settings will persist across sessions.</div>
                 <div className="row">
@@ -80,7 +79,7 @@ const ColorTab = React.memo((props: IColorTabProps) => {
                             SortKey={""}
                             Ascending={false}
                             OnSort={() => undefined}
-                            KeySelector={(_item, index) => index}
+                            KeySelector={(_item, index) => index!}
                             OnClick={(data) => setCurrentIndex(data.index)}
                             Selected={(_item, index) => currentIndex === index}
                             TheadStyle={{ fontSize: 'smaller', display: 'table', tableLayout: 'fixed', width: '100%' }}
@@ -92,23 +91,48 @@ const ColorTab = React.memo((props: IColorTabProps) => {
                                 Key={'Label'}
                                 AllowSort={false}
                                 Field={'Label'}
-                            >Label</Column>
+                            >
+                                Label
+                            </Column>
+                            <Column<TrendSearch.IColor>
+                                Key={'Minimum'}
+                                AllowSort={false}
+                                Content={({ item }) => <div style={{ backgroundColor: item.Minimum, height: '1.5rem' }} />}
+                            >
+                                Min
+                            </Column>
+                            <Column<TrendSearch.IColor>
+                                Key={'Average'}
+                                AllowSort={false}
+                                Content={({ item }) => <div style={{ backgroundColor: item.Average, height: '1.5rem' }} />}
+                            >
+                                Avg
+                            </Column>
+                            <Column<TrendSearch.IColor>
+                                Key={'Maximum'}
+                                AllowSort={false}
+                                Content={({ item }) => <div style={{ backgroundColor: item.Maximum, height: '1.5rem' }} />}
+                            >
+                                Max
+                            </Column>
                             <Column<TrendSearch.IColor>
                                 Key={'Order'}
                                 AllowSort={false}
                                 HeaderStyle={{ width: 'auto' }}
                                 RowStyle={{ width: 'auto' }}
-                                Content={({ index }) => <>
-                                    <button className="btn btn-sm" onClick={(evt) => setOrder(evt, index, "remove")}>
-                                        <span>{TrashCan}</span>
-                                    </button>
-                                    <button className="btn btn-sm" onClick={(evt) => setOrder(evt, index, "up")} disabled={index === 0}>
-                                        <span>{UpArrow}</span>
-                                    </button>
-                                    <button className="btn btn-sm" onClick={(evt) => setOrder(evt, index, "down")} disabled={index === props.Colors.Colors.length - 1} >
-                                        <span>{DownArrow}</span>
-                                    </button>
-                                </>}
+                                Content={({ index }) =>
+                                    <>
+                                        <button className="btn btn-sm" onClick={(evt) => setOrder(evt, index, "remove")}>
+                                            <ReactIcons.TrashCan Color='var(--danger)' />
+                                        </button>
+                                        <button className="btn btn-sm" onClick={(evt) => setOrder(evt, index, "up")} disabled={index === 0}>
+                                            <ReactIcons.ArrowDropUp />
+                                        </button>
+                                        <button className="btn btn-sm" onClick={(evt) => setOrder(evt, index, "down")} disabled={index === props.Colors.Colors.length - 1} >
+                                            <ReactIcons.ArrowDropDown />
+                                        </button>
+                                    </>
+                                }
                             > <p></p>
                             </Column>
                         </Table>
@@ -124,19 +148,28 @@ const ColorTab = React.memo((props: IColorTabProps) => {
                         </div>
                         <div className="row">
                             <div className="col" style={{ width: 'auto' }}>
-                                <h4>Min Color</h4>
-                                <BlockPicker onChangeComplete={(color) => setColors({ ...props.Colors.Colors[currentIndex], Minimum: color.hex })}
-                                    color={props.Colors.Colors[currentIndex].Minimum} triangle={"hide"} />
+                                <ColorPicker<TrendSearch.IColor>
+                                    Record={props.Colors.Colors[currentIndex]}
+                                    Field={'Minimum'}
+                                    Label={'Min Color'}
+                                    Setter={setColors}
+                                />
                             </div>
                             <div className="col" style={{ width: 'auto' }}>
-                                <h4>Avg Color</h4>
-                                <BlockPicker onChangeComplete={(color) => setColors({ ...props.Colors.Colors[currentIndex], Average: color.hex })}
-                                    color={props.Colors.Colors[currentIndex].Average} triangle={"hide"} />
+                                <ColorPicker<TrendSearch.IColor>
+                                    Record={props.Colors.Colors[currentIndex]}
+                                    Field={'Average'}
+                                    Label={'Avg Color'}
+                                    Setter={setColors}
+                                />
                             </div>
                             <div className="col" style={{ width: 'auto' }}>
-                                <h4>Max Color</h4>
-                                <BlockPicker onChangeComplete={(color) => setColors({ ...props.Colors.Colors[currentIndex], Maximum: color.hex })}
-                                    color={props.Colors.Colors[currentIndex].Maximum} triangle={"hide"} />
+                                <ColorPicker<TrendSearch.IColor>
+                                    Record={props.Colors.Colors[currentIndex]}
+                                    Field={'Maximum'}
+                                    Label={'Max Color'}
+                                    Setter={setColors}
+                                />
                             </div>
                         </div>
                     </>}

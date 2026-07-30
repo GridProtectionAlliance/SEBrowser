@@ -21,6 +21,7 @@
 //
 //******************************************************************************************************
 import React from 'react';
+import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import 'moment';
 
 
@@ -29,79 +30,116 @@ interface IProps<T extends S> {
     Data: T[],
     Type: ('Meter' | 'Asset' | 'AssetGroup' | 'Station'),
     OnClick: () => void,
+    OnDelete: (row: T) => void,
     AlternateColors?: { normal: string, selected: string }
 }
 
 
-function NavbarFilterButton<T extends S>(props: IProps<T>) {
+const NavbarFilterButton = <T extends S>(props: IProps<T>) => {
     const [hover, setHover] = React.useState<boolean>(false);
-    const [rows, setRows] = React.useState<JSX.Element[]>([]);
-    const [header, setHeader] = React.useState<JSX.Element>(null);
-    const [buttonStyle, setButtonStyle] = React.useState<React.CSSProperties>({ marginBottom: 5 });
+    const [header, setHeader] = React.useState<React.ReactNode>(null);
+
+    const deleteCell = React.useCallback((row: T) => (
+        <td>
+            <button
+                type="button"
+                className="btn btn-sm"
+                title={`Delete ${typeToString(props.Type)} filter`}
+                aria-label={`Delete ${typeToString(props.Type)} filter`}
+                onClick={(evt) => {
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                    props.OnDelete(row);
+                }}
+            >
+                <ReactIcons.TrashCan Color="var(--danger)" />
+            </button>
+        </td>
+    ), [props.OnDelete, props.Type]);
 
     React.useEffect(() => {
         switch (props.Type) {
             case ('Meter'):
-                setHeader(< tr ><th>Name</th><th>Key</th><th>Substation</th><th>Make</th><th>Model</th></tr >);
+                setHeader(< tr ><th>Name</th><th>Key</th><th>Substation</th><th>Make</th><th>Model</th><th>{' '}</th></tr >);
                 break;
             case ('Asset'):
-                setHeader(<tr><th>Key</th><th>Name</th><th>Asset Type</th><th>Voltage (kV)</th></tr>);
+                setHeader(<tr><th>Key</th><th>Name</th><th>Asset Type</th><th>Voltage (kV)</th><th>{' '}</th></tr>);
                 break;
             case ('AssetGroup'):
-                setHeader(<tr><th>Name</th><th>Assets</th><th>Meters</th></tr>);
+                setHeader(<tr><th>Name</th><th>Assets</th><th>Meters</th><th>{' '}</th></tr>);
                 break;
             default:
-                setHeader(<tr><th>Name</th><th>Key</th><th>Meters</th><th>Assets</th></tr>);
+                setHeader(<tr><th>Name</th><th>Key</th><th>Meters</th><th>Assets</th><th>{' '}</th></tr>);
         }
     }, [props.Type]);
 
-    React.useEffect(() => {
-        setButtonStyle({ ...buttonStyle, backgroundColor: (props.Data.length > 0 ? props.AlternateColors?.selected : props.AlternateColors?.normal) });
-    }, [props.AlternateColors, props.Data.length]);
-
-    React.useEffect(() => {
+    const rows = React.useMemo(() => {
         switch (props.Type) {
             case ('Meter'):
-                setRows(props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
+                return props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
                     <td>{d['Name']}</td>
                     <td>{d['AssetKey']}</td>
                     <td>{d['Location']}</td>
                     <td>{d['Make']}</td>
                     <td>{d['Model']}</td>
-                </tr>));
-                break;
+                    {deleteCell(d)}
+                </tr>);
             case ('Asset'):
-                setRows(props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
+                return props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
                     <td>{d['AssetKey']}</td>
                     <td>{d['AssetName']}</td>
                     <td>{d['AssetType']}</td>
                     <td>{d['VoltageKV']}</td>
-                </tr>));
-                break;
+                    {deleteCell(d)}
+                </tr>);
             case ('AssetGroup'):
-                setRows(props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
+                return props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
                     <td>{d['Name']}</td>
                     <td>{d['Assets']}</td>
                     <td>{d['Meters']}</td>
-                </tr>));
-                break;
+                    {deleteCell(d)}
+                </tr>);
             default:
-                setRows(props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
+                return props.Data.filter((v, i) => i < 10).map((d) => <tr key={d.ID}>
                     <td>{d['Name']}</td>
                     <td>{d['LocationKey']}</td>
                     <td>{d['Meters']}</td>
                     <td>{d['Assets']}</td>
-                </tr>));
+                    {deleteCell(d)}
+                </tr>);
         }
-        
-    }, [props.Data, props.Type])
-    
+    }, [props.Data, props.Type, deleteCell])
+
     return (
         <>
-            <button className={"btn btn-block btn-sm btn-" + (props.Data.length > 0 ? "warning" : "primary")} style={buttonStyle} onClick={(evt) => { evt.preventDefault(); props.OnClick(); }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+            <button
+                className={"btn btn-block btn-sm btn-" + (props.Data.length > 0 ? "warning" : "primary")}
+                style={{
+                    marginBottom: 5,
+                    backgroundColor: (props.Data.length > 0 ? props.AlternateColors?.selected : props.AlternateColors?.normal)
+                }}
+                onClick={(evt) => {
+                    evt.preventDefault();
+                    props.OnClick();
+                }}
+                onMouseEnter={() => setHover(true)}
+                onMouseLeave={() => setHover(false)}
+            >
                 {typeToString(props.Type)} {props.Data.length > 0 ? ('(' + props.Data.length + ')') : ''}
             </button>
-            <div style={{ width: window.innerWidth / 3, display: hover ? 'block' : 'none', position: 'absolute', backgroundColor: '#f1f1f1', boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)', zIndex: 1, right: 0 }} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+            <div
+                style={{
+                    width: window.innerWidth / 3,
+                    display: hover ? 'block' : 'none',
+                    position: 'absolute',
+                    backgroundColor: '#f1f1f1',
+                    boxShadow: '0px 8px 16px 0px rgba(0,0,0,0.2)',
+                    zIndex: 1,
+                    right: 0
+                }}
+                onMouseEnter={() => setHover(true)}
+                onMouseLeave={() => setHover(false)}
+            >
                 <table className='table'>
                     <thead>
                         {header}
@@ -109,13 +147,13 @@ function NavbarFilterButton<T extends S>(props: IProps<T>) {
                     <tbody>
                         {rows}
                     </tbody>
-
                 </table>
             </div>
         </>
     );
 }
-function typeToString(Type: 'Meter' | 'Asset' | 'AssetGroup' | 'Station'): string {
+
+const typeToString = (Type: 'Meter' | 'Asset' | 'AssetGroup' | 'Station'): string => {
     switch (Type) {
         case 'Meter':
             return 'Meter';
@@ -129,7 +167,5 @@ function typeToString(Type: 'Meter' | 'Asset' | 'AssetGroup' | 'Station'): strin
             return Type;
     }
 }
-
-
 
 export default NavbarFilterButton;

@@ -20,6 +20,50 @@
 //       Generated original version of source code.
 //******************************************************************************************************
 import moment from 'moment';
+import { IStartDuration } from '@gpa-gemstone/common-pages';
+import { SEBrowser } from '../../global';
+
+export const momentDateFormat = "MM/DD/YYYY";
+export const momentTimeFormat = "HH:mm:ss.SSS";
+
+// Converts a SEBrowser.IReportTimeFilter to a IStartDuration object
+// (IStartDuration rather than IStartEnd so the gemstone TimeFilter displays the window in the stored unit instead of trying to re-derive one)
+export function toGemstoneFilter(filter: SEBrowser.IReportTimeFilter): IStartDuration {
+    const center = getMoment(filter.date, filter.time);
+    const [start] = getStartEndTime(center, filter.windowSize, filter.timeWindowUnits);
+    return {
+        start: start.format(momentDateFormat + ' ' + momentTimeFormat),
+        duration: filter.windowSize * 2,
+        unit: momentUnit(filter.timeWindowUnits)
+    };
+}
+
+// Converts a IStartEnd object to a SEBrowser.IReportTimeFilter
+export function fromGemstoneFilter(start: string, end: string, unit: string, duration: number): SEBrowser.IReportTimeFilter {
+    const startTime = getMoment(start);
+    let window: number;
+    let windowUnit: number;
+    if (unit === 'M') {
+        // center +/- half a month can not reproduce start/end (months are 28-31 days),
+        // so fall back to deriving a unit from the window instead
+        [windowUnit, window] = findAppropriateUnit(startTime, getMoment(end), undefined, true);
+    } else {
+        window = duration / 2;
+        windowUnit = unitNumber(unit);
+    }
+    const center = startTime.clone().add(moment.duration(window, momentUnit(windowUnit)));
+    return {
+        date: center.format(momentDateFormat),
+        time: center.format(momentTimeFormat),
+        windowSize: window,
+        timeWindowUnits: windowUnit
+    };
+}
+
+// inverse of momentUnit 
+export function unitNumber(unit: string) {
+    return ['ms', 's', 'm', 'h', 'd', 'w', 'M', 'y'].indexOf(unit);
+}
 
 export function momentUnit(unit: number) {
     if (unit == 7) {

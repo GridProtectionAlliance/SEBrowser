@@ -22,58 +22,48 @@
 //******************************************************************************************************
 
 
-using GSF.Data;
-using GSF.Web;
+using Microsoft.AspNetCore.Mvc;
+//using openXDA.Reports;
 using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Runtime.Caching;
-using System.Web.Http;
-using openXDA.Reports;
-using System.IO;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net;
 
-namespace PQDashboard.Controllers.BreakerReport
+namespace SEBrowser.Controllers.BreakerReport;
+
+public class AllBreakersReportController : ControllerBase
 {
-    [RoutePrefix("api/BreakerReport/AllBreakersReport")]
-    public class AllBreakersReportController : ApiController
+    #region [ Members ]
+
+    // Fields
+    private DateTime m_epoch = new(1970, 1, 1);
+
+    #endregion
+
+    #region [ Constructors ]
+    public AllBreakersReportController() : base() { }
+    #endregion
+
+    #region [ Static ]
+    private static MemoryCache s_memoryCache;
+
+    static AllBreakersReportController()
     {
-        #region [ Members ]
+        s_memoryCache = new MemoryCache("AllBreakersReportController");
+    }
+    #endregion
 
-        // Fields
-        private DateTime m_epoch = new(1970, 1, 1);
+    #region [ Methods ]
 
-        #endregion
+    [Route("api/BreakerReport/AllBreakersReport"), HttpGet]
+    public IActionResult Get(string startDate, string endDate)
+    {
+        throw new Exception("This report is currently unavailable.");
+        /*
+                DateTime startTime = DateTime.Parse(startDate);
+                DateTime endTime = DateTime.Parse(endDate);
 
-        #region [ Constructors ]
-        public AllBreakersReportController() : base() { }
-        #endregion
-
-        #region [ Static ]
-        private static MemoryCache s_memoryCache;
-
-        static AllBreakersReportController()
-        {
-            s_memoryCache = new MemoryCache("AllBreakersReportController");
-        }
-        #endregion
-
-        #region [ Methods ]
-
-        [Route, HttpGet]
-        public IHttpActionResult Get()
-        {
-            Dictionary<string, string> query = Request.QueryParameters();
-
-            DateTime startTime = DateTime.Parse(query["startDate"]);
-            DateTime endTime = DateTime.Parse(query["endDate"]);
-
-            AllBreakersReport report = new(startTime, endTime);
-            byte[] pdf = report.CreatePDF();
-            using (MemoryStream stream = new())
-            {
+                AllBreakersReport report = new(startTime, endTime);
+                byte[] pdf = report.CreatePDF();
+                using MemoryStream stream = new();
 
                 if (pdf == null) return BadRequest();
 
@@ -82,20 +72,17 @@ namespace PQDashboard.Controllers.BreakerReport
                 {
                     Content = new ByteArrayContent(stream.ToArray()),
                 };
+
                 result.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue($"inline")
                 {
                     FileName = "AllBreakersReport_" + startTime.ToString("MM_dd_yyyy") + "_" + endTime.ToString("MM_dd_yyyy") + ".pdf"
                 };
 
-                result.Content.Headers.ContentType =
-                    new MediaTypeHeaderValue("application/pdf");
+                result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
 
-                return ResponseMessage(result);
-
-
-            }
-        }
-        #endregion
-
+                return Ok(result);
+        */
     }
+    #endregion
+
 }
