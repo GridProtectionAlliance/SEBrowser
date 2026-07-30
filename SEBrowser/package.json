@@ -53,7 +53,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-redux": "8.0.2",
-    "react-router": "6.30.3"
+    "react-router": "8.3.0"
   },
   "scripts": {
     "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > ./Scripts/TSX/version.ts",
