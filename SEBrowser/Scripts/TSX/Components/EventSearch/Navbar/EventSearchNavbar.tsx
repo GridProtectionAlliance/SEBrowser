@@ -249,6 +249,13 @@ const EventSearchNavbar = () => {
             </DefaultSelects.Meter>
             <DefaultSelects.Asset
                 ControllerAPIPath={AssetControllerPath}
+                AddlFilters={[{
+                    FieldName: 'AssetType',
+                    SearchText: 'LineSegment',
+                    Operator: '<>',
+                    Type: 'enum',
+                    IsPivotColumn: false
+                }]}
                 Selection={assetList}
                 OnClose={(selected, conf) => {
                     setFilter('None');
@@ -468,7 +475,11 @@ export const getEnum = <T,>(setOptions: (options: Gemstone.TSX.Interfaces.ILabel
         return () => {/*Do Nothing*/ };
 
     if (field.key == 'AssetType') {
-        const handle = AssetTypeController.GetAll('Name', true);
+        const handle = AssetTypeController.GetAll('Name', true, [{
+            FieldName: 'Name',
+            SearchParameter: 'LineSegment',
+            Operator: '<>'
+        }]);
 
         handle.done(d => setOptions(d.map(item => ({ Value: item.Name, Label: item.Name }))));
 

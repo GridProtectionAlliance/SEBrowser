@@ -313,6 +313,13 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
             </DefaultSelects.Meter>
             <DefaultSelects.Asset
                 ControllerAPIPath={AssetControllerPath}
+                AddlFilters={[{
+                    FieldName: 'AssetType',
+                    SearchText: 'LineSegment',
+                    Operator: '<>',
+                    Type: 'enum',
+                    IsPivotColumn: false
+                }]}
                 Selection={trendFilter?.AssetList ?? []}
                 OnClose={(selected, conf) => {
                     setShowFilter('None');
