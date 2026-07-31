@@ -41,7 +41,7 @@ import { FilterType, TrendChannelTableState } from './Types';
 import TrendChannelFilters from './ChannelFilters';
 import TrendDataNavbarButtons from './TrendDataNavbarButtons';
 import { useTrendDataNavbar } from './useTrendDataNavbar';
-import { getValueListGroup, ValueListItemResponse } from '../../EventSearch/Navbar/EventSearchNavbar';
+import { getEnum } from '../../EventSearch/Navbar/EventSearchNavbar';
 import { TrendChannelSelectorTutorialAlert } from '../TrendDataTutorials';
 
 interface IProps {
@@ -107,19 +107,6 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
     }, [trendFilter?.MeterList.length, trendChannels.length, trendChannelStatus, selectedSet, props.SetChannelTableState]);
 
     const tableHeight = timeOffsetHeight > filtOffsetHeight ? timeOffsetHeight : filtOffsetHeight;
-
-    function getEnum(setOptions, field) {
-        if (field.type != 'enum' || field.enum == undefined || field.enum.length != 1)
-            return () => { /*noop */};
-
-        const handle: JQuery.jqXHR<ValueListItemResponse[]> = getValueListGroup(field.enum[0].Value);
-
-        handle.done(d => setOptions(d.map(item => ({ Value: item.Value.toString(), Label: item.AltValue ?? item.Value }))))
-        return () => {
-            if (handle?.abort != null)
-                handle.abort();
-        }
-    }
 
     function getAdditionalMeterFields(setFields) {
         const handle = getAdditionalMeterFieldNames();
