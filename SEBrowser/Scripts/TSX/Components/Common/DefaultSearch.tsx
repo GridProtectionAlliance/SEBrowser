@@ -26,6 +26,7 @@ import * as React from 'react';
 import { SearchBar as GenericSearchBar, Search } from '@gpa-gemstone/react-interactive';
 import { OpenXDA, SystemCenter, Application, Gemstone } from '@gpa-gemstone/application-typings';
 import { useStringMemonization } from '@gpa-gemstone/helper-functions';
+import { AssetTypeController } from '../../Store/ControllerFunctions';
 
 
 interface IProps<T> {
@@ -103,15 +104,27 @@ export namespace DefaultSearch {
     /** This Implements a standard Transmission Asset Search */
     export const Asset = (props: React.PropsWithChildren<IProps<SystemCenter.Types.DetailedAsset>>) => {
         const [addlFieldCols, setAddlFieldCols] = React.useState<Search.IField<SystemCenter.Types.DetailedAsset>[]>([]);
+        const [assetTypes, setAssetTypes] = React.useState<OpenXDA.Types.AssetType[]>([]);
         const addlFilters = useStringMemonization<Search.IFilter<SystemCenter.Types.DetailedAsset>[] | undefined>(props.AddlFilters);
         const setFilters = useSetFilters(props.SetFilter, addlFilters);
+        const searchCols = React.useMemo(() => getDefaultAssetSearchCols(assetTypes), [assetTypes]);
 
         React.useEffect(() => {
             return props.GetAddlFields(setAddlFieldCols);
         }, []);
 
+        React.useEffect(() => {
+            const handle = AssetTypeController.GetAll('Name', true);
+
+            handle.done(setAssetTypes);
+
+            return () => {
+                if (handle.abort != null) handle.abort();
+            }
+        }, []);
+
         return <GenericSearchBar<SystemCenter.Types.DetailedAsset>
-            CollumnList={[...defaultAssetSearchCols, ...addlFieldCols]}
+            CollumnList={[...searchCols, ...addlFieldCols]}
             SetFilter={setFilters}
             Direction={'left'}
             defaultCollumn={defaultAssetSearch}
@@ -225,11 +238,11 @@ const defaultLocationSearchCols: Search.IField<SystemCenter.Types.DetailedLocati
 
 const defaultLocationSearch: Search.IField<SystemCenter.Types.DetailedLocation> = { label: 'Name', key: 'Name', type: 'string', isPivotField: false };
 
-const defaultAssetSearchCols: Search.IField<SystemCenter.Types.DetailedAsset>[] = [
+const getDefaultAssetSearchCols = (assetTypes: OpenXDA.Types.AssetType[]): Search.IField<SystemCenter.Types.DetailedAsset>[] => [
     { label: 'Key', key: 'AssetKey', type: 'string', isPivotField: false },
     { label: 'Name', key: 'AssetName', type: 'string', isPivotField: false },
     { label: 'Nominal Voltage (L-L kV)', key: 'VoltageKV', type: 'number', isPivotField: false },
-    { label: 'Type', key: 'AssetType', type: 'enum', isPivotField: false },
+    { label: 'Type', key: 'AssetType', type: 'enum', enum: assetTypes.map(assetType => ({ Label: assetType.Name, Value: assetType.Name })), isPivotField: false },
     { label: 'Meter Key', key: 'Meter', type: 'string', isPivotField: false },
     { label: 'Substation Key', key: 'Location', type: 'string', isPivotField: false },
     { label: 'Number of Meters', key: 'Meters', type: 'integer', isPivotField: false },
