@@ -187,6 +187,7 @@ const SettingsModal = React.memo((props: IOverlayProps) => {
                             SetEventSettings={setEventBuffer}
                             DisplayEventSettings={plotBuffer?.ShowEvents ?? false}
                             IsGlobalSettings={false}
+                            XAxisType={plotBuffer?.Type === 'Histogram' ? 'value' : 'time'}
                         />
                     </div>
                 </div>

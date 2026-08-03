@@ -111,6 +111,7 @@ export const TrendWidgetRegistry: Record<TrendSearch.IPlotTypes, ITrendWidgetDef
         Widget: Histogram,
         Settings: {
             Plot: HistogramPlotSettingsTab,
+            Marker: MarkerTab,
             Channel: HistogramChannelTab
         }
     },

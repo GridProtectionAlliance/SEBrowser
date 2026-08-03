@@ -89,7 +89,7 @@ const TrendPlot = (props: IContainerProps) => {
     // Plot Markers
     const [symbolicMarkers, setSymbolicMarkers] = React.useState<TrendSearch.ISymbolic[]>([]);
     const [horiVertMarkers, setHoriVertMarkers] = React.useState<TrendSearch.IVertHori[]>([]);
-    const [mousePosition, setMousePosition] = React.useState<{ x: number, y: number }>({ x: 0, y: 0 });
+    const [mousePosition, setMousePosition] = React.useState<{ x: number, yLeft: number, yRight: number }>({ x: 0, yLeft: 0, yRight: 0 });
 
     // Event Information
     const [eventMarkers, setEventMarkers] = React.useState<TrendSearch.IEventMarker[]>([]);
@@ -573,8 +573,12 @@ const TrendPlot = (props: IContainerProps) => {
         setHoriVertMarkers(newList);
     }, [horiVertMarkers, setHoriVertMarkers]);
 
-    const setHoverPosition = React.useCallback((xArg: number, yArg: number) => {
-        setMousePosition({ x: xArg, y: yArg })
+    const setLeftHoverPosition = React.useCallback((xArg: number, yArg: number) => {
+        setMousePosition(position => ({ ...position, x: xArg, yLeft: yArg }));
+    }, [setMousePosition]);
+
+    const setRightHoverPosition = React.useCallback((xArg: number, yArg: number) => {
+        setMousePosition(position => ({ ...position, x: xArg, yRight: yArg }));
     }, [setMousePosition]);
 
     let plotBody = null;
@@ -588,8 +592,10 @@ const TrendPlot = (props: IContainerProps) => {
         );
     else {
         const Widget = widgetDefinition.Widget;
-        const overlays = props.Plot.Type === 'Line' ? [
-            ...(props.Plot.ShowEvents ? eventMarkers.map((marker, i) => {
+        const markersSupported = props.Plot.Type === 'Line' || props.Plot.Type === 'Histogram';
+        const formatXValue = (value: number, format: string) => props.Plot.Type === 'Histogram' ? value.toFixed(2) : moment.utc(value).format(format);
+        const overlays = markersSupported ? [
+            ...(props.Plot.Type === 'Line' && props.Plot.ShowEvents ? eventMarkers.map((marker, i) => {
                 if (eventSettings.type === "Event-Vert")
                     return (
                         <VerticalMarker
@@ -695,7 +701,7 @@ const TrendPlot = (props: IContainerProps) => {
                         display: 'inline-block', background: `rgba(255, 255, 255, ${marker.opacity})`, color: marker.fontColor,
                         overflow: 'visible', whiteSpace: 'pre-wrap', fontSize: `${marker.fontSize}em`
                     }}>
-                        {`${moment.utc(marker.xPos).format(marker.format)}\n${marker.yPos.toFixed(2)}\n${marker.note}`}
+                        {`${formatXValue(marker.xPos, marker.format)}\n${marker.yPos.toFixed(2)}\n${marker.note}`}
                     </div>
                 </Infobox>
             ),
@@ -703,20 +709,36 @@ const TrendPlot = (props: IContainerProps) => {
                 <Infobox
                     key={"MouseOver"}
                     origin={generalSettings.MoveOptionsLeft ? "upper-left" : "upper-right"}
+                    axis="left"
                     x={generalSettings.MoveOptionsLeft ? 5 : -5}
                     y={25}
                     opacity={0.4}
-                    childId={"mouseInfo"}
+                    childId={`mouseInfo_${props.Plot.ID}`}
                     usePixelPositioning={true}
-                    onMouseMove={setHoverPosition}
+                    onMouseMove={setLeftHoverPosition}
                 >
-                    <div id={"mouseInfo"} style={{ display: 'inline-block', background: 'white', overflow: 'visible', whiteSpace: 'pre-wrap', opacity: 0.7 }}>
-                        {`${moment.utc(mousePosition.x).format("HH:mm:SS")}\n${mousePosition.y.toFixed(2)}`}
+                    <div id={`mouseInfo_${props.Plot.ID}`} style={{ display: 'inline-block', background: 'white', overflow: 'visible', whiteSpace: 'pre', opacity: 0.7 }}>
+                        {props.Plot.Type === 'Histogram' ?
+                            `${formatXValue(mousePosition.x, "HH:mm:SS")}\nLeft: ${mousePosition.yLeft.toFixed(2)}\nRight: ${mousePosition.yRight.toFixed(2)}` :
+                            `${formatXValue(mousePosition.x, "HH:mm:SS")}\n${mousePosition.yLeft.toFixed(2)}`}
                     </div>
-                </Infobox>
+                </Infobox>,
+                props.Plot.Type === 'Histogram' ?
+                    <Infobox
+                        key={"MouseOverRightAxis"}
+                        axis="right"
+                        x={0}
+                        y={0}
+                        opacity={0}
+                        childId={`mouseInfoRight_${props.Plot.ID}`}
+                        usePixelPositioning={true}
+                        onMouseMove={setRightHoverPosition}
+                    >
+                        <div id={`mouseInfoRight_${props.Plot.ID}`} style={{ display: 'none' }} />
+                    </Infobox> : null
             ])
         ] : null;
-        const markerControls = props.Plot.Type === 'Line' ? [
+        const markerControls = markersSupported ? [
             createCustomButton(Plus, "symbol", "crosshair", "vertical"),
             createCustomButton("-", "horizontal", "crosshair", "horizontal"),
             createCustomButton("|", "vertical", "crosshair", "vertical")

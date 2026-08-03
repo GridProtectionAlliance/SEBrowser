@@ -182,6 +182,7 @@ const Histogram = React.memo((props: ITrendWidgetProps) => {
                         width={series.Settings.Width}
                     />
                 )}
+                {props.Overlays}
                 {props.Controls}
             </Plot>
             <ToolTip Show={hover} Position="bottom" Target={props.ID}>Selected Channels have no finite data for the selected Time Window.</ToolTip>
