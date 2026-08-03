@@ -28,6 +28,7 @@ import { LineGraph } from './LineGraph';
 import { Statistics } from './Statistics/Statistics';
 import { PlotSettingsTab } from '../Settings/OverlayTabs/PlotSettingsTab';
 import type { IPlotSettingsProps } from '../Settings/OverlayTabs/PlotSettingsTab';
+import { HistogramPlotSettingsTab } from '../Settings/OverlayTabs/HistogramPlotSettingsTab';
 import { MarkerTab } from '../Settings/OverlayTabs/MarkerTab';
 import type { IMarkerSettingsProps } from '../Settings/OverlayTabs/MarkerTab';
 import { CyclicChannelTab } from '../Settings/OverlayTabs/ChannelTabs/CyclicChannelTab';
@@ -109,7 +110,7 @@ export const TrendWidgetRegistry: Record<TrendSearch.IPlotTypes, ITrendWidgetDef
     Histogram: {
         Widget: Histogram,
         Settings: {
-            Plot: PlotSettingsTab,
+            Plot: HistogramPlotSettingsTab,
             Channel: HistogramChannelTab
         }
     },
