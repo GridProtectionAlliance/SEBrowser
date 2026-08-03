@@ -36,7 +36,7 @@ import { parseTrendDataResponse, requestTrendData } from '../Utils/TrendDataRequ
 
 const binCount = 10;
 
-const seriesTypes = ['Minimum', 'Average', 'Maximum'] as const;
+const seriesTypes = ['Minimum', 'Average', 'Maximum'];
 
 type SeriesType = typeof seriesTypes[number];
 

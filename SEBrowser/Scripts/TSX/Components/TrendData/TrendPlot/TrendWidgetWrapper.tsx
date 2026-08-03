@@ -25,12 +25,12 @@ import _ from 'lodash';
 import queryString from 'querystring';
 import moment from 'moment';
 import { CreateGuid, SpacedColor, useGetContainerPosition } from '@gpa-gemstone/helper-functions';
-import { TrashCan, Pencil, Plus } from '@gpa-gemstone/gpa-symbols';
+import { TrashCan, Pencil, Plus, ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { Button, SymbolicMarker, Infobox, VerticalMarker, HorizontalMarker, AxisMap } from '@gpa-gemstone/react-graph';
 import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { SEBrowser, TrendSearch } from '../../../global';
 import { SelectTrendDataSettings, SelectGeneralSettings } from '../../../Store/SettingsSlice';
-import { useAppSelector } from './../../../hooks';
+import { useAppSelector } from '../../../hooks';
 import { GenerateQueryParams } from '../../../Store/EventSearchSlice';
 import { GetDynamicEventSearchData } from '../../../../../EventWidgets/TSX/CollectionWidget/DynamicEventTable/DynamicEventSearchData';
 import { momentDateFormat, momentTimeFormat } from '../../EventSearch/TimeWindowUtils';
@@ -247,7 +247,8 @@ const TrendPlot = (props: IContainerProps) => {
         const getDefaultValue: (channel: TrendSearch.ITrendChannel, passChannelToColor: boolean) => TrendSearch.ISeriesSettings = (channel, passChannelToColor) => {
             switch (props.Plot.Type) {
                 case 'Line':
-                case 'Histogram': default: {
+                case 'Histogram':
+                case 'Statistics': default: {
                     const color: TrendSearch.IColor = getColor(props.LineDefaults.Colors.Default, passChannelToColor ? channel : undefined);
                     const settings: TrendSearch.ISeriesSettings = {
                         Channel: channel,
@@ -262,7 +263,7 @@ const TrendPlot = (props: IContainerProps) => {
                             }
                         }
                     };
-                    const seriesToConfigure = props.Plot.Type === 'Histogram' ?
+                    const seriesToConfigure = props.Plot.Type === 'Histogram' || props.Plot.Type === 'Statistics' ?
                         (['Minimum', 'Average', 'Maximum'] as const).map(type => channel.Series?.find(series => series.TypeName === type) ?? {
                             ID: 0, ChannelID: channel.ChannelID, TypeName: type, TypeDescription: type
                         }) : (channel.Series ?? []);
@@ -298,7 +299,7 @@ const TrendPlot = (props: IContainerProps) => {
         };
 
         let passChannel = false;
-        if (plotAllSeriesSettings == null && (props.Plot.Type === "Line" || props.Plot.Type === "Histogram")) {
+        if (plotAllSeriesSettings == null && (props.Plot.Type === "Line" || props.Plot.Type === "Histogram" || props.Plot.Type === "Statistics")) {
             passChannel = true;
             colorIndex.current = { ind: -1, assetMap: new Map<string, number>() };
             if (props.LineDefaults.Colors.Default.ApplyType === "Asset") buildAssetDictionary(props.Plot.Channels);
@@ -308,10 +309,11 @@ const TrendPlot = (props: IContainerProps) => {
             props.Plot.Channels.map(channel => {
                 const oldSettings = plotAllSeriesSettings?.find(oldSetting => oldSetting.Channel.ID === channel.ID)
                 if (oldSettings === undefined) return getDefaultValue(channel, passChannel);
-                if (props.Plot.Type === 'Line' || props.Plot.Type === 'Histogram') {
+                if (props.Plot.Type === 'Line' || props.Plot.Type === 'Histogram' || props.Plot.Type === 'Statistics') {
                     const lineSettings = oldSettings.Settings as TrendSearch.ILineSeriesSettings;
                     Object.keys(lineSettings).forEach(key => {
-                        const series = channel.Series.find(series => series.TypeName === key);
+                        const series = channel.Series?.find(series => series.TypeName === key) ??
+                            (props.Plot.Type === 'Statistics' ? { ID: 0, ChannelID: channel.ChannelID, TypeName: key, TypeDescription: key } : undefined);
                         const label = constructLabel(channel, series);
                         lineSettings[key].Label = label;
                         if (props.Plot.Type === 'Histogram') {
@@ -498,9 +500,11 @@ const TrendPlot = (props: IContainerProps) => {
         <Button onClick={() => {
             props.RemovePlot(props.Plot.ID);
             setShowSettings(false);
-        }}>
-            {TrashCan}
-        </Button>);
+        }}
+        >
+            {props.Plot.Type === 'Statistics' ? <ReactIcons.TrashCan Color="var(--danger)" /> : TrashCan}
+        </Button>
+    );
 
     const overlayButton = widgetDefinition.Settings == null ? null : (
         <Button onClick={() => setShowSettings(!showSettings)}>

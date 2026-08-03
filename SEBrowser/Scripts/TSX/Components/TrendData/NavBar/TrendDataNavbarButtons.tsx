@@ -216,6 +216,17 @@ const TrendDataNavbarButtons = (props: IProps) => {
                                 PlotFilter: props.LinePlot
                             }]);
                         }
+                    }, {
+                        Label: <ReactIcons.List />,
+                        Disabled: props.SelectedSet.size === 0,
+                        Callback: () => {
+                            if (props.SelectedSet.size === 0) return;
+                            const selectedChannels = props.TrendChannels.filter(chan => props.SelectedSet.has(chan.ID));
+                            props.AddNewCharts([{
+                                TimeFilter: props.TimeFilter, Type: 'Statistics', Channels: selectedChannels, ID: CreateGuid(),
+                                PlotFilter: props.LinePlot
+                            }]);
+                        }
                     }]}
                     Size='sm'
                 />
@@ -223,6 +234,7 @@ const TrendDataNavbarButtons = (props: IProps) => {
                 <ToolTip Show={hover === 'Single-Plot-Group'} Position={'left'} Target={'Single-Plot-Group'}>
                     <p><ReactIcons.LineChart /> Add All Selected Channels to Single Line Plot</p>
                     <p><ReactIcons.BarChart /> Add All Selected Channels to Single Histogram (Dropdown)</p>
+                    <p><ReactIcons.List /> Add All Selected Channels to Single Statistics Table (Dropdown)</p>
                     {props.SelectedSet.size === 0 ? <p><ReactIcons.CrossMark Color='var(--danger)'/> {'Requires a Selected Channel'}</p> : null}
                 </ToolTip>
                 <div style={{ marginBottom: 5 }} data-tooltip='Meter-Plot-Group'
@@ -270,6 +282,25 @@ const TrendDataNavbarButtons = (props: IProps) => {
                                 PlotFilter: props.LinePlot
                             })));
                         }
+                    }, {
+                        Label: <ReactIcons.List />,
+                        Disabled: props.SelectedSet.size === 0,
+                        Callback: () => {
+                            if (props.SelectedSet.size === 0) return;
+                            const selectedChannels = props.TrendChannels.filter(chan => props.SelectedSet.has(chan.ID));
+                            const meterPlotChannels: TrendSearch.ITrendChannel[][] = [];
+                            selectedChannels.forEach(channel => {
+                                const listIndex = meterPlotChannels.findIndex(channelList => channelList[0].MeterKey === channel.MeterKey);
+                                if (listIndex > -1)
+                                    meterPlotChannels[listIndex].push(channel);
+                                else
+                                    meterPlotChannels.push([channel]);
+                            });
+                            props.AddNewCharts(meterPlotChannels.map(channelList => ({
+                                TimeFilter: props.TimeFilter, Type: 'Statistics', Channels: channelList, ID: CreateGuid(),
+                                PlotFilter: props.LinePlot
+                            })));
+                        }
                     }]}
                     Size='sm'
                 />
@@ -277,6 +308,7 @@ const TrendDataNavbarButtons = (props: IProps) => {
                 <ToolTip Show={hover === 'Meter-Plot-Group'} Position={'left'} Target={'Meter-Plot-Group'}>
                     <p><ReactIcons.LineChart /> Add Selected Channels to Line Plots Separated by Meter</p>
                     <p><ReactIcons.BarChart /> Add Selected Channels to Histograms Separated by Meter (Dropdown)</p>
+                    <p><ReactIcons.List /> Add Selected Channels to Statistics Tables Separated by Meter (Dropdown)</p>
                     {props.SelectedSet.size === 0 ? <p><ReactIcons.CrossMark Color='var(--danger)'/> Requires a Selected Channel </p> : null}
                 </ToolTip>
                 <button type="button" style={{ marginBottom: 5 }} className={`btn btn-primary btn-sm${props.SelectedSet.size === 0 ? ' disabled' : ''}`}

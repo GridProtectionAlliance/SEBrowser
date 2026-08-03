@@ -25,6 +25,7 @@ import { IMultiCheckboxOption, SEBrowser, TrendSearch } from '../../../global';
 import { CyclicHistogram } from './CyclicHistogram';
 import { Histogram } from './Histogram';
 import { LineGraph } from './LineGraph';
+import { Statistics } from './Statistics/Statistics';
 import { PlotSettingsTab } from '../Settings/OverlayTabs/PlotSettingsTab';
 import type { IPlotSettingsProps } from '../Settings/OverlayTabs/PlotSettingsTab';
 import { MarkerTab } from '../Settings/OverlayTabs/MarkerTab';
@@ -111,5 +112,8 @@ export const TrendWidgetRegistry: Record<TrendSearch.IPlotTypes, ITrendWidgetDef
             Plot: PlotSettingsTab,
             Channel: HistogramChannelTab
         }
+    },
+    Statistics: {
+        Widget: Statistics
     }
 };

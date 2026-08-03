@@ -24,7 +24,7 @@
 import React from 'react';
 import _ from 'lodash';
 import TrendSearchNavbar from './NavBar/TrendDataNavbar';
-import TrendPlot from './TrendPlot/TrendPlot';
+import TrendPlot from './TrendPlot/TrendWidgetWrapper';
 import { TrendSearch } from '../../global';
 import AllSettingsModal from './Settings/AllSettingsModal';
 import { SelectTrendDataSettings } from '../../Store/SettingsSlice';
