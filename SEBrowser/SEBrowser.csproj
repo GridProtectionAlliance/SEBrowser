@@ -51,9 +51,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Libraries\openXDA.APIAuthentication\openXDA.APIAuthentication.csproj" />
-    <ProjectReference Include="..\Libraries\FaultAlgorithms\FaultAlgorithms.csproj" />
-    <ProjectReference Include="..\Libraries\FaultData\FaultData.csproj" />
-    <ProjectReference Include="..\Libraries\openXDA.Model\openXDA.Model.csproj" />
+    <Reference Include="FaultAlgorithms">
+      <HintPath>..\Dependencies\OpenXDA\FaultAlgorithms.dll</HintPath>
+    </Reference>
+    <Reference Include="FaultData">
+      <HintPath>..\Dependencies\OpenXDA\FaultData.dll</HintPath>
+    </Reference>
+    <Reference Include="openXDA.Model">
+      <HintPath>..\Dependencies\OpenXDA\openXDA.Model.dll</HintPath>
+    </Reference>
     <ProjectReference Include="..\Libraries\openXDA.PQI\openXDA.PQI.csproj" />
   </ItemGroup>
 

@@ -45,7 +45,9 @@
   <ItemGroup>
     <ProjectReference Include="..\openHistorian.XDALink\openHistorian.XDALink.csproj" />
     <ProjectReference Include="..\openXDA.Configuration\openXDA.Configuration.csproj" />
-    <ProjectReference Include="..\openXDA.Model\openXDA.Model.csproj" />
+    <Reference Include="openXDA.Model">
+      <HintPath>..\..\Dependencies\OpenXDA\openXDA.Model.dll</HintPath>
+    </Reference>
     <ProjectReference Include="..\..\..\..\Gemstone\common\src\Gemstone\Gemstone.Common.csproj" Condition="'$(Configuration)'=='Development'" />
     <PackageReference Include="Gemstone.Common" Version="$(GemstoneVersion)" Condition="'$(Configuration)'!='Development'" />
   </ItemGroup>

@@ -42,7 +42,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\openXDA.Model\openXDA.Model.csproj" />
+    <Reference Include="openXDA.Model">
+      <HintPath>..\..\Dependencies\OpenXDA\openXDA.Model.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

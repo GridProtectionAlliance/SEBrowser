@@ -6,12 +6,9 @@
   </Configurations>
   <Project Path="SEBrowser/SEBrowser.csproj" />
   <Folder Name="/Libraries/">
-    <Project Path="Libraries/FaultAlgorithms/FaultAlgorithms.csproj" />
-    <Project Path="Libraries/FaultData/FaultData.csproj" />
     <Project Path="Libraries/openHistorian.XDALink/openHistorian.XDALink.csproj" />
     <Project Path="Libraries/openXDA.APIAuthentication/openXDA.APIAuthentication.csproj" />
     <Project Path="Libraries/openXDA.Configuration/openXDA.Configuration.csproj" />
-    <Project Path="Libraries/openXDA.Model/openXDA.Model.csproj" />
     <Project Path="Libraries/openXDA.PQI/openXDA.PQI.csproj" />
     <Project Path="Libraries/openXDA.Reports/openXDA.Reports.csproj" />
   </Folder>
