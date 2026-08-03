@@ -49,6 +49,9 @@ namespace SEBrowser.Controllers.OpenXDA
     [Route("api/openXDA/Asset")]
     public class OpenXDAAssetController : ReadOnlyModelController<DetailedAsset>;
 
+    [Route("api/openXDA/AssetType")]
+    public class AssetTypeController : ReadOnlyModelController<AssetTypes>;
+
     [Route("api/openXDA/Meter")]
     public class OpenXDAMeterController : ReadOnlyModelController<DetailedMeter>;
 

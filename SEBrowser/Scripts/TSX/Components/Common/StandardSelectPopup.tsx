@@ -38,6 +38,7 @@ interface IProps<T> {
     Searchbar: (children: React.ReactNode, SetFilter: (filters: Search.IFilter<T>[]) => void, SearchStatus: Application.Types.Status, ResultCount: number) => React.ReactNode,
     Type?: 'single' | 'multiple',
     Title: string,
+    AddlFilters?: Search.IFilter<T>[],
     MinSelection?: number,
     children?: React.ReactNode
 }
@@ -45,7 +46,7 @@ interface IProps<T> {
 const SelectPopup = <T,>(props: IProps<T>) => {
     const controller = React.useMemo(() => new ReadOnlyControllerFunctions_Gemstone<T>(props.ControllerAPIPath), [props.ControllerAPIPath]);
     const bulkHandle = React.useRef<JQuery.jqXHR<T[]> | null>(null);
-    const [filters, setFilters] = React.useState<Search.IFilter<T>[]>([]);
+    const [filters, setFilters] = React.useState<Search.IFilter<T>[]>(props.AddlFilters ?? []);
     const [sortField, setSortField] = React.useState<keyof T>(props.DefaultSortField);
     const [ascending, setAscending] = React.useState<boolean>(true);
 

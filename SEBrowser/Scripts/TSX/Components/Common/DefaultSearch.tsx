@@ -229,7 +229,7 @@ const defaultAssetSearchCols: Search.IField<SystemCenter.Types.DetailedAsset>[] 
     { label: 'Key', key: 'AssetKey', type: 'string', isPivotField: false },
     { label: 'Name', key: 'AssetName', type: 'string', isPivotField: false },
     { label: 'Nominal Voltage (L-L kV)', key: 'VoltageKV', type: 'number', isPivotField: false },
-    { label: 'Type', key: 'AssetType', type: 'enum', isPivotField: false },
+    { label: 'Type', key: 'AssetType', type: 'enum', enum: [{ Label: 'AssetType', Value: 'AssetType' }], isPivotField: false },
     { label: 'Meter Key', key: 'Meter', type: 'string', isPivotField: false },
     { label: 'Substation Key', key: 'Location', type: 'string', isPivotField: false },
     { label: 'Number of Meters', key: 'Meters', type: 'integer', isPivotField: false },

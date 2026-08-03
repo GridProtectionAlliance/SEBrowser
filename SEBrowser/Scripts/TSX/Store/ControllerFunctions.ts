@@ -30,6 +30,7 @@ declare let homePath: string;
 // Controller API paths
 export const MeterControllerPath = `${homePath}api/OpenXDA/Meter`;
 export const AssetControllerPath = `${homePath}api/OpenXDA/Asset`;
+export const AssetTypeControllerPath = `${homePath}api/OpenXDA/AssetType`;
 export const EventTypeControllerPath = `${homePath}api/OpenXDA/EventType`;
 export const LocationControlerPath = `${homePath}api/OpenXDA/Location`;
 export const AssetGroupControllerPath = `${homePath}api/openXDA/AssetGroup`;
@@ -39,6 +40,7 @@ export const ChannelGroupControllerPath = `${homePath}api/openXDA/ChannelGroup`;
 // Shared read-only controllers - instantiated once here and reused across the app
 export const MeterController = new ReadOnlyControllerFunctions_Gemstone<SystemCenter.Types.DetailedMeter>(MeterControllerPath);
 export const AssetController = new ReadOnlyControllerFunctions_Gemstone<SystemCenter.Types.DetailedAsset>(AssetControllerPath);
+export const AssetTypeController = new ReadOnlyControllerFunctions_Gemstone<OpenXDA.Types.AssetType>(AssetTypeControllerPath);
 export const LocationController = new ReadOnlyControllerFunctions_Gemstone<SystemCenter.Types.DetailedLocation>(LocationControlerPath);
 export const AssetGroupController = new ReadOnlyControllerFunctions_Gemstone<OpenXDA.Types.AssetGroup>(AssetGroupControllerPath);
 export const EventTypeController = new ReadOnlyControllerFunctions_Gemstone<OpenXDA.Types.EventType>(EventTypeControllerPath);

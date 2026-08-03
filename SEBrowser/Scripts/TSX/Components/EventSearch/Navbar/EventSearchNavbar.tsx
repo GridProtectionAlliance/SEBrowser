@@ -28,7 +28,7 @@ import { TimeFilter } from '@gpa-gemstone/common-pages';
 import { useAppDispatch, useAppSelector } from '../../../hooks';
 import { SelectAssetGroupList, SelectAssetList, SelectMeterList, SelectReset, SelectStationList, SelectTimeFilter, SetFilterLists } from '../../../Store/EventSearchSlice';
 import { ResetFilters, SetFilters } from '../../../Store/EventSearchSlice';
-import { AssetGroupControllerPath, AssetControllerPath, LocationControlerPath, MeterControllerPath } from '../../../Store/ControllerFunctions';
+import { AssetGroupControllerPath, AssetControllerPath, AssetTypeController, LocationControlerPath, MeterControllerPath } from '../../../Store/ControllerFunctions';
 import { DefaultSelects } from '../../Common/DefaultSelects';
 import NavbarFilterButton from '../../Common/NavbarFilterButton';
 import { SystemCenter, OpenXDA, Gemstone } from '@gpa-gemstone/application-typings';
@@ -249,6 +249,13 @@ const EventSearchNavbar = () => {
             </DefaultSelects.Meter>
             <DefaultSelects.Asset
                 ControllerAPIPath={AssetControllerPath}
+                AddlFilters={[{
+                    FieldName: 'AssetType',
+                    SearchText: 'LineSegment',
+                    Operator: '<>',
+                    Type: 'enum',
+                    IsPivotColumn: false
+                }]}
                 Selection={assetList}
                 OnClose={(selected, conf) => {
                     setFilter('None');
@@ -463,9 +470,23 @@ const orderAdditionalFields = <T,>(fields: SystemCenter.Types.AdditionalField[])
     );
 }
 
-const getEnum = (setOptions: (options: Gemstone.TSX.Interfaces.ILabelValue<string>[]) => void, field: Search.IField<SystemCenter.Types.DetailedMeter>) => {
+export const getEnum = <T,>(setOptions: (options: Gemstone.TSX.Interfaces.ILabelValue<string>[]) => void, field: Search.IField<T>) => {
     if (field.type != 'enum' || field.enum == undefined || field.enum.length != 1)
         return () => {/*Do Nothing*/ };
+
+    if (field.key == 'AssetType') {
+        const handle = AssetTypeController.GetAll('Name', true, [{
+            FieldName: 'Name',
+            SearchParameter: 'LineSegment',
+            Operator: '<>'
+        }]);
+
+        handle.done(d => setOptions(d.map(item => ({ Value: item.Name, Label: item.Name }))));
+
+        return () => {
+            if (handle.abort != null) handle.abort();
+        }
+    }
 
     const handle: JQuery.jqXHR<ValueListItemResponse[]> = getValueListGroup(field.enum[0].Value);
 
