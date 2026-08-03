@@ -5,13 +5,6 @@
     <BuildType Name="Release" />
   </Configurations>
   <Project Path="SEBrowser/SEBrowser.csproj" />
-  <Folder Name="/Libraries/">
-    <Project Path="Libraries/openHistorian.XDALink/openHistorian.XDALink.csproj" />
-    <Project Path="Libraries/openXDA.APIAuthentication/openXDA.APIAuthentication.csproj" />
-    <Project Path="Libraries/openXDA.Configuration/openXDA.Configuration.csproj" />
-    <Project Path="Libraries/openXDA.PQI/openXDA.PQI.csproj" />
-    <Project Path="Libraries/openXDA.Reports/openXDA.Reports.csproj" />
-  </Folder>
   <Folder Name="/References/">
     <Project Path="../../Gemstone/common/src/Gemstone/Gemstone.Common.csproj" />
     <Project Path="../../Gemstone/configuration/src/Gemstone.Configuration/Gemstone.Configuration.csproj" />
