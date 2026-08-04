@@ -144,6 +144,10 @@ publish/
 # TODO: Comment the next line if you want to checkin your web deploy settings 
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
+!SEBrowser/Properties/PublishProfiles/Development Profile SEBrowser.pubxml
+!SEBrowser/Properties/PublishProfiles/Release Profile SEBrowser.pubxml
+!SEBrowser/Properties/PublishProfiles/Docker Development Profile SEBrowser.pubxml
+!SEBrowser/Properties/PublishProfiles/Docker Release Profile SEBrowser.pubxml
 *.publishproj
 
 # NuGet Packages

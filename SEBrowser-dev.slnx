@@ -4,6 +4,17 @@
     <BuildType Name="Development" />
     <BuildType Name="Release" />
   </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path="Jenkinsfile" />
+    <File Path="SEBrowser.dockerfile" />
+  </Folder>
+  <Folder Name="/Scripts/">
+    <File Path="Scripts/CreateDependencyPR.ps1" />
+    <File Path="Scripts/GemstoneUpdates.ps1" />
+    <File Path="Scripts/GithubComment.ps1" />
+    <File Path="Scripts/SEBrowser.version" />
+    <File Path="Scripts/Versioning.ps1" />
+  </Folder>
   <Project Path="SEBrowser/SEBrowser.csproj" />
   <Folder Name="/References/">
     <Project Path="../../Gemstone/common/src/Gemstone/Gemstone.Common.csproj" />
