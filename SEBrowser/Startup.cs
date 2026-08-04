@@ -170,6 +170,11 @@ public class Startup
 
         app.UseGemstoneAuthentication();
 
+        dynamic options = Settings.Instance[Program.DefaultWebHostingCategory];
+
+        if (options.DisableAuthentication ?? false)
+            app.UseMiddleware<SkipAuthenticationMiddleware>();
+
         app.UseStaticFiles(Gemstone.Web.WebExtensions.StaticFileEmbeddedResources());
         app.UseStaticFiles();
 
