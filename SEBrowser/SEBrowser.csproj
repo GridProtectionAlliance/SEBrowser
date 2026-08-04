@@ -39,6 +39,11 @@
       <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
     </ProjectReference>
     <PackageReference Include="Gemstone.Web" Version="$(GemstoneVersion)" Condition="'$(Configuration)'!='Development'" />
+    <ProjectReference Include="..\..\..\Gemstone\pqdif\src\Gemstone.PQDIF\Gemstone.PQDIF.csproj" Condition="'$(Configuration)'=='Development'">
+      <Private>True</Private>
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <PackageReference Include="Gemstone.PQDIF" Version="$(GemstoneVersion)" Condition="'$(Configuration)'!='Development'" />
 
     <PackageReference Include="HtmlAgilityPack" Version="1.11.22" />
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
