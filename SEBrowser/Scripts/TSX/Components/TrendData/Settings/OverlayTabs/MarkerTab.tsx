@@ -37,7 +37,8 @@ export interface IMarkerSettingsProps {
     EventSettings: TrendSearch.EventMarkerSettings,
     SetEventSettings: (setting: TrendSearch.EventMarkerSettings) => void,
     DisplayEventSettings: boolean,
-    IsGlobalSettings: boolean
+    IsGlobalSettings: boolean,
+    XAxisType?: 'time' | 'value'
 }
 const EventOptions = [{ Label: "Vertical Lines", Value: "Event-Vert" }, { Label: "Custom Symbols", Value: "Event-Symb" }];
 // Loading all SVGIcons into the options menue
@@ -125,10 +126,11 @@ const MarkerTab = React.memo((props: IMarkerSettingsProps) => {
                             <Input<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Infobox Opacity'} Field={'opacity'} Setter={state => applyToMarker(state, editFromArray)} Feedback={"Opacity must be between 0 and 1"} Valid={() => {
                                 return (currentMarker['opacity'] <= 1 && currentMarker['opacity'] >= 0);
                             }} />
-                            <Input<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Timestamp Format'} Field={'format'} Setter={state => applyToMarker(state, editFromArray)} Feedback={"Must be a valid timestamp format"} Valid={() => {
-                                // TODO: This must be a valid string, something to check this should be added to helper functions in gemstone soon
-                                return true;
-                            }} />
+                            {props.XAxisType === 'value' ? null :
+                                <Input<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Timestamp Format'} Field={'format'} Setter={state => applyToMarker(state, editFromArray)} Feedback={"Must be a valid timestamp format"} Valid={() => {
+                                    // TODO: This must be a valid string, something to check this should be added to helper functions in gemstone soon
+                                    return true;
+                                }} />}
                             <Input<TrendSearch.ISymbolic> Record={currentMarker as TrendSearch.ISymbolic} Label={'Note Text Size (em)'} Field={'fontSize'} Setter={state => applyToMarker(state, editFromArray)} Feedback={"Font size must be a positive number"} Valid={() => {
                                 return currentMarker['fontSize'] > 0;
                             }} />
@@ -208,7 +210,7 @@ const MarkerTab = React.memo((props: IMarkerSettingsProps) => {
                         </> :
                         <></>
                 }
-                <TrendMarkerTable Height={markersHeight} Markers={allMarkers} IsGlobal={props.IsGlobalSettings}
+                <TrendMarkerTable Height={markersHeight} Markers={allMarkers} IsGlobal={props.IsGlobalSettings} XAxisType={props.XAxisType}
                     RemoveMarker={(marker) => applyToMarker(marker, removeFromArray)}
                     Selected={currentMarker} SetSelected={setCurrentMarker} />
             </div>

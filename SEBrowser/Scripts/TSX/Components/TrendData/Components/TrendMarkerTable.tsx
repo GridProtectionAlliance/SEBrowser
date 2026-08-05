@@ -33,17 +33,16 @@ interface IProps {
     Selected: TrendSearch.IMarker,
     SetSelected: (marker: TrendSearch.IMarker) => void,
     Height: number,
-    IsGlobal: boolean
+    IsGlobal: boolean,
+    XAxisType?: 'time' | 'value'
 }
 
 const TrendMarkerTable = (props: IProps) => {
-    const [trendMarkers, setTrendMarkers] = React.useState<TrendSearch.IMarker[]>([]);
     const [sortField, setSortField] = React.useState<string>('MeterName');
     const [ascending, setAscending] = React.useState<boolean>(true);
-    const momentFormat = "DD HH:mm:ss.SSS";
 
-    React.useEffect(() => {
-        setTrendMarkers(_.orderBy(props.Markers, sortField, (ascending ? 'asc' : 'desc')));
+    const trendMarkers: TrendSearch.IMarker[] = React.useMemo(() => {
+        return _.orderBy(props.Markers, sortField, (ascending ? 'asc' : 'desc'));
     }, [props.Markers, sortField, ascending]);
 
     const removeButton = React.useCallback(
@@ -117,9 +116,9 @@ const TrendMarkerTable = (props: IProps) => {
                     } else {
                         switch (row.item.type) {
                             case "VeHo":
-                                return (row.item["isHori"] ?? true) ? row.item["value"].toFixed(2) : moment.utc(row.item["value"]).format(momentFormat);
+                                return (row.item["isHori"] ?? true) ? row.item["value"].toFixed(2) : formatXValue(row.item["value"], props.XAxisType);
                             case "Symb":
-                                return `${moment.utc(row.item["xPos"]).format(momentFormat)} | ${row.item["yPos"].toFixed(2)}`;
+                                return `${formatXValue(row.item["xPos"], props.XAxisType)} | ${row.item["yPos"].toFixed(2)}`;
                             default:
                                 return "All Events";
                         }
@@ -142,4 +141,7 @@ const TrendMarkerTable = (props: IProps) => {
     );
 }
 
+const momentFormat = "DD HH:mm:ss.SSS";
+const formatXValue = (value: number, xAxisType?: 'time' | 'value') => xAxisType === 'value' ? value.toFixed(2) : moment.utc(value).format(momentFormat);
+    
 export default TrendMarkerTable;
