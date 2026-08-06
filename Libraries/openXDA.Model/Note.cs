@@ -57,7 +57,6 @@ public class NotesController<T> : ModelController<T> where T : Notes, new()
 
         record.UserAccount = User.Identity.Name;
 
-        int result = new TableOperations<T>(connection).AddNewRecord(record);
-        return Ok(result);
+        return await base.Post(record, cancellationToken);
     }
 }
