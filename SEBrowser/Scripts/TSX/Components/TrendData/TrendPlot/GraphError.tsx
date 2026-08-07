@@ -26,12 +26,10 @@ import { Button } from '@gpa-gemstone/react-graph';
 
 interface IProps {
     Title?: string,
-    Height: number,
-    children: React.ReactNode
+    Height: number
 }
 
-const GraphError = React.memo((props: IProps) => {
-
+const GraphError = (props: React.PropsWithChildren<IProps>) => {
     return (
         <>
             {props.Title !== undefined ?
@@ -54,11 +52,13 @@ const GraphError = React.memo((props: IProps) => {
                                     onClick={() => element.props?.onClick?.()}>
                                     {element}
                                 </button>
-                            </div>);
+                            </div>
+                        );
                     return null;
                 })}
             </div>
-        </>);
-});
+        </>
+    );
+};
 
 export default GraphError;
