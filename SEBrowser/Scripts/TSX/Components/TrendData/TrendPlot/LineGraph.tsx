@@ -34,9 +34,8 @@ import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 import { ToolTip } from '@gpa-gemstone/react-forms';
 import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 import { ITrendWidgetProps } from './TrendWidgetRegistry';
-import { formatWindowUnit } from '../Utils/HelperFunctions';
-import { serverFormat, timeFilterFormat } from '../Utils/Constants';
-import { parseTrendDataResponse, requestTrendData } from '../Utils/TrendDataRequest';
+import { serverFormat } from '../Utils/Constants';
+import { getTrendTimeWindow, parseTrendDataResponse, requestTrendData } from '../Utils/TrendDataRequest';
 
 interface IChartData {
     [key: string]: [number, number][]
@@ -86,11 +85,8 @@ const LineGraph = React.memo((props: ITrendWidgetProps) => {
     }, [props.ChannelInfo, props.TimeFilter]);
 
     React.useEffect(() => {
-        const centerTime: moment.Moment = moment.utc(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
-        const startTime: number = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
-        // Need to move back in the other direction, so entire window
-        const endTime: number = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
-        setTimeLimits([startTime, endTime]);
+        const timeWindow = getTrendTimeWindow(props.TimeFilter);
+        setTimeLimits([timeWindow.startTime.valueOf(), timeWindow.endTime.valueOf()]);
     }, [props.TimeFilter]);
 
     React.useEffect(() => {

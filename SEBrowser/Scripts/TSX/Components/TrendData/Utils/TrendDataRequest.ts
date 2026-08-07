@@ -25,12 +25,21 @@ import { SEBrowser, TrendSearch } from '../../../global';
 import { formatWindowUnit } from './HelperFunctions';
 import { serverFormat, timeFilterFormat } from './Constants';
 
+/** Encodes the configured system-time filter as UTC wall time for HIDS. */
+export const getTrendTimeWindow = (timeFilter: SEBrowser.IReportTimeFilter) => {
+    const centerTime = moment.utc(timeFilter.date + timeFilter.time, timeFilterFormat);
+    const unit = formatWindowUnit(timeFilter.timeWindowUnits);
+    return {
+        startTime: centerTime.clone().subtract(timeFilter.windowSize, unit),
+        endTime: centerTime.clone().add(timeFilter.windowSize, unit)
+    };
+};
+
 /** Requests raw HIDS points for the selected channels and report time window. */
 export const requestTrendData = (channels: number[], timeFilter: SEBrowser.IReportTimeFilter): JQuery.jqXHR<string> => {
-    const centerTime = moment(timeFilter.date + timeFilter.time, timeFilterFormat);
-    const unit = formatWindowUnit(timeFilter.timeWindowUnits);
-    const startTime = centerTime.clone().add(-timeFilter.windowSize, unit).format(serverFormat);
-    const endTime = centerTime.clone().add(timeFilter.windowSize, unit).format(serverFormat);
+    const timeWindow = getTrendTimeWindow(timeFilter);
+    const startTime = timeWindow.startTime.format(serverFormat);
+    const endTime = timeWindow.endTime.format(serverFormat);
 
     return $.ajax({
         type: "POST",
