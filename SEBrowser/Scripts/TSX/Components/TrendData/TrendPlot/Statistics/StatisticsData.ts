@@ -20,6 +20,7 @@
 //       Generated original version of source code.
 //
 //******************************************************************************************************
+import { sortBy } from 'lodash';
 import type { IMultiCheckboxOption, TrendSearch } from '../../../../global';
 
 export const statisticSeriesTypes = ['Minimum', 'Average', 'Maximum'] as const;
@@ -47,7 +48,7 @@ type StatisticsValues = Omit<IStatisticsRow, 'Key' | 'Statistic'>;
 
 /** Calculates summary statistics from finite values only. */
 export const calculateStatistics = (values: number[]): StatisticsValues => {
-    const sortedValues = values.filter(Number.isFinite).sort((left, right) => left - right);
+    const sortedValues = sortBy(values.filter(Number.isFinite));
     const count = sortedValues.length;
     if (count === 0)
         return emptyStatistics;

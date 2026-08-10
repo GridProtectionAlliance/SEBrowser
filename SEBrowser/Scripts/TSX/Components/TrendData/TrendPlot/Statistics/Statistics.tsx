@@ -31,10 +31,12 @@ import { orderBy } from 'lodash';
 import { TrendSearch } from '../../../../global';
 import GraphError from '../GraphError';
 import { ITrendWidgetProps } from '../TrendWidgetRegistry';
+import { CsvRow, downloadCsv } from '../TrendCsv';
 import { parseTrendDataResponse, requestTrendData } from '../../Utils/TrendDataRequest';
 import { buildStatisticsRows, getChannelTag, IStatisticsRow, statisticSeriesTypes } from './StatisticsData';
 
 type StatisticsSortKey = Exclude<keyof IStatisticsRow, 'Key'>;
+type StatisticsTooltip = 'warning' | 'export' | 'remove' | null;
 
 const numericColumns: { Field: Exclude<StatisticsSortKey, 'Statistic'>, Label: string }[] = [
     { Field: 'Min', Label: 'Min' },
@@ -64,7 +66,7 @@ const Statistics = React.memo((props: ITrendWidgetProps) => {
     const [status, setStatus] = React.useState<Application.Types.Status>('uninitiated');
     const [sortKey, setSortKey] = React.useState<StatisticsSortKey>('Statistic');
     const [ascending, setAscending] = React.useState<boolean>(true);
-    const [hover, setHover] = React.useState<boolean>(false);
+    const [tooltip, setTooltip] = React.useState<StatisticsTooltip>(null);
     const channelIDs = Array.from(new Set((props.ChannelInfo ?? []).map(info => info?.Channel?.ChannelID).filter(isChannelID))).sort((left, right) => left - right);
     const channelKey = channelIDs.join(',');
     const rows = React.useMemo(() => buildStatisticsRows(points, props.ChannelInfo, props.PlotFilter), [points, props.ChannelInfo, props.PlotFilter]);
@@ -100,6 +102,10 @@ const Statistics = React.memo((props: ITrendWidgetProps) => {
         return () => handle.abort();
     }, [channelKey, props.TimeFilter]);
 
+    const exportCsv = React.useCallback(() => {
+        downloadCsv(buildStatisticsCsvRows(sortedRows), props.Title);
+    }, [props.Title, sortedRows]);
+
     if (status === 'error')
         return <GraphError Height={props.Height} Title={props.Title}>{props.Controls}</GraphError>;
 
@@ -111,17 +117,35 @@ const Statistics = React.memo((props: ITrendWidgetProps) => {
                 <h4 className="col-6 text-center mb-0" style={{ marginTop: 0 }}>
                     {props.Title ?? ''}
                     {hasMissingData ?
-                        <span data-tooltip={props.ID} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+                        <span data-tooltip={`${props.ID}-warning`} onMouseEnter={() => setTooltip('warning')} onMouseLeave={() => setTooltip(null)}>
                             <ReactIcons.Warning Color="var(--warning)" />
                         </span>
                         : null}
                 </h4>
                 <div className="col-3 d-flex justify-content-end" style={{ marginRight: 5 }} data-html2canvas-ignore="true">
+                    {status === 'idle' && sortedRows.length > 0 ?
+                        <button
+                            type="button"
+                            className="btn"
+                            data-tooltip={`${props.ID}-export`}
+                            onMouseEnter={() => setTooltip('export')}
+                            onMouseLeave={() => setTooltip(null)}
+                            onClick={exportCsv}
+                        >
+                            <ReactIcons.Folder />
+                        </button>
+                        : null}
                     {React.Children.map(props.Controls, element => {
                         if (!React.isValidElement(element) || (element as React.ReactElement<unknown>).type !== Button) return null;
                         return (
-                            <button type="button" className="btn"
-                                onClick={() => element.props?.onClick?.()}>
+                            <button
+                                type="button"
+                                className="btn"
+                                data-tooltip={`${props.ID}-remove`}
+                                onMouseEnter={() => setTooltip('remove')}
+                                onMouseLeave={() => setTooltip(null)}
+                                onClick={() => element.props?.onClick?.()}
+                            >
                                 {element}
                             </button>
                         );
@@ -166,7 +190,15 @@ const Statistics = React.memo((props: ITrendWidgetProps) => {
                     )}
                 </Table>
             </div>
-            <ToolTip Show={hover} Position="bottom" Target={props.ID}>Some selected Statistics have no finite data for the selected Time Window.</ToolTip>
+            <ToolTip Show={tooltip === 'warning'} Position="bottom" Target={`${props.ID}-warning`}>
+                Some selected Statistics have no finite data for the selected Time Window.
+            </ToolTip>
+            <ToolTip Show={tooltip === 'export'} Position="bottom" Target={`${props.ID}-export`}>
+                Export statistics as CSV.
+            </ToolTip>
+            <ToolTip Show={tooltip === 'remove'} Position="bottom" Target={`${props.ID}-remove`}>
+                Remove plot.
+            </ToolTip>
         </div>
     );
 });
@@ -177,5 +209,11 @@ const formatValue = (value: number | null): string => value == null ? '—' : va
 
 const sortRows = (rows: IStatisticsRow[], sortKey: StatisticsSortKey, ascending: boolean): IStatisticsRow[] =>
     orderBy(rows, [row => row[sortKey] == null, sortKey], ['asc', ascending ? 'asc' : 'desc']);
+
+/** Builds CSV rows in the same column order and sort order as the displayed statistics table. */
+export const buildStatisticsCsvRows = (rows: IStatisticsRow[]): CsvRow[] => [
+    ['Statistic', ...numericColumns.map(column => column.Label)],
+    ...rows.map(row => [row.Statistic, ...numericColumns.map(column => formatValue(row[column.Field]))])
+];
 
 export { Statistics };

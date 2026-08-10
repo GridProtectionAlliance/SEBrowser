@@ -45,7 +45,7 @@ export interface ITrendWidgetProps {
     /** Selected channels and their per-series display settings and data-availability state. */
     ChannelInfo: TrendSearch.ISeriesSettings[],
     /** Updates channel series settings, including whether each series contains data. */
-    SetChannelInfo: (newSettings: TrendSearch.ISeriesSettings[]) => void,
+    SetChannelInfo: React.Dispatch<React.SetStateAction<TrendSearch.ISeriesSettings[]>>,
     /** Controls which data series, such as minimum, average, and maximum, are plotted. */
     PlotFilter: IMultiCheckboxOption[],
     /** Available widget height in pixels. */

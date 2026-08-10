@@ -218,7 +218,8 @@ export namespace TrendSearch {
         Color: string,
         Axis: 'right' | 'left',
         Label: string,
-        HasData: boolean
+        HasData: boolean,
+        Enabled?: boolean
     }
 
     // Signifies Settings for a particular type of graph series
@@ -230,7 +231,8 @@ export namespace TrendSearch {
     interface IHistogramSettings extends ILineSettings {
         ShowCumulativeProbability: boolean,
         CumulativeProbabilityColor: string,
-        CumulativeProbabilityLabel: string
+        CumulativeProbabilityLabel: string,
+        CumulativeProbabilityEnabled?: boolean
     }
 
     interface IHistogramSeriesSettings extends ILineSeriesSettings {

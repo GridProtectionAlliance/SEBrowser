@@ -111,9 +111,11 @@ const HistogramChannelEditor = (props: IChannelEditorProps) => {
 
 const withCumulativeDefaults = (settings: TrendSearch.IHistogramSettings): TrendSearch.IHistogramSettings => ({
     ...settings,
+    Enabled: settings.Enabled ?? true,
     ShowCumulativeProbability: settings.ShowCumulativeProbability ?? true,
     CumulativeProbabilityColor: settings.CumulativeProbabilityColor ?? settings.Color,
-    CumulativeProbabilityLabel: settings.CumulativeProbabilityLabel ?? `${settings.Label} Cumulative Probability`
+    CumulativeProbabilityLabel: settings.CumulativeProbabilityLabel ?? `${settings.Label} Cumulative Probability`,
+    CumulativeProbabilityEnabled: settings.CumulativeProbabilityEnabled ?? true
 });
 
 const HistogramChannelTab = (props: IChannelSettingsProps) => <ChannelTab {...props} Editor={HistogramChannelEditor} />;

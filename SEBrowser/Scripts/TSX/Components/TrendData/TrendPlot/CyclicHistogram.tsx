@@ -47,17 +47,17 @@ const CyclicHistogram = React.memo((props: ITrendWidgetProps) => {
     const channelInfo = props.ChannelInfo?.[0] ?? null;
     // Graph Consts
     const [timeLimits, setTimeLimits] = React.useState<[number, number]>([0, 1]);
-    const [chartData, setChartData] = React.useState<IChartData>(null);
+    const [chartData, setChartData] = React.useState<IChartData | null>(null);
     const [graphStatus, setGraphStatus] = React.useState<Application.Types.Status>('uninitiated');
     const [hover, setHover] = React.useState<boolean>(false);
-    const [barColor, setBarColor] = React.useState<{ Hue: number, Saturation: number }>(null);
-    const [metaData, setMetaData] = React.useState<TrendSearch.IMetaData[]>(null);
+    const [barColor, setBarColor] = React.useState<{ Hue: number, Saturation: number } | null>(null);
+    const [metaData, setMetaData] = React.useState<TrendSearch.IMetaData[] | null>(null);
     // Height mangement
     const [plotHeight, setPlotHeight] = React.useState<number>(props.Height);
     const [extraLegendHeight, setExtraLegendHeight] = React.useState<number>(0);
     const titleRef = React.useRef(null);
     const { offsetHeight: titleHeight } = useGetContainerPosition(titleRef);
-    const oldValues = React.useRef<{ ChannelInfo: TrendSearch.ISeriesSettings, TimeFilter: SEBrowser.IReportTimeFilter }>({ ChannelInfo: null, TimeFilter: null });
+    const oldValues = React.useRef<{ ChannelInfo: TrendSearch.ISeriesSettings | null, TimeFilter: SEBrowser.IReportTimeFilter | null }>({ ChannelInfo: null, TimeFilter: null });
     const trendDatasettings = useAppSelector(SelectTrendDataSettings);
     const generalSettings = useAppSelector(SelectGeneralSettings);
 
@@ -197,12 +197,40 @@ const CyclicHistogram = React.memo((props: ITrendWidgetProps) => {
                         : null
                     }
                 </h4>
-                <Plot height={plotHeight} width={props.Width} legendHeight={plotHeight / 2 + extraLegendHeight} legendWidth={props.Width / 2} menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
-                    defaultTdomain={timeLimits} onSelect={props.OnSelect} onCapture={captureCallback} onCaptureComplete={() => captureCallback(0)} cursorOverride={props.Cursor} snapMouse={trendDatasettings.MarkerSnapping}
-                    legend={trendDatasettings.LegendDisplay} useMetricFactors={props.Metric ?? false} holdMenuOpen={!trendDatasettings.StartWithOptionsClosed} showDateOnTimeAxis={false} limitZoom={true}
-                    Tlabel={props.XAxisLabel} Ylabel={[props.YLeftLabel]} showMouse={props.MouseHighlight} yDomain={props.AxisZoom} defaultYdomain={props.DefaultZoom}>
+                <Plot
+                    height={plotHeight}
+                    width={props.Width}
+                    legendHeight={plotHeight / 2 + extraLegendHeight}
+                    legendWidth={props.Width / 2}
+                    menuLocation={generalSettings.MoveOptionsLeft ? 'left' : 'right'}
+                    defaultTdomain={timeLimits}
+                    onSelect={props.OnSelect}
+                    onCapture={captureCallback}
+                    onCaptureComplete={() => captureCallback(0)}
+                    cursorOverride={props.Cursor}
+                    snapMouse={trendDatasettings.MarkerSnapping}
+                    legend={trendDatasettings.LegendDisplay}
+                    useMetricFactors={props.Metric ?? false}
+                    holdMenuOpen={!trendDatasettings.StartWithOptionsClosed}
+                    showDateOnTimeAxis={false}
+                    limitZoom={true}
+                    Tlabel={props.XAxisLabel}
+                    Ylabel={[props.YLeftLabel]}
+                    showMouse={props.MouseHighlight}
+                    yDomain={props.AxisZoom}
+                    defaultYdomain={props.DefaultZoom}
+                >
                     {(chartData?.Series?.length == null || chartData.Series.length === 0 || barColor === null) ? null :
-                        <HeatMapChart data={chartData.Series} sampleMs={chartData.TimeSpan} binSize={chartData.BinSize} hue={barColor.Hue} saturation={barColor.Saturation} fillStyle={'fill'} axis={'left'} legendUnit={'%'} />
+                        <HeatMapChart
+                            data={chartData.Series}
+                            sampleMs={chartData.TimeSpan}
+                            binSize={chartData.BinSize}
+                            hue={barColor.Hue}
+                            saturation={barColor.Saturation}
+                            fillStyle={'fill'}
+                            axis={'left'}
+                            legendUnit={'%'}
+                        />
                     }
                     {props.Overlays}
                     {props.Controls}
@@ -210,7 +238,8 @@ const CyclicHistogram = React.memo((props: ITrendWidgetProps) => {
                 <ToolTip Show={hover} Position={'bottom'} Target={props.ID}>
                     Selected Channel has no Data for the selected Time Window.
                 </ToolTip>
-            </div>);
+            </div>
+        );
 });
 
 export { CyclicHistogram };
