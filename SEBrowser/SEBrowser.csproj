@@ -39,6 +39,11 @@
       <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
     </ProjectReference>
     <PackageReference Include="Gemstone.Web" Version="$(GemstoneVersion)" Condition="'$(Configuration)'!='Development'" />
+    <ProjectReference Include="..\..\..\Gemstone\pqdif\src\Gemstone.PQDIF\Gemstone.PQDIF.csproj" Condition="'$(Configuration)'=='Development'">
+      <Private>True</Private>
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <PackageReference Include="Gemstone.PQDIF" Version="$(GemstoneVersion)" Condition="'$(Configuration)'!='Development'" />
 
     <PackageReference Include="HtmlAgilityPack" Version="1.11.22" />
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
@@ -50,11 +55,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Libraries\openXDA.APIAuthentication\openXDA.APIAuthentication.csproj" />
-    <ProjectReference Include="..\Libraries\FaultAlgorithms\FaultAlgorithms.csproj" />
-    <ProjectReference Include="..\Libraries\FaultData\FaultData.csproj" />
-    <ProjectReference Include="..\Libraries\openXDA.Model\openXDA.Model.csproj" />
-    <ProjectReference Include="..\Libraries\openXDA.PQI\openXDA.PQI.csproj" />
+    <Reference Include="openXDA.APIAuthentication">
+      <HintPath>..\Dependencies\OpenXDA\openXDA.APIAuthentication.dll</HintPath>
+    </Reference>
+    <Reference Include="FaultAlgorithms">
+      <HintPath>..\Dependencies\OpenXDA\FaultAlgorithms.dll</HintPath>
+    </Reference>
+    <Reference Include="FaultData">
+      <HintPath>..\Dependencies\OpenXDA\FaultData.dll</HintPath>
+    </Reference>
+    <Reference Include="openXDA.Model">
+      <HintPath>..\Dependencies\OpenXDA\openXDA.Model.dll</HintPath>
+    </Reference>
+    <Reference Include="openXDA.PQI">
+      <HintPath>..\Dependencies\OpenXDA\openXDA.PQI.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
