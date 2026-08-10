@@ -18,7 +18,7 @@ pipeline {
         NUGET_PACKAGES = "D:\\NuGetCache"
         publishDirectory = "${WORKSPACE}\\build\\Jenkins\\publish"
         artifactDirectory = "${WORKSPACE}\\build\\Jenkins\\artifacts"
-        deliveryDirectory = "\\\\webhostfiles\\Delivery\\SEBrowser"
+        deliveryDirectory = "\\\\webhostfiles\\Delivery\\PQBrowser"
     }
 
     stages {
@@ -27,7 +27,7 @@ pipeline {
                 script {
                     // Set current Version
                     def fileContent = powershell(returnStdout: true, script:  '''
-                        Get-Content -Path "./Scripts/SEBrowser.version" -Raw
+                        Get-Content -Path "./Scripts/PQBrowser.version" -Raw
                     ''').trim()
                     env.seBrowserVersion = fileContent
                     println("SEBrowser version: ${env.seBrowserVersion}")
@@ -35,7 +35,7 @@ pipeline {
                 script {
                     // Set current UI Version
                     def fileContent = powershell(returnStdout: true, script:  '''
-                        (Get-Content -Path "./SEBrowser/package.json" -Raw | ConvertFrom-Json).version
+                        (Get-Content -Path "./PQBrowser/package.json" -Raw | ConvertFrom-Json).version
                     ''').trim()
                     env.uiVersion = fileContent
                     println("SEBrowser UI version: ${env.uiVersion}")
@@ -132,8 +132,8 @@ pipeline {
                 script {
                     env.GIT_COMMIT = bat(script: '@git rev-parse HEAD', returnStdout: true).trim()
                 }
-                powershell "powershell.exe -File .\\Scripts\\Versioning.ps1 -VersionFile './Scripts/SEBrowser.version' -Commit false"
-                bat(script: "@git add Scripts/SEBrowser.version")
+                powershell "powershell.exe -File .\\Scripts\\Versioning.ps1 -VersionFile './Scripts/PQBrowser.version' -Commit false"
+                bat(script: "@git add Scripts/PQBrowser.version")
                 bat(script: "git diff --cached --quiet || git commit -m \"Updated Version Number\"")
             }
         }
@@ -176,7 +176,7 @@ pipeline {
                 dir('SEBrowser') {
                     bat(script: 'npm run build')
                     powershell """
-                        \$uiFile = '.\\wwwroot\\Scripts\\SEBrowser.${env.uiVersion}.js'
+                        \$uiFile = '.\\wwwroot\\Scripts\\PQBrowser.${env.uiVersion}.js'
                         if (-not (Test-Path -LiteralPath \$uiFile -PathType Leaf) -or
                             (Get-Item -LiteralPath \$uiFile).Length -eq 0) {
                             throw 'Production UI was not generated.'
@@ -199,12 +199,12 @@ pipeline {
             }
             steps {
                 script {
-                    env.seBrowserDockerTag = env.CHANGE_BRANCH == "${env.devBranch}" ? "${env.seBrowserVersion}a" : env.seBrowserVersion
-                    println("Building SEBrowser Docker image tag: sebrowser:${env.seBrowserDockerTag}")
+                    env.pqBrowserDockerTag = env.CHANGE_BRANCH == "${env.devBranch}" ? "${env.pqBrowserVersion}a" : env.pqBrowserVersion
+                    println("Building PQBrowser Docker image tag: pqbrowser:${env.pqBrowserDockerTag}")
                 }
 
-                powershell "msbuild /t:Publish /p:DeployOnBuild=true';'Configuration=Release';'PublishProfile='Docker Release Profile SEBrowser' './SEBrowser/SEBrowser.csproj' /nodeReuse:false -restore"
-                powershell "docker build --build-arg CONFIGURATION=Release -f .\\SEBrowser.dockerfile -t sebrowser:${env.seBrowserDockerTag} ."
+                powershell "msbuild /t:Publish /p:DeployOnBuild=true';'Configuration=Release';'PublishProfile='Docker Release Profile PQBrowser' './PQBrowser/PQBrowser.csproj' /nodeReuse:false -restore"
+                powershell "docker build --build-arg CONFIGURATION=Release -f .\\PQBrowser.dockerfile -t pqbrowser:${env.pqBrowserDockerTag} ."
             }
         }
 
@@ -215,7 +215,7 @@ pipeline {
                         Remove-Item -LiteralPath '${env.publishDirectory}' -Recurse -Force
                     }
                     New-Item -ItemType Directory -Path '${env.publishDirectory}' -Force | Out-Null
-                    dotnet publish '.\\SEBrowser\\SEBrowser.csproj' `
+                    dotnet publish '.\\PQBrowser\\PQBrowser.csproj' `
                         -c Release `
                         -r win-x64 `
                         --self-contained true `
@@ -225,10 +225,10 @@ pipeline {
                     }
 
                     \$requiredFiles = @(
-                        '${env.publishDirectory}\\SEBrowser.exe',
-                        '${env.publishDirectory}\\SEBrowser.dll',
+                        '${env.publishDirectory}\\PQBrowser.exe',
+                        '${env.publishDirectory}\\PQBrowser.dll',
                         '${env.publishDirectory}\\package.json',
-                        '${env.publishDirectory}\\wwwroot\\Scripts\\SEBrowser.${env.uiVersion}.js'
+                        '${env.publishDirectory}\\wwwroot\\Scripts\\PQBrowser.${env.uiVersion}.js'
                     )
                     foreach (\$requiredFile in \$requiredFiles) {
                         if (-not (Test-Path -LiteralPath \$requiredFile -PathType Leaf) -or
@@ -244,8 +244,8 @@ pipeline {
             steps {
                 script {
                     env.archiveName = env.BRANCH_NAME == "${env.mainBranch}" ?
-                        "SEBrowser_v${env.seBrowserVersion}.zip" :
-                        "SEBrowser_v${env.seBrowserVersion}a.zip"
+                        "PQBrowser_v${env.pqBrowserVersion}.zip" :
+                        "PQBrowser_v${env.pqBrowserVersion}a.zip"
                 }
                 powershell """
                     if (Test-Path -LiteralPath '${env.artifactDirectory}') {

@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <AssemblyTitle>SEBrowser</AssemblyTitle>
+    <AssemblyTitle>PQBrowser</AssemblyTitle>
     <Description></Description>
     <Company>GridProtectionAlliance</Company>
-    <Product>SEBrowser</Product>
-    <Copyright>Copyright © 2020</Copyright>
+    <Product>PQBrowser</Product>
+    <Copyright>Copyright © 2026</Copyright>
     <Configurations>Debug;Development;Release</Configurations>
     <DefineConstants>$(DefineConstants);IS_GEMSTONE</DefineConstants>
-    <VersionFile>$(MSBuildProjectDirectory)\..\Scripts\SEBrowser.version</VersionFile>
+    <VersionFile>$(MSBuildProjectDirectory)\..\Scripts\PQBrowser.version</VersionFile>
     <Version>$([System.IO.File]::ReadAllText('$(VersionFile)').Trim())</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
