@@ -29,8 +29,8 @@ pipeline {
                     def fileContent = powershell(returnStdout: true, script:  '''
                         Get-Content -Path "./Scripts/PQBrowser.version" -Raw
                     ''').trim()
-                    env.seBrowserVersion = fileContent
-                    println("SEBrowser version: ${env.seBrowserVersion}")
+                    env.pqBrowserVersion = fileContent
+                    println("PQBrowser version: ${env.pqBrowserVersion}")
                 }
                 script {
                     // Set current UI Version
@@ -38,7 +38,7 @@ pipeline {
                         (Get-Content -Path "./PQBrowser/package.json" -Raw | ConvertFrom-Json).version
                     ''').trim()
                     env.uiVersion = fileContent
-                    println("SEBrowser UI version: ${env.uiVersion}")
+                    println("PQBrowser UI version: ${env.uiVersion}")
                 }
                 script {
                     //Set current Commit
@@ -173,7 +173,7 @@ pipeline {
 
         stage('Build Production UI') {
             steps {
-                dir('SEBrowser') {
+                dir('PQBrowser') {
                     bat(script: 'npm run build')
                     powershell """
                         \$uiFile = '.\\wwwroot\\Scripts\\PQBrowser.${env.uiVersion}.js'
@@ -273,7 +273,7 @@ pipeline {
             steps {
                 powershell """
                     powershell.exe -File .\\Scripts\\GithubComment.ps1 `
-                        -Comment 'Prerelease SEBrowser v${env.seBrowserVersion}a is available.' `
+                        -Comment 'Prerelease PQBrowser v${env.pqBrowserVersion}a is available.' `
                         -BranchName '${env.devBranch}' `
                         -GithubToken '${github_pat}' `
                         -RepoOwner 'GridProtectionAlliance' `
@@ -300,13 +300,13 @@ pipeline {
                         return env.BRANCH_NAME == "${env.mainBranch}"
                     }
                     expression {
-                        return "v${env.seBrowserVersion}" != env.LAST_RELEASE_TAG
+                        return "v${env.pqBrowserVersion}" != env.LAST_RELEASE_TAG
                     }
                 }
             }
             steps {
                 powershell "Move-Item -Path '${env.artifactDirectory}\\${env.archiveName}' -Destination '${env.deliveryDirectory}\\${env.archiveName}' -Force"
-                powershell "git tag -a v${env.seBrowserVersion} -m 'Version ${env.seBrowserVersion} release'"
+                powershell "git tag -a v${env.pqBrowserVersion} -m 'Version ${env.pqBrowserVersion} release'"
                 powershell "git push origin --tags"
             }
         }
