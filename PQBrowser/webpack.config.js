@@ -2,7 +2,6 @@
 const path = require("path");
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const { version } = require('./package.json');
 
 module.exports = env => {
     if (env.NODE_ENV == undefined) env.NODE_ENV = 'development';
@@ -16,7 +15,7 @@ module.exports = env => {
         output: {
             path: path.resolve(__dirname, 'wwwroot', 'Scripts'),
             publicPath: 'Scripts/',
-            filename: `[name].${version}.js`,
+            filename: "[name].js",
             chunkFilename: "[name].js"
         },
         // Enable sourcemaps for debugging webpack's output.

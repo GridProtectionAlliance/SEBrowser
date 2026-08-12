@@ -33,14 +33,6 @@ pipeline {
                     println("PQBrowser version: ${env.pqBrowserVersion}")
                 }
                 script {
-                    // Set current UI Version
-                    def fileContent = powershell(returnStdout: true, script:  '''
-                        (Get-Content -Path "./PQBrowser/package.json" -Raw | ConvertFrom-Json).version
-                    ''').trim()
-                    env.uiVersion = fileContent
-                    println("PQBrowser UI version: ${env.uiVersion}")
-                }
-                script {
                     //Set current Commit
                     env.GIT_COMMIT = bat(script: '@git rev-parse HEAD', returnStdout: true).trim()
                     println("Current Git Commit: ${env.GIT_COMMIT}")
@@ -176,7 +168,7 @@ pipeline {
                 dir('PQBrowser') {
                     bat(script: 'npm run build')
                     powershell """
-                        \$uiFile = '.\\wwwroot\\Scripts\\PQBrowser.${env.uiVersion}.js'
+                        \$uiFile = '.\\wwwroot\\Scripts\\PQBrowser.js'
                         if (-not (Test-Path -LiteralPath \$uiFile -PathType Leaf) -or
                             (Get-Item -LiteralPath \$uiFile).Length -eq 0) {
                             throw 'Production UI was not generated.'
@@ -228,7 +220,7 @@ pipeline {
                         '${env.publishDirectory}\\PQBrowser.exe',
                         '${env.publishDirectory}\\PQBrowser.dll',
                         '${env.publishDirectory}\\package.json',
-                        '${env.publishDirectory}\\wwwroot\\Scripts\\PQBrowser.${env.uiVersion}.js'
+                        '${env.publishDirectory}\\wwwroot\\Scripts\\PQBrowser.js'
                     )
                     foreach (\$requiredFile in \$requiredFiles) {
                         if (-not (Test-Path -LiteralPath \$requiredFile -PathType Leaf) -or
