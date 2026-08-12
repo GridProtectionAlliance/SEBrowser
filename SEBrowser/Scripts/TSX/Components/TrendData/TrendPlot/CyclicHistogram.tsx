@@ -34,8 +34,8 @@ import { HexToHsv, useGetContainerPosition } from '@gpa-gemstone/helper-function
 import { Warning } from '@gpa-gemstone/gpa-symbols';
 import { ToolTip } from '@gpa-gemstone/react-forms';
 import type { ITrendWidgetProps } from './TrendWidgetRegistry';
-import { formatWindowUnit } from '../Utils/HelperFunctions';
-import { serverFormat, timeFilterFormat } from '../Utils/Constants';
+import { serverFormat } from '../Utils/Constants';
+import { getTrendTimeWindow } from '../Utils/TrendDataRequest';
 
 interface IChartData {
     TimeSpan: number,
@@ -65,10 +65,9 @@ const CyclicHistogram = React.memo((props: ITrendWidgetProps) => {
         if (channelInfo == null || props.TimeFilter == null) return;
         if (_.isEqual(props.TimeFilter, oldValues.current.TimeFilter) && channelInfo.Channel.ID === oldValues.current.ChannelInfo.Channel.ID) return;
 
-        const centerTime: moment.Moment = moment(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
-        const startTime: string = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
-        // Need to move back in the other direction, so entire window
-        const endTime: string = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).format(serverFormat);
+        const timeWindow = getTrendTimeWindow(props.TimeFilter);
+        const startTime = timeWindow.startTime.format(serverFormat);
+        const endTime = timeWindow.endTime.format(serverFormat);
 
         const handle = GetMetaData(channelInfo.Channel.ChannelID, startTime, endTime);
         return () => {
@@ -103,11 +102,8 @@ const CyclicHistogram = React.memo((props: ITrendWidgetProps) => {
     }, [metaData]);
 
     React.useEffect(() => {
-        const centerTime: moment.Moment = moment.utc(props.TimeFilter.date + props.TimeFilter.time, timeFilterFormat);
-        const startTime: number = centerTime.add(-props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
-        // Need to move back in the other direction, so entire window
-        const endTime: number = centerTime.add(2 * props.TimeFilter.windowSize, formatWindowUnit(props.TimeFilter.timeWindowUnits)).valueOf();
-        setTimeLimits([startTime, endTime]);
+        const timeWindow = getTrendTimeWindow(props.TimeFilter);
+        setTimeLimits([timeWindow.startTime.valueOf(), timeWindow.endTime.valueOf()]);
     }, [props.TimeFilter]);
 
     React.useEffect(() => {
