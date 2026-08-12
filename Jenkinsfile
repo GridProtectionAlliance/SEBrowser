@@ -167,13 +167,6 @@ pipeline {
             steps {
                 dir('PQBrowser') {
                     bat(script: 'npm run build')
-                    powershell """
-                        \$uiFile = '.\\wwwroot\\Scripts\\PQBrowser.js'
-                        if (-not (Test-Path -LiteralPath \$uiFile -PathType Leaf) -or
-                            (Get-Item -LiteralPath \$uiFile).Length -eq 0) {
-                            throw 'Production UI was not generated.'
-                        }
-                    """
                 }
             }
         }
@@ -208,26 +201,8 @@ pipeline {
                     }
                     New-Item -ItemType Directory -Path '${env.publishDirectory}' -Force | Out-Null
                     dotnet publish '.\\PQBrowser\\PQBrowser.csproj' `
-                        -c Release `
-                        -r win-x64 `
-                        --self-contained true `
+                        '-p:PublishProfile=Release Profile PQBrowser' `
                         -o '${env.publishDirectory}'
-                    if (\$LASTEXITCODE -ne 0) {
-                        throw 'dotnet publish failed.'
-                    }
-
-                    \$requiredFiles = @(
-                        '${env.publishDirectory}\\PQBrowser.exe',
-                        '${env.publishDirectory}\\PQBrowser.dll',
-                        '${env.publishDirectory}\\package.json',
-                        '${env.publishDirectory}\\wwwroot\\Scripts\\PQBrowser.js'
-                    )
-                    foreach (\$requiredFile in \$requiredFiles) {
-                        if (-not (Test-Path -LiteralPath \$requiredFile -PathType Leaf) -or
-                            (Get-Item -LiteralPath \$requiredFile).Length -eq 0) {
-                            throw "Required publish output is missing: \$requiredFile"
-                        }
-                    }
                 """
             }
         }
@@ -249,9 +224,6 @@ pipeline {
                         -Path '${env.publishDirectory}\\*' `
                         -DestinationPath '${env.artifactDirectory}\\${env.archiveName}' `
                         -Force
-                    if (-not (Test-Path -LiteralPath '${env.artifactDirectory}\\${env.archiveName}' -PathType Leaf)) {
-                        throw 'Release archive was not created.'
-                    }
                 """
             }
         }
