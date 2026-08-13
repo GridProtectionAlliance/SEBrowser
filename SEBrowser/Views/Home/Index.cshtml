@@ -33,6 +33,7 @@
         CookieAuthenticationOptionsMonitor.Get(CookieAuthenticationDefaults.AuthenticationScheme);
 
     string? antiforgeryToken = Antiforgery.GetAndStoreTokens(ViewContext.HttpContext).RequestToken;
+    string systemName = (string)Settings.Default[Settings.SystemSettingsCategory].SystemName;
 
     ViewData["Title"] = "Home page";
 }
@@ -116,6 +117,7 @@
         var openSEEInstance = '@Html.Raw(ViewBag.openSEEInstance)';
         var faultLocationInstance = '@Html.Raw(ViewBag.faultLocationInstance)';
         var homePath = '@Html.Raw(Url.Content("~/"))';
+        var systemName = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(systemName));
         var controllerViewPath = homePath + '@Html.Raw(ViewContext.RouteData.Values["controller"])/@Html.Raw(ViewContext.RouteData.Values["action"])';
     </script>
 
