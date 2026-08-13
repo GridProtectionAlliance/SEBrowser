@@ -40,24 +40,20 @@ const EventSearchNavbar = () => {
 
     const eventTypes = useAppSelector(EventTypeSlice.Data);
 
-    const [newEventCharacteristicFilter, setNewEventCharacteristicFilter] = React.useState<SEBrowser.IEventCharacteristicFilters | null>(null);
-    const [newTypeFilter, setNewTypeFilter] = React.useState<number[] | undefined>(undefined);
+    const [newEventCharacteristicFilter, setNewEventCharacteristicFilter] = React.useState<SEBrowser.IEventCharacteristicFilters>(eventCharacteristicFilter);
     const [magDurStatus, setMagDurStatus] = React.useState<Application.Types.Status>('uninitiated');
     const [magDurCurves, setMagDurCurves] = React.useState<OpenXDA.Types.MagDurCurve[]>([]);
+    const [newPhases, setNewPhases] = React.useState<{ Value: number, Label: string, Selected: boolean }[]>(() => Object
+        .keys(eventCharacteristicFilter.phases)
+        .map((key, index) => ({ Value: index, Label: key, Selected: eventCharacteristicFilter.phases[key] })));
 
-    React.useEffect(() => { setNewTypeFilter(eventTypeFilter) }, [eventTypeFilter])
-    React.useEffect(() => { setNewEventCharacteristicFilter(eventCharacteristicFilter) }, [eventCharacteristicFilter])
-
-    const [newPhases, setNewPhases] = React.useState<{ Value: number, Label: string, Selected: boolean }[]>([]);
-
+    // Synchronize externally applied filters into the editable characteristic draft.
     React.useEffect(() => {
         setNewEventCharacteristicFilter(eventCharacteristicFilter);
-        setNewTypeFilter(eventTypeFilter);
-        const setupPhases = Object
+        setNewPhases(Object
             .keys(eventCharacteristicFilter.phases)
-            .map((key, index) => ({ Value: index, Label: key, Selected: eventCharacteristicFilter.phases[key] }));
-        setNewPhases(setupPhases);
-    }, []);
+            .map((key, index) => ({ Value: index, Label: key, Selected: eventCharacteristicFilter.phases[key] })));
+    }, [eventCharacteristicFilter]);
 
     React.useEffect(() => {
         setMagDurStatus('loading');
@@ -79,41 +75,29 @@ const EventSearchNavbar = () => {
         };
     }, []);
 
-    // Apply user edits without writing store-sourced initialization values back into the store.
-    React.useEffect(() => {
-        if (newEventCharacteristicFilter == null || newTypeFilter == null)
-            return;
+    /** Updates the local draft and publishes valid user edits to Redux. */
+    function handleSetEventCharacteristicFilter(filter: SEBrowser.IEventCharacteristicFilters) {
+        setNewEventCharacteristicFilter(filter);
 
-        const characteristics = validEventCharacteristicsFilter() ? newEventCharacteristicFilter : null;
-        const characteristicsUnchanged = characteristics == null || _.isEqual(characteristics, eventCharacteristicFilter);
-        const typesUnchanged = _.isEqual(newTypeFilter, eventTypeFilter);
+        if (validEventCharacteristicsFilter(filter) && !_.isEqual(filter, eventCharacteristicFilter))
+            dispatch(SetFilters({ characteristics: filter }));
+    }
 
-        if (characteristicsUnchanged && typesUnchanged)
-            return;
+    /** Returns whether every numeric range in the characteristic filter is valid. */
+    function validEventCharacteristicsFilter(filter: SEBrowser.IEventCharacteristicFilters) {
+        let valid = true;
 
-        dispatch(SetFilters({
-            characteristics: characteristics ?? undefined,
-            types: newTypeFilter
-        }));
-    }, [newEventCharacteristicFilter, newTypeFilter]);
+        valid = valid && validMinMax('durationMin', filter);
+        valid = valid && validMinMax('durationMax', filter);
 
-    function validEventCharacteristicsFilter() {
-        let valid = newEventCharacteristicFilter != null;
+        valid = valid && validMinMax('sagMin', filter);
+        valid = valid && validMinMax('sagMax', filter);
 
-        if (!valid)
-            return valid;
+        valid = valid && validMinMax('swellMin', filter);
+        valid = valid && validMinMax('swellMax', filter);
 
-        valid = valid && validMinMax('durationMin', newEventCharacteristicFilter);
-        valid = valid && validMinMax('durationMax', newEventCharacteristicFilter);
-
-        valid = valid && validMinMax('sagMin', newEventCharacteristicFilter);
-        valid = valid && validMinMax('sagMax', newEventCharacteristicFilter);
-
-        valid = valid && validMinMax('swellMin', newEventCharacteristicFilter);
-        valid = valid && validMinMax('swellMax', newEventCharacteristicFilter);
-
-        valid = valid && validMinMax('transientMin', newEventCharacteristicFilter);
-        valid = valid && validMinMax('transientMax', newEventCharacteristicFilter);
+        valid = valid && validMinMax('transientMin', filter);
+        valid = valid && validMinMax('transientMax', filter);
 
         return valid;
     }
@@ -128,11 +112,11 @@ const EventSearchNavbar = () => {
             .filter(v => v != null);
     }, [magDurCurves])
 
-    if (newEventCharacteristicFilter === null || timeFilter === null || newTypeFilter == null) return null;
+    if (timeFilter === null) return null;
 
-    const sagsSelected = newTypeFilter.find(i => i == (eventTypes.find(item => item.Name == 'Sag')?.ID ?? -1)) != null;
-    const swellsSelected = newTypeFilter.find(i => i == (eventTypes.find(item => item.Name == 'Swell')?.ID ?? -1)) != null;
-    const transientsSelected = newTypeFilter.find(i => i == (eventTypes.find(item => item.Name == 'Transient')?.ID ?? -1)) != null;
+    const sagsSelected = eventTypeFilter.find(i => i == (eventTypes.find(item => item.Name == 'Sag')?.ID ?? -1)) != null;
+    const swellsSelected = eventTypeFilter.find(i => i == (eventTypes.find(item => item.Name == 'Swell')?.ID ?? -1)) != null;
+    const transientsSelected = eventTypeFilter.find(i => i == (eventTypes.find(item => item.Name == 'Transient')?.ID ?? -1)) != null;
 
     return (
         <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
@@ -147,7 +131,7 @@ const EventSearchNavbar = () => {
                             Record={newEventCharacteristicFilter}
                             Label=''
                             Field='curveID'
-                            Setter={setNewEventCharacteristicFilter}
+                            Setter={handleSetEventCharacteristicFilter}
                             Options={MagDurOptions}
                         />
                         <div className="row justify-content-md-center">
@@ -159,7 +143,7 @@ const EventSearchNavbar = () => {
                                 }}
                                 Label=''
                                 Field='curveType'
-                                Setter={({ curveType }) => setNewEventCharacteristicFilter({
+                                Setter={({ curveType }) => handleSetEventCharacteristicFilter({
                                     ...newEventCharacteristicFilter,
                                     curveInside: curveType != 'outside',
                                     curveOutside: curveType != 'inside'
@@ -183,7 +167,7 @@ const EventSearchNavbar = () => {
                                     <Input<SEBrowser.IEventCharacteristicFilters>
                                         Record={newEventCharacteristicFilter}
                                         Label='' Field='durationMin'
-                                        Setter={setNewEventCharacteristicFilter}
+                                        Setter={handleSetEventCharacteristicFilter}
                                         Valid={isValidMinMax}
                                         Feedback={'Invalid Min'}
                                         Type='number'
@@ -198,7 +182,7 @@ const EventSearchNavbar = () => {
                                     <Input<SEBrowser.IEventCharacteristicFilters>
                                         Record={newEventCharacteristicFilter}
                                         Label='' Field='durationMax'
-                                        Setter={setNewEventCharacteristicFilter}
+                                        Setter={handleSetEventCharacteristicFilter}
                                         Valid={isValidMinMax}
                                         Feedback={'Invalid Max'}
                                         Type='number'
@@ -221,7 +205,7 @@ const EventSearchNavbar = () => {
                                             Record={newEventCharacteristicFilter}
                                             Label='' Disabled={!sagsSelected}
                                             Field='sagMin'
-                                            Setter={setNewEventCharacteristicFilter}
+                                            Setter={handleSetEventCharacteristicFilter}
                                             Valid={isValidMinMax}
                                             Feedback={'Invalid Min'}
                                             Type='number'
@@ -238,7 +222,7 @@ const EventSearchNavbar = () => {
                                             Label=''
                                             Disabled={!sagsSelected}
                                             Field='sagMax'
-                                            Setter={setNewEventCharacteristicFilter}
+                                            Setter={handleSetEventCharacteristicFilter}
                                             Valid={isValidMinMax}
                                             Feedback={'Invalid Max'}
                                             Type='number'
@@ -253,7 +237,7 @@ const EventSearchNavbar = () => {
                                     Record={newEventCharacteristicFilter}
                                     Label=''
                                     Field='sagType'
-                                    Setter={setNewEventCharacteristicFilter}
+                                    Setter={handleSetEventCharacteristicFilter}
                                     Options={[
                                         { Label: 'LL', Value: 'LL' },
                                         { Label: 'LN', Value: 'LN' },
@@ -281,7 +265,7 @@ const EventSearchNavbar = () => {
                                     phaseFilter[phase.Label] = phaseSelected;
                                 })
                                 setNewPhases(phaseList);
-                                setNewEventCharacteristicFilter({ ...newEventCharacteristicFilter, phases: phaseFilter });
+                                handleSetEventCharacteristicFilter({ ...newEventCharacteristicFilter, phases: phaseFilter });
                             }
                         }
                     />
@@ -298,7 +282,7 @@ const EventSearchNavbar = () => {
                                         <Input<SEBrowser.IEventCharacteristicFilters>
                                             Record={newEventCharacteristicFilter} Label=''
                                             Disabled={!transientsSelected} Field='transientMin'
-                                            Setter={setNewEventCharacteristicFilter}
+                                            Setter={handleSetEventCharacteristicFilter}
                                             Valid={isValidMinMax}
                                             Feedback={'Invalid Min'}
                                             Type='number'
@@ -315,7 +299,7 @@ const EventSearchNavbar = () => {
                                             Label=''
                                             Disabled={!transientsSelected}
                                             Field='transientMax'
-                                            Setter={setNewEventCharacteristicFilter}
+                                            Setter={handleSetEventCharacteristicFilter}
                                             Valid={isValidMinMax}
                                             Feedback={'Invalid Max'}
                                             Size={'small'}
@@ -329,7 +313,7 @@ const EventSearchNavbar = () => {
                                     Record={newEventCharacteristicFilter}
                                     Label=''
                                     Field='transientType'
-                                    Setter={setNewEventCharacteristicFilter}
+                                    Setter={handleSetEventCharacteristicFilter}
                                     Options={[
                                         { Label: 'LL', Value: 'LL' },
                                         { Label: 'LN', Value: 'LN' },
@@ -352,7 +336,7 @@ const EventSearchNavbar = () => {
                                             Record={newEventCharacteristicFilter}
                                             Label='' Disabled={!swellsSelected}
                                             Field='swellMin'
-                                            Setter={setNewEventCharacteristicFilter}
+                                            Setter={handleSetEventCharacteristicFilter}
                                             Valid={isValidMinMax}
                                             Feedback={'Invalid Min'}
                                             Type='number'
@@ -368,7 +352,7 @@ const EventSearchNavbar = () => {
                                             Record={newEventCharacteristicFilter}
                                             Label='' Disabled={!swellsSelected}
                                             Field='swellMax'
-                                            Setter={setNewEventCharacteristicFilter}
+                                            Setter={handleSetEventCharacteristicFilter}
                                             Valid={isValidMinMax}
                                             Feedback={'Invalid Max'}
                                             Type='number'
@@ -383,7 +367,7 @@ const EventSearchNavbar = () => {
                                     Record={newEventCharacteristicFilter}
                                     Label=''
                                     Field='swellType'
-                                    Setter={setNewEventCharacteristicFilter}
+                                    Setter={handleSetEventCharacteristicFilter}
                                     Options={[
                                         { Label: 'LL', Value: 'LL' },
                                         { Label: 'LN', Value: 'LN' },
