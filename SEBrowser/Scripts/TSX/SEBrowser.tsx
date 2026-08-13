@@ -158,6 +158,9 @@ const PQBrowser = () => {
                 <p className="text-center">
                     UI Version: {LIB_VERSION}
                 </p>
+                <p className="text-center">
+                    {systemName}
+                </p>
             </div>
         </div>
     ), [backendVersion, getBackendVersionStatus]);

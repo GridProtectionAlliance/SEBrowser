@@ -126,17 +126,17 @@ export const EventSearchsSlice = createSlice({
             state.SelectedMeters = parseList('meters', action.payload.query)?.map(id => action.payload.meters.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
             state.SelectedStations = parseList('stations', action.payload.query)?.map(id => action.payload.locations.find(item => item.ID == parseInt(id))).filter(item => item != null) ?? [];
 
-            state.EventCharacteristic.durationMin = parseFloat(action.payload.query['durationMin']?.toString() ?? null);
-            state.EventCharacteristic.durationMax = parseFloat(action.payload.query['durationMax']?.toString() ?? null);
+            state.EventCharacteristic.durationMin = parseOptionalNumber(action.payload.query['durationMin']);
+            state.EventCharacteristic.durationMax = parseOptionalNumber(action.payload.query['durationMax']);
 
-            state.EventCharacteristic.transientMin = parseFloat(action.payload.query['transientMin']?.toString() ?? null);
-            state.EventCharacteristic.transientMax = parseFloat(action.payload.query['transientMax']?.toString() ?? null);
+            state.EventCharacteristic.transientMin = parseOptionalNumber(action.payload.query['transientMin']);
+            state.EventCharacteristic.transientMax = parseOptionalNumber(action.payload.query['transientMax']);
 
-            state.EventCharacteristic.sagMin = parseFloat(action.payload.query['sagMin']?.toString() ?? null);
-            state.EventCharacteristic.sagMax = parseFloat(action.payload.query['sagMax']?.toString() ?? null);
+            state.EventCharacteristic.sagMin = parseOptionalNumber(action.payload.query['sagMin']);
+            state.EventCharacteristic.sagMax = parseOptionalNumber(action.payload.query['sagMax']);
 
-            state.EventCharacteristic.swellMax = parseFloat(action.payload.query['swellMax']?.toString() ?? null);
-            state.EventCharacteristic.swellMin = parseFloat(action.payload.query['swellMin']?.toString() ?? null);
+            state.EventCharacteristic.swellMax = parseOptionalNumber(action.payload.query['swellMax']);
+            state.EventCharacteristic.swellMin = parseOptionalNumber(action.payload.query['swellMin']);
 
             state.EventCharacteristic.sagType = (action.payload.query['sagType'] ?? 'both') as ('both' | 'LL' | 'LN');
             state.EventCharacteristic.swellType = (action.payload.query['swellType'] ?? 'both') as ('both' | 'LL' | 'LN');
@@ -377,6 +377,11 @@ export function GenerateQueryParams(
     }
 
     return result;
+}
+
+function parseOptionalNumber(value: string | string[] | undefined): number | null {
+    const parsed = parseFloat(value?.toString() ?? '');
+    return Number.isNaN(parsed) ? null : parsed;
 }
 
 function parseList(key: string, object: any) {

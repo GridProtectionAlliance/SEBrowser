@@ -151,6 +151,7 @@ public class Program
     {
         dynamic section = settings[settingsCatergory];
 
+        //Some of these settings arent used and can be removed.
         section.NodeID = ("00000000-0000-0000-0000-000000000000", "The applications instance identifier");
         section.CompanyName = ("Grid Protection Alliance", "The name of the company that owns this instance of SEBrowser");
         section.CompanyAcronym = ("GPA", "The acronym representing the company that owns this instance of SEBrowser");
@@ -160,6 +161,7 @@ public class Program
         section.BootstrapTheme = ("~/Content/bootstrap-theme.css", "The application bootstrap theme");
         section.DateFormat = ("MM/dd/yyyy", "The default date format to use when rendering timestamps");
         section.TimeFormat = ("HH:mm.ss.fff", "The default time format to use when rendering timestamps");
+        section.SystemName = ("PQBrowser", "Defines the system name for the application instance.");
 
         dynamic oauthSection = settings[OAuthAuthenticationProvider.SettingsSection];
         oauthSection.UserIdClaim = ("http://schemas.microsoft.com/identity/claims/objectidentifier", "Defines the claim used to identify the user.");
