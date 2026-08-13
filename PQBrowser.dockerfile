@@ -8,8 +8,6 @@ WORKDIR /PQBrowser
 # Copy PQBrowser from the local published folder to the container
 COPY ./[Bb]uild/${CONFIGURATION}/Applications/PQBrowser/net9.0/publish/linux-x64/ /PQBrowser/
 
-ENV ASPNETCORE_HTTP_PORTS=8001
-
 # Set permissions for all copied folders and files
 RUN chmod -R 777 /PQBrowser
 
@@ -17,7 +15,7 @@ RUN chmod -R 777 /PQBrowser
 RUN chmod +x /PQBrowser/PQBrowser
 
 # Expose the webserver port
-EXPOSE 8001
+EXPOSE 8080
 
 # Define the entry point to run
 ENTRYPOINT ["sh", "-c", "exec /PQBrowser/PQBrowser"]
