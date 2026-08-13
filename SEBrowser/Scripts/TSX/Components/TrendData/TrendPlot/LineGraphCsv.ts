@@ -36,7 +36,7 @@ export function buildLineGraphCsvRows(series: IExportSeries[]): CsvRow[] {
     });
     const timestamps = _.sortBy(Array.from(new Set(valueMaps.flatMap(values => Array.from(values.keys())))));
     return [
-        ['Timestamp (UTC)', ...series.map(item => item.Label)],
+        ['Timestamp', ...series.map(item => item.Label)],
         ...timestamps.map(timestamp => [
             new Date(timestamp).toISOString(),
             ...valueMaps.map(values => {
