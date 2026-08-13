@@ -44,6 +44,7 @@ import CollectionWidgetRouter from '../../../../EventWidgets/TSX/CollectionWidge
 import { HelpIcon, ToggleSwitch } from '@gpa-gemstone/react-forms';
 import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 import { ErrorBoundary } from '@gpa-gemstone/common-pages';
+import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 
 const availableWidgets: EventWidget.ICollectionWidget<any, any, any>[] = [DynamicEventSearch, DynamicMagDurChart];
 
@@ -203,17 +204,21 @@ const EventSearch = () => {
                                 </div>
                             </div>
                             <div style={{ width: '100%', flex: 1, minHeight: 0 }}>
-                                <CollectionWidgetRouter
-                                    Widget={showMagDur ? magDurWidgetView : eventSearchWidgetView}
-                                    AvailableWidgets={availableWidgets}
-                                    EventFilter={currentFilter}
-                                    GetEventData={getEventData}
-                                    OnDataLoaded={setResultCount}
-                                    EventID={eventId}
-                                    Callback={handleEventSelect}
-                                    HomePath={homePath}
-                                    WidgetAuthorization={widgetAuthorization}
-                                />
+                                {queryReady ?
+                                    <CollectionWidgetRouter
+                                        Widget={showMagDur ? magDurWidgetView : eventSearchWidgetView}
+                                        AvailableWidgets={availableWidgets}
+                                        EventFilter={currentFilter}
+                                        GetEventData={getEventData}
+                                        OnDataLoaded={setResultCount}
+                                        EventID={eventId}
+                                        Callback={handleEventSelect}
+                                        HomePath={homePath}
+                                        WidgetAuthorization={widgetAuthorization}
+                                    />
+                                    : <div className="d-flex justify-content-center align-items-center h-100">
+                                        <ReactIcons.SpiningIcon Size={'50%'} />
+                                    </div>}
                             </div>
                         </div>
                     </SplitSection>

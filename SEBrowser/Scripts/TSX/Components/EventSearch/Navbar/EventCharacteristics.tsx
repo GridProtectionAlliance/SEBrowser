@@ -79,8 +79,17 @@ const EventSearchNavbar = () => {
         };
     }, []);
 
+    // Apply user edits without writing store-sourced initialization values back into the store.
     React.useEffect(() => {
+        if (newEventCharacteristicFilter == null || newTypeFilter == null)
+            return;
+
         const characteristics = validEventCharacteristicsFilter() ? newEventCharacteristicFilter : null;
+        const characteristicsUnchanged = characteristics == null || _.isEqual(characteristics, eventCharacteristicFilter);
+        const typesUnchanged = _.isEqual(newTypeFilter, eventTypeFilter);
+
+        if (characteristicsUnchanged && typesUnchanged)
+            return;
 
         dispatch(SetFilters({
             characteristics: characteristics ?? undefined,
