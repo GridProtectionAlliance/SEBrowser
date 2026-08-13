@@ -259,7 +259,8 @@ const TrendPlot = (props: IContainerProps) => {
                                 Type: props.LineDefaults.Average.Default.Type,
                                 Axis: 'left',
                                 Label: 'avg',
-                                HasData: false
+                                HasData: false,
+                                Enabled: true
                             }
                         }
                     };
@@ -276,14 +277,16 @@ const TrendPlot = (props: IContainerProps) => {
                             Type: defaultsUsed.Default.Type,
                             Axis: 'left',
                             Label: label,
-                            HasData: false
+                            HasData: false,
+                            Enabled: true
                         };
                         if (props.Plot.Type === 'Histogram')
                             (settings.Settings as TrendSearch.IHistogramSeriesSettings)[series.TypeName] = {
                                 ...lineSettings,
                                 ShowCumulativeProbability: true,
                                 CumulativeProbabilityColor: color?.[series.TypeName] ?? color.Average,
-                                CumulativeProbabilityLabel: `${label} Cumulative Probability`
+                                CumulativeProbabilityLabel: `${label} Cumulative Probability`,
+                                CumulativeProbabilityEnabled: true
                             };
                         else
                             (settings.Settings as TrendSearch.ILineSeriesSettings)[series.TypeName] = lineSettings;
@@ -316,11 +319,13 @@ const TrendPlot = (props: IContainerProps) => {
                             (props.Plot.Type === 'Statistics' ? { ID: 0, ChannelID: channel.ChannelID, TypeName: key, TypeDescription: key } : undefined);
                         const label = constructLabel(channel, series);
                         lineSettings[key].Label = label;
+                        lineSettings[key].Enabled ??= true;
                         if (props.Plot.Type === 'Histogram') {
                             const histogramSettings = lineSettings[key] as TrendSearch.IHistogramSettings;
                             histogramSettings.ShowCumulativeProbability ??= true;
                             histogramSettings.CumulativeProbabilityColor ??= histogramSettings.Color;
                             histogramSettings.CumulativeProbabilityLabel ??= `${label} Cumulative Probability`;
+                            histogramSettings.CumulativeProbabilityEnabled ??= true;
                         }
                     }
                     );

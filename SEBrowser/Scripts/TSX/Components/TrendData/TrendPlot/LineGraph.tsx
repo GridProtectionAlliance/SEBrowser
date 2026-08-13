@@ -36,6 +36,8 @@ import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 import { ITrendWidgetProps } from './TrendWidgetRegistry';
 import { serverFormat } from '../Utils/Constants';
 import { getTrendTimeWindow, parseTrendDataResponse, requestTrendData } from '../Utils/TrendDataRequest';
+import { buildLineGraphCsvRows, IExportSeries } from './LineGraphCsv';
+import { downloadCsv } from './TrendCsv';
 
 interface IChartData {
     [key: string]: [number, number][]
@@ -67,7 +69,7 @@ const LineGraph = React.memo((props: ITrendWidgetProps) => {
             // This represents data we already have and still need (only makes sense if we aren't changing our time window)
             keptOldData = allChartData;
             keptOldData.forEach((_, channelID) => {
-                if (props.ChannelInfo.findIndex(channel => channel.Channel.ChannelID === Number("0x" + channelID)) < 0)
+                if (props.ChannelInfo.findIndex(channel => channel?.Channel?.ChannelID === Number("0x" + channelID)) < 0)
                     keptOldData.delete(channelID);
             }
             );
@@ -99,6 +101,44 @@ const LineGraph = React.memo((props: ITrendWidgetProps) => {
         return props.ID;
     }, [props.ID, setExtraLegendHeight, props.SetExtraSpace]);
 
+    const setLineEnabled = React.useCallback((channelID: string, seriesKey: string, action: React.SetStateAction<boolean>) => {
+        props.SetChannelInfo(currentSettings => currentSettings.map(series => {
+            if (series?.Channel?.ID !== channelID) return series;
+            const settings = series.Settings as TrendSearch.ILineSeriesSettings;
+            const enabled = typeof action === 'function' ? action(settings[seriesKey].Enabled ?? true) : action;
+            return {
+                ...series,
+                Settings: {
+                    ...settings,
+                    [seriesKey]: { ...settings[seriesKey], Enabled: enabled }
+                }
+            };
+        }));
+    }, [props.SetChannelInfo]);
+
+    const exportSeries = React.useMemo(() => {
+        if (graphStatus !== 'idle' || props.ChannelInfo == null) return [] as IExportSeries[];
+        const seriesToExport: IExportSeries[] = [];
+        props.ChannelInfo.forEach(series => {
+            const channelSettings = series.Settings as TrendSearch.ILineSeriesSettings;
+            const dataKey = [...allChartData.keys()].find(key => series?.Channel?.ChannelID === Number('0x' + key));
+            if(dataKey == null) return;
+            const chartData = allChartData.get(dataKey);
+            if (chartData == null) return;
+            Object.keys(chartData).forEach(key => {
+                const settings = channelSettings[key];
+                const isPlotted = props.PlotFilter.find(option => option.Value === key)?.Selected ?? true;
+                if (settings?.HasData && (settings.Enabled ?? true) && isPlotted && chartData[key].length > 0)
+                    seriesToExport.push({ Label: settings.Label, Data: chartData[key] });
+            });
+        });
+        return seriesToExport;
+    }, [allChartData, graphStatus, props.ChannelInfo, props.PlotFilter]);
+
+    const exportCsv = React.useCallback(() => {
+        downloadCsv(buildLineGraphCsvRows(exportSeries), props.Title);
+    }, [exportSeries, props.Title]);
+
     function loadTrendData(channels: number[], cachedData: Map<string, IChartData>, timeFilter: SEBrowser.IReportTimeFilter): JQuery.jqXHR<string> {
         setGraphStatus('loading');
         return requestTrendData(channels, timeFilter).done((data: string) => {
@@ -107,9 +147,11 @@ const LineGraph = React.memo((props: ITrendWidgetProps) => {
                 // Todo: Handle alternate Series Types
                 if (cachedData.has(point.Tag)) {
                     const chartData = cachedData.get(point.Tag);
-                    chartData.Minimum.push([timeStamp, point.Minimum]);
-                    chartData.Average.push([timeStamp, point.Average]);
-                    chartData.Maximum.push([timeStamp, point.Maximum]);
+                    if(chartData != null) {
+                        chartData.Minimum.push([timeStamp, point.Minimum]);
+                        chartData.Average.push([timeStamp, point.Average]);
+                        chartData.Maximum.push([timeStamp, point.Maximum]);
+                    }
                 } else {
                     const chartData: IChartData = {
                         Minimum: [[timeStamp, point.Minimum]],
@@ -130,6 +172,7 @@ const LineGraph = React.memo((props: ITrendWidgetProps) => {
                 const channeldata = cachedData.get(channelID);
                 const newSettings = _.cloneDeep(setting.Settings) as TrendSearch.ILineSeriesSettings;
                 Object.keys(newSettings).forEach(key => {
+                    newSettings[key].Enabled ??= true;
                     // Hide all if no data
                     if (channeldata == null) newSettings[key].HasData = false;
                     // Hide min/max if no data
@@ -176,6 +219,7 @@ const LineGraph = React.memo((props: ITrendWidgetProps) => {
                     onSelect={props.OnSelect}
                     onCapture={captureCallback}
                     onCaptureComplete={() => captureCallback(0)}
+                    onDataInspect={graphStatus === 'idle' && exportSeries.length > 0 ? exportCsv : undefined}
                     cursorOverride={props.Cursor}
                     snapMouse={trendDatasettings.MarkerSnapping}
                     legend={trendDatasettings.LegendDisplay}
@@ -209,6 +253,8 @@ const LineGraph = React.memo((props: ITrendWidgetProps) => {
                                         legend={channelSetting[key].Label}
                                         axis={channelSetting[key].Axis}
                                         width={channelSetting[key].Width}
+                                        enabled={channelSetting[key].Enabled ?? true}
+                                        setEnabled={(enabled) => setLineEnabled(series.Channel.ID, key, enabled)}
                                     />
                                 );
                             }

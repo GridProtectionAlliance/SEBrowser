@@ -32,6 +32,7 @@ import { SelectGeneralSettings, SelectTrendDataSettings } from '../../../Store/S
 import { useAppSelector } from '../../../hooks';
 import GraphError from './GraphError';
 import { ITrendWidgetProps } from './TrendWidgetRegistry';
+import { CsvRow, downloadCsv } from './TrendCsv';
 import { parseTrendDataResponse, requestTrendData } from '../Utils/TrendDataRequest';
 
 const binCount = 10;
@@ -44,10 +45,25 @@ type SeriesSettingsWithChannel = TrendSearch.ISeriesSettings & { Channel: TrendS
 
 interface IHistogramSeries {
     ID: string,
+    ChannelID: string,
+    SeriesKey: string,
     Color: string,
     Percentages: number[],
     Label: string,
     Settings: TrendSearch.IHistogramSettings
+}
+
+interface IHistogramBinnedSeries {
+    ID: string,
+    ChannelID: string,
+    SeriesKey: string,
+    Percentages: number[]
+}
+
+interface IHistogramBinnedData {
+    BinWidth: number,
+    Domain: [number, number],
+    Series: IHistogramBinnedSeries[]
 }
 
 interface IHistogramData {
@@ -73,7 +89,12 @@ const Histogram = React.memo((props: ITrendWidgetProps) => {
     const width = props.Width ?? 0;
     const channelIDs = (props.ChannelInfo ?? []).map(info => info?.Channel?.ChannelID).filter(isChannelID);
     const channelKey = channelIDs.join(',');
-    const data = React.useMemo(() => buildHistogramData(points, props.ChannelInfo, props.PlotFilter), [points, props.ChannelInfo, props.PlotFilter]);
+    const binningKey = getHistogramBinningKey(props.ChannelInfo, props.PlotFilter);
+    const binnedData = React.useMemo(() => buildHistogramData(points, props.ChannelInfo, props.PlotFilter), [points, binningKey]);
+    const data = React.useMemo(() => applyHistogramSettings(binnedData, props.ChannelInfo), [binnedData, props.ChannelInfo]);
+    const enabledVisualizationCount = React.useMemo(() => data?.Series.reduce((count, series) =>
+        count + (series.Settings.Enabled ?? true ? 1 : 0) +
+        ((series.Settings.ShowCumulativeProbability ?? true) && (series.Settings.CumulativeProbabilityEnabled ?? true) ? 1 : 0), 0) ?? 0, [data]);
     const plotHeight = Math.max(0, height - titleHeight - 5);
 
     // Load the samples for the selected channels and time window.
@@ -115,6 +136,33 @@ const Histogram = React.memo((props: ITrendWidgetProps) => {
         return props.ID;
     }, [props.ID, props.SetExtraSpace]);
 
+    const setHistogramEnabled = React.useCallback((
+        channelID: string,
+        seriesKey: string,
+        field: 'Enabled' | 'CumulativeProbabilityEnabled',
+        action: React.SetStateAction<boolean>
+    ) => {
+        props.SetChannelInfo(currentSettings => currentSettings.map(channel => {
+            if (channel.Channel?.ID !== channelID) return channel;
+            const settings = channel.Settings as TrendSearch.IHistogramSeriesSettings;
+            const seriesSettings = settings[seriesKey];
+            if (seriesSettings == null) return channel;
+            const currentEnabled = seriesSettings[field] ?? true;
+            const enabled = typeof action === 'function' ? action(currentEnabled) : action;
+            return {
+                ...channel,
+                Settings: {
+                    ...settings,
+                    [seriesKey]: { ...seriesSettings, [field]: enabled }
+                }
+            };
+        }));
+    }, [props.SetChannelInfo]);
+
+    const exportCsv = React.useCallback(() => {
+        if (data != null) downloadCsv(buildHistogramCsvRows(data), props.Title);
+    }, [data, props.Title]);
+
     if (graphStatus === 'error')
         return <GraphError Height={height} Title={props.Title}>{props.Controls}</GraphError>;
 
@@ -144,6 +192,7 @@ const Histogram = React.memo((props: ITrendWidgetProps) => {
                 onSelect={props.OnSelect}
                 onCapture={captureCallback}
                 onCaptureComplete={() => captureCallback(0)}
+                onDataInspect={graphStatus === 'idle' && data != null && enabledVisualizationCount > 0 ? exportCsv : undefined}
                 cursorOverride={props.Cursor}
                 snapMouse={trendDataSettings.MarkerSnapping}
                 legend={trendDataSettings.LegendDisplay}
@@ -156,7 +205,12 @@ const Histogram = React.memo((props: ITrendWidgetProps) => {
                 yDomain={props.AxisZoom}
             >
                 {data?.Series.map((series, seriesIndex) =>
-                    <BarGroup key={series.ID} Legend={series.Label}>
+                    <BarGroup
+                        key={series.ID}
+                        Legend={series.Label}
+                        Enabled={series.Settings.Enabled ?? true}
+                        SetEnabled={enabled => setHistogramEnabled(series.ChannelID, series.SeriesKey, 'Enabled', enabled)}
+                    >
                         {series.Percentages.map((percentage, binIndex) =>
                             <Bar
                                 key={`${series.ID}_${binIndex}`}
@@ -180,6 +234,8 @@ const Histogram = React.memo((props: ITrendWidgetProps) => {
                         legend={series.Settings.CumulativeProbabilityLabel ?? `${series.Label} Cumulative Probability`}
                         axis="right"
                         width={series.Settings.Width}
+                        enabled={series.Settings.CumulativeProbabilityEnabled ?? true}
+                        setEnabled={enabled => setHistogramEnabled(series.ChannelID, series.SeriesKey, 'CumulativeProbabilityEnabled', enabled)}
                     />
                 )}
                 {props.Overlays}
@@ -212,7 +268,7 @@ const getSeriesPlotted = (plotFilter?: IMultiCheckboxOption[] | null): SeriesTyp
  * Each returned series contains the percentage of its finite samples falling into each bin.
  */
 const buildHistogramData = (points?: TrendSearch.IPQData[] | null, channelInfo?: TrendSearch.ISeriesSettings[] | null,
-    plotFilter?: IMultiCheckboxOption[] | null): IHistogramData | null => {
+    plotFilter?: IMultiCheckboxOption[] | null): IHistogramBinnedData | null => {
     const channels = (channelInfo ?? []).filter(hasChannel);
     const validPoints = (points ?? []).filter(point => typeof point?.Tag === 'string');
     const plottedSeries = getSeriesPlotted(plotFilter);
@@ -253,15 +309,38 @@ const buildHistogramData = (points?: TrendSearch.IPQData[] | null, channelInfo?:
             });
             return {
                 ID: `${channel.Channel.ID}_${type}`,
-                Color: seriesSetting.Color,
-                Percentages: values.length === 0 ? counts : counts.map(count => 100 * count / values.length),
-                Label: seriesSetting.Label,
-                Settings: seriesSetting
+                ChannelID: channel.Channel.ID,
+                SeriesKey: type,
+                Percentages: values.length === 0 ? counts : counts.map(count => 100 * count / values.length)
             };
         });
     });
 
     return { BinWidth: binWidth, Domain: [minimum, maximum], Series: series };
+};
+
+/** Applies current labels, colors, and visibility without rebuilding histogram bins. */
+const applyHistogramSettings = (data?: IHistogramBinnedData | null,
+    channelInfo?: TrendSearch.ISeriesSettings[] | null): IHistogramData | null => {
+    if (data == null) return null;
+    const series = data.Series.flatMap(binnedSeries => {
+        const channel = (channelInfo ?? []).find(channel => channel.Channel?.ID === binnedSeries.ChannelID);
+        const settings = (channel?.Settings as TrendSearch.IHistogramSeriesSettings | undefined)?.[binnedSeries.SeriesKey];
+        if (settings == null) return [];
+        return [{ ...binnedSeries, Color: settings.Color, Label: settings.Label, Settings: settings }];
+    });
+    return { ...data, Series: series };
+};
+
+/** Builds a memoization key from bin-affecting settings so display-only changes do not rebuild histogram bins. */
+const getHistogramBinningKey = (channelInfo?: TrendSearch.ISeriesSettings[] | null,
+    plotFilter?: IMultiCheckboxOption[] | null): string => {
+    const channels = (channelInfo ?? []).filter(hasChannel).map(channel => {
+        const settings = channel.Settings as TrendSearch.IHistogramSeriesSettings;
+        const configuredSeries = seriesTypes.filter(type => settings?.[type] != null).join(',');
+        return `${channel.Channel.ID}:${configuredSeries}`;
+    }).join('|');
+    return `${channels};${getSeriesPlotted(plotFilter).join(',')}`;
 };
 
 /** Returns an empirical cumulative distribution at each histogram bin boundary. */
@@ -271,6 +350,31 @@ const getCumulativeProbability = (percentages: number[], minimum: number, binWid
         cumulative += percentage;
         return [minimum + (index + 1) * binWidth, cumulative];
     }));
+};
+
+/** Builds CSV rows from the shared bins and series values displayed by the histogram. */
+export const buildHistogramCsvRows = (data: IHistogramData): CsvRow[] => {
+    const barSeries = data.Series.filter(series => series.Settings.Enabled ?? true);
+    const cumulativeSeries = data.Series.filter(series =>
+        (series.Settings.ShowCumulativeProbability ?? true) && (series.Settings.CumulativeProbabilityEnabled ?? true)
+    );
+    const cumulativeValues = cumulativeSeries.map(series =>
+        getCumulativeProbability(series.Percentages, data.Domain[0], data.BinWidth).slice(1).map(point => point[1])
+    );
+    return [
+        [
+            'Bin Start',
+            'Bin End',
+            ...barSeries.map(series => series.Label),
+            ...cumulativeSeries.map(series => series.Settings.CumulativeProbabilityLabel ?? `${series.Label} Cumulative Probability`)
+        ],
+        ...Array.from({ length: binCount }, (_, binIndex) => [
+            data.Domain[0] + binIndex * data.BinWidth,
+            data.Domain[0] + (binIndex + 1) * data.BinWidth,
+            ...barSeries.map(series => series.Percentages[binIndex]),
+            ...cumulativeValues.map(values => values[binIndex])
+        ])
+    ];
 };
 
 export { Histogram };
