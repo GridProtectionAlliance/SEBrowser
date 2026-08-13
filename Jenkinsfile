@@ -16,9 +16,6 @@ pipeline {
         devBranch = "development"
         mainBranch = "master"
         NUGET_PACKAGES = "D:\\NuGetCache"
-        publishDirectory = "${WORKSPACE}\\build\\Jenkins\\publish"
-        artifactDirectory = "${WORKSPACE}\\build\\Jenkins\\artifacts"
-        deliveryDirectory = "\\\\webhostfiles\\Delivery\\PQBrowser"
     }
 
     stages {
@@ -196,13 +193,8 @@ pipeline {
         stage('Publish Application') {
             steps {
                 powershell """
-                    if (Test-Path -LiteralPath '${env.publishDirectory}') {
-                        Remove-Item -LiteralPath '${env.publishDirectory}' -Recurse -Force
-                    }
-                    New-Item -ItemType Directory -Path '${env.publishDirectory}' -Force | Out-Null
                     dotnet publish '.\\PQBrowser\\PQBrowser.csproj' `
-                        '-p:PublishProfile=Release Profile PQBrowser' `
-                        -o '${env.publishDirectory}'
+                        '-p:PublishProfile=Release Profile PQBrowser'
                 """
             }
         }
@@ -210,19 +202,24 @@ pipeline {
         stage('Package Application') {
             steps {
                 script {
+                    if (!env.WEBHOST_DELIVERY_DIRECTORY?.trim()) {
+                        error('WEBHOST_DELIVERY_DIRECTORY is not configured in Jenkins.')
+                    }
+
                     env.archiveName = env.BRANCH_NAME == "${env.mainBranch}" ?
                         "PQBrowser_v${env.pqBrowserVersion}.zip" :
                         "PQBrowser_v${env.pqBrowserVersion}a.zip"
                 }
                 powershell """
-                    if (Test-Path -LiteralPath '${env.artifactDirectory}') {
-                        Remove-Item -LiteralPath '${env.artifactDirectory}' -Recurse -Force
-                    }
-                    New-Item -ItemType Directory -Path '${env.artifactDirectory}' -Force | Out-Null
+                    [xml]\$publishProfile = Get-Content `
+                        -LiteralPath '.\\PQBrowser\\Properties\\PublishProfiles\\Release Profile PQBrowser.pubxml' `
+                        -Raw
+                    \$publishDir = (\$publishProfile.Project.PropertyGroup |
+                        Where-Object { \$_.PublishDir }).PublishDir
 
                     Compress-Archive `
-                        -Path '${env.publishDirectory}\\*' `
-                        -DestinationPath '${env.artifactDirectory}\\${env.archiveName}' `
+                        -Path (Join-Path '.\\PQBrowser' "\$publishDir*") `
+                        -DestinationPath '${WORKSPACE}\\${env.archiveName}' `
                         -Force
                 """
             }
@@ -253,7 +250,7 @@ pipeline {
                 }
             }
             steps {
-                powershell "Move-Item -Path '${env.artifactDirectory}\\${env.archiveName}' -Destination '${env.deliveryDirectory}\\PreRelease\\${env.archiveName}' -Force"
+                powershell "Move-Item -Path '${WORKSPACE}\\${env.archiveName}' -Destination '${env.WEBHOST_DELIVERY_DIRECTORY}\\PQBrowser\\PreRelease\\${env.archiveName}' -Force"
             }
         }
 
@@ -269,7 +266,7 @@ pipeline {
                 }
             }
             steps {
-                powershell "Move-Item -Path '${env.artifactDirectory}\\${env.archiveName}' -Destination '${env.deliveryDirectory}\\${env.archiveName}' -Force"
+                powershell "Move-Item -Path '${WORKSPACE}\\${env.archiveName}' -Destination '${env.WEBHOST_DELIVERY_DIRECTORY}\\PQBrowser\\${env.archiveName}' -Force"
                 powershell "git tag -a v${env.pqBrowserVersion} -m 'Version ${env.pqBrowserVersion} release'"
                 powershell "git push origin --tags"
             }
