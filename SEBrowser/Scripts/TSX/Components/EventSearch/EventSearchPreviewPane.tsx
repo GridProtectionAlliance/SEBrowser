@@ -50,7 +50,7 @@ export default function EventPreviewPane(props: IProps) {
     const widgetAuthorization = useAppSelector(SelectWidgetAuthorization);
 
     React.useEffect(() => {
-        if (tab == null) return;
+        if (tab == null || tab.length === 0) return;
 
         setWidgetsStatus('loading');
         const handle = loadWidgets(tab);
@@ -69,8 +69,10 @@ export default function EventPreviewPane(props: IProps) {
 
     //effect to set tab to first category if current tab is not in the current categories
     React.useEffect(() => {
-        if (categories.length > 0 && categories.findIndex(s => s.ID.toString() == tab) == -1)
+        if (categories.length > 0 && categories.findIndex(s => s.ID.toString() == tab) == -1) {
             setTab(categories[0].ID.toString());
+        }
+            
     }, [tab, categories])
 
 
