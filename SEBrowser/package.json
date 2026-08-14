@@ -54,7 +54,8 @@
     "react-dom": "18.2.0",
     "react-redux": "8.0.2",
     "react-router": "6.30.3",
-    "@turf/turf": "7.4.0"
+    "@turf/turf": "7.4.0",
+    "@arcgis/core": "5.1.17"
   },
   "scripts": {
     "prebuild": "node -p \"'export const LIB_VERSION = ' + JSON.stringify(require('./package.json').version) + ';'\" > ./Scripts/TSX/version.ts",
