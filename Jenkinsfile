@@ -168,6 +168,24 @@ pipeline {
             }
         }
 
+        stage('Lint') {
+            when {
+                allOf {
+                    expression {
+                        return env.CHANGE_BRANCH == "${env.devBranch}"
+                    }
+                    expression {
+                        return env.CHANGE_TARGET == "${env.mainBranch}"
+                    }
+                }
+            }
+            steps {
+                dir('PQBrowser') {
+                    bat(script: 'npm run lint')
+                }
+            }
+        }
+
         stage('Build Docker Images') {
             when {
                 anyOf {
