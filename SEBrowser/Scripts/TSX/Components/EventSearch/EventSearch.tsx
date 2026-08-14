@@ -41,12 +41,13 @@ import { EventWidget } from '../../../../EventWidgets/TSX/global';
 import DynamicEventSearch from '../../../../EventWidgets/TSX/CollectionWidget/DynamicEventTable/DynamicEventSearch';
 import DynamicMagDurChart from '../../../../EventWidgets/TSX/CollectionWidget/DynamicMagDurChart/DynamicMagDurChart';
 import CollectionWidgetRouter from '../../../../EventWidgets/TSX/CollectionWidgetWrapper';
-import { HelpIcon, ToggleSwitch } from '@gpa-gemstone/react-forms';
+import { ToolTip, ToggleSwitch } from '@gpa-gemstone/react-forms';
 import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 import { ErrorBoundary } from '@gpa-gemstone/common-pages';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
 
 const availableWidgets: EventWidget.ICollectionWidget<any, any, any>[] = [DynamicEventSearch, DynamicMagDurChart];
+const resultLimitWarningTarget = 'event-search-result-limit-warning';
 
 type tab = 'Waveform' | 'Fault' | 'Correlating' | 'Configuration' | 'All' | undefined;
 
@@ -61,6 +62,7 @@ const EventSearch = () => {
     const [showMagDur, setShowMagDur] = React.useState<boolean>(false);
     const [queryReady, setQueryReady] = React.useState<boolean>(false);
     const [resultCount, setResultCount] = React.useState<number | null>(null);
+    const [showResultLimitWarning, setShowResultLimitWarning] = React.useState<boolean>(false);
 
     const previewPaneRef = React.useRef<HTMLDivElement | null>(null);
     const { height: previewPaneHeight } = useGetContainerPosition(previewPaneRef);
@@ -190,7 +192,19 @@ const EventSearch = () => {
                                         <p className="d-flex align-items-center">
                                             Results: {resultCount}
                                             {resultCount === eventSearchSettings.NumberResults ?
-                                                <HelpIcon Help={`${showMagDur ? 'Events without a magnitude and duration are not displayed on the chart. ' : ''}Only the first ${resultCount} results are shown - please narrow your search or increase the number of results in the application settings.`} />
+                                                <>
+                                                    <span
+                                                        className="ml-2 d-flex align-items-center"
+                                                        data-tooltip={resultLimitWarningTarget}
+                                                        onMouseEnter={() => setShowResultLimitWarning(true)}
+                                                        onMouseLeave={() => setShowResultLimitWarning(false)}
+                                                    >
+                                                        <ReactIcons.Warning Color="var(--warning)" />
+                                                    </span>
+                                                    <ToolTip Show={showResultLimitWarning} Target={resultLimitWarningTarget} Class="info" Position="top">
+                                                        {`${showMagDur ? 'Events without a magnitude and duration are not displayed on the chart. ' : ''}Only the first ${resultCount} results are shown - please narrow your search or increase the number of results in the application settings.`}
+                                                    </ToolTip>
+                                                </>
                                                 : null}
                                         </p> : null}
                                 </div>
