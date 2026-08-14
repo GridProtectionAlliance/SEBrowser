@@ -138,7 +138,27 @@ pipeline {
                 powershell "powershell.exe -File .\\Scripts\\CreateDependencyPR.ps1 -GithubToken '${github_pat}' -DevelopmentBranchName '${devBranch}'"
                 script {
                     bat(script: "@git add Directory.Build.props")
+                    // Avoid an empty commit, which would return a failure code when the pointer is current.
                     bat(script: "git diff --cached --quiet || git commit -m \"Updated Dependencies\"")
+                }
+            }
+        }
+
+        stage('EventWidgets Pointer Update') {
+            when {
+                expression {
+                    return env.BRANCH_NAME != "${env.mainBranch}"
+                }
+            }
+            steps {
+                dir('PQBrowser/EventWidgets') {
+                    bat(script: '@git fetch origin main')
+                    bat(script: '@git checkout origin/main')
+                }
+                script {
+                    bat(script: '@git add PQBrowser/EventWidgets')
+                    // Avoid an empty commit, which would return a failure code when the pointer is current.
+                    bat(script: 'git diff --cached --quiet || git commit -m "Updated EventWidgets Pointer"')
                 }
             }
         }
