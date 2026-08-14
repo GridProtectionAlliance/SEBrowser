@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@gpa-gemstone/application-typings": "0.0.99",
-    "@gpa-gemstone/common-pages": "0.0.187",
+    "@gpa-gemstone/common-pages": "0.0.188",
     "@gpa-gemstone/gpa-symbols": "0.0.64",
     "@gpa-gemstone/helper-functions": "0.0.61",
     "@gpa-gemstone/react-forms": "1.1.127",
