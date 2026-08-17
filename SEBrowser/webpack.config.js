@@ -49,6 +49,10 @@ module.exports = env => {
                     use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
                 },
                 {
+                    test: /main\.css$/,
+                    use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
+                },
+                {
                     //loader is the default asset loader in webpack 5
                     test: /\.(woff|woff2|ttf|eot|svg|png|gif)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                     type: 'asset',
