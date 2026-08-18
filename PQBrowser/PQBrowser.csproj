@@ -1,0 +1,99 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyTitle>PQBrowser</AssemblyTitle>
+    <Description></Description>
+    <Company>GridProtectionAlliance</Company>
+    <Product>PQBrowser</Product>
+    <Copyright>Copyright © 2026</Copyright>
+    <Configurations>Debug;Development;Release</Configurations>
+    <DefineConstants>$(DefineConstants);IS_GEMSTONE</DefineConstants>
+    <VersionFile>$(MSBuildProjectDirectory)\..\Scripts\PQBrowser.version</VersionFile>
+    <Version>$([System.IO.File]::ReadAllText('$(VersionFile)').Trim())</Version>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+
+    <!-- Development: build against local Gemstone source; otherwise: NuGet packages -->
+    <ProjectReference Include="..\..\..\Gemstone\common\src\Gemstone\Gemstone.Common.csproj" Condition="'$(Configuration)'=='Development'">
+      <Private>True</Private>
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <PackageReference Include="Gemstone.Common" Version="$(GemstoneVersion)" Condition="'$(Configuration)'!='Development'" />
+    <ProjectReference Include="..\..\..\Gemstone\io\src\Gemstone.IO\Gemstone.IO.csproj" Condition="'$(Configuration)'=='Development'">
+      <Private>True</Private>
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <PackageReference Include="Gemstone.IO" Version="$(GemstoneVersion)" Condition="'$(Configuration)'!='Development'" />
+    <ProjectReference Include="..\..\..\Gemstone\diagnostics\src\Gemstone.Diagnostics\Gemstone.Diagnostics.csproj" Condition="'$(Configuration)'=='Development'">
+      <Private>True</Private>
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <PackageReference Include="Gemstone.Diagnostics" Version="$(GemstoneVersion)" Condition="'$(Configuration)'!='Development'" />
+    <ProjectReference Include="..\..\..\Gemstone\data\src\Gemstone.Data\Gemstone.Data.csproj" Condition="'$(Configuration)'=='Development'">
+      <Private>True</Private>
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <PackageReference Include="Gemstone.Data" Version="$(GemstoneVersion)" Condition="'$(Configuration)'!='Development'" />
+    <ProjectReference Include="..\..\..\Gemstone\security\src\Gemstone.Security\Gemstone.Security.csproj" Condition="'$(Configuration)'=='Development'">
+      <Private>True</Private>
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <PackageReference Include="Gemstone.Security" Version="$(GemstoneVersion)" Condition="'$(Configuration)'!='Development'" />
+    <ProjectReference Include="..\..\..\Gemstone\web\src\Gemstone.Web\Gemstone.Web.csproj" Condition="'$(Configuration)'=='Development'">
+      <Private>True</Private>
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <PackageReference Include="Gemstone.Web" Version="$(GemstoneVersion)" Condition="'$(Configuration)'!='Development'" />
+    <ProjectReference Include="..\..\..\Gemstone\pqdif\src\Gemstone.PQDIF\Gemstone.PQDIF.csproj" Condition="'$(Configuration)'=='Development'">
+      <Private>True</Private>
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <PackageReference Include="Gemstone.PQDIF" Version="$(GemstoneVersion)" Condition="'$(Configuration)'!='Development'" />
+
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.22" />
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Graph" Version="4.52.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.12" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.9" />
+    <PackageReference Include="System.Runtime.Caching" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="openXDA.APIAuthentication">
+      <HintPath>..\Dependencies\OpenXDA\openXDA.APIAuthentication.dll</HintPath>
+    </Reference>
+    <Reference Include="FaultAlgorithms">
+      <HintPath>..\Dependencies\OpenXDA\FaultAlgorithms.dll</HintPath>
+    </Reference>
+    <Reference Include="FaultData">
+      <HintPath>..\Dependencies\OpenXDA\FaultData.dll</HintPath>
+    </Reference>
+    <Reference Include="openXDA.Model">
+      <HintPath>..\Dependencies\OpenXDA\openXDA.Model.dll</HintPath>
+    </Reference>
+    <Reference Include="openXDA.PQI">
+      <HintPath>..\Dependencies\OpenXDA\openXDA.PQI.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\Scripts\PQBrowser.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="package.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="DynamicAssemblies\**" />
+    <Content Remove="DynamicAssemblies\**" />
+    <EmbeddedResource Remove="DynamicAssemblies\**" />
+    <None Remove="DynamicAssemblies\**" />
+  </ItemGroup>
+</Project>

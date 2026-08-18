@@ -1,0 +1,236 @@
+﻿//******************************************************************************************************
+//  TrendData.tsx - Gbtc
+//
+//  Copyright © 2023, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+//  file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  03/30/23 - Gabriel Santos
+//       Generated original version of source code.
+//
+//******************************************************************************************************
+
+import React from 'react';
+import _ from 'lodash';
+import TrendSearchNavbar from './NavBar/TrendDataNavbar';
+import TrendPlot from './TrendPlot/TrendWidgetWrapper';
+import { TrendSearch } from '../../global';
+import AllSettingsModal from './Settings/AllSettingsModal';
+import { SelectTrendDataSettings } from '../../Store/SettingsSlice';
+import { useAppSelector, useAppDispatch } from './../../hooks';
+import { ValueListGroupSlice } from '../../Store/Store';
+import { TrendDefaults } from './Utils/HelperFunctions';
+import { ErrorBoundary } from '@gpa-gemstone/common-pages';
+import { Alert } from '@gpa-gemstone/react-interactive';
+import { TrendChannelTableState } from './NavBar/Types';
+
+const trendSearchId = "TrendDataChartAll";
+const defaultsIgnored = new Set(["ID", "TimeFilter", "Type", "Channels", "PlotFilter"]);
+const defaultValueList = "TrendLabelDefaults";
+
+const TrendData = () => {
+    const closureHandler = React.useRef<((o: boolean) => void)>(() => { return; });
+    const [showNav, setShowNav] = React.useState<boolean>(getShowNav());
+    const [plotList, setPlotList] = React.useState<TrendSearch.ITrendPlot[]>([]);
+    const [defaultPlotSettings, setDefaultPlotSettings] = React.useState<TrendSearch.ITrendPlot>(TrendDefaults.getPlotSettingsOrDefault);
+    const [markerDefaults, setMarkerDefaults] = React.useState<TrendSearch.IMarkerSettingsBundle>(TrendDefaults.getMarkerSettingsOrDefault);
+    const [lineDefaults, setLineDefaults] = React.useState<TrendSearch.ILinePlotSettingsBundle>(TrendDefaults.getLineSettingsOrDefault);
+    const [showSettings, setShowSettings] = React.useState<boolean>(false);
+    const [plotsMovable, setPlotsMovable] = React.useState<boolean>(false);
+    const [channelTableState, setChannelTableState] = React.useState<TrendChannelTableState>('noMeter');
+    const trendDatasettings = useAppSelector(SelectTrendDataSettings);
+
+    const defaultSliceStatus = useAppSelector((state) => ValueListGroupSlice.Status(state, defaultValueList));
+    const defaultSliceData = useAppSelector((state) => ValueListGroupSlice.Data(state, defaultValueList));
+    const dispatch = useAppDispatch();
+
+    const removePlot = React.useCallback(((ID: string) => {
+        const index = plotList.findIndex(item => item.ID === ID);
+        const newList = [...plotList];
+        newList.splice(index, 1);
+        setPlotList(newList);
+    }), [plotList, setPlotList]);
+
+    const setPlot = React.useCallback(((ID: string, record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)) => {
+        const index = plotList.findIndex(item => item.ID === ID);
+        const newList: any[] = [...plotList];
+        newList[index][field] = record[field] as any;
+        setPlotList(newList);
+    }), [plotList, setPlotList]);
+
+    const movePlot = React.useCallback(((idNear: string, idMove: string, isBeforeNear: boolean) => {
+        if (idNear === idMove) return;
+        const newList: any[] = [...plotList];
+        const oldIndex = newList.findIndex(item => item.ID === idMove);
+        if (oldIndex < 0) {
+            console.error(`Could not find plot with ID ${idMove} when trying to move plot.`);
+            return;
+        }
+        const movedItem = newList.splice(oldIndex, 1);
+        const newIndex = newList.findIndex(item => item.ID === idNear);
+        if (oldIndex < 0) {
+            console.error(`Could not find plot with ID ${idNear} when trying to move plot.`);
+            return;
+        }
+        newList.splice(newIndex + (isBeforeNear ? 0 : 1), 0, movedItem[0]);
+        setPlotList(newList);
+    }), [plotList, setPlotList]);
+
+    const setAllPlot = React.useCallback(((record: TrendSearch.ITrendPlot, field: keyof (TrendSearch.ITrendPlot)) => {
+        const newList: any[] = [...plotList];
+        newList.forEach((item: TrendSearch.ITrendPlot, index: number) => {
+            newList[index][field] = record[field];
+        });
+        setPlotList(newList);
+    }), [plotList]);
+
+    const concatNewContainers = React.useCallback((newContainers: TrendSearch.ITrendPlot[]) => {
+        const defaultAppliedContainers = _.cloneDeep(newContainers);
+        Object.keys(defaultPlotSettings).forEach(field => {
+            if (defaultPlotSettings[field] != null && !defaultsIgnored.has(field))
+                defaultAppliedContainers.forEach(container => {
+                    container[field] = defaultPlotSettings[field];
+                });
+        });
+        if (trendDatasettings.InsertAtStart)
+            setPlotList(defaultAppliedContainers.concat(plotList));
+        else
+            setPlotList(plotList.concat(defaultAppliedContainers));
+    }, [plotList, setPlotList, trendDatasettings.InsertAtStart, defaultPlotSettings]);
+
+    const removeAllCharts = React.useCallback(() => {
+        setPlotList([]);
+    }, [setPlotList]);
+
+    const closeSettings = React.useCallback((
+        (open: boolean) => closureHandler.current(open)
+    ), [closureHandler.current]);
+
+    const toggleNavbar = React.useCallback((
+        () => setShowNav(!showNav)
+    ), [showNav]);
+
+    React.useEffect(() => {
+        if (defaultSliceStatus === 'uninitiated' || defaultSliceStatus === 'changed')
+            dispatch(ValueListGroupSlice.Fetch(defaultValueList));
+    }, [defaultSliceStatus]);
+
+    React.useEffect(() => {
+        // only allow settings this if it hasn't been set before
+        if (defaultSliceStatus === 'idle' && defaultPlotSettings?.LabelComponents?.length === 0)
+            setDefaultPlotSettings({ ...defaultPlotSettings, LabelComponents: defaultSliceData.map(item => item.Value) });
+    }, [defaultSliceStatus]);
+
+    // These store settings into local storage
+    React.useEffect(() => {
+        TrendDefaults.storePlotSettings(defaultPlotSettings);
+    }, [defaultPlotSettings]);
+
+    /* ToDo: Uncomment later, Trying to store these as is breaks things because you can't just store JSX elements as if they are objects with session storage,
+    but the way these are stored may change since we may move to ReactIcons over deprecated SVGIcons anyway...
+    React.useEffect(() => {
+        TrendDefaults.storeMarkerSettings(markerDefaults);
+    }, [markerDefaults]);
+    */
+
+    React.useEffect(() => {
+        TrendDefaults.storeLineSettings(lineDefaults);
+    }, [lineDefaults]);
+
+    return (
+        <div className="container-fluid d-flex h-100 flex-column p-0" style={{ height: 'inherit' }}>
+            <ErrorBoundary ErrorMessage={'Error loading page.'}>
+                <TrendSearchNavbar
+                    ToggleVis={toggleNavbar}
+                    ShowNav={showNav}
+                    SetShowAllSettings={setShowSettings}
+                    AddNewCharts={concatNewContainers}
+                    RemoveAllCharts={removeAllCharts}
+                    TimeFilter={defaultPlotSettings.TimeFilter}
+                    LinePlot={defaultPlotSettings.PlotFilter}
+                    Movable={plotsMovable}
+                    SetMovable={setPlotsMovable}
+                    SetChannelTableState={setChannelTableState}
+                    PlotIds={plotList.map(plot => { return { ID: plot.ID, Width: plot.Width ?? 0, Height: plot.Height ?? 0 } })}
+                />
+            </ErrorBoundary>
+            <ErrorBoundary ErrorMessage={'Error loading page.'} ClassName={'h-100'}>
+                <div className={'row m-0'} style={{ flex: 1, overflow: 'hidden' }}>
+                    <div className={'col-12 px-0'} style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }} id={trendSearchId}>
+                        {plotList.length === 0 ?
+                            <Alert Class="alert-info" Style={{ height: '100%', marginBottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {getEmptyPlotMessage(channelTableState)}
+                            </Alert> :
+                            plotList.map(element =>
+                            <TrendPlot
+                                key={element.ID}
+                                DragMode={plotsMovable}
+                                Plot={element}
+                                SetPlot={setPlot}
+                                RemovePlot={removePlot}
+                                SplicePlot={movePlot}
+                                HandleOverlay={closeSettings}
+                                MarkerDefaults={markerDefaults}
+                                LineDefaults={lineDefaults}
+                            />)}
+                    </div>
+                </div>
+            </ErrorBoundary>
+            <ErrorBoundary ErrorMessage={'Error loading page.'}>
+                <AllSettingsModal
+                    Show={showSettings}
+                    SetShow={setShowSettings}
+                    ApplyFieldToAll={setAllPlot}
+                    Defaults={defaultPlotSettings}
+                    SetDefaults={setDefaultPlotSettings}
+                    MarkerDefaults={markerDefaults}
+                    SetMarkerDefaults={setMarkerDefaults}
+                    LinePlotDefaults={lineDefaults}
+                    SetLinePlotDefaults={setLineDefaults}
+                />
+            </ErrorBoundary>
+        </div>
+    );
+}
+
+const getShowNav = (): boolean => {
+    const value = localStorage.getItem('SEbrowser.TrendData.ShowNav');
+
+    if (value === null)
+        return true;
+
+    const parsed: unknown = JSON.parse(value);
+
+    if (typeof parsed !== 'boolean')
+        return false
+
+    return parsed;
+}
+
+const getEmptyPlotMessage = (channelTableState: TrendChannelTableState): string => {
+    switch (channelTableState) {
+        case 'noMeter':
+            return 'Select a Meter to view available channels.';
+        case 'loading':
+            return 'Loading channels...';
+        case 'noChannels':
+            return 'No channels match the selected filters. Adjust the filters to find available channels.';
+        case 'noSelection':
+            return 'No channels selected. Select one or more channels from the channel table.';
+        default:
+            return 'No plots to display. Use the plot controls to add the selected channels to a plot.';
+    }
+}
+
+export default TrendData;

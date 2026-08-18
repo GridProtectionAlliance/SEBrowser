@@ -1,8 +1,8 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="SEBrowser/wwwroot/Images/PQBrowserLight.png">
-    <source media="(prefers-color-scheme: light)" srcset="SEBrowser/wwwroot/Images/PQBrowserDark.png">
-    <img alt="PQ Browser" src="SEBrowser/wwwroot/Images/PQBrowserDark.png" width="520">
+    <source media="(prefers-color-scheme: dark)" srcset="PQBrowser/wwwroot/Images/PQBrowserLight.png">
+    <source media="(prefers-color-scheme: light)" srcset="PQBrowser/wwwroot/Images/PQBrowserDark.png">
+    <img alt="PQ Browser" src="PQBrowser/wwwroot/Images/PQBrowserDark.png" width="520">
   </picture>
 </div>
 
@@ -26,7 +26,7 @@ PQ Browser is a list-based power-quality event browser that complements the grap
 The application targets .NET 9 and builds its React/TypeScript interface with npm and webpack. After configuring the required database and service connections:
 
 ```powershell
-cd SEBrowser
+cd PQBrowser
 npm run builddev
 dotnet run
 ```

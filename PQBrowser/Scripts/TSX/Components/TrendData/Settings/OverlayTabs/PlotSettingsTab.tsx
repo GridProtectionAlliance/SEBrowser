@@ -1,0 +1,248 @@
+﻿//******************************************************************************************************
+//  PlotSettingsTab.tsx - Gbtc
+//
+//  Copyright © 2023, Grid Protection Alliance.  All Rights Reserved.
+//
+//  Licensed to the Grid Protection Alliance (GPA) under one or more contributor license agreements. See
+//  the NOTICE file distributed with this work for additional information regarding copyright ownership.
+//  The GPA licenses this file to you under the MIT License (MIT), the "License"; you may not use this
+//  file except in compliance with the License. You may obtain a copy of the License at:
+//
+//      http://opensource.org/licenses/MIT
+//
+//  Unless agreed to in writing, the subject software distributed under the License is distributed on an
+//  "AS-IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. Refer to the
+//  License for the specific language governing permissions and limitations.
+//
+//  Code Modification History:
+//  ----------------------------------------------------------------------------------------------------
+//  06/13/23 - Gabriel Santos
+//       Generated original version of source code.
+//
+//******************************************************************************************************
+import React from 'react';
+import _ from 'lodash';
+import { IMultiCheckboxOption, TrendSearch } from '../../../../global';
+import { TimeFilter } from '@gpa-gemstone/common-pages';
+import { toGemstoneFilter, fromGemstoneFilter } from '../../../EventSearch/TimeWindowUtils';
+import { SelectDateTimeSetting, SelectTimeZone } from '../../../../Store/SettingsSlice';
+import { CheckBox, Input, MultiCheckBoxSelect, Select } from '@gpa-gemstone/react-forms';
+import { ValueListGroupSlice } from '../../../../Store/Store'
+import { useAppSelector, useAppDispatch } from '../../../../hooks';
+
+export interface IPlotSettingsProps {
+    Plot: TrendSearch.ITrendPlot,
+    SetPlot: (record: TrendSearch.ITrendPlot) => void,
+    SetConfirmDisabled: (record: boolean) => void,
+    IsGlobalSettings: boolean,
+    ShowEvents?: boolean,
+    ShowAxisLimits?: boolean
+}
+
+interface AxisLimits { LeftUpper: number, LeftLower: number, RightUpper: number, RightLower: number }
+
+const limitFeedback = "Lower limits must be lower than upper.";
+const defaultValueList = "TrendLabelDefaults";
+const allValueList = "TrendLabelOptions";
+
+const axisOptions: { Value: string, Label: string }[] = [
+    { Value: 'AutoValue', Label: 'Automatic' },
+    { Value: 'HalfAutoValue', Label: 'Zero to Auto' },
+    { Value: 'Manual', Label: 'Manual' }
+]
+
+const PlotSettingsTab = React.memo((props: IPlotSettingsProps) => {
+    const [limits, setLimits] = React.useState<AxisLimits>({ LeftUpper: 1, LeftLower: 0, RightUpper: 1, RightLower: 0 });
+    const [labelOptions, setLabelOptions] = React.useState<{ Value: string, Label: string, Selected: boolean}[] >([]);
+
+    const dispatch = useAppDispatch();
+    const dateTimeSetting = useAppSelector(SelectDateTimeSetting);
+    const timeZone = useAppSelector(SelectTimeZone);
+    const defaultSliceStatus = useAppSelector((state) => ValueListGroupSlice.Status(state, defaultValueList));
+    const defaultSliceData = useAppSelector((state) => ValueListGroupSlice.Data(state, defaultValueList));
+    const optionsSliceStatus = useAppSelector((state) => ValueListGroupSlice.Status(state, allValueList));
+    const optionsSliceData = useAppSelector((state) => ValueListGroupSlice.Data(state, allValueList));
+
+    const setPlotLimits = React.useCallback((limits: AxisLimits) => {
+        const newPlot = { ...props.Plot };
+        newPlot.DefaultZoom = [[limits.LeftLower, limits.LeftUpper], [limits.RightLower, limits.RightUpper]];
+        props.SetPlot(newPlot);
+    }, [props.Plot, props.SetPlot]);
+
+    const validateLimit = React.useCallback((field: keyof AxisLimits) => {
+        if (field === "LeftUpper" || field === "LeftLower")
+            return limits.LeftUpper > limits.LeftLower;
+        else
+            return limits.LeftUpper > limits.LeftLower;
+    }, [limits]);
+
+    React.useEffect(() => {
+        if (defaultSliceStatus === 'uninitiated' || defaultSliceStatus === 'changed')
+            dispatch(ValueListGroupSlice.Fetch(defaultValueList));
+    }, [defaultSliceStatus]);
+
+    React.useEffect(() => {
+        if (optionsSliceStatus === 'uninitiated' || optionsSliceStatus === 'changed')
+            dispatch(ValueListGroupSlice.Fetch(allValueList));
+    }, [optionsSliceStatus]);
+
+    React.useEffect(() => {
+        // Combine both lists so that we are robust against users including something in defaults but not options
+        if (optionsSliceStatus === 'idle' && defaultSliceStatus === 'idle')
+            setLabelOptions(_.uniqBy(optionsSliceData.concat(defaultSliceData), item => item.Value)
+                .map(item => ({
+                    Value: item.Value,
+                    Label: item.AltValue ?? item.Value,
+                    Selected: props.Plot.LabelComponents.some(comp => comp === item.Value)
+            })));
+    }, [optionsSliceStatus, defaultSliceStatus, props.Plot.LabelComponents]);
+
+    React.useEffect(() => {
+        props.SetConfirmDisabled(!isValid());
+    }, [props.Plot]);
+
+    React.useEffect(() => {
+        if (props.Plot.DefaultZoom === undefined) return;
+        setLimits({
+            LeftLower: props.Plot.DefaultZoom[0][0],
+            LeftUpper: props.Plot.DefaultZoom[0][1],
+            RightLower: props.Plot.DefaultZoom[1][0],
+            RightUpper: props.Plot.DefaultZoom[1][1]
+        });
+    }, [props.Plot.DefaultZoom]);
+
+    function validateTrendPlot(field: keyof TrendSearch.ITrendPlot): boolean {
+        if (field === 'Height' || field === 'Width') {
+            const checkValue = props.Plot[field];
+            return checkValue <= 100 && checkValue >= 0;
+        }
+        return true;
+    }
+        
+    function isValid(): boolean {
+        const limitsAreValid = !(props.ShowAxisLimits ?? true) || (validateLimit("LeftUpper") && validateLimit("RightUpper"));
+        return validateTrendPlot('Height') && validateTrendPlot('Width') && limitsAreValid;
+    }
+
+    return (
+        <div className="row" style={{ paddingLeft: 20, paddingRight: 20, paddingTop: 20, overflowY: 'scroll', maxHeight: 'calc(100vh - 284px)' }}>
+            <div className="col" style={{ width: '50%', height: "100%" }}>
+                <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                    <legend className="w-auto" style={{ fontSize: 'large' }}>Plot Settings:</legend>
+                    <div className="row">
+                        <div className="col" style={{ width: '50%'}}>
+                            <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Plot Title'} Field={'Title'} Setter={props.SetPlot} Valid={() => true} />
+                        </div>
+                        <div className="col" style={{ width: '50%' }}>
+                            <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'X-Axis Label'} Field={'XAxisLabel'} Setter={props.SetPlot} Valid={() => true} />
+                        </div>
+                    </div>
+                    <div className="row">
+                        <div className="col" style={{ width: '50%' }}>
+                            <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Left Axis Label'} Field={'YLeftLabel'} Setter={props.SetPlot} Valid={() => true} />
+                        </div>
+                        <div className="col" style={{ width: '50%' }}>
+                            <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Right Axis Label'} Field={'YRightLabel'} Setter={props.SetPlot} Valid={() => true} />
+                        </div>
+                    </div>
+                    <legend className="w-auto" style={{ fontSize: 'large' }}>Series Plotted:</legend>
+                    <MultiCheckBoxSelect
+                        Options={props.Plot.PlotFilter}
+                        Label={''}
+                        OnChange={(_evt, newOptions: IMultiCheckboxOption[]) => {
+                            const options: IMultiCheckboxOption[] = [];
+                            props.Plot.PlotFilter.forEach(item => {
+                                const selected: boolean = item.Selected != (newOptions.findIndex(option => item.Value === option.Value) > -1);
+                                options.push({ ...item, Selected: selected });
+                            });
+                            props.SetPlot({ ...props.Plot, PlotFilter: options });
+                        }}
+                    />
+                </fieldset>
+                <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                    <legend className="w-auto" style={{ fontSize: 'large' }}>Plot Style:</legend>
+                    {
+                        props.IsGlobalSettings ?
+                            <div className="alert alert-primary">Changes to these settings will persist across sessions.</div> :
+                            <></>
+                    }
+                    <MultiCheckBoxSelect
+                        Options={labelOptions}
+                        Label={'Label Components'}
+                        OnChange={(_evt, newOptions: IMultiCheckboxOption[]) => {
+                            const newComponents = [];
+                            labelOptions.forEach(option => {
+                                const newOptionIndex = newOptions.findIndex(newOption => newOption.Value === option.Value);
+                                if (newOptionIndex >= 0) {
+                                    if (!newOptions[newOptionIndex].Selected) newComponents.push(newOptions[newOptionIndex].Value as string);
+                                }
+                                else {
+                                    if (option.Selected) newComponents.push(option.Value as string);
+                                }
+
+                            });
+                            props.SetPlot({ ...props.Plot, LabelComponents: newComponents });
+                        }}
+                    />
+                    <div className="row">
+                        <div className="col" style={{ width: '50%' }}>
+                            <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Height (%)'} Field={'Height'} Setter={props.SetPlot} Valid={validateTrendPlot} Feedback="Must be a percentage value" />
+                        </div>
+                        <div className="col" style={{ width: '50%' }}>
+                            <Input<TrendSearch.ITrendPlot> Record={props.Plot} Label={'Width (%)'} Field={'Width'} Setter={props.SetPlot} Valid={validateTrendPlot} Feedback="Must be a percentage value" />
+                        </div>
+                    </div>
+                    <div className="col" style={{width: '100%'}}>
+                        <div className="row">
+                            <CheckBox<TrendSearch.ITrendPlot> Record={props.Plot} Label='Use Metric Abbreviation' Field='Metric' Setter={props.SetPlot} />
+                        </div>
+                        {(props.ShowEvents ?? true) ?
+                            <div className="row">
+                                <CheckBox<TrendSearch.ITrendPlot> Record={props.Plot} Label='Display Events' Field='ShowEvents' Setter={props.SetPlot} />
+                            </div>
+                            : null}
+                    </div>
+                </fieldset>
+            </div>
+            <div className="col" style={{ width: '50%', height: "100%" }}>
+                <TimeFilter filter={toGemstoneFilter(props.Plot.TimeFilter)} showQuickSelect={false}
+                    setFilter={(start, end, unit, duration) => props.SetPlot({ ...props.Plot, TimeFilter: fromGemstoneFilter(start, end, unit, duration) })}
+                    dateTimeSetting={dateTimeSetting} timeZone={timeZone} />
+                {(props.ShowAxisLimits ?? true) ?
+                    <fieldset className="border" style={{ padding: '10px', height: '100%' }}>
+                        <legend className="w-auto" style={{ fontSize: 'large' }}>Axis Limits:</legend>
+                        <div className="row">
+                            <div className="col">
+                                <Select<TrendSearch.ITrendPlot> Record={props.Plot} Setter={props.SetPlot} Field='AxisZoom' Options={axisOptions} Label=''
+                                    EmptyOption={false} Help={"Selects range of plot."}
+                                />
+                            </div>
+                        </div>
+                        <div className="row">
+                            <div className="col" style={{ width: '50%' }}>
+                                <Input<AxisLimits> Record={limits} Setter={setPlotLimits} Valid={validateLimit} Feedback={limitFeedback}
+                                    Label='Left Axis Lower' Field='LeftLower' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'} />
+                            </div>
+                            <div className="col" style={{ width: '50%' }}>
+                                <Input<AxisLimits> Record={limits} Setter={setPlotLimits} Valid={validateLimit} Feedback={limitFeedback}
+                                    Label='Left Axis Upper' Field='LeftUpper' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'}/>
+                            </div>
+                        </div>
+                        <div className="row">
+                            <div className="col" style={{ width: '50%' }}>
+                                <Input<AxisLimits> Record={limits} Setter={setPlotLimits} Valid={validateLimit} Feedback={limitFeedback}
+                                    Label='Right Axis Lower' Field='RightLower' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'}/>
+                            </div>
+                            <div className="col" style={{ width: '50%' }}>
+                                <Input<AxisLimits> Record={limits} Setter={setPlotLimits} Valid={validateLimit} Feedback={limitFeedback}
+                                    Label='Right Axis Upper' Field='RightUpper' Type='integer' Disabled={props.Plot.AxisZoom !== 'Manual'}/>
+                            </div>
+                        </div>
+                    </fieldset>
+                    : null}
+            </div>
+        </div>
+    );
+});
+
+export { PlotSettingsTab };
