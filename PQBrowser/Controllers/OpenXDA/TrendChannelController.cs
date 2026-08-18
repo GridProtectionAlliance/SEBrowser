@@ -28,7 +28,7 @@ using Gemstone.Security.AccessControl;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using openXDA.APIAuthentication;
-using PQBrowser.Model;
+using SEBrowser.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
