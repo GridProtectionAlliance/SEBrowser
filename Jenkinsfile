@@ -231,7 +231,12 @@ pipeline {
                     println("Building PQBrowser Docker image tag: pqbrowser:${env.pqBrowserDockerTag}")
                 }
 
-                powershell "msbuild /t:Publish /p:DeployOnBuild=true';'Configuration=Release';'PublishProfile='Docker Release Profile PQBrowser' './PQBrowser/PQBrowser.csproj' /nodeReuse:false -restore"
+                powershell """
+                    dotnet publish '.\\PQBrowser\\PQBrowser.csproj' `
+                        --configuration Release `
+                        '-p:PublishProfile=Docker Release Profile PQBrowser'
+                """
+
                 powershell "docker build --build-arg CONFIGURATION=Release -f .\\PQBrowser.dockerfile -t pqbrowser:${env.pqBrowserDockerTag} ."
             }
         }
