@@ -26,7 +26,7 @@ using Gemstone.Data.Model;
 using Gemstone.Web.APIController;
 using Microsoft.AspNetCore.Mvc;
 using openXDA.Model;
-using PQBrowser.Model;
+using SEBrowser.Model;
 using PQBrowser.Security;
 using System;
 using System.Collections.Generic;
