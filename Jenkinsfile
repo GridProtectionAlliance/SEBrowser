@@ -180,10 +180,10 @@ pipeline {
             }
         }
 
-        stage('Install UI Dependencies') {
+        stage('Build Production UI') {
             steps {
                 dir('PQBrowser') {
-                    bat(script: 'npm ci')
+                    bat(script: 'npm run build')
                 }
             }
         }
@@ -202,14 +202,6 @@ pipeline {
             steps {
                 dir('PQBrowser') {
                     bat(script: 'npm run lint')
-                }
-            }
-        }
-
-        stage('Build Production UI') {
-            steps {
-                dir('PQBrowser') {
-                    bat(script: 'npm run build')
                 }
             }
         }
