@@ -25,6 +25,7 @@ using Gemstone.Configuration;
 using Gemstone.Data;
 using Gemstone.Data.Model;
 using Gemstone.EnumExtensions;
+using Gemstone.Numeric.Interpolation;
 using Gemstone.Security.AccessControl;
 using Microsoft.AspNetCore.Mvc;
 using openXDA.Model;
@@ -42,57 +43,10 @@ namespace PQBrowser.Controllers
     public class OpenXDAController : ControllerBase
     {
         #region [ Members ]
-        private string m_collumns = null;
-        private Dictionary<string, string> m_sortCollumns = null;
 
-        public string Columns 
-        {
-            get
-            {
-                if (m_collumns is null)
-                    using (AdoDataConnection connection = new(Settings.Default))
-                    {
-                        DataTable collumns = connection.RetrieveData(@"
-                            SELECT COLUMN_NAME,TABLE_NAME
-                                FROM INFORMATION_SCHEMA.COLUMNS 
-                            WHERE TABLE_NAME = 'SEBrowser.EventSearchEventView'
-                                OR TABLE_NAME = 'SEBrowser.EventSearchDetailsView' 
-                                AND COLUMN_NAME NOT LIKE 'Sort.%'");
-
-                        m_collumns = String.Join(",", collumns.Select()
-                            .Select(r => r["TABLE_NAME"].ToString() == "SEBrowser.EventSearchDetailsView" && r["COLUMN_NAME"].ToString() == "EventID"
-                                ? $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}] AS [EventID1]"
-                                : $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}]")
-                            );
-                    }
-                return m_collumns;
-            }
-        }
-
-        public Dictionary<string,string> SortColumns
-        {
-            get
-            {
-                if (m_sortCollumns is null)
-                    using (AdoDataConnection connection = new(Settings.Default))
-                    {
-                        DataTable collumns = connection.RetrieveData(@"
-                            SELECT COLUMN_NAME,TABLE_NAME
-                                FROM INFORMATION_SCHEMA.COLUMNS 
-                            WHERE (TABLE_NAME = 'SEBrowser.EventSearchEventView'
-                                OR TABLE_NAME = 'SEBrowser.EventSearchDetailsView') 
-                                AND COLUMN_NAME LIKE 'Sort.%'");
-
-                        m_sortCollumns = collumns.Select()
-                            .ToDictionary(
-                            r => r["COLUMN_NAME"].ToString().Split('.')[1],
-                            r => $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}]");
-                    }
-                return m_sortCollumns;
-            }
-        }
 
         #endregion
+
         #region [ Constructors ]
         public OpenXDAController() : base() { }
         #endregion
@@ -103,7 +57,119 @@ namespace PQBrowser.Controllers
         static OpenXDAController()
         {
             s_memoryCache = new MemoryCache("OpenXDA");
+            s_disturbanceTypes = new[] { "Sag", "Swell", "Transient", "Interruption" };
+            s_faultTypes = new[] { "Fault", "RecloseIntoFault" };
+
+            using AdoDataConnection connection = new(Settings.Default);
+            {
+
+                s_eventTypeLookup = new TableOperations<EventType>(connection).QueryRecords().ToList()
+                    .ToDictionary(x => x.Name, x => x.ID);
+
+                s_columnsByTable = new();
+
+                DataTable collumns = connection.RetrieveData(@"
+                            SELECT COLUMN_NAME,TABLE_NAME
+                                FROM INFORMATION_SCHEMA.COLUMNS 
+                            WHERE (TABLE_NAME = 'SEBrowser.EventSearchEventView'
+                                OR TABLE_NAME = 'SEBrowser.EventSearchLongestDisturbanceView'
+                                OR TABLE_NAME = 'SEBrowser.EventSearchShortestDisturbanceView' 
+                                OR TABLE_NAME = 'SEBrowser.EventSearchLargestDisturbanceView' 
+                                OR TABLE_NAME = 'SEBrowser.EventSearchSmallestDisturbanceView'
+                                OR TABLE_NAME = 'SEBrowser.EventSearchFaultView')
+                                AND COLUMN_NAME NOT LIKE 'Sort.%' 
+                                AND COLUMN_NAME NOT LIKE 'EventID'
+                                AND COLUMN_NAME NOT LIKE 'DisturbanceID'
+                                AND COLUMN_NAME NOT LIKE 'FaultID'
+                                AND COLUMN_NAME NOT LIKE 'Event Type'
+                                ");
+
+                IEnumerable<DataRow> rows = collumns.Select();
+
+                Dictionary<string, int> uniqueCollumns = rows
+                    .GroupBy(r => r["COLUMN_NAME"].ToString())
+                    .ToDictionary((k) => k.Key, (k) => k.Count());
+
+                Dictionary<string, int> currentCount = new();
+
+                Action<string, string> addColumn = (string tbl, string col) =>
+                {
+                    if (s_columnsByTable.ContainsKey(tbl))
+                        s_columnsByTable[tbl].Add($"{col}");
+                    else
+                        s_columnsByTable.Add(tbl, new() { $"{col}" });
+                };
+
+                foreach (DataRow row in rows)
+                {
+                    string table = row["TABLE_NAME"].ToString();
+                    string col = row["COLUMN_NAME"].ToString();
+
+                    if (!uniqueCollumns.TryGetValue(col, out int count))
+                        continue;
+                    if (count == 1)
+                    {
+                        addColumn(table, $"[{col}]");
+                        continue;
+                    }
+                    int i = 0;
+
+                    if (!currentCount.TryGetValue(col, out i))
+                    {
+                        currentCount.Add(col, 0);
+                    }
+                    currentCount[col] = i + 1;
+
+                    addColumn(table, $"[{col}] AS [{col} {i}]");
+                }
+            }
+
+
+
         }
+
+        private static string[] s_disturbanceTypes;
+        private static string[] s_faultTypes;
+        private static Dictionary<string, int> s_eventTypeLookup;
+
+        private string m_collumns = null;
+        private Dictionary<string, string> m_sortCollumns = null;
+
+        private static string Columns => string.Join(",", s_columnsByTable
+            .Select((v) => string.Join(",", v.Value.Select(c => $"[{v.Key}].{c}"))));
+
+        public Dictionary<string, string> SortColumns
+        {
+            get
+            {
+                if (m_sortCollumns is null)
+                    using (AdoDataConnection connection = new(Settings.Default))
+                    {
+                        DataTable collumns = connection.RetrieveData(@"
+                            SELECT COLUMN_NAME,TABLE_NAME
+                                FROM INFORMATION_SCHEMA.COLUMNS 
+                            WHERE TABLE_NAME IN (
+                                'SEBrowser.EventSearchEventView',
+                                'SEBrowser.EventSearchLongestDisturbanceView',
+                                'SEBrowser.EventSearchShortestDisturbanceView',
+                                'SEBrowser.EventSearchLargestDisturbanceView',
+                                'SEBrowser.EventSearchSmallestDisturbanceView',
+                                'SEBrowser.EventSearchFaultView'
+                            )
+                            AND COLUMN_NAME LIKE 'Sort.%'"
+                        );
+
+                        m_sortCollumns = collumns.Select()
+                            .ToDictionary(
+                            r => r["COLUMN_NAME"].ToString().Split('.')[1],
+                            r => $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}]");
+                    }
+                return m_sortCollumns;
+            }
+        }
+
+        private static Dictionary<string, List<string>> s_columnsByTable;
+
         #endregion
 
         #region [ Event Search Page ]
@@ -126,9 +192,6 @@ namespace PQBrowser.Controllers
             public int curveID { get; set; }
             public bool curveInside { get; set; }
             public bool curveOutside { get; set; }
-            public string transientType { get; set; }
-            public string sagType { get; set; }
-            public string swellType { get; set; }
             public int[] meterIDs { get; set; }
             public int[] typeIDs { get; set; }
             public int[] assetIDs { get; set; }
@@ -170,8 +233,159 @@ namespace PQBrowser.Controllers
         [Route("GetEventSearchData"), HttpPost, ResourceAccess(ResourceAccessType.Read)]
         public DataTable GetEventSearchData([FromBody] EventSearchPostData postData)
         {
-            if(postData is null)
+            if (postData is null)
                 throw new Exception("Unable to parse request body");
+
+            // Convert input cycles to seconds.
+            postData.durationMin = postData.durationMin * (1 / 60.0);
+            postData.durationMax = postData.durationMax * (1 / 60.0);
+
+            using AdoDataConnection connection = new(Settings.Default);
+            {
+                // When an eventID is provided, the request targets that single event and the time/characteristic filters are skipped
+                object queryParameter;
+                string recordFilter;
+                string filters = "";
+
+
+                //If eventID is provided no filters are needed this is a 1-1 lookup
+                if (postData.eventID is not null)
+                {
+                    queryParameter = postData.eventID;
+                    recordFilter = "Event.ID = {0}";
+                }
+                else
+                {
+                    queryParameter = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+                    recordFilter = getTimeFilter(postData, "Event.StartTime");
+
+                    string eventType = (postData.typeIDs is null) ? null : getEventTypeFilter(postData, "COALESCE(DisturbanceTypeID, EventTypeID)");
+                    string phase = (postData.phases is null) ? null : getPhaseFilter(postData, "COALESCE(FaultSummary.FaultType,(SELECT Name FROM Phase WHERE ID = MaxMag.PhaseID))");
+
+                    string eventCharacteristic = getEventCharacteristicFilter(postData, "MinDur.DurationSeconds",
+                        "MaxDur.DurationSeconds", "MinMag.PerUnitMagnitude", "MaxMag.PerUnitMagnitude", "COALESCE(DisturbanceTypeID, EventTypeID)");
+                    string asset = getAssetFilters(postData, "Event.MeterID", "Event.AssetID");
+
+                    filters = $"{(string.IsNullOrEmpty(eventType) ? "" : $"AND ({eventType})")} ";
+                    filters += $"{(string.IsNullOrEmpty(phase) ? "" : $"AND ({phase})")}  ";
+                    filters += $"{(string.IsNullOrEmpty(eventCharacteristic) ? "" : $"AND {eventCharacteristic}")} ";
+                    filters += $"{(string.IsNullOrEmpty(asset) ? "" : $"AND {asset}")}";
+                }
+
+                // Sort keys map to the views' "Sort.<key>" columns; unknown keys fall back to Time to keep user input out of the SQL
+                if (!SortColumns.TryGetValue(postData.sortKey ?? "Time", out string sortColumn))
+                    sortColumn = "[Time]";
+
+                string sortBy = $"ORDER BY {sortColumn} {(postData.ascending ? "ASC" : "DESC")}";
+
+                string query =
+                     $"""
+                    SELECT TOP {postData.numberResults?.ToString() ?? "100"}
+                        EventType.Description AS [Event Type],
+                        Main.Phase AS [Phase],
+                        Main.EventID,
+                        Main.FaultID,
+                        Main.LargestDisturbanceID AS DisturbanceID,
+                        {Columns}
+                    FROM
+                        (
+                            SELECT
+                                 Event.ID EventID,
+                    			 COALESCE(DisturbanceTypeID, EventTypeID) AS EventTypeID,
+                                 MaxMag.ID AS LargestDisturbanceID,
+                    			 MinMAG.ID AS SmallestDisturbanceID,
+                    			 MinDur.ID AS ShortestDisturbanceID,
+                    			 MaxDur.ID AS LongestDisturbanceID,
+                    			 MaxMag.PerUnitMagnitude AS LargestDisturbanceMagnitude,
+                    			 MinMag.PerUnitMagnitude AS SmallestDisturbanceMagnitude,
+                    			 MinDur.DurationSeconds AS SmallestDisturbanceDuration,
+                    			 MaxDur.DurationSeconds AS LargestDisturbanceDuration,
+                                 FaultSummary.FaultNumber AS FaultID,
+                                 COALESCE(FaultSummary.FaultType,(SELECT Name FROM Phase WHERE ID = MaxMag.PhaseID)) AS Phase
+                            FROM
+                                Event CROSS APPLY  (
+                    	            SELECT Disturbance.EventTypeID AS DisturbanceTypeID,
+                    	                MAX(Disturbance.PerUnitMagnitude) AS MaxMagnitude,
+                                        MIN(Disturbance.PerUnitMagnitude) AS MinMagnitude,
+                    	                MAX(Disturbance.DurationSeconds) AS MaxDuration,
+                                        MIN(Disturbance.DurationSeconds) AS MinDuration
+                    	            FROM Disturbance WHERE Disturbance.EventID = Event.ID  
+                                    GROUP BY (EventTypeID) 
+                                    UNION ALL
+                                    SELECT NULL, NULL, NULL, NULL, NULL WHERE EVENT.EventTypeID NOT IN ({string.Join(",", s_disturbanceTypes.Select(x => s_eventTypeLookup.TryGetValue(x, out int id) ? id : -1))})
+                                ) D OUTER APPLY (
+                                    SELECT TOP 1 ID,
+                                        PerUnitMagnitude,
+                                        PhaseID
+                                    FROM Disturbance
+                                    WHERE EventID = Event.ID AND
+                                        PerUnitMagnitude = D.MaxMagnitude AND
+                                        D.DisturbanceTypeID = EventTypeID
+                                ) MaxMag OUTER APPLY (
+                                    SELECT TOP 1 ID,
+                                        PerUnitMagnitude 
+                                    FROM Disturbance
+                                    WHERE EventID = Event.ID AND
+                                        PerUnitMagnitude = D.MinMagnitude AND
+                                        D.DisturbanceTypeID = EventTypeID
+                                ) MinMag OUTER APPLY (
+                                    SELECT TOP 1 ID,
+                                        DurationSeconds
+                                    FROM Disturbance 
+                                    WHERE EventID = Event.ID AND
+                                        DurationSeconds = D.MinDuration AND
+                                        D.DisturbanceTypeID = EventTypeID
+                                ) MinDur OUTER APPLY (
+                                    SELECT TOP 1 ID,
+                                        DurationSeconds
+                                    FROM Disturbance
+                                    WHERE EventID = Event.ID AND
+                                        DurationSeconds = D.MaxDuration AND
+                                        D.DisturbanceTypeID = EventTypeID
+                                ) MaxDur LEFT OUTER JOIN 
+                                FaultSummary ON 
+                    	            FaultSummary.IsSelectedAlgorithm <> 0 AND
+                    	            FaultSummary.IsValid <> 0 AND
+                    	            FaultSummary.IsSuppressed = 0 AND
+                    	            Event.EventTypeID IN ({string.Join(",", s_faultTypes.Select(x => s_eventTypeLookup.TryGetValue(x, out int id) ? id : -1))}) AND
+                    	            D.DisturbanceTypeID IS NULL AND
+                    	            Event.ID = FaultSummary.EventID
+                            WHERE
+                                ({recordFilter})
+                                {filters}
+                        ) Main INNER JOIN
+                        EventType ON Main.EventTypeID = EventType.ID INNER JOIN
+                        [SEBrowser.EventSearchEventView] ON Main.EventID = [SEBrowser.EventSearchEventView].EventID LEFT JOIN
+                        [SEBrowser.EventSearchLongestDisturbanceView] ON 
+                            (Main.LongestDisturbanceID IS NOT NULL AND [SEBrowser.EventSearchLongestDisturbanceView].DisturbanceID = Main.LongestDisturbanceID) LEFT JOIN
+                        [SEBrowser.EventSearchShortestDisturbanceView] ON 
+                            (Main.ShortestDisturbanceID IS NOT NULL AND [SEBrowser.EventSearchShortestDisturbanceView].DisturbanceID = Main.ShortestDisturbanceID)  LEFT JOIN
+                        [SEBrowser.EventSearchSmallestDisturbanceView] ON    
+                            (Main.SmallestDisturbanceID IS NOT NULL AND [SEBrowser.EventSearchSmallestDisturbanceView].DisturbanceID = Main.SmallestDisturbanceID) LEFT JOIN
+                        [SEBrowser.EventSearchLargestDisturbanceView] ON 
+                            (Main.LargestDisturbanceID IS NOT NULL AND [SEBrowser.EventSearchLargestDisturbanceView].DisturbanceID = Main.LargestDisturbanceID) LEFT JOIN
+                        [SEBrowser.EventSearchFaultView] ON
+                            Main.FaultID IS NOT NULL AND [SEBrowser.EventSearchFaultView].FaultID = Main.FaultID AND
+                            Main.EventID = [SEBrowser.EventSearchFaultView].EventID 
+                        {sortBy}
+                    """;
+
+                DataTable table = connection.RetrieveData(query, queryParameter);
+
+                return table;
+            }
+        }
+
+        // Read-style POST; without this, Gemstone's verb mapping would require Create access.
+        [Route("GetMagDurChartData"), HttpPost, ResourceAccess(ResourceAccessType.Read)]
+        public DataTable GetMagDurChartData([FromBody] EventSearchPostData postData)
+        {
+            if (postData is null)
+                throw new Exception("Unable to parse request body");
+
+            // Convert input cycles to seconds.
+            postData.durationMin = postData.durationMin * (1 / 60.0);
+            postData.durationMax = postData.durationMax * (1 / 60.0);
 
             using AdoDataConnection connection = new(Settings.Default);
             {
@@ -189,12 +403,17 @@ namespace PQBrowser.Controllers
                 else
                 {
                     queryParameter = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
-                    recordFilter = getTimeFilter(postData);
+                    recordFilter = getTimeFilter(postData, "Event.StartTime");
 
-                    string eventType = (postData.typeIDs is null) ? null : getEventTypeFilter(postData);
-                    string phase = (postData.phases is null) ? null : getPhaseFilter(postData);
-                    string eventCharacteristic = getEventCharacteristicFilter(postData);
-                    string asset = getAssetFilters(postData);
+                    string eventType = (postData.typeIDs is null) ? null : getEventTypeFilter(postData, "Disturbance.EventTypeID");
+                    string phase = (postData.phases is null) ? null : getPhaseFilter(postData, "(SELECT Name FROM Phase WHERE ID = Disturbance.PhaseID)");
+
+                    string eventCharacteristic = getEventCharacteristicFilter(postData,
+                        "Disturbance.DurationSeconds", "Disturbance.DurationSeconds",
+                        "Disturbance.PerUnitMagnitude", "Disturbance.PerUnitMagnitude",
+                        "Disturbance.EventTypeID");
+
+                    string asset = getAssetFilters(postData, "Event.MeterID", "Event.AssetID");
 
                     filters = $"{(string.IsNullOrEmpty(eventType) ? "" : $"AND ({eventType})")} ";
                     filters += $"{(string.IsNullOrEmpty(phase) ? "" : $"AND ({phase})")}  ";
@@ -202,59 +421,23 @@ namespace PQBrowser.Controllers
                     filters += $"{(string.IsNullOrEmpty(asset) ? "" : $"AND {asset}")}";
                 }
 
-                // Sort keys map to the views' "Sort.<key>" columns; unknown keys fall back to Time to keep user input out of the SQL
-                if (!SortColumns.TryGetValue(postData.sortKey ?? "Time", out string sortColumn))
-                    sortColumn = "[Time]";
-
-                string sortBy = $"ORDER BY {sortColumn} {(postData.ascending ? "ASC" : "DESC")}";
-
                 string query =
-                    $"""
-                    SELECT TOP {postData.numberResults?.ToString() ?? "100"}
-                        {Columns}
+                     $"""
+                     SELECT TOP {postData.numberResults?.ToString() ?? "100"}
+                        Event.ID AS EventID,
+                        Disturbance.PerUnitMagnitude AS MagDurMagnitude,
+                        Disturbance.DurationSeconds AS MagDurDuration,
+                        EventType.Description AS [Event Type],
+                        Disturbance.ID AS DisturbanceID,
+                        {string.Join(",", s_columnsByTable["SEBrowser.EventSearchEventView"])}
                     FROM
-                        (
-                            SELECT
-                                Event.ID EventID,
-                                EventWorstDisturbance.WorstDisturbanceID DisturbanceID,
-                                FaultSummary.FaultNumber FaultID
-                            FROM
-                                Event JOIN
-                                EventType ON Event.EventTypeID = EventType.ID LEFT OUTER JOIN
-                                EventWorstDisturbance ON
-                                    EventWorstDisturbance.EventID = Event.ID AND
-                                    EventType.Name IN ('Sag', 'Swell', 'Interruption', 'Transient') LEFT OUTER JOIN
-                                FaultGroup ON
-                                    FaultGroup.EventID = Event.ID AND
-                                    COALESCE(FaultGroup.FaultDetectionLogicResult, 0) <> 0 LEFT OUTER JOIN
-                                FaultSummary ON
-                                    FaultSummary.EventID = Event.ID AND
-                                    FaultSummary.IsSelectedAlgorithm <> 0 AND
-                                    (
-                                        FaultGroup.ID IS NOT NULL OR
-                                        (
-                                            FaultSummary.IsValid <> 0 AND
-                                            FaultSummary.IsSuppressed = 0
-                                        )
-                                    ) AND
-                                    EventType.Name IN ('Fault', 'RecloseIntoFault')
-                            WHERE
-                                ({recordFilter}) AND
-                                (
-                                    EventWorstDisturbance.ID IS NOT NULL OR
-                                    FaultSummary.ID IS NOT NULL OR
-                                    EventType.Name IN ('BreakerOpen', 'Other')
-                                )
-                                {filters}
-                        ) Main JOIN
-                        [SEBrowser.EventSearchEventView] ON Main.EventID = [SEBrowser.EventSearchEventView].EventID JOIN
-                        [SEBrowser.EventSearchDetailsView] ON
-                            Main.EventID = [SEBrowser.EventSearchDetailsView].EventID AND
-                            (
-                                (Main.DisturbanceID IS NOT NULL AND [SEBrowser.EventSearchDetailsView].DisturbanceID = Main.DisturbanceID) OR
-                                (Main.FaultID IS NOT NULL AND [SEBrowser.EventSearchDetailsView].FaultID = Main.FaultID) OR
-                                (COALESCE([SEBrowser.EventSearchDetailsView].DisturbanceID, Main.DisturbanceID) IS NULL AND COALESCE([SEBrowser.EventSearchDetailsView].FaultID, Main.FaultID) IS NULL)
-                            ) {sortBy}
+                    Disturbance INNER JOIN Event ON
+                        Disturbance.EventID = Event.ID  INNER JOIN
+                        EventType ON Disturbance.EventTypeID = EventType.ID LEFT JOIN
+                    [SEBrowser.EventSearchEventView] ON Disturbance.EventID = [SEBrowser.EventSearchEventView].EventID
+                    WHERE
+                        ({recordFilter})
+                        {filters}
                     """;
 
                 DataTable table = connection.RetrieveData(query, queryParameter);
@@ -263,32 +446,21 @@ namespace PQBrowser.Controllers
             }
         }
 
-        private string getTimeFilter(EventSearchPostData postData)
+        private string getTimeFilter(EventSearchPostData postData, string column)
         {
             string timeWindowUnits = ((TimeWindowUnits)postData.timeWindowUnits).GetDescription();
 
-            return $"Event.StartTime BETWEEN DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}})";
+            return $"{column} BETWEEN DATEADD({timeWindowUnits},{-1 * postData.windowSize}, {{0}}) AND DATEADD({timeWindowUnits},{postData.windowSize}, {{0}})";
         }
 
-        private string getEventTypeFilter(EventSearchPostData postData)
+        private string getEventTypeFilter(EventSearchPostData postData, string column)
         {
-            List<string> eventTypes = new();
-
-            // The ELSE clause is required because TVA would like to be able to specify filters that make no sense... 
             if (postData.typeIDs.Count() > 0)
-                eventTypes.Add($"(SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN ({string.Join(",", postData.typeIDs)})");
-            else
-                eventTypes.Add($"(SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (-1)");
-
-            if (postData.typeIDs.Count() > 0)
-                eventTypes.Add($"Event.EventTypeID IN ({string.Join(",", postData.typeIDs)})");
-            else
-                eventTypes.Add($"Event.EventTypeID IN (-1)");
-
-            return string.Join(" OR ", eventTypes);
+                return ($"{column} IN ({string.Join(",", postData.typeIDs)})");
+            return ($"{column} IN (-1)");
         }
 
-        private string getPhaseFilter(EventSearchPostData postData)
+        private string getPhaseFilter(EventSearchPostData postData, string column)
         {
             Dictionary<string, bool> phases = new Dictionary<string, bool>
             {
@@ -316,10 +488,10 @@ namespace PQBrowser.Controllers
 
             string phaseCombined = string.Join(", ", phases.Where(item => item.Value).Select(item => "\'" + item.Key + "\'"));
 
-            return $"(EventWorstDisturbance.WorstDisturbanceID IN (SELECT Disturbance.ID FROM Disturbance WHERE Disturbance.PhaseID IN (Select Phase.ID FROM Phase Where Phase.Name IN ({phaseCombined}))) OR FaultSummary.FaultType IN ({phaseCombined}))";
+            return $"{column} IN ({phaseCombined})";
         }
 
-        private string getEventCharacteristicFilter(EventSearchPostData postData)
+        private string getEventCharacteristicFilter(EventSearchPostData postData, string minDurationColumn, string maxDurationColumn, string minMagnitudeColumn, string maxMagnitudeColumn, string eventTypeColumn)
         {
 
             List<string> characteristics = new();
@@ -327,121 +499,88 @@ namespace PQBrowser.Controllers
             //Min and Max Durations
             if (postData.durationMin > 0)
             {
-                string filt = $"((SELECT d.DurationCycles FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) >= {postData.durationMin} OR ";
-                filt += $" FaultSummary.DurationCycles >= {postData.durationMin})";
-                characteristics.Add(filt);
+                characteristics.Add($"({maxDurationColumn} > {postData.durationMin} OR {eventTypeColumn} NOT IN ({string.Join(", ", s_disturbanceTypes.Select(x => s_eventTypeLookup.TryGetValue(x, out int id) ? id : -1))}))");
             }
             if (postData.durationMax > 0)
             {
-                string filt = $" ((SELECT d.DurationCycles FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) <= {postData.durationMax} OR";
-                filt += $" FaultSummary.DurationCycles <= {postData.durationMax})";
-                characteristics.Add(filt);
+                characteristics.Add($"({minDurationColumn} < {postData.durationMax} OR {eventTypeColumn} NOT IN ({string.Join(", ", s_disturbanceTypes.Select(x => s_eventTypeLookup.TryGetValue(x, out int id) ? id : -1))}))");
             }
 
             // Sag Min and Max
             if (postData.sagMin > 0)
             {
-                string filt;
-                if (postData.sagType == "LL")
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) >= {postData.sagMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
-                else if (postData.sagType == "LN")
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) >= {postData.sagMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
-                else
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) >= {postData.sagMin} OR (SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) >= {postData.sagMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
-                characteristics.Add(filt);
+                characteristics.Add($"({maxMagnitudeColumn} > {postData.sagMin} OR {eventTypeColumn} <> {s_eventTypeLookup["Sag"]})");
             }
             if (postData.sagMax > 0)
             {
-                string filt;
-                if (postData.sagType == "LL")
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) <= {postData.sagMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
-                else if (postData.sagType == "LN")
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) <= {postData.sagMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
-                else
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) <= {postData.sagMax} OR (SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) <= {postData.sagMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Sag'))";
-                characteristics.Add(filt);
+                characteristics.Add($"({minMagnitudeColumn} < {postData.sagMax} OR {eventTypeColumn} <> {s_eventTypeLookup["Sag"]})");
             }
 
             // Swell Min and Max
             if (postData.swellMin > 0)
             {
-                string filt;
-                if (postData.swellType == "LL")
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) >= {postData.swellMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
-                else if (postData.swellType == "LN")
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) >= {postData.swellMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
-                else
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) >= {postData.swellMin} OR (SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) >= {postData.swellMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
-                characteristics.Add(filt);
+                characteristics.Add($"({maxMagnitudeColumn} > {postData.swellMin} OR {eventTypeColumn} <> {s_eventTypeLookup["Swell"]})");
+
             }
             if (postData.swellMax > 0)
             {
-                string filt;
-                if (postData.swellType == "LL")
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) <= {postData.swellMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
-                else if (postData.swellType == "LN")
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) <= {postData.swellMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
-                else
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) <= {postData.swellMax} OR (SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) <= {postData.swellMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Swell'))";
-                characteristics.Add(filt);
+                characteristics.Add($"({minMagnitudeColumn} < {postData.swellMax} OR {eventTypeColumn} <> {s_eventTypeLookup["Swell"]})");
+
             }
 
             // Transient min and max
             if (postData.transientMin > 0)
             {
-                string filt;
-                if (postData.transientType == "LL")
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) >= {postData.transientMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
-                else if (postData.transientType == "LN")
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) >= {postData.transientMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
-                else
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) >= {postData.transientMin} OR (SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) >= {postData.transientMin} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
-                characteristics.Add(filt);
+                characteristics.Add($"({maxMagnitudeColumn} > {postData.transientMin} OR {eventTypeColumn} <> {s_eventTypeLookup["Transient"]})");
             }
             if (postData.transientMax > 0)
             {
-                string filt;
-                if (postData.transientType == "LL")
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) <= {postData.transientMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
-                else if (postData.transientType == "LN")
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) <= {postData.transientMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
-                else
-                    filt = $"((SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLLDisturbanceID) <= {postData.transientMax} OR (SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstLNDisturbanceID) <= {postData.transientMax} OR (SELECT d.EventTypeID FROM Disturbance d WHERE d.ID = EventWorstDisturbance.WorstDisturbanceID) IN (SELECT ID FROM EventType WHERE Name <> 'Transient'))";
-                characteristics.Add(filt);
+                characteristics.Add($"({minMagnitudeColumn} < {postData.transientMax} OR {eventTypeColumn} <> {s_eventTypeLookup["Transient"]})");
             }
 
             // Mag Dur Curves
             if (!postData.curveOutside || !postData.curveInside)
             {
-                string filt = $"( (SELECT d.DurationSeconds FROM Disturbance d WHERE d.ID = WorstDisturbanceID) IS NOT NULL AND (SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = WorstDisturbanceID) IS NOT NULL AND (SELECT TOP 1 Area FROM StandardMagDurCurve WHERE ID = {postData.curveID})";
-                filt += $".STContains(geometry::Point((SELECT d.DurationSeconds FROM Disturbance d WHERE d.ID = WorstDisturbanceID),(SELECT d.PerUnitMagnitude FROM Disturbance d WHERE d.ID = WorstDisturbanceID),0)) = {(postData.curveInside ? 1 : 0)})";
+                string filt = $"(({minMagnitudeColumn} IS NOT NULL AND " +
+                    $"{maxMagnitudeColumn} IS NOT NULL AND ";
+                filt += $"{maxDurationColumn} IS NOT NULL AND " +
+                    $"{minDurationColumn} IS NOT NULL AND ";
+                string curve = $"(SELECT TOP 1 Area FROM StandardMagDurCurve WHERE ID = {postData.curveID})";
+                // Special because for INSIDE we check if there is any overlap 
+                filt += $"{curve}.STIntersects(geometry::STGeomFromText(CONCAT('Polygon((',{minDurationColumn},' ',{minMagnitudeColumn}, ',' " +
+                    $"{maxDurationColumn},' ',{minMagnitudeColumn}, ','" +
+                    $"{maxDurationColumn},' ',{maxMagnitudeColumn}, ','" +
+                    $"{minDurationColumn},' ',{maxMagnitudeColumn}, ','" +
+                    $"{minDurationColumn},' ',{minMagnitudeColumn}," +
+                    $"'))',0)) = {(postData.curveInside ? 1 : 0)}) OR " +
+                    $" {eventTypeColumn} NOT IN ({string.Join(",", s_disturbanceTypes.Select(x => s_eventTypeLookup.TryGetValue(x, out int id) ? id : -1))}))";
                 characteristics.Add(filt);
             }
 
             return string.Join(" AND ", characteristics);
         }
 
-        private string getAssetFilters(EventSearchPostData postData)
+        private string getAssetFilters(EventSearchPostData postData, string meterIDColumn, string assetIDColumn)
         {
             List<string> assets = new();
 
             if (postData.meterIDs.Count() > 0)
-                assets.Add($"Event.MeterID IN ({string.Join(",", postData.meterIDs)})");
+                assets.Add($"{meterIDColumn} IN ({string.Join(",", postData.meterIDs)})");
 
             if (postData.assetIDs.Count() > 0)
-                assets.Add($"Event.AssetID IN ({string.Join(",", postData.assetIDs)})");
+                assets.Add($"{assetIDColumn} IN ({string.Join(",", postData.assetIDs)})");
 
             if (postData.locationIDs.Count() > 0)
             {
-                string filt = $"(Event.AssetID IN (SELECT AssetLocation.AssetID FROM AssetLocation WHERE AssetLocation.LocationID IN ({string.Join(",", postData.locationIDs)}))";
-                filt += $" OR Event.MeterID IN (SELECT Meter.ID FROM Meter WHERE Meter.LocationID IN ({string.Join(",", postData.locationIDs)})))";
+                string filt = $"({assetIDColumn} IN (SELECT AssetLocation.AssetID FROM AssetLocation WHERE AssetLocation.LocationID IN ({string.Join(",", postData.locationIDs)}))";
+                filt += $" OR {meterIDColumn} IN (SELECT Meter.ID FROM Meter WHERE Meter.LocationID IN ({string.Join(",", postData.locationIDs)})))";
                 assets.Add(filt);
             }
 
             if (postData.groupIDs.Count() > 0)
             {
-                string filt = $"(Event.AssetID IN (SELECT AssetAssetGroup.AssetID FROM AssetAssetGroup WHERE AssetAssetGroup.AssetGroupID IN ({string.Join(",", postData.groupIDs)}))";
-                filt += $" OR Event.MeterID IN (SELECT MeterAssetGroup.MeterID FROM MeterAssetGroup WHERE MeterAssetGroup.AssetGroupID IN ({string.Join(",", postData.groupIDs)})))";
+                string filt = $"({assetIDColumn} IN (SELECT AssetAssetGroup.AssetID FROM AssetAssetGroup WHERE AssetAssetGroup.AssetGroupID IN ({string.Join(",", postData.groupIDs)}))";
+                filt += $" OR {meterIDColumn} IN (SELECT MeterAssetGroup.MeterID FROM MeterAssetGroup WHERE MeterAssetGroup.AssetGroupID IN ({string.Join(",", postData.groupIDs)})))";
                 assets.Add(filt);
             }
 
