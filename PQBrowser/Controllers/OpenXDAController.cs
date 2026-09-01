@@ -44,12 +44,12 @@ namespace PQBrowser.Controllers
     {
         #region [ Members ]
 
-        
+
         #endregion
 
         #region [ Constructors ]
         public OpenXDAController() : base() { }
-            #endregion
+        #endregion
 
         #region [ Static ]
         private static MemoryCache s_memoryCache;
@@ -85,14 +85,15 @@ namespace PQBrowser.Controllers
                                 ");
 
                 IEnumerable<DataRow> rows = collumns.Select();
-               
+
                 Dictionary<string, int> uniqueCollumns = rows
                     .GroupBy(r => r["COLUMN_NAME"].ToString())
                     .ToDictionary((k) => k.Key, (k) => k.Count());
 
                 Dictionary<string, int> currentCount = new();
 
-                Action<string, string> addColumn = (string tbl, string col) => {
+                Action<string, string> addColumn = (string tbl, string col) =>
+                {
                     if (s_columnsByTable.ContainsKey(tbl))
                         s_columnsByTable[tbl].Add($"{col}");
                     else
@@ -123,7 +124,7 @@ namespace PQBrowser.Controllers
                 }
             }
 
-            
+
 
         }
 
@@ -147,9 +148,16 @@ namespace PQBrowser.Controllers
                         DataTable collumns = connection.RetrieveData(@"
                             SELECT COLUMN_NAME,TABLE_NAME
                                 FROM INFORMATION_SCHEMA.COLUMNS 
-                            WHERE (TABLE_NAME = 'SEBrowser.EventSearchEventView'
-                                OR TABLE_NAME = 'SEBrowser.EventSearchDetailsView') 
-                                AND COLUMN_NAME LIKE 'Sort.%'");
+                            WHERE TABLE_NAME IN (
+                                'SEBrowser.EventSearchEventView',
+                                'SEBrowser.EventSearchLongestDisturbanceView',
+                                'SEBrowser.EventSearchShortestDisturbanceView',
+                                'SEBrowser.EventSearchLargestDisturbanceView',
+                                'SEBrowser.EventSearchSmallestDisturbanceView',
+                                'SEBrowser.EventSearchFaultView'
+                            )
+                            AND COLUMN_NAME LIKE 'Sort.%'"
+                        );
 
                         m_sortCollumns = collumns.Select()
                             .ToDictionary(
@@ -225,8 +233,12 @@ namespace PQBrowser.Controllers
         [Route("GetEventSearchData"), HttpPost, ResourceAccess(ResourceAccessType.Read)]
         public DataTable GetEventSearchData([FromBody] EventSearchPostData postData)
         {
-            if(postData is null)
+            if (postData is null)
                 throw new Exception("Unable to parse request body");
+
+            // Convert input cycles to seconds.
+            postData.durationMin = postData.durationMin * (1 / 60.0);
+            postData.durationMax = postData.durationMax * (1 / 60.0);
 
             using AdoDataConnection connection = new(Settings.Default);
             {
@@ -235,7 +247,7 @@ namespace PQBrowser.Controllers
                 string recordFilter;
                 string filters = "";
 
-                
+
                 //If eventID is provided no filters are needed this is a 1-1 lookup
                 if (postData.eventID is not null)
                 {
@@ -249,10 +261,10 @@ namespace PQBrowser.Controllers
 
                     string eventType = (postData.typeIDs is null) ? null : getEventTypeFilter(postData, "COALESCE(DisturbanceTypeID, EventTypeID)");
                     string phase = (postData.phases is null) ? null : getPhaseFilter(postData, "COALESCE(FaultSummary.FaultType,(SELECT Name FROM Phase WHERE ID = MaxMag.PhaseID))");
-                    
-                    string eventCharacteristic = getEventCharacteristicFilter(postData, "MinDur.DurationSeconds", 
+
+                    string eventCharacteristic = getEventCharacteristicFilter(postData, "MinDur.DurationSeconds",
                         "MaxDur.DurationSeconds", "MinMag.PerUnitMagnitude", "MaxMag.PerUnitMagnitude", "COALESCE(DisturbanceTypeID, EventTypeID)");
-                    string asset = getAssetFilters(postData, "Event.AssetID", "Event.MeterID");
+                    string asset = getAssetFilters(postData, "Event.MeterID", "Event.AssetID");
 
                     filters = $"{(string.IsNullOrEmpty(eventType) ? "" : $"AND ({eventType})")} ";
                     filters += $"{(string.IsNullOrEmpty(phase) ? "" : $"AND ({phase})")}  ";
@@ -266,12 +278,13 @@ namespace PQBrowser.Controllers
 
                 string sortBy = $"ORDER BY {sortColumn} {(postData.ascending ? "ASC" : "DESC")}";
 
-               string query =
-                    $"""
+                string query =
+                     $"""
                     SELECT TOP {postData.numberResults?.ToString() ?? "100"}
                         EventType.Description AS [Event Type],
                         Main.Phase AS [Phase],
                         Main.EventID,
+                        Main.FaultID,
                         Main.LargestDisturbanceID AS DisturbanceID,
                         {Columns}
                     FROM
@@ -344,7 +357,7 @@ namespace PQBrowser.Controllers
                         EventType ON Main.EventTypeID = EventType.ID INNER JOIN
                         [SEBrowser.EventSearchEventView] ON Main.EventID = [SEBrowser.EventSearchEventView].EventID LEFT JOIN
                         [SEBrowser.EventSearchLongestDisturbanceView] ON 
-                            (Main.LargestDisturbanceID IS NOT NULL AND [SEBrowser.EventSearchLongestDisturbanceView].DisturbanceID = Main.LargestDisturbanceID) LEFT JOIN
+                            (Main.LongestDisturbanceID IS NOT NULL AND [SEBrowser.EventSearchLongestDisturbanceView].DisturbanceID = Main.LongestDisturbanceID) LEFT JOIN
                         [SEBrowser.EventSearchShortestDisturbanceView] ON 
                             (Main.ShortestDisturbanceID IS NOT NULL AND [SEBrowser.EventSearchShortestDisturbanceView].DisturbanceID = Main.ShortestDisturbanceID)  LEFT JOIN
                         [SEBrowser.EventSearchSmallestDisturbanceView] ON    
@@ -370,6 +383,10 @@ namespace PQBrowser.Controllers
             if (postData is null)
                 throw new Exception("Unable to parse request body");
 
+            // Convert input cycles to seconds.
+            postData.durationMin = postData.durationMin * (1 / 60.0);
+            postData.durationMax = postData.durationMax * (1 / 60.0);
+
             using AdoDataConnection connection = new(Settings.Default);
             {
                 // When an eventID is provided, the request targets that single event and the time/characteristic filters are skipped
@@ -392,10 +409,11 @@ namespace PQBrowser.Controllers
                     string phase = (postData.phases is null) ? null : getPhaseFilter(postData, "(SELECT Name FROM Phase WHERE ID = Disturbance.PhaseID)");
 
                     string eventCharacteristic = getEventCharacteristicFilter(postData,
-                        "Disturbance.DurationSeconds", "Disturbance.DurationSeconds", 
+                        "Disturbance.DurationSeconds", "Disturbance.DurationSeconds",
                         "Disturbance.PerUnitMagnitude", "Disturbance.PerUnitMagnitude",
                         "Disturbance.EventTypeID");
-                    string asset = getAssetFilters(postData, "Event.AssetID", "Event.MeterID");
+
+                    string asset = getAssetFilters(postData, "Event.MeterID", "Event.AssetID");
 
                     filters = $"{(string.IsNullOrEmpty(eventType) ? "" : $"AND ({eventType})")} ";
                     filters += $"{(string.IsNullOrEmpty(phase) ? "" : $"AND ({phase})")}  ";
@@ -406,10 +424,11 @@ namespace PQBrowser.Controllers
                 string query =
                      $"""
                      SELECT TOP {postData.numberResults?.ToString() ?? "100"}
-                        Event.ID EventID,
+                        Event.ID AS EventID,
                         Disturbance.PerUnitMagnitude AS MagDurMagnitude,
                         Disturbance.DurationSeconds AS MagDurDuration,
                         EventType.Description AS [Event Type],
+                        Disturbance.ID AS DisturbanceID,
                         {string.Join(",", s_columnsByTable["SEBrowser.EventSearchEventView"])}
                     FROM
                     Disturbance INNER JOIN Event ON
