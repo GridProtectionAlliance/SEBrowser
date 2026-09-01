@@ -469,7 +469,7 @@ namespace PQBrowser.Controllers
 
             string phaseCombined = string.Join(", ", phases.Where(item => item.Value).Select(item => "\'" + item.Key + "\'"));
 
-            return $"{column} IN ({phaseCombined})))";
+            return $"{column} IN ({phaseCombined})";
         }
 
         private string getEventCharacteristicFilter(EventSearchPostData postData, string minDurationColumn, string maxDurationColumn, string minMagnitudeColumn, string maxMagnitudeColumn, string eventTypeColumn)
