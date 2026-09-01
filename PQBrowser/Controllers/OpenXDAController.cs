@@ -43,85 +43,7 @@ namespace PQBrowser.Controllers
     public class OpenXDAController : ControllerBase
     {
         #region [ Members ]
-        private string m_collumns = null;
-        private Dictionary<string, string> m_sortCollumns = null;
 
-        public string Columns 
-        {
-            get
-            {
-                if (m_collumns is null)
-                    using (AdoDataConnection connection = new(Settings.Default))
-                    {
-                        DataTable collumns = connection.RetrieveData(@"
-                            SELECT COLUMN_NAME,TABLE_NAME
-                                FROM INFORMATION_SCHEMA.COLUMNS 
-                            WHERE (TABLE_NAME = 'SEBrowser.EventSearchEventView'
-                                OR TABLE_NAME = 'SEBrowser.EventSearchLongestDisturbanceView'
-                                OR TABLE_NAME = 'SEBrowser.EventSearchShortestDisturbanceView' 
-                                OR TABLE_NAME = 'SEBrowser.EventSearchLargestDisturbanceView' 
-                                OR TABLE_NAME = 'SEBrowser.EventSearchSmallestDisturbanceView'
-                                OR TABLE_NAME = 'SEBrowser.EventSearchFaultView')
-                                AND COLUMN_NAME NOT LIKE 'Sort.%' 
-                                AND COLUMN_NAME NOT LIKE 'EventID'
-                                AND COLUMN_NAME NOT LIKE 'DisturbanceID'
-                                AND COLUMN_NAME NOT LIKE 'FaultID'
-                                AND COLUMN_NAME NOT LIKE 'Event Type'
-                                ");
-
-                        IEnumerable<DataRow> rows = collumns.Select();
-                        Dictionary<string,int> uniqueCollumns = rows
-                            .GroupBy(r => r["COLUMN_NAME"].ToString())
-                            .ToDictionary((k) => k.Key, (k) => k.Count());
-
-                        Dictionary<string, int> currentCount = new ();
-                        List<string> columns = new List<string>();
-                        foreach (DataRow row in rows)
-                        {
-                            if (!uniqueCollumns.TryGetValue(row["COLUMN_NAME"].ToString(), out int count))
-                                continue;
-                            if (count == 1)
-                            {
-                                columns.Add($"[{row["TABLE_NAME"]}].[{row["COLUMN_NAME"]}]");
-                                continue;
-                            }
-                            int i = 0;
-                            if (!currentCount.TryGetValue(row["COLUMN_NAME"].ToString(), out i))
-                            {
-                                currentCount.Add(row["COLUMN_NAME"].ToString(), 0);
-                            }
-                            currentCount[row["COLUMN_NAME"].ToString()] = i + 1;
-                            columns.Add($"[{row["TABLE_NAME"]}].[{row["COLUMN_NAME"]}] AS [{row["COLUMN_NAME"]} {i}]");
-                        }
-
-                        m_collumns = string.Join(",", columns);
-                    }
-                return m_collumns;
-            }
-        }
-
-        public Dictionary<string,string> SortColumns
-        {
-            get
-            {
-                if (m_sortCollumns is null)
-                    using (AdoDataConnection connection = new(Settings.Default))
-                    {
-                        DataTable collumns = connection.RetrieveData(@"
-                            SELECT COLUMN_NAME,TABLE_NAME
-                                FROM INFORMATION_SCHEMA.COLUMNS 
-                            WHERE (TABLE_NAME = 'SEBrowser.EventSearchEventView'
-                                OR TABLE_NAME = 'SEBrowser.EventSearchDetailsView') 
-                                AND COLUMN_NAME LIKE 'Sort.%'");
-
-                        m_sortCollumns = collumns.Select()
-                            .ToDictionary(
-                            r => r["COLUMN_NAME"].ToString().Split('.')[1],
-                            r => $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}]");
-                    }
-                return m_sortCollumns;
-            }
-        }
         
         #endregion
 
@@ -143,7 +65,65 @@ namespace PQBrowser.Controllers
 
                 s_eventTypeLookup = new TableOperations<EventType>(connection).QueryRecords().ToList()
                     .ToDictionary(x => x.Name, x => x.ID);
+
+                s_columnsByTable = new();
+
+                DataTable collumns = connection.RetrieveData(@"
+                            SELECT COLUMN_NAME,TABLE_NAME
+                                FROM INFORMATION_SCHEMA.COLUMNS 
+                            WHERE (TABLE_NAME = 'SEBrowser.EventSearchEventView'
+                                OR TABLE_NAME = 'SEBrowser.EventSearchLongestDisturbanceView'
+                                OR TABLE_NAME = 'SEBrowser.EventSearchShortestDisturbanceView' 
+                                OR TABLE_NAME = 'SEBrowser.EventSearchLargestDisturbanceView' 
+                                OR TABLE_NAME = 'SEBrowser.EventSearchSmallestDisturbanceView'
+                                OR TABLE_NAME = 'SEBrowser.EventSearchFaultView')
+                                AND COLUMN_NAME NOT LIKE 'Sort.%' 
+                                AND COLUMN_NAME NOT LIKE 'EventID'
+                                AND COLUMN_NAME NOT LIKE 'DisturbanceID'
+                                AND COLUMN_NAME NOT LIKE 'FaultID'
+                                AND COLUMN_NAME NOT LIKE 'Event Type'
+                                ");
+
+                IEnumerable<DataRow> rows = collumns.Select();
+               
+                Dictionary<string, int> uniqueCollumns = rows
+                    .GroupBy(r => r["COLUMN_NAME"].ToString())
+                    .ToDictionary((k) => k.Key, (k) => k.Count());
+
+                Dictionary<string, int> currentCount = new();
+
+                Action<string, string> addColumn = (string tbl, string col) => {
+                    if (s_columnsByTable.ContainsKey(tbl))
+                        s_columnsByTable[tbl].Add($"{col}");
+                    else
+                        s_columnsByTable.Add(tbl, new() { $"{col}" });
+                };
+
+                foreach (DataRow row in rows)
+                {
+                    string table = row["TABLE_NAME"].ToString();
+                    string col = row["COLUMN_NAME"].ToString();
+
+                    if (!uniqueCollumns.TryGetValue(col, out int count))
+                        continue;
+                    if (count == 1)
+                    {
+                        addColumn(table, $"[{col}]");
+                        continue;
+                    }
+                    int i = 0;
+
+                    if (!currentCount.TryGetValue(col, out i))
+                    {
+                        currentCount.Add(col, 0);
+                    }
+                    currentCount[col] = i + 1;
+
+                    addColumn(table, $"[{col}] AS [{col} {i}]");
+                }
             }
+
+            
 
         }
 
@@ -151,6 +131,36 @@ namespace PQBrowser.Controllers
         private static string[] s_faultTypes;
         private static Dictionary<string, int> s_eventTypeLookup;
 
+        private string m_collumns = null;
+        private Dictionary<string, string> m_sortCollumns = null;
+
+        private static string Columns => string.Join(",", s_columnsByTable
+            .Select((v) => string.Join(",", v.Value.Select(c => $"[{v.Key}].{c}"))));
+
+        public Dictionary<string, string> SortColumns
+        {
+            get
+            {
+                if (m_sortCollumns is null)
+                    using (AdoDataConnection connection = new(Settings.Default))
+                    {
+                        DataTable collumns = connection.RetrieveData(@"
+                            SELECT COLUMN_NAME,TABLE_NAME
+                                FROM INFORMATION_SCHEMA.COLUMNS 
+                            WHERE (TABLE_NAME = 'SEBrowser.EventSearchEventView'
+                                OR TABLE_NAME = 'SEBrowser.EventSearchDetailsView') 
+                                AND COLUMN_NAME LIKE 'Sort.%'");
+
+                        m_sortCollumns = collumns.Select()
+                            .ToDictionary(
+                            r => r["COLUMN_NAME"].ToString().Split('.')[1],
+                            r => $"[{r["TABLE_NAME"]}].[{r["COLUMN_NAME"]}]");
+                    }
+                return m_sortCollumns;
+            }
+        }
+
+        private static Dictionary<string, List<string>> s_columnsByTable;
 
         #endregion
 
@@ -398,10 +408,14 @@ namespace PQBrowser.Controllers
                      SELECT TOP {postData.numberResults?.ToString() ?? "100"}
                         Event.ID EventID,
                         Disturbance.PerUnitMagnitude AS MagDurMagnitude,
-                        Disturbance.DurationSeconds AS MagDurDuration
+                        Disturbance.DurationSeconds AS MagDurDuration,
+                        EventType.Description AS [Event Type],
+                        {string.Join(",", s_columnsByTable["SEBrowser.EventSearchEventView"])}
                     FROM
                     Disturbance INNER JOIN Event ON
-                        Disturbance.EventID = Event.ID
+                        Disturbance.EventID = Event.ID  INNER JOIN
+                        EventType ON Disturbance.EventTypeID = EventType.ID LEFT JOIN
+                    [SEBrowser.EventSearchEventView] ON Disturbance.EventID = [SEBrowser.EventSearchEventView].EventID
                     WHERE
                         ({recordFilter})
                         {filters}
