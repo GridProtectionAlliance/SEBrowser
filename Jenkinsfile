@@ -221,17 +221,19 @@ pipeline {
             }
             steps {
                 script {
-                    env.pqBrowserDockerTag = env.CHANGE_BRANCH == "${env.devBranch}" ? "${env.pqBrowserVersion}a" : env.pqBrowserVersion
-                    println("Building PQBrowser Docker image tag: pqbrowser:${env.pqBrowserDockerTag}")
+                    //env.pqBrowserDockerTag = env.CHANGE_BRANCH == "${env.devBranch}" ? "${env.pqBrowserVersion}a" : env.pqBrowserVersion
+                    //println("Building PQBrowser Docker image tag: pqbrowser:${env.pqBrowserDockerTag}")
+                    println("Skipping docker stage intentionally")
                 }
 
-                powershell """
+                /*powershell """
                     dotnet publish '.\\PQBrowser\\PQBrowser.csproj' `
                         --configuration Release `
                         '-p:PublishProfile=Docker Release Profile PQBrowser'
                 """
 
                 powershell "docker build --build-arg CONFIGURATION=Release -f .\\PQBrowser.dockerfile -t pqbrowser:${env.pqBrowserDockerTag} ."
+                */
             }
         }
 
