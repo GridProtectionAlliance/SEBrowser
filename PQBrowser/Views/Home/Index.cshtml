@@ -22,6 +22,7 @@
 //*******************************************************************************************************@
 @using Gemstone.Data
 @using Gemstone.Configuration;
+@using Gemstone.Reflection
 @using Microsoft.AspNetCore.Antiforgery
 @using Microsoft.AspNetCore.Authentication.Cookies
 @using Microsoft.Extensions.Options
@@ -39,6 +40,9 @@
 }
 @{
     Layout = "";
+
+    Version assemblyVersionInfo = AssemblyInfo.EntryAssembly.Version;
+    string applicationVersion = assemblyVersionInfo.Major + "." + assemblyVersionInfo.Minor + "." + assemblyVersionInfo.Build;
 
     try {
         using (AdoDataConnection connection = new AdoDataConnection(Settings.Default))
@@ -123,6 +127,6 @@
 
     <script src="@Url.Content("~/js/jquery-3.6.0.min.js")"></script>
     <script src="@Url.Content("~/js/moment.min.js")"></script>
-    <script src="@Url.Content($"~/Scripts/PQBrowser.js?v={PQBrowser.Startup.UIVersion}")"></script>
+    <script src="@Url.Content($"~/Scripts/PQBrowser.js?v={applicationVersion}")"></script>
 </body>
 </html>

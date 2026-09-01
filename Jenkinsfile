@@ -122,7 +122,9 @@ pipeline {
                     env.GIT_COMMIT = bat(script: '@git rev-parse HEAD', returnStdout: true).trim()
                 }
                 powershell "powershell.exe -File .\\Scripts\\Versioning.ps1 -VersionFile './Scripts/PQBrowser.version' -Commit false"
+                powershell "powershell.exe -File .\\Scripts\\PackageVersioning.ps1 -VersionFile './PQBrowser/package.json'"
                 bat(script: "@git add Scripts/PQBrowser.version")
+                bat(script: "@git add PQBrowser/package.json")
                 bat(script: "git diff --cached --quiet || git commit -m \"Updated Version Number\"")
             }
         }
