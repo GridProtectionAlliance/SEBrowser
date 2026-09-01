@@ -344,6 +344,76 @@ namespace PQBrowser.Controllers
             }
         }
 
+        // Read-style POST; without this, Gemstone's verb mapping would require Create access.
+        [Route("GetMagDurChartData"), HttpPost, ResourceAccess(ResourceAccessType.Read)]
+        public DataTable GetMagDurChartData([FromBody] EventSearchPostData postData)
+        {
+            if (postData is null)
+                throw new Exception("Unable to parse request body");
+
+            using AdoDataConnection connection = new(Settings.Default);
+            {
+                // When an eventID is provided, the request targets that single event and the time/characteristic filters are skipped
+                object queryParameter;
+                string recordFilter;
+                string filters = "";
+
+                Dictionary<string, int> eventTypeLookup = new TableOperations<EventType>(connection).QueryRecords().ToList()
+                    .ToDictionary(x => x.Name, x => x.ID);
+
+                string[] disturbanceTypes = { "Sag", "Swell", "Transient", "Interruption" };
+                string[] faultTypes = { "Fault", "RecloseIntoFault" };
+
+                //If eventID is provided no filters are needed this is a 1-1 lookup
+                if (postData.eventID is not null)
+                {
+                    queryParameter = postData.eventID;
+                    recordFilter = "Event.ID = {0}";
+                }
+                else
+                {
+                    queryParameter = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+                    recordFilter = getTimeFilter(postData);
+
+                    string eventType = (postData.typeIDs is null) ? null : getEventTypeFilter(postData);
+                    string phase = (postData.phases is null) ? null : getPhaseFilter(postData);
+                    string eventCharacteristic = getEventCharacteristicFilter(postData, eventTypeLookup, disturbanceTypes, "MagDurDuration", "MagDurMagnitude");
+                    string asset = getAssetFilters(postData);
+
+                    filters = $"{(string.IsNullOrEmpty(eventType) ? "" : $"AND ({eventType})")} ";
+                    filters += $"{(string.IsNullOrEmpty(phase) ? "" : $"AND ({phase})")}  ";
+                    filters += $"{(string.IsNullOrEmpty(eventCharacteristic) ? "" : $"AND {eventCharacteristic}")} ";
+                    filters += $"{(string.IsNullOrEmpty(asset) ? "" : $"AND {asset}")}";
+                }
+
+                string query =
+                     $"""
+                     SELECT TOP {postData.numberResults?.ToString() ?? "100"}
+                     * FROM (
+                        SELECT
+                        Event.ID EventID,
+                    	Disturbance.EventTypeID AS EventTypeID,                    			
+                        Event.StartTime AS StartTime,
+                        Event.AssetID AS AssetID,
+                        Event.MeterID AS MeterID,
+                        (SELECT Name FROM Phase WHERE ID = Disturbance.PhaseID) AS Phase,
+                        Disturbance.PerUnitMagnitude AS MagDurMagnitude,
+                        Disturbance.DurationCycles AS MagDurDuration
+                    FROM
+                    Disturbance INNER JOIN Event ON
+                        Disturbance.EventID = Event.ID
+                    ) Main
+                    WHERE
+                        ({recordFilter})
+                        {filters}
+                    """;
+
+                DataTable table = connection.RetrieveData(query, queryParameter);
+
+                return table;
+            }
+        }
+
         private string getTimeFilter(EventSearchPostData postData)
         {
             string timeWindowUnits = ((TimeWindowUnits)postData.timeWindowUnits).GetDescription();
@@ -389,7 +459,7 @@ namespace PQBrowser.Controllers
             return $"Phase IN ({phaseCombined})))";
         }
 
-        private string getEventCharacteristicFilter(EventSearchPostData postData, Dictionary<string, int> eventTypesLookup, string[] disturbanceTypes)
+        private string getEventCharacteristicFilter(EventSearchPostData postData, Dictionary<string, int> eventTypesLookup, string[] disturbanceTypes, string durationColumn = null, string magnitudeColumn = null)
         {
 
             List<string> characteristics = new();
@@ -397,59 +467,61 @@ namespace PQBrowser.Controllers
             //Min and Max Durations
             if (postData.durationMin > 0)
             {
-                characteristics.Add($"(LargestDisturbanceDuration > {postData.durationMin} OR EventTypeID NOT IN ({string.Join(", ", disturbanceTypes.Select(x => eventTypesLookup.TryGetValue(x, out int id) ? id : -1))}))");
+                characteristics.Add($"({durationColumn ?? "LargestDisturbanceDuration"} > {postData.durationMin} OR EventTypeID NOT IN ({string.Join(", ", disturbanceTypes.Select(x => eventTypesLookup.TryGetValue(x, out int id) ? id : -1))}))");
             }
             if (postData.durationMax > 0)
             {
-                characteristics.Add($"(SmallestDisturbanceDuration < {postData.durationMax} OR EventTypeID NOT IN ({string.Join(", ", disturbanceTypes.Select(x => eventTypesLookup.TryGetValue(x, out int id) ? id : -1))}))");
+                characteristics.Add($"({durationColumn ?? "SmallestDisturbanceDuration"} < {postData.durationMax} OR EventTypeID NOT IN ({string.Join(", ", disturbanceTypes.Select(x => eventTypesLookup.TryGetValue(x, out int id) ? id : -1))}))");
 
             }
 
             // Sag Min and Max
             if (postData.sagMin > 0)
             {
-                characteristics.Add($"(LargestDisturbanceMagnitude > {postData.sagMin} OR EventTypeID <> {eventTypesLookup["Sag"]})");
+                characteristics.Add($"({magnitudeColumn ?? "LargestDisturbanceMagnitude"} > {postData.sagMin} OR EventTypeID <> {eventTypesLookup["Sag"]})");
             }
             if (postData.sagMax > 0)
             {
-                characteristics.Add($"(SmallestDisturbanceMagnitude < {postData.sagMax} OR EventTypeID <> {eventTypesLookup["Sag"]})");
+                characteristics.Add($"({magnitudeColumn ?? "SmallestDisturbanceMagnitude"} < {postData.sagMax} OR EventTypeID <> {eventTypesLookup["Sag"]})");
             }
 
             // Swell Min and Max
             if (postData.swellMin > 0)
             {
-                characteristics.Add($"(LargestDisturbanceMagnitude > {postData.swellMin} OR EventTypeID <> {eventTypesLookup["Swell"]})");
+                characteristics.Add($"({magnitudeColumn ?? "LargestDisturbanceMagnitude"} > {postData.swellMin} OR EventTypeID <> {eventTypesLookup["Swell"]})");
 
             }
             if (postData.swellMax > 0)
             {
-                characteristics.Add($"(SmallestDisturbanceMagnitude < {postData.swellMax} OR EventTypeID <> {eventTypesLookup["Swell"]})");
+                characteristics.Add($"({magnitudeColumn ?? "SmallestDisturbanceMagnitude"} < {postData.swellMax} OR EventTypeID <> {eventTypesLookup["Swell"]})");
 
             }
 
             // Transient min and max
             if (postData.transientMin > 0)
             {
-                characteristics.Add($"(LargestDisturbanceMagnitude > {postData.transientMin} OR EventTypeID <> {eventTypesLookup["Transient"]})");
+                characteristics.Add($"({magnitudeColumn ?? "LargestDisturbanceMagnitude"} > {postData.transientMin} OR EventTypeID <> {eventTypesLookup["Transient"]})");
             }
             if (postData.transientMax > 0)
             {
-                characteristics.Add($"(SmallestDisturbanceMagnitude < {postData.transientMax} OR EventTypeID <> {eventTypesLookup["Transient"]})");
+                characteristics.Add($"({magnitudeColumn ?? "SmallestDisturbanceMagnitude"} < {postData.transientMax} OR EventTypeID <> {eventTypesLookup["Transient"]})");
 
             }
 
             // Mag Dur Curves
             if (!postData.curveOutside || !postData.curveInside)
             {
-                string filt = "((SmallestDisturbanceMagnitude IS NOT NULL AND LargestDisturbanceMagnitude IS NOT NULL AND ";
-                filt += "LargestDisturbanceDuration IS NOT NULL AND SmallestDisturbanceDuration IS NOT NULL AND ";
+                string filt = $"(({magnitudeColumn ?? "SmallestDisturbanceMagnitude"} IS NOT NULL AND " +
+                    $"{magnitudeColumn ?? "LargestDisturbanceMagnitude"} IS NOT NULL AND ";
+                filt += $"{durationColumn ?? "LargestDisturbanceDuration"} IS NOT NULL AND " +
+                    $"{durationColumn ?? "SmallestDisturbanceDuration"} IS NOT NULL AND ";
                 string curve = $"(SELECT TOP 1 Area FROM StandardMagDurCurve WHERE ID = {postData.curveID})";
                 // Special because for INSIDE we check if there is any overlap 
-                filt += $"{curve}.STIntersects(geometry::STGeomFromText(CONCAT('Polygon((',SmallestDisturbanceDuration,' ',SmallestDisturbanceMagnitude, ',' " +
-                    $"LargestDisturbanceDuration,' ',SmallestDisturbanceMagnitude, ','" +
-                    $"LargestDisturbanceDuration,' ',LargestDisturbanceMagnitude, ','" +
-                    $"SmallestDisturbanceDuration,' ',LargestDisturbanceMagnitude, ','" +
-                    $"SmallestDisturbanceDuration,' ',SmallestDisturbanceMagnitude," +
+                filt += $"{curve}.STIntersects(geometry::STGeomFromText(CONCAT('Polygon((',{durationColumn ?? "SmallestDisturbanceDuration"},' ',{magnitudeColumn ?? "SmallestDisturbanceMagnitude"}, ',' " +
+                    $"{durationColumn ?? "LargestDisturbanceDuration"},' ',{magnitudeColumn ?? "SmallestDisturbanceMagnitude"}, ','" +
+                    $"{durationColumn ?? "LargestDisturbanceDuration"},' ',{magnitudeColumn ?? "LargestDisturbanceMagnitude"}, ','" +
+                    $"{durationColumn ?? "SmallestDisturbanceDuration"},' ',{magnitudeColumn ?? "LargestDisturbanceMagnitude"}, ','" +
+                    $"{durationColumn ?? "SmallestDisturbanceDuration"},' ',{magnitudeColumn ?? "SmallestDisturbanceMagnitude"}," +
                     $"'))',0)) = {(postData.curveInside ? 1 : 0)}) OR " +
                     $" EventTypeID NOT IN ({string.Join(",", disturbanceTypes.Select(x => eventTypesLookup.TryGetValue(x, out int id) ? id : -1))}))";
                 characteristics.Add(filt);

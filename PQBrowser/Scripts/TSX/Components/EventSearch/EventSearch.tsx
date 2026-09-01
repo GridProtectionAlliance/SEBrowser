@@ -108,11 +108,11 @@ const EventSearch = () => {
     }, [referenceDataReady]);
 
     const getEventData = React.useCallback((query: IDynamicEventSearchQuery) =>
-        GetDynamicEventSearchData({ ...eventRequest, sortKey: query?.SortField, ascending: query?.Ascending ?? true }, `${homePath}api/OpenXDA/GetEventSearchData`)
+        GetDynamicEventSearchData({ ...eventRequest, sortKey: query?.SortField, ascending: query?.Ascending ?? true }, `${homePath}api/OpenXDA/${(showMagDur ? 'GetMagDurChartData' : 'GetEventSearchData')}`)
             .done((data) => {
                 localStorage.setItem('SEbrowser.EventSearch.EventIDs', data.map(d => d.EventID).join(','));
             }),
-        [eventRequest]);
+        [eventRequest, showMagDur]);
 
     // Effect to load the selected event's record directly by ID (e.g. deep-linked from the URL) so selection does not depend on the current filter results
     React.useEffect(() => {
@@ -149,7 +149,7 @@ const EventSearch = () => {
 
     const magDurWidgetView = React.useMemo<EventWidget.IWidgetView>(() => ({
         ID: 0,
-        Name: DynamicMagDurChart.Name,
+        Name: 'Magnitude Duration Chart',
         Type: DynamicMagDurChart.Name,
         Setting: JSON.stringify({
             ...DynamicMagDurChart.DefaultSettings,
@@ -160,7 +160,7 @@ const EventSearch = () => {
 
     const eventSearchWidgetView = React.useMemo<EventWidget.IWidgetView>(() => ({
         ID: 1,
-        Name: DynamicEventSearch.Name,
+        Name: 'Eventsearch Results Table',
         Type: DynamicEventSearch.Name,
         Setting: JSON.stringify({
             ...DynamicEventSearch.DefaultSettings,
