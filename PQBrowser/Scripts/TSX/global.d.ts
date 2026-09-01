@@ -126,13 +126,10 @@ export namespace PQBrowser {
         phases: IPhaseFilters,
         transientMin: number | null, 
         transientMax: number | null, 
-        transientType: ('LL'|'LN'|'both'),
         sagMin: number | null, 
         sagMax: number | null, 
-        sagType: ('LL' | 'LN' | 'both'),
         swellMin: number | null, 
         swellMax: number | null, 
-        swellType: ('LL' | 'LN' | 'both'),
         curveID: number, 
         curveInside: boolean, 
         curveOutside: boolean

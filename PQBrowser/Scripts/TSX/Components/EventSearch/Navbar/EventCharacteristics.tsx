@@ -232,20 +232,6 @@ const EventSearchNavbar = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="row justify-content-md-center">
-                                <RadioButtons<PQBrowser.IEventCharacteristicFilters>
-                                    Record={newEventCharacteristicFilter}
-                                    Label=''
-                                    Field='sagType'
-                                    Setter={handleSetEventCharacteristicFilter}
-                                    Options={[
-                                        { Label: 'LL', Value: 'LL' },
-                                        { Label: 'LN', Value: 'LN' },
-                                        { Label: 'Both', Value: 'both' }
-                                    ]}
-                                    Style={{ marginBottom: 0 }}
-                                />
-                            </div>
                         </div>
                     </form>
                 </div>
@@ -308,20 +294,6 @@ const EventSearchNavbar = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="row justify-content-md-center">
-                                <RadioButtons<PQBrowser.IEventCharacteristicFilters>
-                                    Record={newEventCharacteristicFilter}
-                                    Label=''
-                                    Field='transientType'
-                                    Setter={handleSetEventCharacteristicFilter}
-                                    Options={[
-                                        { Label: 'LL', Value: 'LL' },
-                                        { Label: 'LN', Value: 'LN' },
-                                        { Label: 'Both', Value: 'both' }
-                                    ]}
-                                    Style={{ marginBottom: 0 }}
-                                />
-                            </div>
                         </div>
                     </form>
                 </div>
@@ -361,20 +333,6 @@ const EventSearchNavbar = () => {
                                         />
                                     </div>
                                 </div>
-                            </div>
-                            <div className="row justify-content-md-center">
-                                <RadioButtons<PQBrowser.IEventCharacteristicFilters>
-                                    Record={newEventCharacteristicFilter}
-                                    Label=''
-                                    Field='swellType'
-                                    Setter={handleSetEventCharacteristicFilter}
-                                    Options={[
-                                        { Label: 'LL', Value: 'LL' },
-                                        { Label: 'LN', Value: 'LN' },
-                                        { Label: 'Both', Value: 'both' }
-                                    ]}
-                                    Style={{ marginBottom: 0 }}
-                                />
                             </div>
                         </div>
                     </form>
