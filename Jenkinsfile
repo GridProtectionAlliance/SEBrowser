@@ -122,7 +122,9 @@ pipeline {
                     env.GIT_COMMIT = bat(script: '@git rev-parse HEAD', returnStdout: true).trim()
                 }
                 powershell "powershell.exe -File .\\Scripts\\Versioning.ps1 -VersionFile './Scripts/PQBrowser.version' -Commit false"
+                powershell "powershell.exe -File .\\Scripts\\PackageVersioning.ps1 -VersionFile './PQBrowser/package.json'"
                 bat(script: "@git add Scripts/PQBrowser.version")
+                bat(script: "@git add PQBrowser/package.json")
                 bat(script: "git diff --cached --quiet || git commit -m \"Updated Version Number\"")
             }
         }
@@ -180,10 +182,10 @@ pipeline {
             }
         }
 
-        stage('Install UI Dependencies') {
+        stage('Build Production UI') {
             steps {
                 dir('PQBrowser') {
-                    bat(script: 'npm ci')
+                    bat(script: 'npm run build')
                 }
             }
         }
@@ -206,14 +208,6 @@ pipeline {
             }
         }
 
-        stage('Build Production UI') {
-            steps {
-                dir('PQBrowser') {
-                    bat(script: 'npm run build')
-                }
-            }
-        }
-
         stage('Build Docker Images') {
             when {
                 anyOf {
@@ -227,17 +221,19 @@ pipeline {
             }
             steps {
                 script {
-                    env.pqBrowserDockerTag = env.CHANGE_BRANCH == "${env.devBranch}" ? "${env.pqBrowserVersion}a" : env.pqBrowserVersion
-                    println("Building PQBrowser Docker image tag: pqbrowser:${env.pqBrowserDockerTag}")
+                    //env.pqBrowserDockerTag = env.CHANGE_BRANCH == "${env.devBranch}" ? "${env.pqBrowserVersion}a" : env.pqBrowserVersion
+                    //println("Building PQBrowser Docker image tag: pqbrowser:${env.pqBrowserDockerTag}")
+                    println("Skipping docker stage intentionally")
                 }
 
-                powershell """
+                /*powershell """
                     dotnet publish '.\\PQBrowser\\PQBrowser.csproj' `
                         --configuration Release `
                         '-p:PublishProfile=Docker Release Profile PQBrowser'
                 """
 
                 powershell "docker build --build-arg CONFIGURATION=Release -f .\\PQBrowser.dockerfile -t pqbrowser:${env.pqBrowserDockerTag} ."
+                */
             }
         }
 

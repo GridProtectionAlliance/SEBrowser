@@ -80,9 +80,6 @@ const initialState: Redux.EventSearchState = {
         sagMax: null,
         swellMin: null,
         swellMax: null,
-        sagType: 'both',
-        swellType: 'both',
-        transientType: 'both',
         curveID: 1,
         curveInside: true,
         curveOutside: true
@@ -138,10 +135,6 @@ export const EventSearchsSlice = createSlice({
             state.EventCharacteristic.swellMax = parseOptionalNumber(action.payload.query['swellMax']);
             state.EventCharacteristic.swellMin = parseOptionalNumber(action.payload.query['swellMin']);
 
-            state.EventCharacteristic.sagType = (action.payload.query['sagType'] ?? 'both') as ('both' | 'LL' | 'LN');
-            state.EventCharacteristic.swellType = (action.payload.query['swellType'] ?? 'both') as ('both' | 'LL' | 'LN');
-            state.EventCharacteristic.transientType = (action.payload.query['transientType'] ?? 'both') as ('both' | 'LL' | 'LN');
-
             state.EventCharacteristic.curveID = parseInt(action.payload.query['curveID']?.toString() ?? '1');
             state.EventCharacteristic.curveInside = (action.payload.query['curveInside'] ?? 'true') == 'true';
             state.EventCharacteristic.curveOutside = (action.payload.query['curveOutside'] ?? 'true') == 'true';
@@ -183,7 +176,7 @@ export const EventSearchsSlice = createSlice({
             state.EventCharacteristic = {
                 durationMax: null, durationMin: null,
                 phases: { AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true },
-                transientMin: null, transientMax: null, sagMin: null, sagMax: null, swellMin: null, swellMax: null, sagType: 'both', swellType: 'both', transientType: 'both',
+                transientMin: null, transientMax: null, sagMin: null, sagMax: null, swellMin: null, swellMax: null,
                 curveID: 1, curveInside: true, curveOutside: true
             };
 
@@ -328,13 +321,6 @@ export function GenerateQueryParams(
             result['swellMax'] = event.swellMax
         if (event.swellMin != 0)
             result['swellMin'] = event.swellMin
-
-        if (event.sagType != 'both')
-            result['sagType'] = event.sagType
-        if (event.swellType != 'both')
-            result['swellType'] = event.swellType
-        if (event.transientType != 'both')
-            result['transientType'] = event.transientType
 
         if (event.curveID != 1)
             result['curveID'] = event.curveID
