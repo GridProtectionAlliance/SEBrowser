@@ -305,8 +305,8 @@ namespace PQBrowser.Controllers
                             FROM
                                 Event CROSS APPLY  (
                     	            SELECT Disturbance.EventTypeID AS DisturbanceTypeID,
-                    	                MAX(Disturbance.PerUnitMagnitude) AS MaxMagnitude,
-                                        MIN(Disturbance.PerUnitMagnitude) AS MinMagnitude,
+                    	                MAX(ABS(1 - Disturbance.PerUnitMagnitude)) AS MaxMagnitude,
+                                        MIN(ABS(1 - Disturbance.PerUnitMagnitude)) AS MinMagnitude,
                     	                MAX(Disturbance.DurationSeconds) AS MaxDuration,
                                         MIN(Disturbance.DurationSeconds) AS MinDuration
                     	            FROM Disturbance WHERE Disturbance.EventID = Event.ID  
@@ -319,14 +319,14 @@ namespace PQBrowser.Controllers
                                         PhaseID
                                     FROM Disturbance
                                     WHERE EventID = Event.ID AND
-                                        PerUnitMagnitude = D.MaxMagnitude AND
+                                        ABS(1 - PerUnitMagnitude) = D.MaxMagnitude AND
                                         D.DisturbanceTypeID = EventTypeID
                                 ) MaxMag OUTER APPLY (
                                     SELECT TOP 1 ID,
                                         PerUnitMagnitude 
                                     FROM Disturbance
                                     WHERE EventID = Event.ID AND
-                                        PerUnitMagnitude = D.MinMagnitude AND
+                                        ABS( 1 - PerUnitMagnitude) = D.MinMagnitude AND
                                         D.DisturbanceTypeID = EventTypeID
                                 ) MinMag OUTER APPLY (
                                     SELECT TOP 1 ID,
