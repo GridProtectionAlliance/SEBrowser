@@ -105,6 +105,7 @@ const TrendChannelTable = (props: IProps) => {
 
     return (
         <ConfigurableTable<TrendSearch.ITrendChannel>
+            LocalStorageKey="SEBrowser.TrendChannelTable"
             Data={props.TrendChannels}
             SortKey={sortField}
             Ascending={ascending}
