@@ -713,9 +713,9 @@ const TrendPlot = (props: IContainerProps) => {
             ...(customSelect === "drag" ? [] : [
                 <Infobox
                     key={"MouseOver"}
-                    origin={generalSettings.MoveOptionsLeft ? "upper-left" : "auto"}
+                    origin={"auto"}
                     axis="left"
-                    x={generalSettings.MoveOptionsLeft ? 5 : -5}
+                    x={-5}
                     y={25}
                     opacity={0.4}
                     childId={`mouseInfo_${props.Plot.ID}`}
