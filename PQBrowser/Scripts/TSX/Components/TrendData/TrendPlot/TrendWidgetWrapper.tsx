@@ -687,7 +687,7 @@ const TrendPlot = (props: IContainerProps) => {
             ...symbolicMarkers.map((marker, i) =>
                 <Infobox
                     key={"Info_" + i}
-                    origin="upper-center"
+                    origin="auto"
                     axis={marker.axis}
                     x={marker.xBox}
                     y={marker.yBox}
@@ -713,7 +713,7 @@ const TrendPlot = (props: IContainerProps) => {
             ...(customSelect === "drag" ? [] : [
                 <Infobox
                     key={"MouseOver"}
-                    origin={generalSettings.MoveOptionsLeft ? "upper-left" : "upper-right"}
+                    origin={generalSettings.MoveOptionsLeft ? "upper-left" : "auto"}
                     axis="left"
                     x={generalSettings.MoveOptionsLeft ? 5 : -5}
                     y={25}
@@ -738,6 +738,7 @@ const TrendPlot = (props: IContainerProps) => {
                         childId={`mouseInfoRight_${props.Plot.ID}`}
                         usePixelPositioning={true}
                         onMouseMove={setRightHoverPosition}
+                        origin="auto"
                     >
                         <div id={`mouseInfoRight_${props.Plot.ID}`} style={{ display: 'none' }} />
                     </Infobox> : null
