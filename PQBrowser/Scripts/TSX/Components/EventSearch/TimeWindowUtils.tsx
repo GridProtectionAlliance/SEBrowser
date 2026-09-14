@@ -51,7 +51,8 @@ export function fromGemstoneFilter(start: string, end: string, unit: string, dur
         window = duration / 2;
         windowUnit = unitNumber(unit);
     }
-    const center = startTime.clone().add(moment.duration(window, momentUnit(windowUnit)));
+    // Use hours to preserve fractional days and match getStartEndTime without calendar-unit rounding.
+    const center = startTime.clone().add(moment.duration(window, momentUnit(windowUnit)).asHours(), 'h');
     return {
         date: center.format(momentDateFormat),
         time: center.format(momentTimeFormat),
