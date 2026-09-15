@@ -88,7 +88,7 @@ pipeline {
         stage('Checkout Development Branch') {
             when {
                 expression {
-                    return env.CHANGE_BRANCH == env.devBranch && env.CHANGE_TARGET == env.mainBranch
+                    return env.CHANGE_BRANCH == env.devBranch
                 }
             }
             steps {
