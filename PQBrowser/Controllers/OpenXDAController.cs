@@ -21,20 +21,20 @@
 //
 //******************************************************************************************************
 
-using Gemstone.Configuration;
-using Gemstone.Data;
-using Gemstone.Data.Model;
-using Gemstone.EnumExtensions;
-using Gemstone.Numeric.Interpolation;
-using Gemstone.Security.AccessControl;
-using Microsoft.AspNetCore.Mvc;
-using openXDA.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Caching;
+using Gemstone.Configuration;
+using Gemstone.Data;
+using Gemstone.Data.Model;
+using Gemstone.EnumExtensions;
+using Gemstone.Security.AccessControl;
+using Gemstone.StringExtensions;
+using Microsoft.AspNetCore.Mvc;
+using openXDA.Model;
 
 namespace PQBrowser.Controllers
 {
@@ -236,144 +236,432 @@ namespace PQBrowser.Controllers
             if (postData is null)
                 throw new Exception("Unable to parse request body");
 
-            // Convert input cycles to seconds.
-            postData.durationMin = postData.durationMin * (1 / 60.0);
-            postData.durationMax = postData.durationMax * (1 / 60.0);
+            int resultCount = postData.numberResults ?? 100;
+
+            // Sort keys map to the views' "Sort.<key>" columns; unknown keys fall back to Time to keep user input out of the SQL
+            if (!SortColumns.TryGetValue(postData.sortKey ?? "Time", out string fullSortColumn))
+                fullSortColumn = "[SEBrowser.EventSearchEventView].[Time]";
+
+            string sortOrder = postData.ascending ? "ASC" : "DESC";
+
+            if (postData.eventID is not null)
+                return GetSingleEventSearchData(postData.eventID.GetValueOrDefault(), fullSortColumn, sortOrder, resultCount);
+
+            string locationList = postData.locationIDs.Length > 0 ? string.Join(',', postData.locationIDs) : "Meter.LocationID";
+            string meterList = postData.meterIDs.Length > 0 ? string.Join(',', postData.meterIDs) : "MeterID";
+            string assetList = postData.assetIDs.Length > 0 ? string.Join(',', postData.assetIDs) : "AssetID";
+            string assetGroupList = postData.groupIDs.Length > 0 ? string.Join(',', postData.groupIDs) : "AssetGroupID";
+            string eventTypeList = postData.typeIDs.Length > 0 ? string.Join(',', postData.typeIDs) : "NULL";
+            string phaseList = GetPhaseList(postData);
+
+            string timeWindowUnits = ((TimeWindowUnits)postData.timeWindowUnits).GetDescription();
+            double windowSize = postData.windowSize;
+            DateTime searchTime = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
+
+            object durationMin = postData.durationMin > 0 ? postData.durationMin * (1 / 60.0) : DBNull.Value;
+            object durationMax = postData.durationMax > 0 ? postData.durationMax * (1 / 60.0) : DBNull.Value;
+            object sagMin = postData.sagMin > 0 ? postData.sagMin : DBNull.Value;
+            object sagMax = postData.sagMax > 0 ? postData.sagMax : DBNull.Value;
+            object swellMin = postData.swellMin > 0 ? postData.swellMin : DBNull.Value;
+            object swellMax = postData.swellMax > 0 ? postData.swellMax : DBNull.Value;
+            object transientMin = postData.transientMin > 0 ? postData.transientMin : DBNull.Value;
+            object transientMax = postData.transientMax > 0 ? postData.transientMax : DBNull.Value;
+
+            int curveID = postData.curveID;
+            int curveFilter = postData.curveInside ? 1 : 0;
+
+            string curveTable = (postData.curveInside && postData.curveOutside)
+                ? $"(VALUES({curveID}, CONVERT(GEOMETRY, NULL))) StandardMagDurCurve(ID, Area)"
+                : "StandardMagDurCurve";
+
+            string[] splitSortColumn = fullSortColumn.Split("].[");
+            string sortTable = splitSortColumn[0] + "]";
+            string sortColumn = "[" + splitSortColumn[1];
+            string eventJoin = string.Empty;
+            string disturbanceJoin = string.Empty;
+            string faultJoin = string.Empty;
+            string ordering = $"{fullSortColumn} {sortOrder}";
+            string eventOrdering = string.Empty;
+            string disturbanceOrdering = string.Empty;
+            string faultOrdering = string.Empty;
+
+            if (sortTable == "[SEBrowser.EventSearchEventView]")
+            {
+                string join = $"JOIN {sortTable} ON {sortTable}.EventID = Event.ID";
+                eventJoin = join;
+                disturbanceJoin = join;
+                faultJoin = join;
+
+                eventOrdering = $"ORDER BY {ordering}";
+                disturbanceOrdering = $"ORDER BY ROW_NUMBER() OVER(PARTITION BY Event.ID ORDER BY {ordering}), {ordering}";
+                faultOrdering = $"ORDER BY {ordering}";
+            }
+            else if (sortTable == "[SEBrowser.EventSearchFaultView]")
+            {
+                faultJoin = $"JOIN {sortTable} ON {sortTable}.EventID = Event.ID AND {sortTable}.FaultID = FaultSummary.FaultNumber";
+                faultOrdering = $"ORDER BY {ordering}";
+            }
+            else
+            {
+                disturbanceJoin = $"JOIN {sortTable} ON {sortTable}.DisturbanceID = Disturbance.ID";
+                disturbanceOrdering = $"ORDER BY ROW_NUMBER() OVER(PARTITION BY Event.ID ORDER BY {ordering}), {ordering}";
+            }
+
+            string query =
+                $$"""
+                SELECT DISTINCT MeterID ID
+                INTO #meterFilter
+                FROM MeterAssetGroup
+                WHERE
+                    MeterID IN ({{meterList}}) AND
+                    AssetGroupID IN ({{assetGroupList}})
+
+                SELECT DISTINCT AssetID ID
+                INTO #assetFilter
+                FROM AssetAssetGroup
+                WHERE
+                    AssetID IN ({{assetList}}) AND
+                    AssetGroupID IN ({{assetGroupList}})
+
+                SELECT TOP {{resultCount}}
+                    Event.ID,
+                    Event.EventTypeID
+                INTO #eventFilter
+                FROM
+                    Event JOIN
+                    EventType ON Event.EventTypeID = EventType.ID JOIN
+                    Meter ON Event.MeterID = Meter.ID
+                    {{eventJoin}}
+                WHERE
+                    Event.StartTime BETWEEN DATEADD({{timeWindowUnits}}, -{0}, {1}) AND DATEADD({{timeWindowUnits}}, {0}, {1}) AND
+                    EventType.Name NOT IN ('Fault', 'RecloseIntoFault', 'Sag', 'Swell', 'Transient', 'Interruption') AND
+                    Event.EventTypeID IN ({{eventTypeList}}) AND
+                    Event.MeterID IN (SELECT ID FROM #meterFilter) AND
+                    Event.AssetID IN (SELECT ID FROM #assetFilter) AND
+                    Meter.LocationID IN ({{locationList}})
+                {{eventOrdering}}
+
+                CREATE TABLE #disturbanceFilter
+                (
+                    ID INT PRIMARY KEY,
+                    EventID INT,
+                    EventTypeID INT,
+                    PhaseID INT,
+                    PerUnitMagnitude FLOAT,
+                    DurationSeconds FLOAT
+                )
+
+                CREATE NONCLUSTERED INDEX IX_DisturbanceFilter
+                ON #disturbanceFilter(EventID, EventTypeID)
+                INCLUDE(PerUnitMagnitude, DurationSeconds)
+
+                INSERT INTO #disturbanceFilter
+                SELECT DISTINCT
+                    Disturbance.ID,
+                    Disturbance.EventID,
+                    Disturbance.EventTypeID,
+                    Disturbance.PhaseID,
+                    Disturbance.PerUnitMagnitude,
+                    Disturbance.DurationSeconds
+                FROM
+                    (
+                        SELECT TOP {{resultCount}} Event.ID EventID
+                        FROM
+                            Event JOIN
+                            Meter ON Event.MeterID = Meter.ID JOIN
+                            Disturbance ON Disturbance.EventID = Event.ID JOIN
+                            EventType ON Disturbance.EventTypeID = EventType.ID JOIN
+                            Phase ON Disturbance.PhaseID = Phase.ID JOIN
+                            {{curveTable}} ON StandardMagDurCurve.ID = {2}
+                            {{disturbanceJoin}}
+                        WHERE
+                            Event.StartTime BETWEEN DATEADD({{timeWindowUnits}}, -{0}, {1}) AND DATEADD({{timeWindowUnits}}, {0}, {1}) AND
+                            Event.MeterID IN (SELECT ID FROM #meterFilter) AND
+                            Event.AssetID IN (SELECT ID FROM #assetFilter) AND
+                            Meter.LocationID IN ({{locationList}}) AND
+                            Disturbance.EventTypeID IN ({{eventTypeList}}) AND
+                            Phase.Name IN ({{phaseList}}) AND
+                            ({4} IS NULL OR Disturbance.DurationSeconds >= {4}) AND
+                            ({5} IS NULL OR Disturbance.DurationSeconds <= {5}) AND
+                            ({6} IS NULL OR EventType.Name <> 'Sag' OR Disturbance.PerUnitMagnitude >= {6}) AND
+                            ({7} IS NULL OR EventType.Name <> 'Sag' OR Disturbance.PerUnitMagnitude <= {7}) AND
+                            ({8} IS NULL OR EventType.Name <> 'Swell' OR Disturbance.PerUnitMagnitude >= {8}) AND
+                            ({9} IS NULL OR EventType.Name <> 'Swell' OR Disturbance.PerUnitMagnitude <= {9}) AND
+                            ({10} IS NULL OR EventType.Name <> 'Transient' OR Disturbance.PerUnitMagnitude >= {10}) AND
+                            ({11} IS NULL OR EventType.Name <> 'Transient' OR Disturbance.PerUnitMagnitude <= {11}) AND
+                            (StandardMagDurCurve.Area IS NULL OR StandardMagDurCurve.Area.STContains(geometry::Point(Disturbance.DurationSeconds, Disturbance.PerUnitMagnitude, 0)) = {3})
+                        {{disturbanceOrdering}}
+                    ) DisturbanceFilter JOIN
+                    Disturbance ON Disturbance.EventID = DisturbanceFilter.EventID
+
+                SELECT TOP {{resultCount}}
+                    FaultSummary.ID,
+                    FaultSummary.EventID,
+                    FaultSummary.FaultType,
+                    FaultSummary.FaultNumber
+                INTO #faultFilter
+                FROM
+                    Event JOIN
+                    EventType ON Event.EventTypeID = EventType.ID JOIN
+                    Meter ON Event.MeterID = Meter.ID JOIN
+                    FaultSummary ON FaultSummary.EventID = Event.ID
+                    {{faultJoin}}
+                WHERE
+                    Event.StartTime BETWEEN DATEADD({{timeWindowUnits}}, -{0}, {1}) AND DATEADD({{timeWindowUnits}}, {0}, {1}) AND
+                    EventType.Name IN ('Fault', 'RecloseIntoFault') AND
+                    Event.EventTypeID IN ({{eventTypeList}}) AND
+                    Event.MeterID IN (SELECT ID FROM #meterFilter) AND
+                    Event.AssetID IN (SELECT ID FROM #assetFilter) AND
+                    Meter.LocationID IN ({{locationList}}) AND
+                    FaultSummary.FaultType IN ({{phaseList}}) AND
+                    FaultSummary.IsSelectedAlgorithm <> 0 AND
+                    FaultSummary.IsValid <> 0 AND
+                    FaultSummary.IsSuppressed = 0
+                {{faultOrdering}}
+
+                SELECT
+                    EventType.Description [Event Type],
+                    CONVERT(VARCHAR(200), NULL) Phase,
+                    Event.ID EventID,
+                    CONVERT(INT, NULL) FaultID,
+                    CONVERT(INT, NULL) DisturbanceID,
+                    {{Columns}}
+                INTO #eventSearchRow
+                FROM
+                    #eventFilter Event JOIN
+                    EventType ON Event.EventTypeID = EventType.ID JOIN
+                    [SEBrowser.EventSearchEventView] ON [SEBrowser.EventSearchEventView].EventID = Event.ID LEFT OUTER JOIN
+                    [SEBrowser.EventSearchLargestDisturbanceView] ON 1 IS NULL LEFT OUTER JOIN
+                    [SEBrowser.EventSearchSmallestDisturbanceView] ON 1 IS NULL LEFT OUTER JOIN
+                    [SEBrowser.EventSearchLongestDisturbanceView] ON 1 IS NULL LEFT OUTER JOIN
+                    [SEBrowser.EventSearchShortestDisturbanceView] ON 1 IS NULL LEFT OUTER JOIN
+                    [SEBrowser.EventSearchFaultView] ON 1 IS NULL
+
+                SELECT
+                    EventType.Description [Event Type],
+                    Phase.Name Phase,
+                    Event.ID EventID,
+                    NULL FaultID,
+                    MaxMagnitudeDisturbance.ID DisturbanceID,
+                    {{Columns}}
+                INTO #disturbanceSearchRow
+                FROM
+                    (
+                        SELECT
+                            EventID ID,
+                            EventTypeID DisturbanceTypeID,
+                            MAX(ABS(1 - PerUnitMagnitude)) AS MaxMagnitude,
+                            MIN(ABS(1 - PerUnitMagnitude)) AS MinMagnitude,
+                            MAX(DurationSeconds) AS MaxDuration,
+                            MIN(DurationSeconds) AS MinDuration
+                        FROM #disturbanceFilter
+                        GROUP BY EventID, EventTypeID
+                    ) Event CROSS APPLY
+                    (
+                        SELECT TOP 1
+                            ID,
+                            PerUnitMagnitude,
+                            PhaseID
+                        FROM #disturbanceFilter
+                        WHERE
+                            EventID = Event.ID AND
+                            EventTypeID = Event.DisturbanceTypeID AND
+                            ABS(1 - PerUnitMagnitude) = Event.MaxMagnitude
+                    ) MaxMagnitudeDisturbance CROSS APPLY
+                    (
+                        SELECT TOP 1
+                            ID,
+                            PerUnitMagnitude
+                        FROM #disturbanceFilter
+                        WHERE
+                            EventID = Event.ID AND
+                            EventTypeID = Event.DisturbanceTypeID AND
+                            ABS(1 - PerUnitMagnitude) = Event.MinMagnitude
+                    ) MinMagnitudeDisturbance CROSS APPLY
+                    (
+                        SELECT TOP 1
+                            ID,
+                            DurationSeconds
+                        FROM #disturbanceFilter
+                        WHERE
+                            EventID = Event.ID AND
+                            EventTypeID = Event.DisturbanceTypeID AND
+                            DurationSeconds = Event.MaxDuration
+                    ) MaxDurationDisturbance CROSS APPLY
+                    (
+                        SELECT TOP 1
+                            ID,
+                            DurationSeconds
+                        FROM #disturbanceFilter
+                        WHERE
+                            EventID = Event.ID AND
+                            EventTypeID = Event.DisturbanceTypeID AND
+                            DurationSeconds = Event.MinDuration
+                    ) MinDurationDisturbance JOIN
+                    EventType ON Event.DisturbanceTypeID = EventType.ID JOIN
+                    Phase ON MaxMagnitudeDisturbance.PhaseID = Phase.ID JOIN
+                    [SEBrowser.EventSearchEventView] ON [SEBrowser.EventSearchEventView].EventID = Event.ID JOIN
+                    [SEBrowser.EventSearchLargestDisturbanceView] ON [SEBrowser.EventSearchLargestDisturbanceView].DisturbanceID = MaxMagnitudeDisturbance.ID JOIN
+                    [SEBrowser.EventSearchSmallestDisturbanceView] ON [SEBrowser.EventSearchSmallestDisturbanceView].DisturbanceID = MinMagnitudeDisturbance.ID JOIN
+                    [SEBrowser.EventSearchLongestDisturbanceView] ON [SEBrowser.EventSearchLongestDisturbanceView].DisturbanceID = MaxDurationDisturbance.ID JOIN
+                    [SEBrowser.EventSearchShortestDisturbanceView] ON [SEBrowser.EventSearchShortestDisturbanceView].DisturbanceID = MinDurationDisturbance.ID LEFT OUTER JOIN
+                    [SEBrowser.EventSearchFaultView] ON 1 IS NULL
+
+                SELECT
+                    EventType.Description [Event Type],
+                    FaultSummary.FaultType Phase,
+                    Event.ID EventID,
+                    FaultSummary.FaultNumber FaultID,
+                    NULL DisturbanceID,
+                    {{Columns}}
+                INTO #faultSearchRow
+                FROM
+                    #faultFilter FaultSummary JOIN
+                    Event ON FaultSummary.EventID = Event.ID JOIN
+                    EventType ON Event.EventTypeID = EventType.ID JOIN
+                    [SEBrowser.EventSearchEventView] ON [SEBrowser.EventSearchEventView].EventID = Event.ID LEFT OUTER JOIN
+                    [SEBrowser.EventSearchLargestDisturbanceView] ON 1 IS NULL LEFT OUTER JOIN
+                    [SEBrowser.EventSearchSmallestDisturbanceView] ON 1 IS NULL LEFT OUTER JOIN
+                    [SEBrowser.EventSearchLongestDisturbanceView] ON 1 IS NULL LEFT OUTER JOIN
+                    [SEBrowser.EventSearchShortestDisturbanceView] ON 1 IS NULL JOIN
+                    [SEBrowser.EventSearchFaultView] ON
+                        [SEBrowser.EventSearchFaultView].EventID = Event.ID AND
+                        [SEBrowser.EventSearchFaultView].FaultID = FaultSummary.FaultNumber
+
+                SELECT TOP {{resultCount}} *
+                FROM
+                (
+                    SELECT * FROM #eventSearchRow
+                    UNION ALL
+                    SELECT * FROM #disturbanceSearchRow
+                    UNION ALL
+                    SELECT * FROM #faultSearchRow
+                ) SearchResult
+                ORDER BY {{sortColumn}} {{sortOrder}}
+                """;
 
             using AdoDataConnection connection = new(Settings.Default);
-            {
-                // When an eventID is provided, the request targets that single event and the time/characteristic filters are skipped
-                object queryParameter;
-                string recordFilter;
-                string filters = "";
+            connection.DefaultTimeout = 120;
 
+            return connection.RetrieveData(query,
+                windowSize, searchTime,
+                curveID, curveFilter,
+                durationMin, durationMax,
+                sagMin, sagMax,
+                swellMin, swellMax,
+                transientMin, transientMax);
+        }
 
-                //If eventID is provided no filters are needed this is a 1-1 lookup
-                if (postData.eventID is not null)
-                {
-                    queryParameter = postData.eventID;
-                    recordFilter = "Event.ID = {0}";
-                }
-                else
-                {
-                    queryParameter = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
-                    recordFilter = getTimeFilter(postData, "Event.StartTime");
+        private DataTable GetSingleEventSearchData(int eventID, string sortColumn, string sortOrder, int resultCount)
+        {
+            string query =
+                $$"""
+                SELECT TOP {{resultCount}}
+                    EventType.Description [Event Type],
+                    NULL Phase,
+                    Event.ID EventID,
+                    NULL FaultID,
+                    NULL DisturbanceID,
+                    {{Columns}}
+                FROM
+                    Event JOIN
+                    EventType ON Event.EventTypeID = EventType.ID OUTER APPLY
+                    (
+                        SELECT
+                            EventTypeID DisturbanceTypeID,
+                            MAX(ABS(1 - PerUnitMagnitude)) AS MaxMagnitude,
+                            MIN(ABS(1 - PerUnitMagnitude)) AS MinMagnitude,
+                            MAX(DurationSeconds) AS MaxDuration,
+                            MIN(DurationSeconds) AS MinDuration
+                        FROM Disturbance
+                        WHERE EventID = Event.ID
+                        GROUP BY EventTypeID
+                    ) DisturbanceTypeAggregate OUTER APPLY
+                    (
+                        SELECT TOP 1
+                            ID,
+                            PerUnitMagnitude,
+                            PhaseID
+                        FROM Disturbance
+                        WHERE
+                            EventID = Event.ID AND
+                            ABS(1 - PerUnitMagnitude) = DisturbanceTypeAggregate.MaxMagnitude AND
+                            EventTypeID = DisturbanceTypeAggregate.DisturbanceTypeID
+                    ) MaxMagnitudeDisturbance OUTER APPLY
+                    (
+                        SELECT TOP 1
+                            ID,
+                            PerUnitMagnitude
+                        FROM Disturbance
+                        WHERE
+                            EventID = Event.ID AND
+                            ABS(1 - PerUnitMagnitude) = DisturbanceTypeAggregate.MinMagnitude AND
+                            EventTypeID = DisturbanceTypeAggregate.DisturbanceTypeID
+                    ) MinMagnitudeDisturbance OUTER APPLY
+                    (
+                        SELECT TOP 1
+                            ID,
+                            DurationSeconds
+                        FROM Disturbance
+                        WHERE
+                            EventID = Event.ID AND
+                            DurationSeconds = DisturbanceTypeAggregate.MaxDuration AND
+                            EventTypeID = DisturbanceTypeAggregate.DisturbanceTypeID
+                    ) MaxDurationDisturbance OUTER APPLY
+                    (
+                        SELECT TOP 1
+                            ID,
+                            DurationSeconds
+                        FROM Disturbance
+                        WHERE
+                            EventID = Event.ID AND
+                            DurationSeconds = DisturbanceTypeAggregate.MinDuration AND
+                            EventTypeID = DisturbanceTypeAggregate.DisturbanceTypeID
+                    ) MinDurationDisturbance LEFT OUTER JOIN
+                    FaultSummary ON
+                        EventType.Name IN ('Fault', 'RecloseIntoFault') AND
+                        FaultSummary.EventID = Event.ID AND
+                        FaultSummary.IsSelectedAlgorithm <> 0 AND
+                        FaultSummary.IsValid <> 0 AND
+                        FaultSummary.IsSuppressed = 0 JOIN
+                    [SEBrowser.EventSearchEventView] ON [SEBrowser.EventSearchEventView].EventID = Event.ID LEFT OUTER JOIN
+                    [SEBrowser.EventSearchLargestDisturbanceView] ON [SEBrowser.EventSearchLargestDisturbanceView].DisturbanceID = MaxMagnitudeDisturbance.ID LEFT OUTER JOIN
+                    [SEBrowser.EventSearchSmallestDisturbanceView] ON [SEBrowser.EventSearchSmallestDisturbanceView].DisturbanceID = MinMagnitudeDisturbance.ID LEFT OUTER JOIN
+                    [SEBrowser.EventSearchLongestDisturbanceView] ON [SEBrowser.EventSearchLongestDisturbanceView].DisturbanceID = MaxDurationDisturbance.ID LEFT OUTER JOIN
+                    [SEBrowser.EventSearchShortestDisturbanceView] ON [SEBrowser.EventSearchLongestDisturbanceView].DisturbanceID = MinDurationDisturbance.ID LEFT OUTER JOIN
+                    [SEBrowser.EventSearchFaultView] ON
+                        [SEBrowser.EventSearchFaultView].EventID = Event.ID AND
+                        [SEBrowser.EventSearchFaultView].FaultID = FaultSummary.FaultNumber
+                WHERE Event.ID = {0}
+                ORDER BY {{sortColumn}} {{sortOrder}}
+                """;
 
-                    string eventType = (postData.typeIDs is null) ? null : getEventTypeFilter(postData, "COALESCE(DisturbanceTypeID, EventTypeID)");
-                    string phase = (postData.phases is null) ? null : getPhaseFilter(postData, "COALESCE(FaultSummary.FaultType,(SELECT Name FROM Phase WHERE ID = MaxMag.PhaseID))");
+            using AdoDataConnection connection = new(Settings.Default);
+            return connection.RetrieveData(query, eventID);
+        }
 
-                    string eventCharacteristic = getEventCharacteristicFilter(postData, "MinDur.DurationSeconds",
-                        "MaxDur.DurationSeconds", "MinMag.PerUnitMagnitude", "MaxMag.PerUnitMagnitude", "COALESCE(DisturbanceTypeID, EventTypeID)");
-                    string asset = getAssetFilters(postData, "Event.MeterID", "Event.AssetID");
+        private static string GetPhaseList(EventSearchPostData postData)
+        {
+            List<(string phase, bool enabled)> mappings =
+            [
+                ("AN", postData.phases.AN),
+                ("BN", postData.phases.BN),
+                ("CN", postData.phases.CN),
+                ("AB", postData.phases.AB),
+                ("BC", postData.phases.BC),
+                ("CA", postData.phases.CA),
+                ("ABG", postData.phases.ABG),
+                ("BCG", postData.phases.BCG),
+                ("ABC", postData.phases.ABC),
+                ("ABCG", postData.phases.ABCG)
+            ];
 
-                    filters = $"{(string.IsNullOrEmpty(eventType) ? "" : $"AND ({eventType})")} ";
-                    filters += $"{(string.IsNullOrEmpty(phase) ? "" : $"AND ({phase})")}  ";
-                    filters += $"{(string.IsNullOrEmpty(eventCharacteristic) ? "" : $"AND {eventCharacteristic}")} ";
-                    filters += $"{(string.IsNullOrEmpty(asset) ? "" : $"AND {asset}")}";
-                }
+            IEnumerable<string> phases = mappings
+                .Where(mapping => mapping.enabled)
+                .Select(mapping => mapping.phase.QuoteWrap('\''))
+                .DefaultIfEmpty("NULL");
 
-                // Sort keys map to the views' "Sort.<key>" columns; unknown keys fall back to Time to keep user input out of the SQL
-                if (!SortColumns.TryGetValue(postData.sortKey ?? "Time", out string sortColumn))
-                    sortColumn = "[Time]";
-
-                string sortBy = $"ORDER BY {sortColumn} {(postData.ascending ? "ASC" : "DESC")}";
-
-                string query =
-                     $"""
-                    SELECT TOP {postData.numberResults?.ToString() ?? "100"}
-                        EventType.Description AS [Event Type],
-                        Main.Phase AS [Phase],
-                        Main.EventID,
-                        Main.FaultID,
-                        Main.LargestDisturbanceID AS DisturbanceID,
-                        {Columns}
-                    FROM
-                        (
-                            SELECT
-                                 Event.ID EventID,
-                    			 COALESCE(DisturbanceTypeID, EventTypeID) AS EventTypeID,
-                                 MaxMag.ID AS LargestDisturbanceID,
-                    			 MinMAG.ID AS SmallestDisturbanceID,
-                    			 MinDur.ID AS ShortestDisturbanceID,
-                    			 MaxDur.ID AS LongestDisturbanceID,
-                    			 MaxMag.PerUnitMagnitude AS LargestDisturbanceMagnitude,
-                    			 MinMag.PerUnitMagnitude AS SmallestDisturbanceMagnitude,
-                    			 MinDur.DurationSeconds AS SmallestDisturbanceDuration,
-                    			 MaxDur.DurationSeconds AS LargestDisturbanceDuration,
-                                 FaultSummary.FaultNumber AS FaultID,
-                                 COALESCE(FaultSummary.FaultType,(SELECT Name FROM Phase WHERE ID = MaxMag.PhaseID)) AS Phase
-                            FROM
-                                Event CROSS APPLY  (
-                    	            SELECT Disturbance.EventTypeID AS DisturbanceTypeID,
-                    	                MAX(ABS(1 - Disturbance.PerUnitMagnitude)) AS MaxMagnitude,
-                                        MIN(ABS(1 - Disturbance.PerUnitMagnitude)) AS MinMagnitude,
-                    	                MAX(Disturbance.DurationSeconds) AS MaxDuration,
-                                        MIN(Disturbance.DurationSeconds) AS MinDuration
-                    	            FROM Disturbance WHERE Disturbance.EventID = Event.ID  
-                                    GROUP BY (EventTypeID) 
-                                    UNION ALL
-                                    SELECT NULL, NULL, NULL, NULL, NULL WHERE EVENT.EventTypeID NOT IN ({string.Join(",", s_disturbanceTypes.Select(x => s_eventTypeLookup.TryGetValue(x, out int id) ? id : -1))})
-                                ) D OUTER APPLY (
-                                    SELECT TOP 1 ID,
-                                        PerUnitMagnitude,
-                                        PhaseID
-                                    FROM Disturbance
-                                    WHERE EventID = Event.ID AND
-                                        ABS(1 - PerUnitMagnitude) = D.MaxMagnitude AND
-                                        D.DisturbanceTypeID = EventTypeID
-                                ) MaxMag OUTER APPLY (
-                                    SELECT TOP 1 ID,
-                                        PerUnitMagnitude 
-                                    FROM Disturbance
-                                    WHERE EventID = Event.ID AND
-                                        ABS( 1 - PerUnitMagnitude) = D.MinMagnitude AND
-                                        D.DisturbanceTypeID = EventTypeID
-                                ) MinMag OUTER APPLY (
-                                    SELECT TOP 1 ID,
-                                        DurationSeconds
-                                    FROM Disturbance 
-                                    WHERE EventID = Event.ID AND
-                                        DurationSeconds = D.MinDuration AND
-                                        D.DisturbanceTypeID = EventTypeID
-                                ) MinDur OUTER APPLY (
-                                    SELECT TOP 1 ID,
-                                        DurationSeconds
-                                    FROM Disturbance
-                                    WHERE EventID = Event.ID AND
-                                        DurationSeconds = D.MaxDuration AND
-                                        D.DisturbanceTypeID = EventTypeID
-                                ) MaxDur LEFT OUTER JOIN 
-                                FaultSummary ON 
-                    	            FaultSummary.IsSelectedAlgorithm <> 0 AND
-                    	            FaultSummary.IsValid <> 0 AND
-                    	            FaultSummary.IsSuppressed = 0 AND
-                    	            Event.EventTypeID IN ({string.Join(",", s_faultTypes.Select(x => s_eventTypeLookup.TryGetValue(x, out int id) ? id : -1))}) AND
-                    	            D.DisturbanceTypeID IS NULL AND
-                    	            Event.ID = FaultSummary.EventID
-                            WHERE
-                                ({recordFilter})
-                                {filters}
-                        ) Main INNER JOIN
-                        EventType ON Main.EventTypeID = EventType.ID INNER JOIN
-                        [SEBrowser.EventSearchEventView] ON Main.EventID = [SEBrowser.EventSearchEventView].EventID LEFT JOIN
-                        [SEBrowser.EventSearchLongestDisturbanceView] ON 
-                            (Main.LongestDisturbanceID IS NOT NULL AND [SEBrowser.EventSearchLongestDisturbanceView].DisturbanceID = Main.LongestDisturbanceID) LEFT JOIN
-                        [SEBrowser.EventSearchShortestDisturbanceView] ON 
-                            (Main.ShortestDisturbanceID IS NOT NULL AND [SEBrowser.EventSearchShortestDisturbanceView].DisturbanceID = Main.ShortestDisturbanceID)  LEFT JOIN
-                        [SEBrowser.EventSearchSmallestDisturbanceView] ON    
-                            (Main.SmallestDisturbanceID IS NOT NULL AND [SEBrowser.EventSearchSmallestDisturbanceView].DisturbanceID = Main.SmallestDisturbanceID) LEFT JOIN
-                        [SEBrowser.EventSearchLargestDisturbanceView] ON 
-                            (Main.LargestDisturbanceID IS NOT NULL AND [SEBrowser.EventSearchLargestDisturbanceView].DisturbanceID = Main.LargestDisturbanceID) LEFT JOIN
-                        [SEBrowser.EventSearchFaultView] ON
-                            Main.FaultID IS NOT NULL AND [SEBrowser.EventSearchFaultView].FaultID = Main.FaultID AND
-                            Main.EventID = [SEBrowser.EventSearchFaultView].EventID 
-                        {sortBy}
-                    """;
-
-                DataTable table = connection.RetrieveData(query, queryParameter);
-
-                return table;
-            }
+            return string.Join(',', phases);
         }
 
         // Read-style POST; without this, Gemstone's verb mapping would require Create access.
@@ -586,7 +874,6 @@ namespace PQBrowser.Controllers
 
             return string.Join(" AND ", assets);
         }
-
 
         [Route("GetEventSearchMeterMakes"), HttpGet]
         public IActionResult GetEventSearchMeterMakes()
