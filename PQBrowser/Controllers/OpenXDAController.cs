@@ -541,6 +541,7 @@ namespace PQBrowser.Controllers
                 """;
 
             using AdoDataConnection connection = new(Settings.Default);
+            connection.DefaultTimeout = 120;
 
             return connection.RetrieveData(query,
                 windowSize, searchTime,
