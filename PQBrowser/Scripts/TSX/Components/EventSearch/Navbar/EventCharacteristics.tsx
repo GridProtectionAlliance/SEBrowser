@@ -134,7 +134,7 @@ const EventSearchNavbar = () => {
                             Setter={handleSetEventCharacteristicFilter}
                             Options={MagDurOptions}
                         />
-                        <div className="row justify-content-md-center">
+                        <div className="d-flex justify-content-md-center">
                             <RadioButtons<{ curveType: string }>
                                 Record={{
                                     curveType: newEventCharacteristicFilter.curveInside
