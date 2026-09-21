@@ -247,10 +247,20 @@ namespace PQBrowser.Controllers
             if (postData.eventID is not null)
                 return GetSingleEventSearchData(postData.eventID.GetValueOrDefault(), fullSortColumn, sortOrder, resultCount);
 
-            string locationList = postData.locationIDs.Length > 0 ? string.Join(',', postData.locationIDs) : "Meter.LocationID";
-            string meterList = postData.meterIDs.Length > 0 ? string.Join(',', postData.meterIDs) : "MeterID";
-            string assetList = postData.assetIDs.Length > 0 ? string.Join(',', postData.assetIDs) : "AssetID";
-            string assetGroupList = postData.groupIDs.Length > 0 ? string.Join(',', postData.groupIDs) : "AssetGroupID";
+            string locationList = postData.locationIDs.Length > 0 ? string.Join(',', postData.locationIDs) : null;
+            string meterLocationList = locationList ?? "Meter.LocationID";
+            string assetLocationList = locationList ?? "AssetLocation.LocationID";
+
+            string assetGroupList = postData.groupIDs.Length > 0 ? string.Join(',', postData.groupIDs) : null;
+            string meterAssetGroupList = assetGroupList ?? "MeterAssetGroup.AssetGroupID";
+            string assetAssetGroupList = assetGroupList ?? "AssetAssetGroup.AssetGroupID";
+
+            // These stub values will force IsAtLocation = 1 and IsInGroup = 1 respectively
+            object locationStub = postData.locationIDs.Length == 0 ? 0 : DBNull.Value;
+            object assetGroupStub = postData.groupIDs.Length == 0 ? 0 : DBNull.Value;
+
+            string meterList = postData.meterIDs.Length > 0 ? string.Join(',', postData.meterIDs) : "Meter.ID";
+            string assetList = postData.assetIDs.Length > 0 ? string.Join(',', postData.assetIDs) : "Asset.ID";
             string eventTypeList = postData.typeIDs.Length > 0 ? string.Join(',', postData.typeIDs) : "NULL";
             string phaseList = GetPhaseList(postData);
 
@@ -309,19 +319,44 @@ namespace PQBrowser.Controllers
 
             string query =
                 $$"""
-                SELECT DISTINCT MeterID ID
+                SELECT DISTINCT
+                    Meter.ID,
+                    CASE WHEN Meter.LocationID IN ({{meterLocationList}})
+                        THEN 1
+                        ELSE 0
+                    END IsAtLocation,
+                    CASE WHEN COALESCE(MeterAssetGroup.ID, {3}) IS NOT NULL
+                        THEN 1
+                        ELSE 0
+                    END IsInGroup
                 INTO #meterFilter
-                FROM MeterAssetGroup
-                WHERE
-                    MeterID IN ({{meterList}}) AND
-                    AssetGroupID IN ({{assetGroupList}})
+                FROM
+                    Meter LEFT OUTER JOIN
+                    MeterAssetGroup ON
+                        MeterAssetGroup.MeterID = Meter.ID AND
+                        MeterAssetGroup.AssetGroupID IN ({{meterAssetGroupList}})
+                WHERE Meter.ID IN ({{meterList}})
 
-                SELECT DISTINCT AssetID ID
+                SELECT DISTINCT
+                    Asset.ID,
+                    CASE WHEN COALESCE(AssetLocation.ID, {2}) IS NOT NULL
+                        THEN 1
+                        ELSE 0
+                    END IsAtLocation,
+                    CASE WHEN COALESCE(AssetAssetGroup.ID, {3}) IS NOT NULL
+                        THEN 1
+                        ELSE 0
+                    END IsInGroup
                 INTO #assetFilter
-                FROM AssetAssetGroup
-                WHERE
-                    AssetID IN ({{assetList}}) AND
-                    AssetGroupID IN ({{assetGroupList}})
+                FROM
+                    Asset LEFT OUTER JOIN
+                    AssetLocation ON
+                        AssetLocation.AssetID = Asset.ID AND
+                        AssetLocation.LocationID IN ({{assetLocationList}}) LEFT OUTER JOIN
+                    AssetAssetGroup ON
+                        AssetAssetGroup.AssetID = Asset.ID AND
+                        AssetAssetGroup.AssetGroupID IN ({{assetAssetGroupList}})
+                WHERE Asset.ID IN ({{assetList}})
 
                 SELECT TOP {{resultCount}}
                     Event.ID,
@@ -338,7 +373,14 @@ namespace PQBrowser.Controllers
                     Event.EventTypeID IN ({{eventTypeList}}) AND
                     Event.MeterID IN (SELECT ID FROM #meterFilter) AND
                     Event.AssetID IN (SELECT ID FROM #assetFilter) AND
-                    Meter.LocationID IN ({{locationList}})
+                    (
+                        Event.MeterID IN (SELECT ID FROM #meterFilter WHERE IsAtLocation <> 0) OR
+                        Event.AssetID IN (SELECT ID FROM #assetFilter WHERE IsAtLocation <> 0)
+                    ) AND
+                    (
+                        Event.MeterID IN (SELECT ID FROM #meterFilter WHERE IsInGroup <> 0) OR
+                        Event.AssetID IN (SELECT ID FROM #assetFilter WHERE IsInGroup <> 0)
+                    )
                 {{eventOrdering}}
 
                 CREATE TABLE #disturbanceFilter
@@ -372,27 +414,49 @@ namespace PQBrowser.Controllers
                             Disturbance ON Disturbance.EventID = Event.ID JOIN
                             EventType ON Disturbance.EventTypeID = EventType.ID JOIN
                             Phase ON Disturbance.PhaseID = Phase.ID JOIN
-                            {{curveTable}} ON StandardMagDurCurve.ID = {2}
+                            {{curveTable}} ON StandardMagDurCurve.ID = {4}
                             {{disturbanceJoin}}
                         WHERE
                             Event.StartTime BETWEEN DATEADD({{timeWindowUnits}}, -{0}, {1}) AND DATEADD({{timeWindowUnits}}, {0}, {1}) AND
                             Event.MeterID IN (SELECT ID FROM #meterFilter) AND
                             Event.AssetID IN (SELECT ID FROM #assetFilter) AND
-                            Meter.LocationID IN ({{locationList}}) AND
+                            (
+                                Event.MeterID IN (SELECT ID FROM #meterFilter WHERE IsAtLocation <> 0) OR
+                                Event.AssetID IN (SELECT ID FROM #assetFilter WHERE IsAtLocation <> 0)
+                            ) AND
+                            (
+                                Event.MeterID IN (SELECT ID FROM #meterFilter WHERE IsInGroup <> 0) OR
+                                Event.AssetID IN (SELECT ID FROM #assetFilter WHERE IsInGroup <> 0)
+                            ) AND
                             Disturbance.EventTypeID IN ({{eventTypeList}}) AND
                             Phase.Name IN ({{phaseList}}) AND
-                            ({4} IS NULL OR Disturbance.DurationSeconds >= {4}) AND
-                            ({5} IS NULL OR Disturbance.DurationSeconds <= {5}) AND
-                            ({6} IS NULL OR EventType.Name <> 'Sag' OR Disturbance.PerUnitMagnitude >= {6}) AND
-                            ({7} IS NULL OR EventType.Name <> 'Sag' OR Disturbance.PerUnitMagnitude <= {7}) AND
-                            ({8} IS NULL OR EventType.Name <> 'Swell' OR Disturbance.PerUnitMagnitude >= {8}) AND
-                            ({9} IS NULL OR EventType.Name <> 'Swell' OR Disturbance.PerUnitMagnitude <= {9}) AND
-                            ({10} IS NULL OR EventType.Name <> 'Transient' OR Disturbance.PerUnitMagnitude >= {10}) AND
-                            ({11} IS NULL OR EventType.Name <> 'Transient' OR Disturbance.PerUnitMagnitude <= {11}) AND
-                            (StandardMagDurCurve.Area IS NULL OR StandardMagDurCurve.Area.STContains(geometry::Point(Disturbance.DurationSeconds, Disturbance.PerUnitMagnitude, 0)) = {3})
+                            ({6} IS NULL OR Disturbance.DurationSeconds >= {6}) AND
+                            ({7} IS NULL OR Disturbance.DurationSeconds <= {7}) AND
+                            ({8} IS NULL OR EventType.Name <> 'Sag' OR Disturbance.PerUnitMagnitude >= {8}) AND
+                            ({9} IS NULL OR EventType.Name <> 'Sag' OR Disturbance.PerUnitMagnitude <= {9}) AND
+                            ({10} IS NULL OR EventType.Name <> 'Swell' OR Disturbance.PerUnitMagnitude >= {10}) AND
+                            ({11} IS NULL OR EventType.Name <> 'Swell' OR Disturbance.PerUnitMagnitude <= {11}) AND
+                            ({12} IS NULL OR EventType.Name <> 'Transient' OR Disturbance.PerUnitMagnitude >= {12}) AND
+                            ({13} IS NULL OR EventType.Name <> 'Transient' OR Disturbance.PerUnitMagnitude <= {13}) AND
+                            (StandardMagDurCurve.Area IS NULL OR StandardMagDurCurve.Area.STContains(geometry::Point(Disturbance.DurationSeconds, Disturbance.PerUnitMagnitude, 0)) = {5})
                         {{disturbanceOrdering}}
                     ) DisturbanceFilter JOIN
-                    Disturbance ON Disturbance.EventID = DisturbanceFilter.EventID
+                    Disturbance ON Disturbance.EventID = DisturbanceFilter.EventID JOIN
+                    EventType ON Disturbance.EventTypeID = EventType.ID JOIN
+                    Phase ON Disturbance.PhaseID = Phase.ID JOIN
+                    {{curveTable}} ON StandardMagDurCurve.ID = {4}
+                WHERE
+                    Disturbance.EventTypeID IN ({{eventTypeList}}) AND
+                    Phase.Name IN ({{phaseList}}) AND
+                    ({6} IS NULL OR Disturbance.DurationSeconds >= {6}) AND
+                    ({7} IS NULL OR Disturbance.DurationSeconds <= {7}) AND
+                    ({8} IS NULL OR EventType.Name <> 'Sag' OR Disturbance.PerUnitMagnitude >= {8}) AND
+                    ({9} IS NULL OR EventType.Name <> 'Sag' OR Disturbance.PerUnitMagnitude <= {9}) AND
+                    ({10} IS NULL OR EventType.Name <> 'Swell' OR Disturbance.PerUnitMagnitude >= {10}) AND
+                    ({11} IS NULL OR EventType.Name <> 'Swell' OR Disturbance.PerUnitMagnitude <= {11}) AND
+                    ({12} IS NULL OR EventType.Name <> 'Transient' OR Disturbance.PerUnitMagnitude >= {12}) AND
+                    ({13} IS NULL OR EventType.Name <> 'Transient' OR Disturbance.PerUnitMagnitude <= {13}) AND
+                    (StandardMagDurCurve.Area IS NULL OR StandardMagDurCurve.Area.STContains(geometry::Point(Disturbance.DurationSeconds, Disturbance.PerUnitMagnitude, 0)) = {5})
 
                 SELECT TOP {{resultCount}}
                     FaultSummary.ID,
@@ -412,7 +476,14 @@ namespace PQBrowser.Controllers
                     Event.EventTypeID IN ({{eventTypeList}}) AND
                     Event.MeterID IN (SELECT ID FROM #meterFilter) AND
                     Event.AssetID IN (SELECT ID FROM #assetFilter) AND
-                    Meter.LocationID IN ({{locationList}}) AND
+                    (
+                        Event.MeterID IN (SELECT ID FROM #meterFilter WHERE IsAtLocation <> 0) OR
+                        Event.AssetID IN (SELECT ID FROM #assetFilter WHERE IsAtLocation <> 0)
+                    ) AND
+                    (
+                        Event.MeterID IN (SELECT ID FROM #meterFilter WHERE IsInGroup <> 0) OR
+                        Event.AssetID IN (SELECT ID FROM #assetFilter WHERE IsInGroup <> 0)
+                    ) AND
                     FaultSummary.FaultType IN ({{phaseList}}) AND
                     FaultSummary.IsSelectedAlgorithm <> 0 AND
                     FaultSummary.IsValid <> 0 AND
@@ -545,6 +616,7 @@ namespace PQBrowser.Controllers
 
             return connection.RetrieveData(query,
                 windowSize, searchTime,
+                locationStub, assetGroupStub,
                 curveID, curveFilter,
                 durationMin, durationMax,
                 sagMin, sagMax,
