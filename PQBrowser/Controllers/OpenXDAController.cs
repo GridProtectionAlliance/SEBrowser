@@ -441,7 +441,22 @@ namespace PQBrowser.Controllers
                             (StandardMagDurCurve.Area IS NULL OR StandardMagDurCurve.Area.STContains(geometry::Point(Disturbance.DurationSeconds, Disturbance.PerUnitMagnitude, 0)) = {5})
                         {{disturbanceOrdering}}
                     ) DisturbanceFilter JOIN
-                    Disturbance ON Disturbance.EventID = DisturbanceFilter.EventID
+                    Disturbance ON Disturbance.EventID = DisturbanceFilter.EventID JOIN
+                    EventType ON Disturbance.EventTypeID = EventType.ID JOIN
+                    Phase ON Disturbance.PhaseID = Phase.ID JOIN
+                    {{curveTable}} ON StandardMagDurCurve.ID = {4}
+                WHERE
+                    Disturbance.EventTypeID IN ({{eventTypeList}}) AND
+                    Phase.Name IN ({{phaseList}}) AND
+                    ({6} IS NULL OR Disturbance.DurationSeconds >= {6}) AND
+                    ({7} IS NULL OR Disturbance.DurationSeconds <= {7}) AND
+                    ({8} IS NULL OR EventType.Name <> 'Sag' OR Disturbance.PerUnitMagnitude >= {8}) AND
+                    ({9} IS NULL OR EventType.Name <> 'Sag' OR Disturbance.PerUnitMagnitude <= {9}) AND
+                    ({10} IS NULL OR EventType.Name <> 'Swell' OR Disturbance.PerUnitMagnitude >= {10}) AND
+                    ({11} IS NULL OR EventType.Name <> 'Swell' OR Disturbance.PerUnitMagnitude <= {11}) AND
+                    ({12} IS NULL OR EventType.Name <> 'Transient' OR Disturbance.PerUnitMagnitude >= {12}) AND
+                    ({13} IS NULL OR EventType.Name <> 'Transient' OR Disturbance.PerUnitMagnitude <= {13}) AND
+                    (StandardMagDurCurve.Area IS NULL OR StandardMagDurCurve.Area.STContains(geometry::Point(Disturbance.DurationSeconds, Disturbance.PerUnitMagnitude, 0)) = {5})
 
                 SELECT TOP {{resultCount}}
                     FaultSummary.ID,
