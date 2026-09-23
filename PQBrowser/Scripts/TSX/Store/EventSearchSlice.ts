@@ -71,6 +71,7 @@ const initialState: Redux.EventSearchState = {
             CA: true,
             ABG: true,
             BCG: true,
+            CAG: true,
             ABC: true,
             ABCG: true
         },
@@ -147,6 +148,7 @@ export const EventSearchsSlice = createSlice({
             state.EventCharacteristic.phases.CA = (action.payload.query['PhaseCA'] ?? 'true') == 'true';
             state.EventCharacteristic.phases.ABG = (action.payload.query['PhaseABG'] ?? 'true') == 'true';
             state.EventCharacteristic.phases.BCG = (action.payload.query['PhaseBCG'] ?? 'true') == 'true';
+            state.EventCharacteristic.phases.CAG = (action.payload.query['PhaseCAG'] ?? 'true') == 'true';
             state.EventCharacteristic.phases.ABC = (action.payload.query['PhaseABC'] ?? 'true') == 'true';
             state.EventCharacteristic.phases.ABCG = (action.payload.query['PhaseABCG'] ?? 'true') == 'true';
 
@@ -175,7 +177,7 @@ export const EventSearchsSlice = createSlice({
         ResetFilters: (state, action: PayloadAction<{ types: OpenXDA.Types.EventType[] }>) => {
             state.EventCharacteristic = {
                 durationMax: null, durationMin: null,
-                phases: { AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, ABC: true, ABCG: true },
+                phases: { AN: true, BN: true, CN: true, AB: true, BC: true, CA: true, ABG: true, BCG: true, CAG: true, ABC: true, ABCG: true },
                 transientMin: null, transientMax: null, sagMin: null, sagMax: null, swellMin: null, swellMax: null,
                 curveID: 1, curveInside: true, curveOutside: true
             };
@@ -246,7 +248,7 @@ function computeReset(state: Redux.EventSearchState, eventTypes: OpenXDA.Types.E
         state.EventCharacteristic.transientMin == null && state.EventCharacteristic.transientMax == null &&
         state.EventCharacteristic.sagMin == null && state.EventCharacteristic.sagMax == null &&
         state.EventCharacteristic.swellMin == null && state.EventCharacteristic.swellMax == null &&
-        state.EventCharacteristic.phases.AN && state.EventCharacteristic.phases.BN && state.EventCharacteristic.phases.CN && state.EventCharacteristic.phases.AB && state.EventCharacteristic.phases.BC && state.EventCharacteristic.phases.CA && state.EventCharacteristic.phases.ABG && state.EventCharacteristic.phases.BCG && state.EventCharacteristic.phases.ABC && state.EventCharacteristic.phases.ABCG &&
+        state.EventCharacteristic.phases.AN && state.EventCharacteristic.phases.BN && state.EventCharacteristic.phases.CN && state.EventCharacteristic.phases.AB && state.EventCharacteristic.phases.BC && state.EventCharacteristic.phases.CA && state.EventCharacteristic.phases.ABG && state.EventCharacteristic.phases.BCG && state.EventCharacteristic.phases.CAG && state.EventCharacteristic.phases.ABC && state.EventCharacteristic.phases.ABCG &&
         state.EventCharacteristic.curveInside && state.EventCharacteristic.curveOutside;
 
     const types = eventTypes.filter(e => e.ShowInFilter).length == state.EventType.length;
@@ -345,6 +347,8 @@ export function GenerateQueryParams(
             result['ABG'] = false;
         if (!event.phases.BCG)
             result['BCG'] = false;
+        if (!event.phases.CAG)
+            result['CAG'] = false;
         if (!event.phases.ABC)
             result['ABC'] = false;
         if (!event.phases.ABCG)

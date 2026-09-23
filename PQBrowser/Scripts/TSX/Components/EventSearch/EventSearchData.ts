@@ -62,6 +62,7 @@ export function BuildDynamicEventSearchRequest(
             CA: characteristics.phases.CA,
             ABG: characteristics.phases.ABG,
             BCG: characteristics.phases.BCG,
+            CAG: characteristics.phases.CAG,
             ABC: characteristics.phases.ABC,
             ABCG: characteristics.phases.ABCG,
         },
