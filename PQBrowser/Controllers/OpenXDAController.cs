@@ -225,6 +225,7 @@ namespace PQBrowser.Controllers
             public bool CA { get; set; }
             public bool ABG { get; set; }
             public bool BCG { get; set; }
+            public bool CAG { get; set; }
             public bool ABC { get; set; }
             public bool ABCG { get; set; }
         }
@@ -724,6 +725,7 @@ namespace PQBrowser.Controllers
                 ("CA", postData.phases.CA),
                 ("ABG", postData.phases.ABG),
                 ("BCG", postData.phases.BCG),
+                ("CAG", postData.phases.CAG),
                 ("ABC", postData.phases.ABC),
                 ("ABCG", postData.phases.ABCG)
             ];
