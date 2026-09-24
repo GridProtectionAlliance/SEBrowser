@@ -119,7 +119,7 @@ export namespace PQBrowser {
     interface State { tab?: string, startTime?: string, endTime?: string, context?: string, meterGroup?: number }
     interface EventPreviewPaneSetting { ID: number, Name: string, Show: boolean, OrderBy: number }
     interface IReportTimeFilter { date: string, time: string, windowSize: number, timeWindowUnits: number }
-    interface IPhaseFilters { AN: boolean, BN: boolean, CN: boolean, AB: boolean, BC: boolean, CA: boolean, ABG: boolean, BCG: boolean, ABC: boolean, ABCG: boolean }
+    interface IPhaseFilters { AN: boolean, BN: boolean, CN: boolean, AB: boolean, BC: boolean, CA: boolean, ABG: boolean, BCG: boolean, CAG: boolean, ABC: boolean, ABCG: boolean }
     interface IEventCharacteristicFilters {
         durationMin: number | null,
         durationMax: number | null,
