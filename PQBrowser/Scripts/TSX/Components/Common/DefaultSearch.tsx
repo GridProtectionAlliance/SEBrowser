@@ -210,6 +210,8 @@ const defaultMeterSearchCols: Search.IField<SystemCenter.Types.DetailedMeter>[] 
     { label: 'Model', key: 'Model', type: 'string', isPivotField: false },
     { label: 'Number of Assets', key: 'MappedAssets', type: 'number', isPivotField: false },
     { label: 'Description', key: 'Description', type: 'string', isPivotField: false },
+    { label: 'Asset Group', key: 'AssetGroup', type: 'string', isPivotField: false },
+    { label: 'Customer', key: 'Customer', type: 'string', isPivotField: false },
 ];
 
 const defaultMeterSearch: Search.IField<SystemCenter.Types.DetailedMeter> = { label: 'Name', key: 'Name', type: 'string', isPivotField: false };
@@ -235,6 +237,8 @@ const defaultAssetSearchCols: Search.IField<SystemCenter.Types.DetailedAsset>[] 
     { label: 'Number of Meters', key: 'Meters', type: 'integer', isPivotField: false },
     { label: 'Number of Substations', key: 'Locations', type: 'integer', isPivotField: false },
     { label: 'Description', key: 'Description', type: 'string', isPivotField: false },
+    { label: 'Asset Group', key: 'AssetGroup', type: 'string', isPivotField: false },
+    { label: 'Customer', key: 'Customer', type: 'string', isPivotField: false },
 ];
 
 const defaultAssetSearch: Search.IField<SystemCenter.Types.DetailedAsset> = { label: 'Name', key: 'AssetName', type: 'string', isPivotField: false };

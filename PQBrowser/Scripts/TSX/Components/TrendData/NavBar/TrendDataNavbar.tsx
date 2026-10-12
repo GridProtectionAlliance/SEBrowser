@@ -29,7 +29,7 @@ import { SystemCenter } from '@gpa-gemstone/application-typings';
 import { DefaultSelects } from '../../Common/DefaultSelects';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { ReactIcons } from '@gpa-gemstone/gpa-symbols';
-import { Column } from '@gpa-gemstone/react-table';
+import { Column, ConfigurableColumn } from '@gpa-gemstone/react-table';
 import { useGetContainerPosition } from '@gpa-gemstone/helper-functions';
 import { formatWindowUnit } from '../Utils/HelperFunctions';
 import { ErrorBoundary, TimeFilter } from '@gpa-gemstone/common-pages';
@@ -262,54 +262,97 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                 Title={"Select Meters to Display"}
                 GetEnum={getEnum}
                 GetAddlFields={getAdditionalMeterFields}
+                LocalStorageKey={'SEBrowser.MeterSelectTable'}
             >
-                <Column<SystemCenter.Types.DetailedMeter>
-                    Key="AssetKey"
-                    Field="AssetKey"
-                    HeaderStyle={{ width: 'auto' }}
-                    RowStyle={{ width: 'auto' }}
-                >
-                    Key
-                </Column>
-                <Column<SystemCenter.Types.DetailedMeter>
-                    Key="Name"
-                    Field="Name"
-                    HeaderStyle={{ width: 'auto' }}
-                    RowStyle={{ width: 'auto' }}
-                >
-                    Name
-                </Column>
-                <Column<SystemCenter.Types.DetailedMeter>
-                    Key="Location"
-                    Field="Location"
-                    HeaderStyle={{ width: 'auto' }}
-                    RowStyle={{ width: 'auto' }}
-                >
-                    Substation
-                </Column>
-                <Column<SystemCenter.Types.DetailedMeter>
-                    Key="MappedAssets"
-                    Field="MappedAssets"
-                    HeaderStyle={{ width: 'auto' }}
-                    RowStyle={{ width: 'auto' }}
-                >
-                    Assets
-                </Column>
-                <Column<SystemCenter.Types.DetailedMeter>
-                    Key="Make"
-                    Field="Make"
-                    HeaderStyle={{ width: 'auto' }}
-                    RowStyle={{ width: 'auto' }}
-                >
-                    Make
-                </Column>
-                <Column<SystemCenter.Types.DetailedMeter>
-                    Key="Model" Field="Model"
-                    HeaderStyle={{ width: 'auto' }}
-                    RowStyle={{ width: 'auto' }}
-                >
-                    Model
-                </Column>
+                <ConfigurableColumn Key="AssetKey" Label="Key" Default={true}>
+                    <Column<SystemCenter.Types.DetailedMeter>
+                        Key="AssetKey"
+                        Field="AssetKey"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Key
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="Name" Label="Name" Default={true}>
+                    <Column<SystemCenter.Types.DetailedMeter>
+                        Key="Name"
+                        Field="Name"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Name
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="Location" Label="Substation" Default={true}>
+                    <Column<SystemCenter.Types.DetailedMeter>
+                        Key="Location"
+                        Field="Location"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Substation
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="MappedAssets" Label="Assets" Default={true}>
+                    <Column<SystemCenter.Types.DetailedMeter>
+                        Key="MappedAssets"
+                        Field="MappedAssets"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Assets
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="Make" Label="Make" Default={true}>
+                    <Column<SystemCenter.Types.DetailedMeter>
+                        Key="Make"
+                        Field="Make"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Make
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="Model" Label="Model" Default={true}>
+                    <Column<SystemCenter.Types.DetailedMeter>
+                        Key="Model" Field="Model"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Model
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="Description" Label="Description">
+                    <Column<PQBrowser.IDetailedMeter>
+                        Key="Description"
+                        Field="Description"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Description
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="Customers" Label="Customers">
+                    <Column<PQBrowser.IDetailedMeter>
+                        Key="Customers"
+                        Field="Customers"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Customers
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="AssetGroups" Label="Asset Groups">
+                    <Column<PQBrowser.IDetailedMeter>
+                        Key="AssetGroups"
+                        Field="AssetGroups"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Asset Groups
+                    </Column>
+                </ConfigurableColumn>
             </DefaultSelects.Meter>
             <DefaultSelects.Asset
                 ControllerAPIPath={AssetControllerPath}
@@ -331,54 +374,97 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                 Title={"Filter by Asset"}
                 GetEnum={getEnum}
                 GetAddlFields={getAdditionalAssetFields}
+                LocalStorageKey={'SEBrowser.AssetSelectTable'}
             >
-                <Column<SystemCenter.Types.DetailedAsset>
-                    Key="AssetKey" Field="AssetKey"
-                    HeaderStyle={{ width: 'auto' }}
-                    RowStyle={{ width: 'auto' }}
-                >
-                    Key
-                </Column>
-                <Column<SystemCenter.Types.DetailedAsset>
-                    Key="AssetName"
-                    Field="AssetName"
-                    HeaderStyle={{ width: 'auto' }}
-                    RowStyle={{ width: 'auto' }}
-                >
-                    Name
-                </Column>
-                <Column<SystemCenter.Types.DetailedAsset>
-                    Key="AssetType"
-                    Field="AssetType"
-                    HeaderStyle={{ width: 'auto' }}
-                    RowStyle={{ width: 'auto' }}
-                >
-                    Asset Type
-                </Column>
-                <Column<SystemCenter.Types.DetailedAsset>
-                    Key="VoltageKV"
-                    Field="VoltageKV"
-                    HeaderStyle={{ width: 'auto' }}
-                    RowStyle={{ width: 'auto' }}
-                >
-                    Voltage (kV)
-                </Column>
-                <Column<SystemCenter.Types.DetailedAsset>
-                    Key="Meters"
-                    Field="Meters"
-                    HeaderStyle={{ width: 'auto' }}
-                    RowStyle={{ width: 'auto' }}
-                >
-                    Meters
-                </Column>
-                <Column<SystemCenter.Types.DetailedAsset>
-                    Key="Locations"
-                    Field="Locations"
-                    HeaderStyle={{ width: 'auto' }}
-                    RowStyle={{ width: 'auto' }}
-                >
-                    Substations
-                </Column>
+                <ConfigurableColumn Key="AssetKey" Label="Key" Default={true}>
+                    <Column<SystemCenter.Types.DetailedAsset>
+                        Key="AssetKey" Field="AssetKey"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Key
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="AssetName" Label="Name" Default={true}>
+                    <Column<SystemCenter.Types.DetailedAsset>
+                        Key="AssetName"
+                        Field="AssetName"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Name
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="AssetType" Label="Asset Type" Default={true}>
+                    <Column<SystemCenter.Types.DetailedAsset>
+                        Key="AssetType"
+                        Field="AssetType"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Asset Type
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="VoltageKV" Label="Voltage (kV)" Default={true}>
+                    <Column<SystemCenter.Types.DetailedAsset>
+                        Key="VoltageKV"
+                        Field="VoltageKV"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Voltage (kV)
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="Meters" Label="Meters" Default={true}>
+                    <Column<SystemCenter.Types.DetailedAsset>
+                        Key="Meters"
+                        Field="Meters"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Meters
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="Locations" Label="Substations" Default={true}>
+                    <Column<SystemCenter.Types.DetailedAsset>
+                        Key="Locations"
+                        Field="Locations"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Substations
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="Description" Label="Description">
+                    <Column<PQBrowser.IDetailedAsset>
+                        Key="Description"
+                        Field="Description"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Description
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="Customers" Label="Customers">
+                    <Column<PQBrowser.IDetailedAsset>
+                        Key="Customers"
+                        Field="Customers"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Customers
+                    </Column>
+                </ConfigurableColumn>
+                <ConfigurableColumn Key="AssetGroups" Label="Asset Groups">
+                    <Column<PQBrowser.IDetailedAsset>
+                        Key="AssetGroups"
+                        Field="AssetGroups"
+                        HeaderStyle={{ width: 'auto' }}
+                        RowStyle={{ width: 'auto' }}
+                    >
+                        Asset Groups
+                    </Column>
+                </ConfigurableColumn>
             </DefaultSelects.Asset>
         </>
     );

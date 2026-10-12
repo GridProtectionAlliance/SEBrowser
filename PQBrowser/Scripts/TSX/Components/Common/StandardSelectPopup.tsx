@@ -20,7 +20,7 @@
 //       Generated original version of source code.
 // ******************************************************************************************************
 
-import { Table, Column, FilterableColumn, ConfigurableColumn, Paging } from "@gpa-gemstone/react-table";
+import { Table, Column, FilterableColumn, ConfigurableColumn, ConfigurableTable, Paging, ReactTableProps } from "@gpa-gemstone/react-table";
 import * as React from 'react';
 import { Modal, Search, BtnDropdown } from "@gpa-gemstone/react-interactive";
 import _ from "lodash";
@@ -40,7 +40,9 @@ interface IProps<T> {
     Title: string,
     AddlFilters?: Search.IFilter<T>[],
     MinSelection?: number,
-    children?: React.ReactNode
+    children?: React.ReactNode,
+    /** When set, the search results table lets users show/hide ConfigurableColumn children and saves the choice under this localStorage key. */
+    LocalStorageKey?: string
 }
 
 const SelectPopup = <T,>(props: IProps<T>) => {
@@ -64,6 +66,13 @@ const SelectPopup = <T,>(props: IProps<T>) => {
 
     const stringifiedFilter = React.useMemo(() => JSON.stringify(filters), [filters]);
     const memoizedFilters = React.useMemo(() => Gemstone.HelperFunctions.getSearchFilter(JSON.parse(stringifiedFilter) as Search.IFilter<T>[]), [stringifiedFilter]);
+
+    //the selection table is a plain Table, so unwrap ConfigurableColumns and keep only the default ones to fit its narrower width
+    const selectionColumns = React.useMemo(() => React.Children.map(props.children, (e) => {
+        if (React.isValidElement(e) && (e as React.ReactElement).type === ConfigurableColumn)
+            return (e as React.ReactElement).props.Default === true ? (e as React.ReactElement).props.children : null;
+        return e;
+    }), [props.children]);
 
     //keep the active page valid when the filtered result set shrinks
     React.useEffect(() => {
@@ -96,6 +105,41 @@ const SelectPopup = <T,>(props: IProps<T>) => {
             .done((records) => addRecords(records))
             .always(() => setBulkLoading(false));
     }, [controller, sortField, ascending, memoizedFilters, addRecords]);
+
+    const resultsTableProps: ReactTableProps.ITable<T> = {
+        TableClass: "table table-hover h-100",
+        Data: data,
+        SortKey: sortField as string,
+        Ascending: ascending,
+        OnSort: (d) => {
+            if (d.colKey === "Scroll")
+                return;
+            if (d.colKey === sortField)
+                setAscending(!ascending);
+            else {
+                setSortField(d.colField as keyof T);
+                setAscending(true);
+            }
+        },
+        OnClick: (d, e) => {
+            //the table fires OnClick for both the clicked cell and the bubbled row, so stop
+            //propagation to avoid a double toggle that would immediately deselect the row
+            e.stopPropagation();
+            setSelectedData((s) => {
+                const isSelected = s.findIndex(item => item[props.PrimaryKey] === d.row[props.PrimaryKey]) > -1;
+
+                if (isSelected)
+                    return s.filter(item => item[props.PrimaryKey] !== d.row[props.PrimaryKey]);
+
+                if (props.Type === undefined || props.Type === 'single')
+                    return [d.row]
+
+                return [...s, d.row]
+            })
+        },
+        Selected: (item) => selectedData.findIndex(d => d[props.PrimaryKey] === item[props.PrimaryKey]) > -1,
+        KeySelector: item => item[props.PrimaryKey] as string | number
+    };
 
     return (
         <Modal
@@ -168,42 +212,17 @@ const SelectPopup = <T,>(props: IProps<T>) => {
             </div>
             <div className="row flex-grow-1" style={{ overflow: 'hidden', minHeight: 0 }}>
                 <div className="col h-100" style={{ width: (props.Type === undefined || props.Type === 'single' ? '100%' : '60%') }}>
-                    <Table<T>
-                        TableClass="table table-hover h-100"
-                        Data={data}
-                        SortKey={sortField as string}
-                        Ascending={ascending}
-                        OnSort={(d) => {
-                            if (d.colKey === "Scroll")
-                                return;
-                            if (d.colKey === sortField)
-                                setAscending(!ascending);
-                            else {
-                                setSortField(d.colField as keyof T);
-                                setAscending(true);
-                            }
-                        }}
-                        OnClick={(d, e) => {
-                            //the table fires OnClick for both the clicked cell and the bubbled row, so stop
-                            //propagation to avoid a double toggle that would immediately deselect the row
-                            e.stopPropagation();
-                            setSelectedData((s) => {
-                                const isSelected = s.findIndex(item => item[props.PrimaryKey] === d.row[props.PrimaryKey]) > -1;
-
-                                if (isSelected)
-                                    return s.filter(item => item[props.PrimaryKey] !== d.row[props.PrimaryKey]);
-
-                                if (props.Type === undefined || props.Type === 'single')
-                                    return [d.row]
-
-                                return [...s, d.row]
-                            })
-                        }}
-                        Selected={(item) => selectedData.findIndex(d => d[props.PrimaryKey] === item[props.PrimaryKey]) > -1}
-                        KeySelector={item => item[props.PrimaryKey] as string | number}
-                    >
-                        {props.children}
-                    </Table>
+                    {props.LocalStorageKey == null ?
+                        <Table<T> {...resultsTableProps}>
+                            {props.children}
+                        </Table>
+                        : <ConfigurableTable<T>
+                            {...resultsTableProps}
+                            LocalStorageKey={props.LocalStorageKey}
+                            ModalZIndex={9995}
+                        >
+                            {props.children}
+                        </ConfigurableTable>}
                 </div>
                 {props.Type === 'multiple' ? <div className="col h-100" style={{ width: '40%', borderLeft: '1px solid #dee2e6' }}>
                     <Table<T>
@@ -228,7 +247,7 @@ const SelectPopup = <T,>(props: IProps<T>) => {
                         Selected={() => false}
                         KeySelector={item => item[props.PrimaryKey] as string | number}
                     >
-                        {props.children}
+                        {selectionColumns}
                     </Table>
                 </div> : null}
             </div>
