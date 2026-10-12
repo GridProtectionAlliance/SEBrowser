@@ -192,7 +192,7 @@ function getSubstationData(): JQuery.jqXHR<Substation[]> {
         url: `${homePath}api/PQDashboard/RelayReport/GetSubstationData`,
         contentType: "application/json; charset=utf-8",
         dataType: 'json',
-        cache: true,
+        cache: false,
         async: true
     });
 }
@@ -203,7 +203,7 @@ function getBreakerData(locationID: number): JQuery.jqXHR<Breaker[]> {
         url: `${homePath}api/PQDashboard/RelayReport/GetBreakerData?locationID=${locationID}`,
         contentType: "application/json; charset=utf-8",
         dataType: 'json',
-        cache: true,
+        cache: false,
         async: true
     });
 }
@@ -214,7 +214,7 @@ function getCoilData(lineID: number): JQuery.jqXHR<Channel[]> {
         url: `${homePath}api/PQDashboard/RelayReport/GetCoilData?lineID=${lineID}`,
         contentType: "application/json; charset=utf-8",
         dataType: 'json',
-        cache: true,
+        cache: false,
         async: true
     });
 }
