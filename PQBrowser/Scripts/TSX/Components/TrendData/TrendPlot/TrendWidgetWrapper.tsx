@@ -451,7 +451,10 @@ const TrendPlot = (props: IContainerProps) => {
             Location: '',
             MappedAssets: 0,
             Make: '',
-            Model: ''
+            Model: '',
+            Description: null,
+            Customers: null,
+            AssetGroups: null
         }
         const time = moment.utc(marker.value, "x");
         const timeFilter: PQBrowser.IReportTimeFilter = {

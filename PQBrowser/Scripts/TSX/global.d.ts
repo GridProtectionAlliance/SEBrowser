@@ -143,19 +143,6 @@ export namespace PQBrowser {
 
     // Temporary until next gpa-gemstone update
     interface IWidgetCategory { ID: number, Name: string, OrderBy: number }
-
-    // DetailedMeter/DetailedAsset view columns not yet in gpa-gemstone application-typings
-    interface IDetailedMeter extends SystemCenter.Types.DetailedMeter {
-        Description: string | null,
-        Customers: string | null,
-        AssetGroups: string | null
-    }
-
-    interface IDetailedAsset extends SystemCenter.Types.DetailedAsset {
-        Description: string | null,
-        Customers: string | null,
-        AssetGroups: string | null
-    }
 }
 
 export namespace TrendSearch {

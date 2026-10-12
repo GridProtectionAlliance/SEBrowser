@@ -324,7 +324,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </Column>
                 </ConfigurableColumn>
                 <ConfigurableColumn Key="Description" Label="Description">
-                    <Column<PQBrowser.IDetailedMeter>
+                    <Column<SystemCenter.Types.DetailedMeter>
                         Key="Description"
                         Field="Description"
                         HeaderStyle={{ width: 'auto' }}
@@ -334,7 +334,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </Column>
                 </ConfigurableColumn>
                 <ConfigurableColumn Key="Customers" Label="Customers">
-                    <Column<PQBrowser.IDetailedMeter>
+                    <Column<SystemCenter.Types.DetailedMeter>
                         Key="Customers"
                         Field="Customers"
                         HeaderStyle={{ width: 'auto' }}
@@ -344,7 +344,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </Column>
                 </ConfigurableColumn>
                 <ConfigurableColumn Key="AssetGroups" Label="Asset Groups">
-                    <Column<PQBrowser.IDetailedMeter>
+                    <Column<SystemCenter.Types.DetailedMeter>
                         Key="AssetGroups"
                         Field="AssetGroups"
                         HeaderStyle={{ width: 'auto' }}
@@ -436,7 +436,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </Column>
                 </ConfigurableColumn>
                 <ConfigurableColumn Key="Description" Label="Description">
-                    <Column<PQBrowser.IDetailedAsset>
+                    <Column<SystemCenter.Types.DetailedAsset>
                         Key="Description"
                         Field="Description"
                         HeaderStyle={{ width: 'auto' }}
@@ -446,7 +446,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </Column>
                 </ConfigurableColumn>
                 <ConfigurableColumn Key="Customers" Label="Customers">
-                    <Column<PQBrowser.IDetailedAsset>
+                    <Column<SystemCenter.Types.DetailedAsset>
                         Key="Customers"
                         Field="Customers"
                         HeaderStyle={{ width: 'auto' }}
@@ -456,7 +456,7 @@ const TrendSearchNavbar = React.memo((props: IProps) => {
                     </Column>
                 </ConfigurableColumn>
                 <ConfigurableColumn Key="AssetGroups" Label="Asset Groups">
-                    <Column<PQBrowser.IDetailedAsset>
+                    <Column<SystemCenter.Types.DetailedAsset>
                         Key="AssetGroups"
                         Field="AssetGroups"
                         HeaderStyle={{ width: 'auto' }}

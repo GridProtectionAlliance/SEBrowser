@@ -32,7 +32,6 @@ import { AssetGroupControllerPath, AssetControllerPath, AssetTypeController, Loc
 import { DefaultSelects } from '../../Common/DefaultSelects';
 import NavbarFilterButton from '../../Common/NavbarFilterButton';
 import { SystemCenter, OpenXDA, Gemstone } from '@gpa-gemstone/application-typings';
-import { PQBrowser } from '../../../global';
 import { Search } from '@gpa-gemstone/react-interactive';
 import { Column, ConfigurableColumn } from '@gpa-gemstone/react-table';
 import EventSearchTypeFilters from '../EventSearchTypeFilter/EventSearchTypeFilter';
@@ -261,7 +260,7 @@ const EventSearchNavbar = () => {
                     </Column>
                 </ConfigurableColumn>
                 <ConfigurableColumn Key="Description" Label="Description">
-                    <Column<PQBrowser.IDetailedMeter>
+                    <Column<SystemCenter.Types.DetailedMeter>
                         Key="Description"
                         Field="Description"
                         HeaderStyle={{ width: 'auto' }}
@@ -271,7 +270,7 @@ const EventSearchNavbar = () => {
                     </Column>
                 </ConfigurableColumn>
                 <ConfigurableColumn Key="Customers" Label="Customers">
-                    <Column<PQBrowser.IDetailedMeter>
+                    <Column<SystemCenter.Types.DetailedMeter>
                         Key="Customers"
                         Field="Customers"
                         HeaderStyle={{ width: 'auto' }}
@@ -281,7 +280,7 @@ const EventSearchNavbar = () => {
                     </Column>
                 </ConfigurableColumn>
                 <ConfigurableColumn Key="AssetGroups" Label="Asset Groups">
-                    <Column<PQBrowser.IDetailedMeter>
+                    <Column<SystemCenter.Types.DetailedMeter>
                         Key="AssetGroups"
                         Field="AssetGroups"
                         HeaderStyle={{ width: 'auto' }}
@@ -373,7 +372,7 @@ const EventSearchNavbar = () => {
                     </Column>
                 </ConfigurableColumn>
                 <ConfigurableColumn Key="Description" Label="Description">
-                    <Column<PQBrowser.IDetailedAsset>
+                    <Column<SystemCenter.Types.DetailedAsset>
                         Key="Description"
                         Field="Description"
                         HeaderStyle={{ width: 'auto' }}
@@ -383,7 +382,7 @@ const EventSearchNavbar = () => {
                     </Column>
                 </ConfigurableColumn>
                 <ConfigurableColumn Key="Customers" Label="Customers">
-                    <Column<PQBrowser.IDetailedAsset>
+                    <Column<SystemCenter.Types.DetailedAsset>
                         Key="Customers"
                         Field="Customers"
                         HeaderStyle={{ width: 'auto' }}
@@ -393,7 +392,7 @@ const EventSearchNavbar = () => {
                     </Column>
                 </ConfigurableColumn>
                 <ConfigurableColumn Key="AssetGroups" Label="Asset Groups">
-                    <Column<PQBrowser.IDetailedAsset>
+                    <Column<SystemCenter.Types.DetailedAsset>
                         Key="AssetGroups"
                         Field="AssetGroups"
                         HeaderStyle={{ width: 'auto' }}
