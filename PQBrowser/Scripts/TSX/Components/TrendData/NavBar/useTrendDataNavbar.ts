@@ -260,7 +260,7 @@ const getTrendSearchData = (trendFilter): JQuery.jqXHR<TrendSearch.ITrendChannel
         contentType: "application/json; charset=utf-8",
         data: JSON.stringify(trendFilter),
         dataType: 'json',
-        cache: true,
+        cache: false,
         async: true
     });
 }

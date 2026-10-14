@@ -231,7 +231,7 @@ const getCustomReports = () => {
         url: `${homePath}api/ValueList/Group/CustomReports`,
         contentType: "application/json; charset=utf-8",
         dataType: 'json',
-        cache: true,
+        cache: false,
         async: true
     });
 }

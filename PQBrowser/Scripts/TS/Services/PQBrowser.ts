@@ -64,7 +64,7 @@ export default class PQBrowserService {
                 `&column=${column}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
@@ -80,7 +80,7 @@ export default class PQBrowserService {
             url: `${homePath}api/PQDashboard/CapBankReport/GetSubstationData`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
         return this.subStationCapBankReportHandle;
@@ -95,7 +95,7 @@ export default class PQBrowserService {
             url: `${homePath}api/PQDashboard/CapBankReport/GetCapBankData?locationID=${substationID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
         return this.capBankCapBankReportHandle;
@@ -112,7 +112,7 @@ export default class PQBrowserService {
                 `&column=${column}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
@@ -128,7 +128,7 @@ export default class PQBrowserService {
             url: `${homePath}api/OpenXDA/MeterActivity/GetFilesProcessedLast24Hrs?column=${column}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
@@ -144,7 +144,7 @@ export default class PQBrowserService {
             url: `${homePath}api/OpenXDA/MeterActivity/QueryFileGroupEvents?FileGroupID=${fileGroupID}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
