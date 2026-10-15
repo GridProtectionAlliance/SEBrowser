@@ -67,7 +67,7 @@ namespace PQBrowser.Controllers.OpenXDA
             using AdoDataConnection connection = new(Gemstone.Configuration.Settings.Default);
 
             IEnumerable<WidgetView> records = new TableOperations<WidgetView>(connection)
-                .QueryRecords(new RecordRestriction("CategoryID = {0}", categoryID));
+                .QueryRecords("SortOrder, Name", new RecordRestriction("CategoryID = {0}", categoryID));
 
             return Ok(records);
         }
