@@ -269,8 +269,9 @@ namespace PQBrowser.Controllers
             double windowSize = postData.windowSize;
             DateTime searchTime = DateTime.ParseExact(postData.date + " " + postData.time, "MM/dd/yyyy HH:mm:ss.fff", new CultureInfo("en-US"));
 
-            object durationMin = postData.durationMin > 0 ? postData.durationMin * (1 / 60.0) : DBNull.Value;
-            object durationMax = postData.durationMax > 0 ? postData.durationMax * (1 / 60.0) : DBNull.Value;
+            double systemFrequency = GetSystemFrequency();
+            object durationMin = postData.durationMin > 0 ? postData.durationMin / systemFrequency : DBNull.Value;
+            object durationMax = postData.durationMax > 0 ? postData.durationMax / systemFrequency : DBNull.Value;
             object sagMin = postData.sagMin > 0 ? postData.sagMin : DBNull.Value;
             object sagMax = postData.sagMax > 0 ? postData.sagMax : DBNull.Value;
             object swellMin = postData.swellMin > 0 ? postData.swellMin : DBNull.Value;
@@ -738,6 +739,12 @@ namespace PQBrowser.Controllers
             return string.Join(',', phases);
         }
 
+        private static double GetSystemFrequency()
+        {
+            using AdoDataConnection connection = new(Settings.Default);
+            return connection.ExecuteScalar(60.0D, "SELECT Value FROM Setting WHERE Name = 'DataAnalysis.SystemFrequency'");
+        }
+
         // Read-style POST; without this, Gemstone's verb mapping would require Create access.
         [Route("GetMagDurChartData"), HttpPost, ResourceAccess(ResourceAccessType.Read)]
         public DataTable GetMagDurChartData([FromBody] EventSearchPostData postData)
@@ -746,8 +753,9 @@ namespace PQBrowser.Controllers
                 throw new Exception("Unable to parse request body");
 
             // Convert input cycles to seconds.
-            postData.durationMin = postData.durationMin * (1 / 60.0);
-            postData.durationMax = postData.durationMax * (1 / 60.0);
+            double systemFrequency = GetSystemFrequency();
+            postData.durationMin = postData.durationMin / systemFrequency;
+            postData.durationMax = postData.durationMax / systemFrequency;
 
             using AdoDataConnection connection = new(Settings.Default);
             {

@@ -68,7 +68,7 @@ export default class OpenSEEService{
                 `&dataType=Time`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
@@ -89,7 +89,7 @@ export default class OpenSEEService{
                 `&dataType=Statistics`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
@@ -105,7 +105,7 @@ export default class OpenSEEService{
             url: `${homePath}api/OpenXDA/RelayReport/GetTrend?breakerid=${lineID}&channelid=${channelID}`,                
                 contentType: "application/json; charset=utf-8",
                 dataType: 'json',
-                cache: true,
+                cache: false,
                 async: true
             });
 
@@ -127,7 +127,7 @@ export default class OpenSEEService{
                 `&dataType=Freq`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
@@ -146,7 +146,7 @@ export default class OpenSEEService{
                 `&pixels=${pixels}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
@@ -165,7 +165,7 @@ export default class OpenSEEService{
                  `&pixels=${pixels}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
@@ -182,7 +182,7 @@ export default class OpenSEEService{
                 `${filters.breakeroperation != undefined ? `&breakeroperation=${filters.breakeroperation}` : ``}` ,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
@@ -198,7 +198,7 @@ export default class OpenSEEService{
             url: `${homePath}api/OpenXDA/GetScalarStats?eventId=${eventid}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
@@ -214,7 +214,7 @@ export default class OpenSEEService{
             url: `${homePath}api/OpenXDA/GetHarmonics?eventId=${eventid}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
@@ -230,7 +230,7 @@ export default class OpenSEEService{
             url: `${homePath}api/OpenXDA/getRelayPerformance?eventId=${breakerid}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
@@ -246,7 +246,7 @@ export default class OpenSEEService{
             url: `${homePath}api/OpenXDA/getCapBankAnalytic?eventId=${eventId}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 
@@ -263,7 +263,7 @@ export default class OpenSEEService{
             url: `${homePath}api/OpenXDA/RelayReport/getRelayPerformance?lineID=${breakerid}&channelID=${channelId}`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 

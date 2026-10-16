@@ -35,7 +35,7 @@ export default class BreakerReportService {
             url: `${homePath}api/BreakerReport/MaximoBreakers`,
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            cache: true,
+            cache: false,
             async: true
         });
 

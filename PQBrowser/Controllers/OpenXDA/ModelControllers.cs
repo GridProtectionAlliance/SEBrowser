@@ -26,7 +26,7 @@ using Gemstone.Data.Model;
 using Gemstone.Web.APIController;
 using Microsoft.AspNetCore.Mvc;
 using openXDA.Model;
-using SEBrowser.Model;
+using PQBrowser.Model;
 using PQBrowser.Security;
 using System;
 using System.Collections.Generic;
@@ -67,7 +67,7 @@ namespace PQBrowser.Controllers.OpenXDA
             using AdoDataConnection connection = new(Gemstone.Configuration.Settings.Default);
 
             IEnumerable<WidgetView> records = new TableOperations<WidgetView>(connection)
-                .QueryRecords(new RecordRestriction("CategoryID = {0}", categoryID));
+                .QueryRecords("SortOrder, Name", new RecordRestriction("CategoryID = {0}", categoryID));
 
             return Ok(records);
         }

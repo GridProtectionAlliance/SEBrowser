@@ -406,7 +406,7 @@ const FetchMagDurCurves = (): JQuery.jqXHR<OpenXDA.Types.MagDurCurve[]> => $.aja
     url: `${homePath}api/openXDA/StandardMagDurCurve/Name/1`,
     contentType: 'application/json; charset=utf-8',
     dataType: 'json',
-    cache: true,
+    cache: false,
     async: true
 });
 

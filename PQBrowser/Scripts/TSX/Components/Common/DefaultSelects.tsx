@@ -39,7 +39,9 @@ interface IProps<T> {
     AddlFilters?: Search.IFilter<T>[],
     MinSelection?: number,
     children?: React.ReactNode,
-    StorageID?: string
+    StorageID?: string,
+    /** When set, users can show/hide ConfigurableColumn children and the choice is saved under this localStorage key. */
+    LocalStorageKey?: string
 }
 
 /** This Implements a few standardized Selection Popups */

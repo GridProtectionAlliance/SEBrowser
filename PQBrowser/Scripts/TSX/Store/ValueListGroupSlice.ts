@@ -50,7 +50,7 @@ export default class ValueListGroupSlice {
                 url: `${homePath}api/ValueList/Group/${groupName}`,
                 contentType: "application/json; charset=utf-8",
                 dataType: 'json',
-                cache: true,
+                cache: false,
                 async: true
             });
             this.fetchHandles[groupName] = handle;
