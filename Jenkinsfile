@@ -233,19 +233,34 @@ pipeline {
             }
             steps {
                 script {
-                    //env.pqBrowserDockerTag = env.CHANGE_BRANCH == "${env.devBranch}" ? "${env.pqBrowserVersion}a" : env.pqBrowserVersion
-                    //println("Building PQBrowser Docker image tag: pqbrowser:${env.pqBrowserDockerTag}")
-                    println("Skipping docker stage intentionally")
+                    env.pqBrowserDockerTag = env.CHANGE_BRANCH == "${env.devBranch}" ? "${env.pqBrowserVersion}a" : env.pqBrowserVersion
+                    println("Building PQBrowser Docker image tag: pqbrowser:${env.pqBrowserDockerTag}")
                 }
 
-                /*powershell """
+                powershell """
                     dotnet publish '.\\PQBrowser\\PQBrowser.csproj' `
                         --configuration Release `
                         '-p:PublishProfile=Docker Release Profile PQBrowser'
                 """
 
-                powershell "docker build --build-arg CONFIGURATION=Release -f .\\PQBrowser.dockerfile -t pqbrowser:${env.pqBrowserDockerTag} ."
-                */
+                withCredentials([
+                    string(credentialsId: 'wsl-docker-user', variable: 'WSL_DOCKER_USER')
+                ]) {
+                    powershell '''
+                        $key = 'C:\\ProgramData\\Jenkins\\.ssh\\wsl_docker'
+                        $wslPath = '/mnt/' + $env:WORKSPACE.Substring(0, 1).ToLowerInvariant() + $env:WORKSPACE.Substring(2).Replace('\\', '/')
+
+                        ssh -i $key `
+                            -o BatchMode=yes `
+                            -p 2222 `
+                            "$env:WSL_DOCKER_USER@localhost" `
+                            "cd '$wslPath' && docker info --format '{{.OSType}}' && docker build --build-arg CONFIGURATION=Release -f ./PQBrowser.dockerfile -t 'pqbrowser:$env:pqBrowserDockerTag' ."
+
+                        if ($LASTEXITCODE -ne 0) {
+                            exit $LASTEXITCODE
+                        }
+                    '''
+                }
             }
         }
 
