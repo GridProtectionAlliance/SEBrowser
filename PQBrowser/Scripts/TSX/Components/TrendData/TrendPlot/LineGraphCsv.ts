@@ -17,6 +17,7 @@
 //******************************************************************************************************
 
 import _ from 'lodash';
+import moment from 'moment';
 import { CsvRow } from './TrendCsv';
 
 export interface IExportSeries {
@@ -38,7 +39,8 @@ export function buildLineGraphCsvRows(series: IExportSeries[]): CsvRow[] {
     return [
         ['Timestamp', ...series.map(item => item.Label)],
         ...timestamps.map(timestamp => [
-            new Date(timestamp).toISOString(),
+            // Timestamps are configured-system-time wall clock encoded as UTC, so format without a 'Z' suffix
+            moment.utc(timestamp).format('YYYY-MM-DD[T]HH:mm:ss.SSS'),
             ...valueMaps.map(values => {
                 const value = values.get(timestamp);
                 return value != null && Number.isFinite(value) ? value.toString() : '';
