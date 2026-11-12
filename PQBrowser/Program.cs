@@ -166,6 +166,10 @@ public class Program
 
         dynamic oauthSection = settings[OAuthAuthenticationProvider.SettingsSection];
         oauthSection.UserIdClaim = ("http://schemas.microsoft.com/identity/claims/objectidentifier", "Defines the claim used to identify the user.");
+        oauthSection.LoginLabel = ("Azure Active Directory", "Defines the label of the OAuth button on the login page.");
+
+        dynamic windowsSection = settings[WindowsAuthenticationProvider.SettingsSection];
+        windowsSection.LoginLabel = ("Windows Authentication", "Defines the label of the Windows authentication button on the login page.");
     }
 
     private static void ApplyDatabaseSettings(Settings settings)
